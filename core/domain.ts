@@ -185,6 +185,11 @@ export function validate(input: unknown): State {
           s.orders.some((o) => o.id === m.order && o.supplier === m.supplier)),
       "Asociación de mensaje inválida.",
     );
+  for (const photo of s.photos)
+    ensure(
+      !photo.supplier || suppliers.has(photo.supplier),
+      "Proveedor de foto inexistente.",
+    );
   const reversed = new Set<string>();
   for (const m of s.movements) {
     ensure(
@@ -472,10 +477,21 @@ export function apply(state: State, input: unknown): State {
       note = `Mensaje vinculado a ${o.number}.`;
       break;
     }
+    case "organizePhoto": {
+      const photo = item(s.photos, a.id);
+      if (a.supplier) item(s.suppliers, a.supplier);
+      photo.supplier = a.supplier;
+      photo.documentDate = a.documentDate;
+      note = "Clasificación de foto actualizada; se conserva el original.";
+      break;
+    }
     case "photo": {
+      if (a.supplier) item(s.suppliers, a.supplier);
       s.photos.unshift({
         id: randomUUID(),
         name: a.name,
+        supplier: a.supplier,
+        documentDate: a.documentDate,
         data: a.data,
         note: a.note,
         at: now(),

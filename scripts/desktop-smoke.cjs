@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const assert = require("node:assert/strict");
 (async () => {
   const root = path.resolve(__dirname, "..");
-  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v3-"));
+  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v4-"));
   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
   const { DatabaseSync } = require("node:sqlite");
   const savedStock = () => {
@@ -64,7 +64,7 @@ const assert = require("node:assert/strict");
     assert.equal(savedStock(), 4.25);
     assert.ok(requests.every((u) => new URL(u).hostname === "127.0.0.1"));
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v03-desktop.png"),
+      path: path.join(root, "output", "playwright", "v04-desktop.png"),
     });
     await window
       .getByRole("button", { name: "Cargar foto", exact: true })
@@ -72,8 +72,12 @@ const assert = require("node:assert/strict");
     await window
       .locator("input[name=photo]")
       .setInputFiles(
-        path.join(root, "output", "playwright", "v03-desktop.png"),
+        path.join(root, "output", "playwright", "v04-desktop.png"),
       );
+    await window
+      .getByRole("combobox", { name: "Proveedor de la foto", exact: true })
+      .selectOption("s1");
+    await window.locator("input[name=documentDate]").fill("2026-09-01");
     await window
       .getByRole("button", { name: "Guardar foto", exact: true })
       .click();
@@ -85,6 +89,38 @@ const assert = require("node:assert/strict");
       .getByRole("heading", { name: "Archivo de fotos", exact: true })
       .waitFor();
     assert.ok((await window.locator(".photo-grid img").count()) > 0);
+    await window
+      .getByRole("button", { name: "Organizar", exact: true })
+      .first()
+      .click();
+    await window
+      .getByRole("combobox", { name: "Proveedor de la foto", exact: true })
+      .selectOption("s2");
+    await window.locator("input[name=documentDate]").fill("2026-09-02");
+    await window.getByRole("button", { name: "Guardar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    await window
+      .locator(".photo-grid")
+      .getByText("2026-09-02", { exact: true })
+      .waitFor();
+    const archive = JSON.parse(
+      fs.readFileSync(path.join(dir, "proveedores", "indice.json"), "utf8"),
+    );
+    assert.ok(
+      fs.existsSync(
+        path.join(
+          dir,
+          "proveedores",
+          archive.find((x) => x.id === "s2").carpeta,
+          "fotos",
+          "2026-09-02",
+        ),
+      ),
+    );
+    await window.screenshot({
+      path: path.join(root, "output", "playwright", "v04-fotos.png"),
+      fullPage: true,
+    });
     assert.equal(savedStock(), 4.25);
     await window
       .getByRole("button", { name: "Inventario", exact: true })
@@ -123,9 +159,11 @@ const assert = require("node:assert/strict");
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     assert.equal(savedStock(), 4.25);
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v03-movimientos.png"),
+      path: path.join(root, "output", "playwright", "v04-movimientos.png"),
     });
-    await window.getByRole("button", { name: "Ver mensajes", exact: true }).click();
+    await window
+      .getByRole("button", { name: "Ver mensajes", exact: true })
+      .click();
     await window
       .getByRole("button", { name: "Simular mensaje", exact: true })
       .click();
@@ -170,7 +208,7 @@ const assert = require("node:assert/strict");
       .getByRole("combobox", { name: "Mostrar", exact: true })
       .selectOption("all");
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v03-mensajes.png"),
+      path: path.join(root, "output", "playwright", "v04-mensajes.png"),
     });
     const runtime = await app.evaluate(({ app }) => ({
       userData: app.getPath("userData"),

@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.3.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.4.0.
 
 ## Entregado y comprobado
 
@@ -11,7 +11,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Envío simulado y recepción parcial con conversión de presentaciones.
 - [x] Mensajes de demostración, prioridades, revisión y asociación de pedido.
 - [x] Persistencia local y copias/restauración validadas por pruebas.
-- [x] Archivo manual de imágenes dentro del prototipo.
+- [x] Archivo manual de imágenes con proveedor, fecha y reclasificación.
+- [x] Carpetas automáticas y fichas/datos por proveedor; recuperación de archivo derivado.
+- [ ] Abrir carpetas desde la app, importar otros tipos de documento y definir limpieza de copias históricas.
 - [x] Historial de actividad separado de los informes de desarrollo.
 - [x] Pruebas de dominio y servidor; prueba del ejecutable con reinicio.
 - [x] Revisión visual de resumen, compras y mensajes.
@@ -24,7 +26,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 36 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 40 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.

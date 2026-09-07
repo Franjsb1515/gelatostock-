@@ -11,3 +11,5 @@ Para cerrar una sesión: informe nuevo + CHANGELOG.md + TODO.md + pruebas con re
 Entrega vigente 0.2.0: leer reports/2026-09-07-002-sqlite-typescript.md. El núcleo está en core/ (TypeScript estricto); build/ es generado. Conservar la migración del JSON antiguo. Revisar la decisión Electron/Tauri con mediciones, evitando sustituir una implementación comprobada por una alternativa sin validar.
 
 Entrega vigente 0.3.0: leer reports/2026-09-07T22-46-07-183Z-bandeja-proveedores.md. Relevancia y prioridad separadas; no atribuir aprendizaje ni comprensión semántica a estas reglas.
+
+Entrega vigente 0.4.0: reports/2026-09-07T23-36-54-807Z-archivo-proveedores-fotos.md. Las carpetas por proveedor son copias derivadas; SQLite/attachments siguen siendo canónicos. No borrar originales ni afirmar que OCR ya existe.

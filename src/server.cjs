@@ -44,7 +44,8 @@ function createApp({
         state: store.load(),
         dataDir,
         storage: "SQLite",
-        version: "0.3.0",
+        archiveWarning: store.archiveWarning,
+        version: "0.4.0",
       });
       return;
     }
@@ -89,7 +90,8 @@ function createApp({
           state: store.load(),
           dataDir,
           storage: "SQLite",
-          version: "0.3.0",
+          archiveWarning: store.archiveWarning,
+          version: "0.4.0",
         });
       } catch (e) {
         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {

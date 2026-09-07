@@ -203,3 +203,141 @@ test("clasificación corregida y texto original persisten tras reinicio SQLite",
     assert.equal(m.text, "Oferta de café");
     assert.equal(m.priority, "low");
   }));
+
+test("crear proveedor crea carpeta estable y ficha aunque cambie el nombre", () =>
+  fixture((dir, open) => {
+    const s = open();
+    const fields = {
+      type: "supplier",
+      name: "Nuevo / Café",
+      initials: "NC",
+      category: "Café",
+      delivery: "Lunes",
+      color: "sage",
+    };
+    const state = s.dispatch(fields);
+    const p = state.suppliers.at(-1);
+    const folder = s.supplierFolder(p.id);
+    assert.ok(fs.statSync(path.join(folder, "fotos")).isDirectory());
+    assert.equal(
+      JSON.parse(fs.readFileSync(path.join(folder, "proveedor.json"), "utf8"))
+        .name,
+      fields.name,
+    );
+    s.dispatch({ ...fields, id: p.id, name: "Nombre cambiado" });
+    assert.equal(s.supplierFolder(p.id), folder);
+    assert.equal(
+      JSON.parse(fs.readFileSync(path.join(folder, "proveedor.json"), "utf8"))
+        .name,
+      "Nombre cambiado",
+    );
+    assert.equal(s.archiveWarning, undefined);
+  }));
+test("foto por proveedor y fecha se conserva al reclasificar y restaurar", () =>
+  fixture((dir, open) => {
+    const s = open();
+    let state = s.dispatch({
+      type: "photo",
+      supplier: "s1",
+      documentDate: "2026-09-01",
+      name: "albarán.png",
+      note: "",
+      data: png,
+    });
+    const id = state.photos[0].id;
+    const old = path.join(s.supplierFolder("s1"), "fotos", "2026-09-01");
+    assert.equal(
+      fs.readdirSync(old).filter((x) => x.endsWith(".png")).length,
+      1,
+    );
+    s.dispatch({
+      type: "organizePhoto",
+      id,
+      supplier: "s2",
+      documentDate: "2026-09-02",
+    });
+    const dest = path.join(s.supplierFolder("s2"), "fotos", "2026-09-02");
+    assert.equal(
+      fs.readdirSync(dest).filter((x) => x.endsWith(".png")).length,
+      1,
+    );
+    assert.ok(fs.existsSync(old));
+    const backup = s.exportState();
+    const child = new Store(path.join(dir, "restored"));
+    try {
+      child.restore(backup, child.load().revision);
+      assert.equal(child.load().photos[0].supplier, "s2");
+      assert.ok(
+        fs.existsSync(
+          path.join(child.supplierFolder("s2"), "fotos", "2026-09-02"),
+        ),
+      );
+    } finally {
+      child.close();
+    }
+  }));
+test("fotos antiguas quedan sin proveedor y fechas inexistentes se rechazan", () =>
+  fixture((dir, open) => {
+    const s = open();
+    const state = s.dispatch({
+      type: "photo",
+      name: "antes.png",
+      note: "",
+      data: png,
+    });
+    assert.ok(
+      fs.existsSync(
+        path.join(
+          dir,
+          "proveedores",
+          "sin-proveedor",
+          "fotos",
+          state.photos[0].at.slice(0, 10),
+        ),
+      ),
+    );
+    assert.throws(() =>
+      s.dispatch({
+        type: "photo",
+        name: "x.png",
+        data: png,
+        supplier: "no-existe",
+      }),
+    );
+    assert.throws(() =>
+      s.dispatch({
+        type: "organizePhoto",
+        id: state.photos[0].id,
+        documentDate: "2026-02-30",
+      }),
+    );
+    assert.throws(() =>
+      s.dispatch({
+        type: "organizePhoto",
+        id: state.photos[0].id,
+        documentDate: "../../x",
+      }),
+    );
+  }));
+test("fallo del archivo derivado avisa sin perder la transacción y permite recuperar", () =>
+  fixture((dir, open) => {
+    const s = open();
+    const folder = s.supplierFolder("s1");
+    // Obstruir una carpeta de una fecha nueva sin tocar los datos canónicos.
+    const block = path.join(folder, "fotos", "2026-09-03");
+    fs.writeFileSync(block, "ocupado");
+    const result = s.dispatch({
+      type: "photo",
+      supplier: "s1",
+      documentDate: "2026-09-03",
+      name: "x.png",
+      data: png,
+    });
+    assert.equal(result.photos[0].supplier, "s1");
+    assert.match(s.archiveWarning, /no se pudo/);
+    assert.ok(s.photo(result.photos[0].id).bytes.length > 0);
+    fs.unlinkSync(block);
+    s.syncArchive();
+    assert.equal(s.archiveWarning, undefined);
+    assert.ok(fs.statSync(block).isDirectory());
+  }));

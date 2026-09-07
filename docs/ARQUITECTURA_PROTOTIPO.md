@@ -1,4 +1,4 @@
-# Arquitectura vigente — 0.3.0
+# Arquitectura vigente — 0.4.0
 
 ## Decisión y razones
 
@@ -43,3 +43,7 @@ Distribución actual Windows portátil verificada. Falta instalador firmado y pa
 ## Mensajes en 0.3
 
 Campos de relevancia y explicación con valores predeterminados para compatibilidad anterior. La evaluación examina referencias GS exactas y el proveedor, sin vincular ni ejecutar pedidos. La corrección manual se registra en actividad y persiste en SQLite. No hay entrenamiento ni reclasificación retrospectiva. La UI filtra en memoria; paginación sigue pendiente.
+
+## Archivo derivado en 0.4
+
+La persistencia incorpora sincronización de carpetas por proveedor después del commit. SQLite y attachments son canónicos. Carpetas estables por SHA-256 del ID; índice de nombres, ficha y datos JSON, imágenes copiadas por fecha con metadatos laterales. Fallos se devuelven como archiveWarning sin convertir una transacción confirmada en un error de guardado. Reintento al siguiente inicio/guardado. Retención conservadora: no se eliminan copias históricas. No se importan modificaciones externas.

@@ -1,0 +1,6 @@
+
+> appgelatostock@0.4.0 test:desktop
+> node scripts/desktop-smoke.cjs
+
+PASS: búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.
+{"userData":"D:\\APPGELATOSTOCK\\work\\desktop-v4-YC0cLi\\runtime","sessionData":"D:\\APPGELATOSTOCK\\work\\desktop-v4-YC0cLi\\runtime"}

@@ -26,6 +26,7 @@ const entityTables = [
 ] as const;
 type Table = (typeof entityTables)[number];
 export class Store {
+  archiveWarning: string | undefined;
   readonly db: DatabaseSync;
   readonly file: string;
   readonly attachments: string;
@@ -96,10 +97,103 @@ export class Store {
           throw error;
         }
       }
-      this.load();
+      this.syncArchive();
     } catch (error) {
       this.db.close();
       throw error;
+    }
+  }
+  supplierFolder(id: string): string {
+    return path.join(this.dataDir, "proveedores", "proveedor-" + digest(id));
+  }
+  syncArchive(): void {
+    // A derived archive: SQLite and attachments remain authoritative. Retry on restart/save.
+    try {
+      const s = this.load();
+      const root = path.join(this.dataDir, "proveedores");
+      const mkdir = (dir: string) => {
+        const base = path.resolve(this.dataDir);
+        const relative = path.relative(base, path.resolve(dir));
+        ensure(
+          relative && !relative.startsWith("..") && !path.isAbsolute(relative),
+          "Ruta de archivo inválida.",
+        );
+        let cursor = base;
+        for (const part of relative.split(path.sep)) {
+          cursor = path.join(cursor, part);
+          if (!fs.existsSync(cursor)) fs.mkdirSync(cursor);
+          ensure(
+            !fs.lstatSync(cursor).isSymbolicLink() &&
+              fs.statSync(cursor).isDirectory(),
+            "La carpeta del archivo no puede ser un enlace.",
+          );
+        }
+      };
+      const writeJson = (dest: string, value: unknown) => {
+        const text = JSON.stringify(value, null, 2);
+        if (fs.existsSync(dest)) {
+          ensure(
+            !fs.lstatSync(dest).isSymbolicLink(),
+            "Archivo enlazado no permitido.",
+          );
+          if (fs.readFileSync(dest, "utf8") === text) return;
+        }
+        this.atomicWrite(dest, text);
+      };
+      mkdir(root);
+      writeJson(
+        path.join(root, "indice.json"),
+        s.suppliers.map((p) => ({
+          id: p.id,
+          nombre: p.name,
+          carpeta: path.basename(this.supplierFolder(p.id)),
+        })),
+      );
+      for (const p of s.suppliers) {
+        const dir = this.supplierFolder(p.id);
+        mkdir(path.join(dir, "fotos"));
+        writeJson(path.join(dir, "proveedor.json"), p);
+        writeJson(path.join(dir, "datos.json"), {
+          productos: s.products.filter((x) => x.supplier === p.id),
+          pedidos: s.orders.filter((x) => x.supplier === p.id),
+          mensajes: s.messages.filter((x) => x.supplier === p.id),
+          fotos: s.photos.filter((x) => x.supplier === p.id),
+        });
+      }
+      for (const p of s.photos) {
+        ensure(p.file && p.mime, "Adjunto sin archivo.");
+        const date = p.documentDate || p.at.slice(0, 10);
+        const dir = path.join(
+          p.supplier
+            ? this.supplierFolder(p.supplier)
+            : path.join(root, "sin-proveedor"),
+          "fotos",
+          date,
+        );
+        mkdir(dir);
+        const extension =
+          p.mime === "image/jpeg"
+            ? "jpg"
+            : p.mime === "image/png"
+              ? "png"
+              : "webp";
+        const dest = path.join(dir, digest(p.id) + "." + extension);
+        if (!fs.existsSync(dest)) {
+          const bytes = fs.readFileSync(path.join(this.attachments, p.file));
+          ensure(digest(bytes) === p.file, "Adjunto dañado.");
+          this.atomicWrite(dest, bytes);
+        } else
+          ensure(
+            !fs.lstatSync(dest).isSymbolicLink(),
+            "Foto enlazada no permitida.",
+          );
+        writeJson(dest + ".json", p);
+      }
+      this.archiveWarning = undefined;
+    } catch (e) {
+      this.archiveWarning =
+        "Los datos están en SQLite, pero no se pudo actualizar el archivo por proveedor: " +
+        (e instanceof Error ? e.message : String(e));
     }
   }
   private jsonRows(table: Table): unknown[] {
@@ -310,6 +404,7 @@ export class Store {
           .prepare("UPDATE operations SET fingerprint=? WHERE id=?")
           .run(fingerprint, operationId);
       this.db.exec("COMMIT");
+      this.syncArchive();
       return this.load();
     } catch (error) {
       if (this.db.isTransaction) this.db.exec("ROLLBACK");
@@ -388,6 +483,7 @@ export class Store {
       });
       this.write(next);
       this.db.exec("COMMIT");
+      this.syncArchive();
       return this.load();
     } catch (error) {
       if (this.db.isTransaction) this.db.exec("ROLLBACK");

@@ -11,6 +11,13 @@ export const quantity = z
   );
 const signedQuantity = z.number().finite().min(-1_000_000).max(1_000_000);
 const text = (max = 200) => z.string().trim().min(1).max(max);
+const documentDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((v) => {
+    const d = new Date(v + "T00:00:00Z");
+    return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
+  }, "Fecha inválida.");
 const at = z.string().datetime();
 const cents = z.number().int().min(0).max(100_000_000);
 export const productFields = {
@@ -82,6 +89,8 @@ const photoSchema = z
   .object({
     id: idSchema,
     name: text(200),
+    supplier: idSchema.optional(),
+    documentDate: documentDate.optional(),
     note: z.string().max(500),
     at,
     data: z
@@ -210,7 +219,15 @@ export const actionSchema = z.intersection(
     }),
     z.object({ type: z.literal("link"), id: idSchema, order: idSchema }),
     z.object({
+      type: z.literal("organizePhoto"),
+      id: idSchema,
+      supplier: idSchema.optional(),
+      documentDate,
+    }),
+    z.object({
       type: z.literal("photo"),
+      supplier: idSchema.optional(),
+      documentDate: documentDate.optional(),
       name: text(200),
       data: z.string().max(8_000_000),
       note: z.string().max(500).default(""),

@@ -1,0 +1,56 @@
+
+> appgelatostock@0.4.0 test
+> npm run build && node --test tests/*.test.cjs
+
+
+> appgelatostock@0.4.0 build
+> tsc -p tsconfig.json
+
+✔ conteo reemplaza stock, persiste historial y no muta estado original (7.661ms)
+✔ rechaza cantidades negativas, NaN e infinitas (1.59ms)
+✔ reposición considera pedidos en camino y respeta cajas (2.9291ms)
+✔ autorizar separa proveedores y vacía carrito sin tocar stock (1.3808ms)
+✔ doble autorización y doble envío no duplican pedidos (0.9496ms)
+✔ rechaza autorización con versión obsoleta (0.4125ms)
+✔ recepción parcial y total convierten cajas a litros una sola vez (1.7125ms)
+✔ reintentar la misma recepción es idempotente (1.621ms)
+✔ recepciones imposibles y líneas duplicadas se rechazan sin cambios (0.8546ms)
+✔ mensajes relevantes y promociones se distinguen sin modificar stock (0.9469ms)
+✔ no vincula mensajes a otro proveedor (0.9808ms)
+✔ copias inválidas se rechazan (0.5324ms)
+✔ alta de producto valida presentación y objetivo (1.0885ms)
+✔ copia con identificadores capaces de inyectar HTML se rechaza (0.3135ms)
+✔ entrada, salida y corrección conservan un historial compensado (1.2393ms)
+✔ cancelar pendiente libera reposición y no altera stock (1.0339ms)
+✔ editar presentación no cambia los pedidos ya autorizados (1.078ms)
+✔ no admite fracciones de unidades ni estados recibidos inconsistentes (0.6785ms)
+✔ relevancia por referencia exacta no cambia prioridad ni pedidos (0.9988ms)
+✔ referencias ajenas, desconocidas o múltiples requieren revisión (0.9682ms)
+✔ pedido abierto sin referencia no basta para vincular un mensaje (0.5795ms)
+✔ corrección manual conserva original y prioridad y registra motivo (1.0505ms)
+✔ eventos repetidos no duplican y un ID con otro contenido se rechaza (0.761ms)
+✔ copia anterior sin relevancia conserva mensajes para revisión (0.2932ms)
+✔ servidor SQLite: autenticación, revisión, persistencia y restauración (164.612ms)
+✔ migración conserva JSON, datos y fotografías en adjuntos separados (56.059ms)
+✔ JSON inválido no se reemplaza por datos de ejemplo (12.6052ms)
+✔ un fallo a mitad de transacción revierte stock, movimiento y operación (34.3619ms)
+✔ dos conexiones detectan versión obsoleta y no pisan cambios (54.2557ms)
+✔ idempotencia persiste al reiniciar y rechaza reutilizar ID con otro contenido (39.0489ms)
+✔ adjuntos se deduplican por contenido y las copias son portables (61.8939ms)
+✔ no acepta un archivo falso con extensión de imagen (25.4154ms)
+✔ restauración reemplaza relaciones en una sola transacción (35.4419ms)
+✔ terminación del proceso sin commit no deja cambios parciales (75.6723ms)
+✔ guardar un movimiento no reescribe el historial previo (193.0231ms)
+✔ clasificación corregida y texto original persisten tras reinicio SQLite (44.2522ms)
+✔ crear proveedor crea carpeta estable y ficha aunque cambie el nombre (45.7347ms)
+✔ foto por proveedor y fecha se conserva al reclasificar y restaurar (78.0997ms)
+✔ fotos antiguas quedan sin proveedor y fechas inexistentes se rechazan (36.0213ms)
+✔ fallo del archivo derivado avisa sin perder la transacción y permite recuperar (37.696ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 981.2602
