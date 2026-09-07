@@ -1,4 +1,4 @@
-# Arquitectura vigente — 0.4.0
+# Arquitectura vigente — 0.5.0
 
 ## Decisión y razones
 
@@ -47,3 +47,7 @@ Campos de relevancia y explicación con valores predeterminados para compatibili
 ## Archivo derivado en 0.4
 
 La persistencia incorpora sincronización de carpetas por proveedor después del commit. SQLite y attachments son canónicos. Carpetas estables por SHA-256 del ID; índice de nombres, ficha y datos JSON, imágenes copiadas por fecha con metadatos laterales. Fallos se devuelven como archiveWarning sin convertir una transacción confirmada en un error de guardado. Reintento al siguiente inicio/guardado. Retención conservadora: no se eliminan copias históricas. No se importan modificaciones externas.
+
+## OCR e identidad en 0.5
+
+core/identify.ts comparte identificación por texto/alias/NIF/teléfono. src/ocr.cjs utiliza Tesseract.js con worker Node y español incluidos; src/ocr-worker.cjs bloquea fetch. Una lectura simultánea, límite de entrada 5 MB y plazo 30 s. Foto conserva texto OCR opcional y proveedor confirmado. La interfaz inicia lectura al elegir archivo; no interpreta cantidades. Dependencias de producción empaquetadas según lockfile. Canales reales y PDF pendientes.

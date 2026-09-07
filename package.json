@@ -1,6 +1,6 @@
 {
   "name": "appgelatostock",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Prototipo local de inventario y compras para gelateria",
   "main": "src/desktop.cjs",
@@ -24,6 +24,8 @@
     "typescript": "7.0.2"
   },
   "dependencies": {
+    "@tesseract.js-data/spa": "1.0.0",
+    "tesseract.js": "7.0.0",
     "zod": "4.5.4"
   }
 }

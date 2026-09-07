@@ -32,8 +32,11 @@ fs.cpSync(path.join(root, "build"), path.join(app, "build"), {
   recursive: true,
 });
 fs.mkdirSync(path.join(app, "node_modules"), { recursive: true });
-fs.cpSync(
-  path.join(root, "node_modules", "zod"),
-  path.join(app, "node_modules", "zod"),
-  { recursive: true },
-);
+// Copy the locked production dependency graph, including local OCR WASM/language files.
+const lock = require("../package-lock.json");
+for (const [location, info] of Object.entries(lock.packages)) {
+  if (!location || info.dev || !location.startsWith("node_modules/")) continue;
+  fs.cpSync(path.join(root, location), path.join(app, location), {
+    recursive: true,
+  });
+}

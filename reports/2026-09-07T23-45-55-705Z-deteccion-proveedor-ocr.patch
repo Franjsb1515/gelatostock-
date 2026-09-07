@@ -1,0 +1,514 @@
+diff --git a/core/domain.ts b/core/domain.ts
+index e07e928..7cbd3f9 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -490,6 +490,7 @@ export function apply(state: State, input: unknown): State {
+       s.photos.unshift({
+         id: randomUUID(),
+         name: a.name,
++        ocrText: a.ocrText,
+         supplier: a.supplier,
+         documentDate: a.documentDate,
+         data: a.data,
+diff --git a/core/schema.ts b/core/schema.ts
+index 999ad46..abbd300 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -42,6 +42,16 @@ const supplierFields = {
+   initials: text(5),
+   category: text(100),
+   delivery: text(200),
++  aliases: z.string().max(1000).optional(),
++  taxId: z.string().trim().max(30).optional(),
++  whatsapp: z
++    .string()
++    .transform((v) => v.replace(/[ ()-]/g, ""))
++    .refine(
++      (v) => v === "" || /^\+[1-9]\d{7,14}$/.test(v),
++      "Usá el teléfono con prefijo internacional, por ejemplo +34.",
++    )
++    .optional(),
+   color: z.enum(["sage", "rose", "sand", "lavender"]),
+ };
+ const supplierSchema = z.object({ id: idSchema, ...supplierFields });
+@@ -89,6 +99,7 @@ const photoSchema = z
+   .object({
+     id: idSchema,
+     name: text(200),
++    ocrText: z.string().max(20000).optional(),
+     supplier: idSchema.optional(),
+     documentDate: documentDate.optional(),
+     note: z.string().max(500),
+@@ -226,6 +237,7 @@ export const actionSchema = z.intersection(
+     }),
+     z.object({
+       type: z.literal("photo"),
++      ocrText: z.string().max(20000).optional(),
+       supplier: idSchema.optional(),
+       documentDate: documentDate.optional(),
+       name: text(200),
+diff --git a/package.json b/package.json
+index 8e790b2..eb16041 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.4.0",
++  "version": "0.5.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+@@ -24,6 +24,8 @@
+     "typescript": "7.0.2"
+   },
+   "dependencies": {
++    "@tesseract.js-data/spa": "1.0.0",
++    "tesseract.js": "7.0.0",
+     "zod": "4.5.4"
+   }
+ }
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 2e5241e..760d2f7 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -4,7 +4,7 @@ const fs = require("node:fs");
+ const assert = require("node:assert/strict");
+ (async () => {
+   const root = path.resolve(__dirname, "..");
+-  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v4-"));
++  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v5-"));
+   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
+   const { DatabaseSync } = require("node:sqlite");
+   const savedStock = () => {
+@@ -64,19 +64,27 @@ const assert = require("node:assert/strict");
+     assert.equal(savedStock(), 4.25);
+     assert.ok(requests.every((u) => new URL(u).hostname === "127.0.0.1"));
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v04-desktop.png"),
++      path: path.join(root, "output", "playwright", "v05-desktop.png"),
+     });
+     await window
+       .getByRole("button", { name: "Cargar foto", exact: true })
+       .click();
+     await window
+       .locator("input[name=photo]")
+-      .setInputFiles(
+-        path.join(root, "output", "playwright", "v04-desktop.png"),
+-      );
++      .setInputFiles(path.join(root, "tests", "fixtures", "factura-ocr.png"));
+     await window
+-      .getByRole("combobox", { name: "Proveedor de la foto", exact: true })
+-      .selectOption("s1");
++      .locator(".detection-status")
++      .filter({ hasText: "Proveedor propuesto: Origen Coffee" })
++      .waitFor();
++    assert.equal(
++      await window
++        .getByRole("combobox", { name: "Proveedor de la foto", exact: true })
++        .inputValue(),
++      "s1",
++    );
++    await window.screenshot({
++      path: path.join(root, "output", "playwright", "v05-ocr.png"),
++    });
+     await window.locator("input[name=documentDate]").fill("2026-09-01");
+     await window
+       .getByRole("button", { name: "Guardar foto", exact: true })
+@@ -118,7 +126,7 @@ const assert = require("node:assert/strict");
+       ),
+     );
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v04-fotos.png"),
++      path: path.join(root, "output", "playwright", "v05-fotos.png"),
+       fullPage: true,
+     });
+     assert.equal(savedStock(), 4.25);
+@@ -159,7 +167,7 @@ const assert = require("node:assert/strict");
+     await window.getByRole("dialog").waitFor({ state: "hidden" });
+     assert.equal(savedStock(), 4.25);
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v04-movimientos.png"),
++      path: path.join(root, "output", "playwright", "v05-movimientos.png"),
+     });
+     await window
+       .getByRole("button", { name: "Ver mensajes", exact: true })
+@@ -169,7 +177,11 @@ const assert = require("node:assert/strict");
+       .click();
+     await window
+       .getByRole("textbox", { name: "Mensaje del proveedor", exact: true })
+-      .fill("Oferta exclusiva de café de prueba");
++      .fill("Oferta exclusiva de café de prueba de Origen Coffee");
++    await window
++      .locator(".detection-status")
++      .filter({ hasText: "Proveedor propuesto: Origen Coffee" })
++      .waitFor();
+     await window
+       .getByRole("button", { name: "Recibir mensaje de prueba", exact: true })
+       .click();
+@@ -208,7 +220,7 @@ const assert = require("node:assert/strict");
+       .getByRole("combobox", { name: "Mostrar", exact: true })
+       .selectOption("all");
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v04-mensajes.png"),
++      path: path.join(root, "output", "playwright", "v05-mensajes.png"),
+     });
+     const runtime = await app.evaluate(({ app }) => ({
+       userData: app.getPath("userData"),
+@@ -239,7 +251,7 @@ const assert = require("node:assert/strict");
+       .waitFor();
+     assert.equal(await w2.locator(".conversation").count(), 1);
+     console.log(
+-      "PASS: búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.",
++      "PASS: OCR local automático de proveedor y propuesta en mensaje; búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.",
+     );
+     console.log(JSON.stringify(runtime));
+   } finally {
+diff --git a/scripts/package.cjs b/scripts/package.cjs
+index 394e253..972f0ae 100644
+--- a/scripts/package.cjs
++++ b/scripts/package.cjs
+@@ -32,8 +32,11 @@ fs.cpSync(path.join(root, "build"), path.join(app, "build"), {
+   recursive: true,
+ });
+ fs.mkdirSync(path.join(app, "node_modules"), { recursive: true });
+-fs.cpSync(
+-  path.join(root, "node_modules", "zod"),
+-  path.join(app, "node_modules", "zod"),
+-  { recursive: true },
+-);
++// Copy the locked production dependency graph, including local OCR WASM/language files.
++const lock = require("../package-lock.json");
++for (const [location, info] of Object.entries(lock.packages)) {
++  if (!location || info.dev || !location.startsWith("node_modules/")) continue;
++  fs.cpSync(path.join(root, location), path.join(app, location), {
++    recursive: true,
++  });
++}
+diff --git a/src/app.js b/src/app.js
+index 677a5e7..5f0b463 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -194,7 +194,7 @@ function render() {
+       )
+       .join(
+         "",
+-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.4.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
++      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.5.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
+ }
+ function home() {
+   const important = state.messages.filter(
+@@ -376,7 +376,7 @@ function settings() {
+       "Un espacio que funciona a tu manera.",
+       "Datos locales, copias de seguridad y un camino claro para crecer.",
+     ) +
+-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. No incluye un modelo de IA ni reconocimiento automático de fotos.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} OCR y modelo local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Fotos ordenadas por proveedor y fecha del documento. Las anteriores quedan sin proveedor hasta clasificarlas.</p>${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
++    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. Incluye OCR local en español para proponer proveedores al cargar fotos. No incluye un modelo conversacional de IA.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Modelo conversacional local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Fotos ordenadas por proveedor y fecha del documento. Las anteriores quedan sin proveedor hasta clasificarlas.</p>${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
+       [...state.photos]
+         .sort(
+           (a, b) =>
+@@ -388,7 +388,7 @@ function settings() {
+             `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}</small>${esc(ph.name)}<small>${esc(ph.note)}</small>${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}</figcaption></figure>`,
+         )
+         .join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'
+-    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.4.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
++    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.5.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+   );
+ }
+ function field(label, name, value = "", type = "text", extra = "") {
+@@ -486,12 +486,26 @@ function photoFields(ph) {
+     )
+   );
+ }
++function showDetection(form, result, manual) {
++  const box = form.querySelector(".detection-status");
++  const selected = form.querySelector("select[name=supplier]");
++  if (!manual) selected.value = result.supplier || "";
++  box.textContent = result.supplier
++    ? "Proveedor propuesto: " +
++      supplier(result.supplier).name +
++      ". " +
++      result.reason +
++      " Confirmá o corregí antes de guardar."
++    : result.reason;
++}
+ function photo() {
++  let serial = 0,
++    manual = false;
+   modal(
+     "Cargar una foto",
+-    "Archivo local de referencia. En esta versión las cantidades se cargan manualmente.",
++    "Lectura local del texto para proponer un proveedor. Las cantidades no cambian.",
+     photoFields() +
+-      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto de tu equipo</strong><span>JPG, PNG o WebP · hasta 5 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required></label><div id="photo-preview"></div><label class="field">Nota<textarea name="note" placeholder="Por ejemplo: albarán de leche, revisar cantidades"></textarea></label><div class="notice inline">${icon("alert")}<span>No se ejecutará OCR ni se modificará stock automáticamente.</span></div>`,
++      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto de tu equipo</strong><span>JPG, PNG o WebP · hasta 5 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required></label><div id="photo-preview"></div><p class="detection-status" role="status">Al elegir una foto se buscará su proveedor entre tus fichas.</p><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Podés elegirlo manualmente si la lectura falla.</p>`,
+     async (f) => {
+       const file = f.get("photo");
+       if (
+@@ -499,31 +513,61 @@ function photo() {
+         file.size > 5000000
+       )
+         throw Error("Usá JPG, PNG o WebP de hasta 5 MB.");
+-      const data = await readFile(file);
+       return mutate(
+         {
+           type: "photo",
+           name: file.name,
+-          data,
++          data: await readFile(file),
+           note: f.get("note"),
++          ocrText: f.get("ocrText"),
+           supplier: f.get("supplier") || undefined,
+           documentDate: f.get("documentDate"),
+         },
+-        "Foto guardada. Podés verla en Configuración.",
++        "Foto y proveedor guardados.",
+       );
+     },
+     "Guardar foto",
+   );
+-  $("#modal-form input[type=file]").addEventListener("change", async (e) => {
+-    const file = e.target.files[0];
+-    if (
+-      file &&
+-      file.size <= 5000000 &&
+-      ["image/png", "image/jpeg", "image/webp"].includes(file.type)
+-    )
+-      $("#photo-preview").innerHTML =
+-        `<img class="photo-preview" src="${esc(await readFile(file))}" alt="Vista previa de la foto">`;
+-  });
++  const form = $("#modal-form");
++  form
++    .querySelector("select[name=supplier]")
++    .addEventListener("change", () => (manual = true));
++  form
++    .querySelector("input[name=photo]")
++    .addEventListener("change", async (e) => {
++      const current = ++serial,
++        file = e.target.files[0],
++        button = form.querySelector("button[type=submit]");
++      form.querySelector("textarea[name=ocrText]").value = "";
++      if (!manual) form.querySelector("select[name=supplier]").value = "";
++      form.querySelector("#photo-preview").innerHTML = "";
++      if (!file) return;
++      button.disabled = true;
++      form.querySelector(".detection-status").textContent =
++        "Leyendo la foto en este equipo…";
++      try {
++        if (
++          !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
++          file.size > 5000000
++        )
++          throw Error("Usá JPG, PNG o WebP de hasta 5 MB.");
++        const data = await readFile(file);
++        if (current !== serial || $("#modal-form") !== form) return;
++        form.querySelector("#photo-preview").innerHTML =
++          `<img class="photo-preview" src="${esc(data)}" alt="Vista previa de la foto">`;
++        const result = await request("/api/ocr", { data });
++        if (current !== serial || $("#modal-form") !== form) return;
++        form.querySelector("textarea[name=ocrText]").value = result.text;
++        showDetection(form, result.detection, manual);
++      } catch (e) {
++        if (current === serial && $("#modal-form") === form)
++          form.querySelector(".detection-status").textContent =
++            e.message + " Podés elegir el proveedor manualmente.";
++      } finally {
++        if (current === serial && $("#modal-form") === form)
++          button.disabled = false;
++      }
++    });
+ }
+ const readFile = (file) =>
+   new Promise((resolve, reject) => {
+@@ -670,10 +714,20 @@ async function action(name, el) {
+       select(
+         "Proveedor",
+         "supplier",
+-        state.suppliers.map((s) => [s.id, s.name]),
++        [
++          ["", "Elegir proveedor"],
++          ...state.suppliers.map((s) => [s.id, s.name]),
++        ],
+         el.dataset.supplier,
+       ) +
+-        `<label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
++        field(
++          "Número del remitente (prueba)",
++          "sender",
++          "",
++          "tel",
++          'placeholder="+34…" maxlength="40"',
++        ) +
++        `<p class="detection-status" role="status">Pegá un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
+       async (f) => {
+         const ok = await mutate(
+           { type: "message", supplier: f.get("supplier"), text: f.get("text") },
+@@ -690,6 +744,36 @@ async function action(name, el) {
+       },
+       "Recibir mensaje de prueba",
+     );
++    const form = $("#modal-form");
++    let manual = !!el.dataset.supplier,
++      serial = 0,
++      timer;
++    form.querySelector("select[name=supplier]").required = true;
++    form
++      .querySelector("select[name=supplier]")
++      .addEventListener("change", () => (manual = true));
++    const detect = () => {
++      const current = ++serial;
++      clearTimeout(timer);
++      timer = setTimeout(async () => {
++        if ($("#modal-form") !== form) return;
++        try {
++          const sender = form.querySelector("input[name=sender]").value;
++          const result = await request("/api/identify", {
++            text: form.querySelector("textarea[name=text]").value,
++            sender,
++            channel: sender ? "whatsapp" : "document",
++          });
++          if (current === serial && $("#modal-form") === form)
++            showDetection(form, result, manual);
++        } catch (e) {
++          if ($("#modal-form") === form)
++            form.querySelector(".detection-status").textContent = e.message;
++        }
++      }, 350);
++    };
++    form.querySelector("input[name=sender]").addEventListener("input", detect);
++    form.querySelector("textarea[name=text]").addEventListener("input", detect);
+     return;
+   }
+   if (name === "review") {
+@@ -1007,6 +1091,21 @@ async function extendedAction(name, el) {
+       s.id ? "Editar proveedor" : "Nuevo proveedor",
+       "Esta ficha es local; guardarla no conecta WhatsApp ni envía mensajes.",
+       field("Nombre", "name", s.name, "text", 'required maxlength="100"') +
++        field(
++          "NIF/CIF del proveedor",
++          "taxId",
++          s.taxId || "",
++          "text",
++          'maxlength="30"',
++        ) +
++        field(
++          "WhatsApp con prefijo internacional",
++          "whatsapp",
++          s.whatsapp || "",
++          "tel",
++          'placeholder="+34…" maxlength="30"',
++        ) +
++        `<label class="field">Otros nombres en documentos (uno por línea)<textarea name="aliases" maxlength="1000">${esc(s.aliases || "")}</textarea></label>` +
+         field(
+           "Iniciales",
+           "initials",
+diff --git a/src/server.cjs b/src/server.cjs
+index bf2be86..0961771 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -2,6 +2,8 @@ const http = require("node:http");
+ const fs = require("node:fs");
+ const path = require("node:path");
+ const { randomBytes } = require("node:crypto");
++const { identifySupplier } = require("../build/identify.js");
++const { recognizeLocal } = require("./ocr.cjs");
+ const { Store } = require("../build/store.js");
+ function createApp({
+   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
+@@ -45,13 +47,19 @@ function createApp({
+         dataDir,
+         storage: "SQLite",
+         archiveWarning: store.archiveWarning,
+-        version: "0.4.0",
++        version: "0.5.0",
+       });
+       return;
+     }
+     if (
+       req.method === "POST" &&
+-      ["/api/action", "/api/backup", "/api/restore"].includes(u.pathname)
++      [
++        "/api/action",
++        "/api/backup",
++        "/api/restore",
++        "/api/identify",
++        "/api/ocr",
++      ].includes(u.pathname)
+     ) {
+       if (
+         req.headers.origin !== origin ||
+@@ -65,11 +73,30 @@ function createApp({
+         let size = 0;
+         for await (const chunk of req) {
+           size += chunk.length;
+-          if (size > 100_000_000)
++          if (
++            size >
++            (u.pathname === "/api/ocr"
++              ? 8_100_000
++              : u.pathname === "/api/identify"
++                ? 100_000
++                : 100_000_000)
++          )
+             throw Error("Archivo demasiado grande (máximo 100 MB).");
+           chunks.push(chunk);
+         }
+         const data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
++        if (u.pathname === "/api/identify") {
++          json(200, identifySupplier(store.load(), data));
++          return;
++        }
++        if (u.pathname === "/api/ocr") {
++          const result = await recognizeLocal(data.data);
++          json(200, {
++            ...result,
++            detection: identifySupplier(store.load(), { text: result.text }),
++          });
++          return;
++        }
+         if (u.pathname === "/api/backup") {
+           json(200, { path: store.backup() });
+           return;
+@@ -91,7 +118,7 @@ function createApp({
+           dataDir,
+           storage: "SQLite",
+           archiveWarning: store.archiveWarning,
+-          version: "0.4.0",
++          version: "0.5.0",
+         });
+       } catch (e) {
+         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
+diff --git a/tests/store.test.cjs b/tests/store.test.cjs
+index 67c6ce2..a0f3752 100644
+--- a/tests/store.test.cjs
++++ b/tests/store.test.cjs
+@@ -341,3 +341,29 @@ test("fallo del archivo derivado avisa sin perder la transacción y permite recu
+     assert.equal(s.archiveWarning, undefined);
+     assert.ok(fs.statSync(block).isDirectory());
+   }));
++
++test("datos identificativos y OCR persisten y están en la copia portable", () =>
++  fixture((dir, open) => {
++    const s = open(),
++      p = s.load().suppliers[0];
++    s.dispatch({
++      type: "supplier",
++      ...p,
++      taxId: "B12345678",
++      aliases: "Origen Tostadores",
++      whatsapp: "+34910000001",
++    });
++    s.dispatch({
++      type: "photo",
++      supplier: p.id,
++      name: "x.png",
++      data: png,
++      ocrText: "ORIGEN COFFEE",
++    });
++    const saved = s.exportState();
++    s.close();
++    const restored = open().load();
++    assert.equal(restored.suppliers[0].whatsapp, "+34910000001");
++    assert.equal(restored.photos[0].ocrText, "ORIGEN COFFEE");
++    assert.equal(saved.photos[0].ocrText, "ORIGEN COFFEE");
++  }));

@@ -341,3 +341,29 @@ test("fallo del archivo derivado avisa sin perder la transacción y permite recu
     assert.equal(s.archiveWarning, undefined);
     assert.ok(fs.statSync(block).isDirectory());
   }));
+
+test("datos identificativos y OCR persisten y están en la copia portable", () =>
+  fixture((dir, open) => {
+    const s = open(),
+      p = s.load().suppliers[0];
+    s.dispatch({
+      type: "supplier",
+      ...p,
+      taxId: "B12345678",
+      aliases: "Origen Tostadores",
+      whatsapp: "+34910000001",
+    });
+    s.dispatch({
+      type: "photo",
+      supplier: p.id,
+      name: "x.png",
+      data: png,
+      ocrText: "ORIGEN COFFEE",
+    });
+    const saved = s.exportState();
+    s.close();
+    const restored = open().load();
+    assert.equal(restored.suppliers[0].whatsapp, "+34910000001");
+    assert.equal(restored.photos[0].ocrText, "ORIGEN COFFEE");
+    assert.equal(saved.photos[0].ocrText, "ORIGEN COFFEE");
+  }));

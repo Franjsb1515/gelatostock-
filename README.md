@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.4.0
+# GelatoStock · prototipo 0.5.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.4.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.5.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.4.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.5.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -27,7 +27,7 @@ Todos los proveedores, precios y datos iniciales son ficticios. La aplicación n
 
 ## Qué está pendiente
 
-Modelo de IA local, OCR automático, WhatsApp real, webhooks externos, Makro España, recetas/ventas, sincronización, instalador firmado y paquete Mac validado. La interfaz señala esas limitaciones. Los mensajes se clasifican con reglas; las fotos se archivan sin extraer cantidades.
+Modelo conversacional de IA local, OCR de cantidades/PDF, WhatsApp real, webhooks externos, Makro España, recetas/ventas, sincronización, instalador firmado y paquete Mac validado. La interfaz señala esas limitaciones. Los mensajes se clasifican con reglas; las fotos se leen para proponer proveedor, sin extraer cantidades.
 
 La base actual es SQLite con transacciones y fotografías separadas. Al abrir esta versión, migra el antiguo stock.json si existe, conserva el original y genera una copia previa en data/backups. Desde entonces la fuente vigente es data/gelatostock.sqlite. Usar las copias exportadas desde Configuración para trasladar datos: incluyen las fotografías. No copiar solo un SQLite abierto ni seguir operando en el ejecutable 0.1.
 
@@ -38,7 +38,7 @@ Nuevas funciones: entradas, salidas y mermas con motivo; corrección mediante un
 Leer, en este orden:
 
 1. `CLAUDE.md` / `AGENTS.md`.
-2. `reports/2026-09-07T23-36-54-807Z-archivo-proveedores-fotos.md`.
+2. `reports/2026-09-07T23-45-55-705Z-deteccion-proveedor-ocr.md`.
 3. `TODO.md` y `CHANGELOG.md`.
 4. `docs/ARQUITECTURA_PROTOTIPO.md`.
 5. Los cinco documentos originales de `docs/`, empezando por `PROMPT_MAESTRO.md`.
@@ -68,7 +68,7 @@ npm run session:new -- titulo-de-la-sesion
 
 ## Evidencias
 
-`reports/tests-2026-09-07-v04.txt`, `reports/desktop-smoke-2026-09-07-v04.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
+`reports/tests-2026-09-07-v05.txt`, `reports/desktop-smoke-2026-09-07-v05.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
 
 ## Tecnología y siguiente decisión
 
@@ -82,4 +82,10 @@ Buscar mensajes por texto o proveedor, sin necesidad de tildes; filtrar pendient
 
 Al cargar una foto, elegir proveedor y fecha del documento. Configuración → Archivo de fotos → Organizar permite corregirlas después. Las imágenes antiguas quedan sin proveedor.
 
-En data/proveedores/indice.json figuran los nombres y sus carpetas estables. Cada carpeta tiene proveedor.json, datos.json y fotos/AAAA-MM-DD. Los identificadores evitan problemas al renombrar proveedores. Estas son copias organizadas: no editar sus JSON para cambiar la app. Las copias anteriores se conservan al reclasificar; la app muestra la clasificación vigente. Guardar archivos directamente allí no los importa ni los agrega a los respaldos. Usar la carga dentro de la app. OCR todavía pendiente.
+En data/proveedores/indice.json figuran los nombres y sus carpetas estables. Cada carpeta tiene proveedor.json, datos.json y fotos/AAAA-MM-DD. Los identificadores evitan problemas al renombrar proveedores. Estas son copias organizadas: no editar sus JSON para cambiar la app. Las copias anteriores se conservan al reclasificar; la app muestra la clasificación vigente. Guardar archivos directamente allí no los importa ni los agrega a los respaldos. Usar la carga dentro de la app. OCR de texto y proveedor disponible; cantidades/PDF pendientes.
+
+## Detectar proveedor en 0.5
+
+En Proveedores → Editar, completar NIF/CIF, teléfono con prefijo internacional y otros nombres que aparezcan en documentos. Al subir una foto, el OCR español incluido lee el texto y propone una ficha existente. Verificarla y pulsar Guardar foto; queda organizada por proveedor/fecha. La fecha todavía se elige manualmente. Si falla o hay dudas, elegir proveedor en el selector. No se crea automáticamente una ficha nueva.
+
+Para una factura de Makro en imagen, crear primero su ficha con nombre/alias o NIF correcto. PDF y descarga web aún pendientes. Simular mensaje permite probar identificación por texto o número, pero no conecta WhatsApp. El motor y el español están incluidos: copiar siempre la carpeta completa del ejecutable. No requiere instalar herramientas OCR externas ni descargar modelos al primer uso.

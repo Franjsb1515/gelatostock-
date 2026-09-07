@@ -194,7 +194,7 @@ function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.4.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.5.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
 }
 function home() {
   const important = state.messages.filter(
@@ -376,7 +376,7 @@ function settings() {
       "Un espacio que funciona a tu manera.",
       "Datos locales, copias de seguridad y un camino claro para crecer.",
     ) +
-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. No incluye un modelo de IA ni reconocimiento automático de fotos.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} OCR y modelo local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Fotos ordenadas por proveedor y fecha del documento. Las anteriores quedan sin proveedor hasta clasificarlas.</p>${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
+    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. Incluye OCR local en español para proponer proveedores al cargar fotos. No incluye un modelo conversacional de IA.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Modelo conversacional local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Fotos ordenadas por proveedor y fecha del documento. Las anteriores quedan sin proveedor hasta clasificarlas.</p>${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
       [...state.photos]
         .sort(
           (a, b) =>
@@ -388,7 +388,7 @@ function settings() {
             `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}</small>${esc(ph.name)}<small>${esc(ph.note)}</small>${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}</figcaption></figure>`,
         )
         .join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'
-    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.4.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.5.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
   );
 }
 function field(label, name, value = "", type = "text", extra = "") {
@@ -486,12 +486,27 @@ function photoFields(ph) {
     )
   );
 }
+function showDetection(form, result, manual) {
+  const box = form.querySelector(".detection-status");
+  const selected = form.querySelector("select[name=supplier]");
+  if (!manual) selected.value = result.supplier || "";
+  box.textContent = result.supplier
+    ? "Proveedor propuesto: " +
+      supplier(result.supplier).name +
+      ". " +
+      result.reason +
+      " Confirmá o corregí antes de guardar."
+    : result.reason;
+}
 function photo() {
+  let serial = 0,
+    manual = false;
   modal(
     "Cargar una foto",
-    "Archivo local de referencia. En esta versión las cantidades se cargan manualmente.",
-    photoFields() +
-      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto de tu equipo</strong><span>JPG, PNG o WebP · hasta 5 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required></label><div id="photo-preview"></div><label class="field">Nota<textarea name="note" placeholder="Por ejemplo: albarán de leche, revisar cantidades"></textarea></label><div class="notice inline">${icon("alert")}<span>No se ejecutará OCR ni se modificará stock automáticamente.</span></div>`,
+    "Lectura local del texto para proponer un proveedor. Las cantidades no cambian.",
+    '<p class="detection-status" role="status">Al elegir una foto se buscará su proveedor entre tus fichas.</p>' +
+      photoFields() +
+      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto de tu equipo</strong><span>JPG, PNG o WebP · hasta 5 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Podés elegirlo manualmente si la lectura falla.</p>`,
     async (f) => {
       const file = f.get("photo");
       if (
@@ -499,31 +514,61 @@ function photo() {
         file.size > 5000000
       )
         throw Error("Usá JPG, PNG o WebP de hasta 5 MB.");
-      const data = await readFile(file);
       return mutate(
         {
           type: "photo",
           name: file.name,
-          data,
+          data: await readFile(file),
           note: f.get("note"),
+          ocrText: f.get("ocrText"),
           supplier: f.get("supplier") || undefined,
           documentDate: f.get("documentDate"),
         },
-        "Foto guardada. Podés verla en Configuración.",
+        "Foto y proveedor guardados.",
       );
     },
     "Guardar foto",
   );
-  $("#modal-form input[type=file]").addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (
-      file &&
-      file.size <= 5000000 &&
-      ["image/png", "image/jpeg", "image/webp"].includes(file.type)
-    )
-      $("#photo-preview").innerHTML =
-        `<img class="photo-preview" src="${esc(await readFile(file))}" alt="Vista previa de la foto">`;
-  });
+  const form = $("#modal-form");
+  form
+    .querySelector("select[name=supplier]")
+    .addEventListener("change", () => (manual = true));
+  form
+    .querySelector("input[name=photo]")
+    .addEventListener("change", async (e) => {
+      const current = ++serial,
+        file = e.target.files[0],
+        button = form.querySelector("button[type=submit]");
+      form.querySelector("textarea[name=ocrText]").value = "";
+      if (!manual) form.querySelector("select[name=supplier]").value = "";
+      form.querySelector("#photo-preview").innerHTML = "";
+      if (!file) return;
+      button.disabled = true;
+      form.querySelector(".detection-status").textContent =
+        "Leyendo la foto en este equipo…";
+      try {
+        if (
+          !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
+          file.size > 5000000
+        )
+          throw Error("Usá JPG, PNG o WebP de hasta 5 MB.");
+        const data = await readFile(file);
+        if (current !== serial || $("#modal-form") !== form) return;
+        form.querySelector("#photo-preview").innerHTML =
+          `<img class="photo-preview" src="${esc(data)}" alt="Vista previa de la foto">`;
+        const result = await request("/api/ocr", { data });
+        if (current !== serial || $("#modal-form") !== form) return;
+        form.querySelector("textarea[name=ocrText]").value = result.text;
+        showDetection(form, result.detection, manual);
+      } catch (e) {
+        if (current === serial && $("#modal-form") === form)
+          form.querySelector(".detection-status").textContent =
+            e.message + " Podés elegir el proveedor manualmente.";
+      } finally {
+        if (current === serial && $("#modal-form") === form)
+          button.disabled = false;
+      }
+    });
 }
 const readFile = (file) =>
   new Promise((resolve, reject) => {
@@ -670,10 +715,20 @@ async function action(name, el) {
       select(
         "Proveedor",
         "supplier",
-        state.suppliers.map((s) => [s.id, s.name]),
+        [
+          ["", "Elegir proveedor"],
+          ...state.suppliers.map((s) => [s.id, s.name]),
+        ],
         el.dataset.supplier,
       ) +
-        `<label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
+        field(
+          "Número del remitente (prueba)",
+          "sender",
+          "",
+          "tel",
+          'placeholder="+34…" maxlength="40"',
+        ) +
+        `<p class="detection-status" role="status">Pegá un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
       async (f) => {
         const ok = await mutate(
           { type: "message", supplier: f.get("supplier"), text: f.get("text") },
@@ -690,6 +745,36 @@ async function action(name, el) {
       },
       "Recibir mensaje de prueba",
     );
+    const form = $("#modal-form");
+    let manual = !!el.dataset.supplier,
+      serial = 0,
+      timer;
+    form.querySelector("select[name=supplier]").required = true;
+    form
+      .querySelector("select[name=supplier]")
+      .addEventListener("change", () => (manual = true));
+    const detect = () => {
+      const current = ++serial;
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        if ($("#modal-form") !== form) return;
+        try {
+          const sender = form.querySelector("input[name=sender]").value;
+          const result = await request("/api/identify", {
+            text: form.querySelector("textarea[name=text]").value,
+            sender,
+            channel: sender ? "whatsapp" : "document",
+          });
+          if (current === serial && $("#modal-form") === form)
+            showDetection(form, result, manual);
+        } catch (e) {
+          if ($("#modal-form") === form)
+            form.querySelector(".detection-status").textContent = e.message;
+        }
+      }, 350);
+    };
+    form.querySelector("input[name=sender]").addEventListener("input", detect);
+    form.querySelector("textarea[name=text]").addEventListener("input", detect);
     return;
   }
   if (name === "review") {
@@ -1007,6 +1092,21 @@ async function extendedAction(name, el) {
       s.id ? "Editar proveedor" : "Nuevo proveedor",
       "Esta ficha es local; guardarla no conecta WhatsApp ni envía mensajes.",
       field("Nombre", "name", s.name, "text", 'required maxlength="100"') +
+        field(
+          "NIF/CIF del proveedor",
+          "taxId",
+          s.taxId || "",
+          "text",
+          'maxlength="30"',
+        ) +
+        field(
+          "WhatsApp con prefijo internacional",
+          "whatsapp",
+          s.whatsapp || "",
+          "tel",
+          'placeholder="+34…" maxlength="30"',
+        ) +
+        `<label class="field">Otros nombres en documentos (uno por línea)<textarea name="aliases" maxlength="1000">${esc(s.aliases || "")}</textarea></label>` +
         field(
           "Iniciales",
           "initials",

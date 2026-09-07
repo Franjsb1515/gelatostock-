@@ -1,0 +1,63 @@
+
+> appgelatostock@0.5.0 test
+> npm run build && node --test tests/*.test.cjs
+
+
+> appgelatostock@0.5.0 build
+> tsc -p tsconfig.json
+
+✔ conteo reemplaza stock, persiste historial y no muta estado original (9.7887ms)
+✔ rechaza cantidades negativas, NaN e infinitas (0.8518ms)
+✔ reposición considera pedidos en camino y respeta cajas (3.0548ms)
+✔ autorizar separa proveedores y vacía carrito sin tocar stock (1.3983ms)
+✔ doble autorización y doble envío no duplican pedidos (0.951ms)
+✔ rechaza autorización con versión obsoleta (0.4176ms)
+✔ recepción parcial y total convierten cajas a litros una sola vez (2.5357ms)
+✔ reintentar la misma recepción es idempotente (1.9118ms)
+✔ recepciones imposibles y líneas duplicadas se rechazan sin cambios (0.9312ms)
+✔ mensajes relevantes y promociones se distinguen sin modificar stock (1.0077ms)
+✔ no vincula mensajes a otro proveedor (1.0966ms)
+✔ copias inválidas se rechazan (0.5575ms)
+✔ alta de producto valida presentación y objetivo (1.5911ms)
+✔ copia con identificadores capaces de inyectar HTML se rechaza (0.3582ms)
+✔ entrada, salida y corrección conservan un historial compensado (2.0136ms)
+✔ cancelar pendiente libera reposición y no altera stock (1.1514ms)
+✔ editar presentación no cambia los pedidos ya autorizados (1.0372ms)
+✔ no admite fracciones de unidades ni estados recibidos inconsistentes (1.0722ms)
+✔ relevancia por referencia exacta no cambia prioridad ni pedidos (0.7143ms)
+✔ referencias ajenas, desconocidas o múltiples requieren revisión (1.0484ms)
+✔ pedido abierto sin referencia no basta para vincular un mensaje (0.5702ms)
+✔ corrección manual conserva original y prioridad y registra motivo (0.8098ms)
+✔ eventos repetidos no duplican y un ID con otro contenido se rechaza (0.6283ms)
+✔ copia anterior sin relevancia conserva mensajes para revisión (0.3014ms)
+✔ nombre y alias completos identifican sin depender de tildes (3.4391ms)
+✔ varios nombres quedan por revisar y el NIF distingue al emisor (0.4584ms)
+✔ WhatsApp usa el remitente conocido y no una mención en el mensaje (0.4708ms)
+✔ Makro se reconoce cuando existe una ficha local con ese nombre (6.3538ms)
+✔ el identificador no modifica el estado ni acepta entradas ilimitadas (2.1008ms)
+✔ OCR real con idioma incluido y fetch bloqueado reconoce proveedor (395.2428ms)
+✔ servidor SQLite: autenticación, revisión, persistencia y restauración (202.587ms)
+✔ migración conserva JSON, datos y fotografías en adjuntos separados (57.5902ms)
+✔ JSON inválido no se reemplaza por datos de ejemplo (12.8823ms)
+✔ un fallo a mitad de transacción revierte stock, movimiento y operación (40.2669ms)
+✔ dos conexiones detectan versión obsoleta y no pisan cambios (59.0437ms)
+✔ idempotencia persiste al reiniciar y rechaza reutilizar ID con otro contenido (51.333ms)
+✔ adjuntos se deduplican por contenido y las copias son portables (64.0869ms)
+✔ no acepta un archivo falso con extensión de imagen (28.8566ms)
+✔ restauración reemplaza relaciones en una sola transacción (38.0831ms)
+✔ terminación del proceso sin commit no deja cambios parciales (90.1926ms)
+✔ guardar un movimiento no reescribe el historial previo (171.4085ms)
+✔ clasificación corregida y texto original persisten tras reinicio SQLite (37.7705ms)
+✔ crear proveedor crea carpeta estable y ficha aunque cambie el nombre (42.5577ms)
+✔ foto por proveedor y fecha se conserva al reclasificar y restaurar (78.5268ms)
+✔ fotos antiguas quedan sin proveedor y fechas inexistentes se rechazan (32.745ms)
+✔ fallo del archivo derivado avisa sin perder la transacción y permite recuperar (38.1255ms)
+✔ datos identificativos y OCR persisten y están en la copia portable (49.0421ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 47
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1063.7301

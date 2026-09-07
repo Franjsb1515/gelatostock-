@@ -13,3 +13,5 @@ Entrega vigente 0.2.0: leer reports/2026-09-07-002-sqlite-typescript.md. El núc
 Entrega vigente 0.3.0: leer reports/2026-09-07T22-46-07-183Z-bandeja-proveedores.md. Relevancia y prioridad separadas; no atribuir aprendizaje ni comprensión semántica a estas reglas.
 
 Entrega vigente 0.4.0: reports/2026-09-07T23-36-54-807Z-archivo-proveedores-fotos.md. Las carpetas por proveedor son copias derivadas; SQLite/attachments siguen siendo canónicos. No borrar originales ni afirmar que OCR ya existe.
+
+Entrega vigente 0.5.0: reports/2026-09-07T23-45-55-705Z-deteccion-proveedor-ocr.md. OCR español local implementado para texto/proveedor de imágenes; cantidades, PDF y canales externos pendientes. No eliminar modelos/worker del paquete ni introducir descargas ocultas.

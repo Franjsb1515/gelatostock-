@@ -2,6 +2,8 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const { randomBytes } = require("node:crypto");
+const { identifySupplier } = require("../build/identify.js");
+const { recognizeLocal } = require("./ocr.cjs");
 const { Store } = require("../build/store.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
@@ -45,13 +47,19 @@ function createApp({
         dataDir,
         storage: "SQLite",
         archiveWarning: store.archiveWarning,
-        version: "0.4.0",
+        version: "0.5.0",
       });
       return;
     }
     if (
       req.method === "POST" &&
-      ["/api/action", "/api/backup", "/api/restore"].includes(u.pathname)
+      [
+        "/api/action",
+        "/api/backup",
+        "/api/restore",
+        "/api/identify",
+        "/api/ocr",
+      ].includes(u.pathname)
     ) {
       if (
         req.headers.origin !== origin ||
@@ -65,11 +73,30 @@ function createApp({
         let size = 0;
         for await (const chunk of req) {
           size += chunk.length;
-          if (size > 100_000_000)
+          if (
+            size >
+            (u.pathname === "/api/ocr"
+              ? 8_100_000
+              : u.pathname === "/api/identify"
+                ? 100_000
+                : 100_000_000)
+          )
             throw Error("Archivo demasiado grande (máximo 100 MB).");
           chunks.push(chunk);
         }
         const data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
+        if (u.pathname === "/api/identify") {
+          json(200, identifySupplier(store.load(), data));
+          return;
+        }
+        if (u.pathname === "/api/ocr") {
+          const result = await recognizeLocal(data.data);
+          json(200, {
+            ...result,
+            detection: identifySupplier(store.load(), { text: result.text }),
+          });
+          return;
+        }
         if (u.pathname === "/api/backup") {
           json(200, { path: store.backup() });
           return;
@@ -91,7 +118,7 @@ function createApp({
           dataDir,
           storage: "SQLite",
           archiveWarning: store.archiveWarning,
-          version: "0.4.0",
+          version: "0.5.0",
         });
       } catch (e) {
         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {

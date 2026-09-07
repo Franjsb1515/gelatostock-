@@ -42,6 +42,16 @@ const supplierFields = {
   initials: text(5),
   category: text(100),
   delivery: text(200),
+  aliases: z.string().max(1000).optional(),
+  taxId: z.string().trim().max(30).optional(),
+  whatsapp: z
+    .string()
+    .transform((v) => v.replace(/[ ()-]/g, ""))
+    .refine(
+      (v) => v === "" || /^\+[1-9]\d{7,14}$/.test(v),
+      "Usá el teléfono con prefijo internacional, por ejemplo +34.",
+    )
+    .optional(),
   color: z.enum(["sage", "rose", "sand", "lavender"]),
 };
 const supplierSchema = z.object({ id: idSchema, ...supplierFields });
@@ -89,6 +99,7 @@ const photoSchema = z
   .object({
     id: idSchema,
     name: text(200),
+    ocrText: z.string().max(20000).optional(),
     supplier: idSchema.optional(),
     documentDate: documentDate.optional(),
     note: z.string().max(500),
@@ -226,6 +237,7 @@ export const actionSchema = z.intersection(
     }),
     z.object({
       type: z.literal("photo"),
+      ocrText: z.string().max(20000).optional(),
       supplier: idSchema.optional(),
       documentDate: documentDate.optional(),
       name: text(200),

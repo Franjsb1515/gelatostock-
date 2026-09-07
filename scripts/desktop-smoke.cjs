@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const assert = require("node:assert/strict");
 (async () => {
   const root = path.resolve(__dirname, "..");
-  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v4-"));
+  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v5-"));
   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
   const { DatabaseSync } = require("node:sqlite");
   const savedStock = () => {
@@ -64,19 +64,27 @@ const assert = require("node:assert/strict");
     assert.equal(savedStock(), 4.25);
     assert.ok(requests.every((u) => new URL(u).hostname === "127.0.0.1"));
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v04-desktop.png"),
+      path: path.join(root, "output", "playwright", "v05-desktop.png"),
     });
     await window
       .getByRole("button", { name: "Cargar foto", exact: true })
       .click();
     await window
       .locator("input[name=photo]")
-      .setInputFiles(
-        path.join(root, "output", "playwright", "v04-desktop.png"),
-      );
+      .setInputFiles(path.join(root, "tests", "fixtures", "factura-ocr.png"));
     await window
-      .getByRole("combobox", { name: "Proveedor de la foto", exact: true })
-      .selectOption("s1");
+      .locator(".detection-status")
+      .filter({ hasText: "Proveedor propuesto: Origen Coffee" })
+      .waitFor();
+    assert.equal(
+      await window
+        .getByRole("combobox", { name: "Proveedor de la foto", exact: true })
+        .inputValue(),
+      "s1",
+    );
+    await window.screenshot({
+      path: path.join(root, "output", "playwright", "v05-ocr.png"),
+    });
     await window.locator("input[name=documentDate]").fill("2026-09-01");
     await window
       .getByRole("button", { name: "Guardar foto", exact: true })
@@ -118,7 +126,7 @@ const assert = require("node:assert/strict");
       ),
     );
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v04-fotos.png"),
+      path: path.join(root, "output", "playwright", "v05-fotos.png"),
       fullPage: true,
     });
     assert.equal(savedStock(), 4.25);
@@ -159,7 +167,7 @@ const assert = require("node:assert/strict");
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     assert.equal(savedStock(), 4.25);
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v04-movimientos.png"),
+      path: path.join(root, "output", "playwright", "v05-movimientos.png"),
     });
     await window
       .getByRole("button", { name: "Ver mensajes", exact: true })
@@ -169,7 +177,11 @@ const assert = require("node:assert/strict");
       .click();
     await window
       .getByRole("textbox", { name: "Mensaje del proveedor", exact: true })
-      .fill("Oferta exclusiva de café de prueba");
+      .fill("Oferta exclusiva de café de prueba de Origen Coffee");
+    await window
+      .locator(".detection-status")
+      .filter({ hasText: "Proveedor propuesto: Origen Coffee" })
+      .waitFor();
     await window
       .getByRole("button", { name: "Recibir mensaje de prueba", exact: true })
       .click();
@@ -208,7 +220,7 @@ const assert = require("node:assert/strict");
       .getByRole("combobox", { name: "Mostrar", exact: true })
       .selectOption("all");
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v04-mensajes.png"),
+      path: path.join(root, "output", "playwright", "v05-mensajes.png"),
     });
     const runtime = await app.evaluate(({ app }) => ({
       userData: app.getPath("userData"),
@@ -239,7 +251,7 @@ const assert = require("node:assert/strict");
       .waitFor();
     assert.equal(await w2.locator(".conversation").count(), 1);
     console.log(
-      "PASS: búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.",
+      "PASS: OCR local automático de proveedor y propuesta en mensaje; búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.",
     );
     console.log(JSON.stringify(runtime));
   } finally {

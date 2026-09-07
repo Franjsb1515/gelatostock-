@@ -490,6 +490,7 @@ export function apply(state: State, input: unknown): State {
       s.photos.unshift({
         id: randomUUID(),
         name: a.name,
+        ocrText: a.ocrText,
         supplier: a.supplier,
         documentDate: a.documentDate,
         data: a.data,
