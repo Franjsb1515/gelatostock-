@@ -1,0 +1,9 @@
+node_modules/
+data/
+work/
+dist/
+.playwright-cli/
+*.log
+output/
+reports/patches/
+*.zip

@@ -1,0 +1,1 @@
+{"browser":{"browserName":"chromium","launchOptions":{"channel":"msedge","headless":true},"contextOptions":{"viewport":{"width":1440,"height":1000}}},"outputDir":"D:/APPGELATOSTOCK/output/playwright"}

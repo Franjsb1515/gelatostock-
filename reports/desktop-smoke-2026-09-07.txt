@@ -1,0 +1,6 @@
+
+> appgelatostock@0.1.0 test:desktop
+> node scripts/desktop-smoke.cjs
+
+PASS: ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual sin alterar stock, reinicio y perfiles en D.
+{"userData":"D:\\APPGELATOSTOCK\\work\\desktop-test\\runtime","sessionData":"D:\\APPGELATOSTOCK\\work\\desktop-test\\runtime"}

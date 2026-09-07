@@ -1,0 +1,167 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const {
+  seed,
+  apply,
+  validate,
+  pending,
+  needed,
+  classify,
+} = require("../src/domain.cjs");
+function milkOrder() {
+  let s = apply(seed(), { type: "cart", product: "p2", packs: 2 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  return apply(s, { type: "send", order: s.orders[0].id });
+}
+test("conteo reemplaza stock, persiste historial y no muta estado original", () => {
+  const a = seed();
+  const b = apply(a, { type: "count", product: "p1", value: 3.125 });
+  assert.equal(a.products[0].stock, 2.4);
+  assert.equal(b.products[0].stock, 3.125);
+  assert.match(b.activity[0].text, /Conteo/);
+});
+test("rechaza cantidades negativas, NaN e infinitas", () => {
+  for (const value of [-1, NaN, Infinity])
+    assert.throws(() => apply(seed(), { type: "count", product: "p1", value }));
+});
+test("reposición considera pedidos en camino y respeta cajas", () => {
+  const s = milkOrder();
+  assert.equal(pending(s, "p2"), 12);
+  assert.equal(needed(s, s.products[1]), 2);
+});
+test("autorizar separa proveedores y vacía carrito sin tocar stock", () => {
+  let s = apply(seed(), { type: "suggest" });
+  const original = s.products.map((p) => p.stock);
+  s = apply(s, { type: "authorize", revision: s.revision });
+  assert.equal(s.orders.length, 4);
+  assert.equal(s.cart.length, 0);
+  assert.deepEqual(
+    s.products.map((p) => p.stock),
+    original,
+  );
+});
+test("doble autorización y doble envío no duplican pedidos", () => {
+  let s = apply(seed(), { type: "cart", product: "p1", packs: 1 });
+  const a = { type: "authorize", revision: s.revision };
+  s = apply(s, a);
+  assert.throws(() => apply(s, a));
+  const send = { type: "send", order: s.orders[0].id };
+  s = apply(s, send);
+  assert.throws(() => apply(s, send));
+});
+test("rechaza autorización con versión obsoleta", () => {
+  let s = apply(seed(), { type: "cart", product: "p1", packs: 1 });
+  assert.throws(() => apply(s, { type: "authorize", revision: 0 }));
+});
+test("recepción parcial y total convierten cajas a litros una sola vez", () => {
+  let s = milkOrder();
+  const id = s.orders[0].id;
+  s = apply(s, {
+    type: "receive",
+    order: id,
+    lines: [{ product: "p2", value: 6 }],
+  });
+  assert.equal(s.products[1].stock, 14);
+  assert.equal(s.orders[0].status, "partial");
+  assert.equal(pending(s, "p2"), 6);
+  s = apply(s, {
+    type: "receive",
+    order: id,
+    lines: [{ product: "p2", value: 6 }],
+  });
+  assert.equal(s.products[1].stock, 20);
+  assert.equal(s.orders[0].status, "received");
+  assert.throws(() =>
+    apply(s, {
+      type: "receive",
+      order: id,
+      lines: [{ product: "p2", value: 1 }],
+    }),
+  );
+});
+test("reintentar la misma recepción es idempotente", () => {
+  let s = milkOrder();
+  const a = {
+    type: "receive",
+    order: s.orders[0].id,
+    operationId: "same-operation",
+    lines: [{ product: "p2", value: 3 }],
+  };
+  s = apply(s, a);
+  const before = structuredClone(s);
+  s = apply(s, a);
+  assert.deepEqual(s, before);
+});
+test("recepciones imposibles y líneas duplicadas se rechazan sin cambios", () => {
+  const s = milkOrder();
+  const snapshot = JSON.stringify(s);
+  for (const lines of [
+    [{ product: "p2", value: 13 }],
+    [
+      { product: "p2", value: 6 },
+      { product: "p2", value: 6 },
+    ],
+    [{ product: "p2", value: 0 }],
+  ])
+    assert.throws(() =>
+      apply(s, { type: "receive", order: s.orders[0].id, lines }),
+    );
+  assert.equal(JSON.stringify(s), snapshot);
+});
+test("mensajes relevantes y promociones se distinguen sin modificar stock", () => {
+  const s = seed();
+  const a = apply(s, {
+    type: "message",
+    supplier: "s1",
+    text: "Sin stock de café",
+    eventId: "event-1",
+  });
+  assert.equal(a.messages[0].priority, "important");
+  assert.deepEqual(a.products, s.products);
+  assert.equal(
+    apply(a, {
+      type: "message",
+      supplier: "s1",
+      text: "Sin stock de café",
+      eventId: "event-1",
+    }).messages.length,
+    a.messages.length,
+  );
+  assert.equal(classify("Promoción del mes").priority, "low");
+  assert.equal(classify("xyz").priority, "review");
+});
+test("no vincula mensajes a otro proveedor", () => {
+  const s = milkOrder();
+  const m = apply(s, { type: "message", supplier: "s1", text: "Confirmado" });
+  assert.throws(() =>
+    apply(m, { type: "link", id: m.messages[0].id, order: m.orders[0].id }),
+  );
+});
+test("copias inválidas se rechazan", () => {
+  const s = seed();
+  s.products[0].stock = -5;
+  assert.throws(() => validate(s));
+  assert.throws(() => validate({ version: 99 }));
+});
+test("alta de producto valida presentación y objetivo", () => {
+  const a = {
+    type: "product",
+    name: "Cacao",
+    category: "Postres",
+    unit: "kg",
+    stock: 2,
+    min: 1,
+    target: 4,
+    pack: 1,
+    price: 1500,
+    supplier: "s1",
+  };
+  assert.equal(apply(seed(), a).products.length, 11);
+  assert.throws(() => apply(seed(), { ...a, pack: 0 }));
+  assert.throws(() => apply(seed(), { ...a, target: 0 }));
+});
+test("copia con identificadores capaces de inyectar HTML se rechaza", () => {
+  const s = seed();
+  s.messages[0].id = 'x" onclick="alert(1)';
+  assert.throws(() => validate(s));
+});

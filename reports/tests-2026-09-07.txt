@@ -1,0 +1,27 @@
+
+> appgelatostock@0.1.0 test
+> node --test tests/*.test.cjs
+
+✔ conteo reemplaza stock, persiste historial y no muta estado original (2.4939ms)
+✔ rechaza cantidades negativas, NaN e infinitas (0.3722ms)
+✔ reposición considera pedidos en camino y respeta cajas (0.5955ms)
+✔ autorizar separa proveedores y vacía carrito sin tocar stock (1.219ms)
+✔ doble autorización y doble envío no duplican pedidos (0.4755ms)
+✔ rechaza autorización con versión obsoleta (0.19ms)
+✔ recepción parcial y total convierten cajas a litros una sola vez (0.6213ms)
+✔ reintentar la misma recepción es idempotente (0.4954ms)
+✔ recepciones imposibles y líneas duplicadas se rechazan sin cambios (0.4541ms)
+✔ mensajes relevantes y promociones se distinguen sin modificar stock (0.5478ms)
+✔ no vincula mensajes a otro proveedor (0.4717ms)
+✔ copias inválidas se rechazan (0.1552ms)
+✔ alta de producto valida presentación y objetivo (0.3269ms)
+✔ copia con identificadores capaces de inyectar HTML se rechaza (0.0951ms)
+✔ servidor local: autorización, persistencia, respaldo, restauración y origen (86.1671ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 158.7811
