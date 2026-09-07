@@ -41,6 +41,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Evaluar OCR con facturas reales autorizadas y hardware Mac.
 - [ ] Motor/modelo local redistribuible, medido en 8 GB y gestionado dentro de la app.
 - [ ] Memoria de equivalencias y correcciones aprobadas.
+- [x] Diseño de WhatsApp con chats autorizados: docs/WHATSAPP_PROVEEDORES.md.
+- [ ] Confirmar tipo de cuenta y transporte antes de implementar vinculación.
 - [ ] Canal de WhatsApp real con recepción por eventos, notificaciones y recuperación.
 - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
 - [x] Reglas de relevancia por referencia exacta del mismo proveedor, independientes de prioridad; correcciones con motivo.
