@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.2.0
+# GelatoStock · prototipo 0.3.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.2.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.3.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.2.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.3.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -38,7 +38,7 @@ Nuevas funciones: entradas, salidas y mermas con motivo; corrección mediante un
 Leer, en este orden:
 
 1. `CLAUDE.md` / `AGENTS.md`.
-2. `reports/2026-09-07-002-sqlite-typescript.md`.
+2. `reports/2026-09-07T22-46-07-183Z-bandeja-proveedores.md`.
 3. `TODO.md` y `CHANGELOG.md`.
 4. `docs/ARQUITECTURA_PROTOTIPO.md`.
 5. Los cinco documentos originales de `docs/`, empezando por `PROMPT_MAESTRO.md`.
@@ -68,8 +68,12 @@ npm run session:new -- titulo-de-la-sesion
 
 ## Evidencias
 
-`reports/tests-2026-09-07-v02.txt`, `reports/desktop-smoke-2026-09-07-v02.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
+`reports/tests-2026-09-07-v03.txt`, `reports/desktop-smoke-2026-09-07-v03.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
 
 ## Tecnología y siguiente decisión
 
 Núcleo de negocio, validación y persistencia en TypeScript estricto; SQLite integrado en el runtime; interfaz en HTML/CSS/JavaScript y ventana Electron. No se ha reescrito toda la interfaz a TypeScript. La recomendación aplicada es consolidar primero los datos y las reglas comprobadas. Tauri sigue siendo una alternativa a evaluar con mediciones en el Mac real; no se afirma que Electron sea el de menor consumo. Ver docs/ARQUITECTURA_PROTOTIPO.md.
+
+## Bandeja mejorada en 0.3
+
+Buscar mensajes por texto o proveedor, sin necesidad de tildes; filtrar pendientes, sin leer o relacionados con pedidos. Prioridad y relevancia son independientes. Corregir relevancia exige un motivo y conserva el original. Las referencias ambiguas quedan por revisar; no se vinculan pedidos automáticamente. Los mensajes anteriores permanecen pendientes de evaluar. Todo funciona con eventos de demostración locales.

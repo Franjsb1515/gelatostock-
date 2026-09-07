@@ -77,6 +77,44 @@ export function classify(
     reason: "Mensaje sin clasificación clara. Revisá su relevancia.",
   };
 }
+export function assessRelevance(
+  s: State,
+  supplier: string,
+  text: string,
+): Pick<Message, "relevance" | "relevanceReason"> {
+  const refs = [...new Set(text.toUpperCase().match(/\bGS-\d+\b/g) || [])];
+  if (refs.length) {
+    const matches = s.orders.filter(
+      (o) => o.supplier === supplier && refs.includes(o.number),
+    );
+    if (refs.length === 1 && matches.length === 1)
+      return {
+        relevance: "relevant",
+        relevanceReason: `Menciona ${matches[0]!.number}, un pedido de este proveedor. Verificá el contenido antes de vincularlo.`,
+      };
+    return {
+      relevance: "review",
+      relevanceReason:
+        "La referencia es desconocida, ambigua o pertenece a otro proveedor. No se vinculó ningún pedido.",
+    };
+  }
+  if (classify(text).kind === "promotion")
+    return {
+      relevance: "informational",
+      relevanceReason:
+        "Parece una promoción sin referencia a un pedido. Se conserva para consulta.",
+    };
+  const active = s.orders.filter(
+    (o) =>
+      o.supplier === supplier && !["received", "cancelled"].includes(o.status),
+  );
+  return {
+    relevance: "review",
+    relevanceReason: active.length
+      ? `Este proveedor tiene ${active.length} pedido(s) abierto(s), pero el mensaje no identifica cuál. Revisá la relación.`
+      : "No hay una referencia comprobable a un pedido. Revisá si afecta a tu negocio.",
+  };
+}
 export function validate(input: unknown): State {
   const parsed = stateSchema.safeParse(input);
   if (!parsed.success)
@@ -373,12 +411,22 @@ export function apply(state: State, input: unknown): State {
     }
     case "message": {
       item(s.suppliers, a.supplier);
-      if (a.eventId && s.messages.some((m) => m.id === a.eventId)) return s;
+      if (a.eventId) {
+        const existing = s.messages.find((m) => m.id === a.eventId);
+        if (existing) {
+          ensure(
+            existing.supplier === a.supplier && existing.text === a.text,
+            "El identificador del evento ya existe con otro contenido.",
+          );
+          return s;
+        }
+      }
       s.messages.unshift({
         id: a.eventId || randomUUID(),
         supplier: a.supplier,
         text: a.text,
         ...classify(a.text),
+        ...assessRelevance(s, a.supplier, a.text),
         at: now(),
         read: false,
         reviewed: false,
@@ -403,6 +451,14 @@ export function apply(state: State, input: unknown): State {
       m.priority = a.priority;
       m.reason = "Prioridad corregida manualmente.";
       note = "Prioridad del mensaje actualizada.";
+      break;
+    }
+    case "relevance": {
+      const m = item(s.messages, a.id);
+      const previous = m.relevance;
+      m.relevance = a.relevance;
+      m.relevanceReason = a.reason;
+      note = `Relevancia del mensaje ${m.id}: ${previous} → ${a.relevance}. Motivo: ${a.reason}`;
       break;
     }
     case "link": {

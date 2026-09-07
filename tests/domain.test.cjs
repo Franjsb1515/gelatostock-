@@ -230,3 +230,97 @@ test("no admite fracciones de unidades ni estados recibidos inconsistentes", () 
   s.orders[0].status = "received";
   assert.throws(() => validate(s));
 });
+
+test("relevancia por referencia exacta no cambia prioridad ni pedidos", () => {
+  const s = milkOrder(),
+    order = s.orders[0];
+  const result = apply(s, {
+    type: "message",
+    supplier: order.supplier,
+    text: `Oferta para ${order.number}`,
+  });
+  assert.equal(result.messages[0].relevance, "relevant");
+  assert.equal(result.messages[0].priority, "low");
+  assert.equal(result.messages[0].order, undefined);
+  assert.deepEqual(result.orders, s.orders);
+  assert.deepEqual(result.products, s.products);
+});
+test("referencias ajenas, desconocidas o múltiples requieren revisión", () => {
+  const s = milkOrder(),
+    o = s.orders[0];
+  const other = s.suppliers.find((x) => x.id !== o.supplier).id;
+  for (const [supplier, text] of [
+    [other, o.number],
+    [o.supplier, "GS-999999"],
+    [o.supplier, `${o.number} GS-999999`],
+  ]) {
+    const m = apply(s, { type: "message", supplier, text }).messages[0];
+    assert.equal(m.relevance, "review");
+    assert.equal(m.order, undefined);
+  }
+});
+test("pedido abierto sin referencia no basta para vincular un mensaje", () => {
+  const s = milkOrder();
+  const m = apply(s, {
+    type: "message",
+    supplier: s.orders[0].supplier,
+    text: "Entrega mañana",
+  }).messages[0];
+  assert.equal(m.priority, "important");
+  assert.equal(m.relevance, "review");
+  assert.match(m.relevanceReason, /abierto/);
+});
+test("corrección manual conserva original y prioridad y registra motivo", () => {
+  let s = apply(seed(), {
+    type: "message",
+    supplier: "s1",
+    text: "Oferta de café",
+  });
+  const m = s.messages[0];
+  s = apply(s, {
+    type: "relevance",
+    id: m.id,
+    relevance: "irrelevant",
+    reason: "Producto fuera de nuestra carta",
+  });
+  assert.equal(s.messages[0].text, m.text);
+  assert.equal(s.messages[0].priority, m.priority);
+  assert.equal(s.messages[0].relevance, "irrelevant");
+  assert.match(s.activity[0].text, /fuera de nuestra carta/);
+  assert.throws(() =>
+    apply(s, {
+      type: "relevance",
+      id: m.id,
+      relevance: "relevant",
+      reason: " ",
+    }),
+  );
+});
+test("eventos repetidos no duplican y un ID con otro contenido se rechaza", () => {
+  const a = {
+    type: "message",
+    supplier: "s1",
+    text: "Hola",
+    eventId: "evt-supplier-1",
+  };
+  const s = apply(seed(), a);
+  assert.deepEqual(apply(s, a), s);
+  assert.throws(
+    () => apply(s, { ...a, text: "Otro mensaje" }),
+    /otro contenido/,
+  );
+  assert.throws(() => apply(s, { ...a, supplier: "s2" }), /otro contenido/);
+});
+test("copia anterior sin relevancia conserva mensajes para revisión", () => {
+  const s = seed();
+  for (const m of s.messages) {
+    delete m.relevance;
+    delete m.relevanceReason;
+  }
+  const restored = validate(s);
+  assert.ok(restored.messages.every((m) => m.relevance === "review"));
+  assert.deepEqual(
+    restored.messages.map((m) => m.text),
+    s.messages.map((m) => m.text),
+  );
+});

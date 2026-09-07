@@ -1,0 +1,52 @@
+
+> appgelatostock@0.3.0 test
+> npm run build && node --test tests/*.test.cjs
+
+
+> appgelatostock@0.3.0 build
+> tsc -p tsconfig.json
+
+✔ conteo reemplaza stock, persiste historial y no muta estado original (9.8478ms)
+✔ rechaza cantidades negativas, NaN e infinitas (1.7179ms)
+✔ reposición considera pedidos en camino y respeta cajas (2.7793ms)
+✔ autorizar separa proveedores y vacía carrito sin tocar stock (2.5296ms)
+✔ doble autorización y doble envío no duplican pedidos (1.2787ms)
+✔ rechaza autorización con versión obsoleta (0.4406ms)
+✔ recepción parcial y total convierten cajas a litros una sola vez (1.6093ms)
+✔ reintentar la misma recepción es idempotente (0.8874ms)
+✔ recepciones imposibles y líneas duplicadas se rechazan sin cambios (1.6454ms)
+✔ mensajes relevantes y promociones se distinguen sin modificar stock (1.0777ms)
+✔ no vincula mensajes a otro proveedor (1.1329ms)
+✔ copias inválidas se rechazan (0.5359ms)
+✔ alta de producto valida presentación y objetivo (1.2407ms)
+✔ copia con identificadores capaces de inyectar HTML se rechaza (0.3309ms)
+✔ entrada, salida y corrección conservan un historial compensado (1.2238ms)
+✔ cancelar pendiente libera reposición y no altera stock (1.1118ms)
+✔ editar presentación no cambia los pedidos ya autorizados (1.0486ms)
+✔ no admite fracciones de unidades ni estados recibidos inconsistentes (0.6549ms)
+✔ relevancia por referencia exacta no cambia prioridad ni pedidos (1.0287ms)
+✔ referencias ajenas, desconocidas o múltiples requieren revisión (0.9723ms)
+✔ pedido abierto sin referencia no basta para vincular un mensaje (0.6041ms)
+✔ corrección manual conserva original y prioridad y registra motivo (0.841ms)
+✔ eventos repetidos no duplican y un ID con otro contenido se rechaza (0.6061ms)
+✔ copia anterior sin relevancia conserva mensajes para revisión (0.3166ms)
+✔ servidor SQLite: autenticación, revisión, persistencia y restauración (191.942ms)
+✔ migración conserva JSON, datos y fotografías en adjuntos separados (58.0661ms)
+✔ JSON inválido no se reemplaza por datos de ejemplo (14.8749ms)
+✔ un fallo a mitad de transacción revierte stock, movimiento y operación (22.1636ms)
+✔ dos conexiones detectan versión obsoleta y no pisan cambios (38.4143ms)
+✔ idempotencia persiste al reiniciar y rechaza reutilizar ID con otro contenido (26.4939ms)
+✔ adjuntos se deduplican por contenido y las copias son portables (44.3134ms)
+✔ no acepta un archivo falso con extensión de imagen (13.5546ms)
+✔ restauración reemplaza relaciones en una sola transacción (16.134ms)
+✔ terminación del proceso sin commit no deja cambios parciales (63.1792ms)
+✔ guardar un movimiento no reescribe el historial previo (61.2629ms)
+✔ clasificación corregida y texto original persisten tras reinicio SQLite (20.8291ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 537.9387

@@ -55,6 +55,12 @@ const orderSchema = z.object({
   lines: z.array(lineSchema).min(1).max(10000),
 });
 export const priorities = z.enum(["important", "normal", "low", "review"]);
+export const relevanceLevels = z.enum([
+  "relevant",
+  "informational",
+  "irrelevant",
+  "review",
+]);
 const messageSchema = z.object({
   id: idSchema,
   supplier: idSchema,
@@ -62,6 +68,10 @@ const messageSchema = z.object({
   kind: z.enum(["change", "delivery", "promotion", "confirmation", "unknown"]),
   priority: priorities,
   reason: text(500),
+  relevance: relevanceLevels.default("review"),
+  relevanceReason: text(500).default(
+    "Mensaje anterior: relevancia pendiente de revisión.",
+  ),
   read: z.boolean(),
   reviewed: z.boolean().default(false),
   at,
@@ -191,6 +201,12 @@ export const actionSchema = z.intersection(
       type: z.literal("priority"),
       id: idSchema,
       priority: priorities,
+    }),
+    z.object({
+      type: z.literal("relevance"),
+      id: idSchema,
+      relevance: relevanceLevels,
+      reason: text(500),
     }),
     z.object({ type: z.literal("link"), id: idSchema, order: idSchema }),
     z.object({

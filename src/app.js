@@ -4,7 +4,10 @@ let state,
   filter = "Todos",
   query = "",
   selectedMessage = null,
-  busy = false;
+  busy = false,
+  messageQuery = "",
+  messageSupplier = "all",
+  messageFilter = "all";
 const $ = (s) => document.querySelector(s);
 const esc = (v) =>
   String(v ?? "").replace(
@@ -88,6 +91,12 @@ const statusLabel = {
   partial: "Recepción parcial",
   received: "Recibido",
   cancelled: "Cancelado",
+};
+const relevanceLabel = {
+  relevant: "Relacionado con un pedido",
+  informational: "Información general",
+  irrelevant: "No relevante",
+  review: "Relevancia por revisar",
 };
 const priorityLabel = {
   important: "Importante",
@@ -183,7 +192,7 @@ function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.2.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.3.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
 }
 function home() {
   const important = state.messages.filter(
@@ -269,15 +278,48 @@ function orders() {
   );
 }
 function messages() {
-  const m =
-    state.messages.find((m) => m.id === selectedMessage) || state.messages[0];
+  const fold = (v) =>
+    v
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  const list = state.messages.filter(
+    (x) =>
+      (messageSupplier === "all" || x.supplier === messageSupplier) &&
+      (messageFilter === "all" ||
+        (messageFilter === "unread" && !x.read) ||
+        (messageFilter === "pending" && !x.reviewed) ||
+        (messageFilter === "important" &&
+          x.priority === "important" &&
+          !x.reviewed) ||
+        (messageFilter === "relevant" && x.relevance === "relevant")) &&
+      fold(x.text + " " + supplier(x.supplier).name).includes(
+        fold(messageQuery),
+      ),
+  );
+  const m = list.find((x) => x.id === selectedMessage) || list[0];
   return (
     header(
       "Mensajes que se convierten en acciones.",
       "Las novedades relevantes de tus proveedores, sin perder el original.",
       btn(icon("plus") + " Simular mensaje", "message", "primary"),
     ) +
-    `<div class="notice subtle">${icon("message")}<div><strong>Recepción por eventos · demostración local</strong><span>Clasificación por reglas sencillas. WhatsApp e IA todavía no están conectados.</span></div></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Bandeja de proveedores <span>${state.messages.length}</span></div>${state.messages.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(supplier(x.supplier).name)}</strong><small>${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? "Revisado" : priorityLabel[x.priority]}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div><div class="message-detail">${m ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>Mensaje de demostración · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? "Revisado" : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div><div class="interpretation"><div class="message-label">${icon("leaf")} LECTURA ASISTIDA POR REGLAS</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><div class="muted">${m.order ? "Vinculado a " + esc(state.orders.find((o) => o.id === m.order)?.number) : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="message-actions">${btn(m.reviewed ? "Mensaje revisado" : icon("check") + " Marcar revisado", "review", "primary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div><p class="fineprint">Revisar un mensaje no acepta sobrecostes ni sustituciones. La conexión real se añadirá en una siguiente etapa.</p></div>` : '<div class="empty">Todavía no hay mensajes.</div>'}</div></section>`
+    `<div class="notice subtle">${icon("message")}<div><strong>Recepción por eventos · demostración local</strong><span>Clasificación por reglas sencillas. WhatsApp e IA todavía no están conectados.</span></div></div><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
+      {
+        all: "Todos los mensajes",
+        unread: "Sin leer",
+        pending: "Sin revisar",
+        important: "Importantes pendientes",
+        relevant: "Relacionados con pedidos",
+      },
+    )
+      .map(
+        ([v, l]) =>
+          `<option value="${v}" ${messageFilter === v ? "selected" : ""}>${l}</option>`,
+      )
+      .join(
+        "",
+      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Bandeja de proveedores <span>${list.length} de ${state.messages.length}</span></div>${list.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(supplier(x.supplier).name)}</strong><small>${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? "Revisado" : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div><div class="message-detail">${m ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>Mensaje de demostración · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? "Revisado" : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div><div class="interpretation"><div class="message-label">${icon("leaf")} LECTURA ASISTIDA POR REGLAS</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p><div class="muted">${m.order ? "Vinculado a " + esc(state.orders.find((o) => o.id === m.order)?.number) : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="message-actions">${btn(m.reviewed ? "Mensaje revisado" : icon("check") + " Marcar revisado", "review", "primary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div><p class="fineprint">Revisar un mensaje no acepta sobrecostes ni sustituciones. La conexión real se añadirá en una siguiente etapa.</p></div>` : '<div class="empty">No hay mensajes que coincidan con estos filtros.</div>'}</div></section>`
   );
 }
 function suppliers() {
@@ -332,7 +374,7 @@ function settings() {
       "Un espacio que funciona a tu manera.",
       "Datos locales, copias de seguridad y un camino claro para crecer.",
     ) +
-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. No incluye un modelo de IA ni reconocimiento automático de fotos.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} OCR y modelo local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Guardá una referencia visual y cargá sus cantidades manualmente.</p>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${state.photos.map((ph) => `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption>${esc(ph.name)}<small>${esc(ph.note)}</small></figcaption></figure>`).join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'}</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.2.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. No incluye un modelo de IA ni reconocimiento automático de fotos.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} OCR y modelo local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Guardá una referencia visual y cargá sus cantidades manualmente.</p>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${state.photos.map((ph) => `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption>${esc(ph.name)}<small>${esc(ph.note)}</small></figcaption></figure>`).join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'}</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.3.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
   );
 }
 function field(label, name, value = "", type = "text", extra = "") {
@@ -593,6 +635,9 @@ async function action(name, el) {
           "Nuevo mensaje de demostración recibido.",
         );
         if (ok) {
+          messageQuery = "";
+          messageSupplier = "all";
+          messageFilter = "all";
           selectedMessage = state.messages[0].id;
           nav("messages");
         }
@@ -621,6 +666,31 @@ async function action(name, el) {
         mutate(
           { type: "priority", id: m.id, priority: f.get("priority") },
           "Prioridad actualizada.",
+        ),
+    );
+    return;
+  }
+  if (name === "relevance") {
+    const m = state.messages.find((m) => m.id === el.dataset.id);
+    modal(
+      "Corregir relevancia",
+      "La prioridad y el texto original se conservan.",
+      select(
+        "Relevancia",
+        "relevance",
+        Object.entries(relevanceLabel),
+        m.relevance,
+      ) +
+        '<label class="field">Motivo de la clasificación<textarea name="reason" maxlength="500" required></textarea></label>',
+      async (f) =>
+        mutate(
+          {
+            type: "relevance",
+            id: m.id,
+            relevance: f.get("relevance"),
+            reason: f.get("reason"),
+          },
+          "Relevancia actualizada.",
         ),
     );
     return;
@@ -716,6 +786,15 @@ document.addEventListener("click", async (e) => {
   }
 });
 document.addEventListener("change", async (e) => {
+  if (["message-supplier", "message-filter"].includes(e.target.id)) {
+    const id = e.target.id;
+    if (id === "message-supplier") messageSupplier = e.target.value;
+    else messageFilter = e.target.value;
+    selectedMessage = null;
+    render();
+    document.getElementById(id).focus();
+    return;
+  }
   if (e.target.dataset.cart)
     await mutate(
       {
@@ -727,6 +806,15 @@ document.addEventListener("change", async (e) => {
     );
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "message-search") {
+    const pos = e.target.selectionStart;
+    messageQuery = e.target.value;
+    selectedMessage = null;
+    render();
+    $("#message-search").focus();
+    $("#message-search").setSelectionRange(pos, pos);
+    return;
+  }
   if (e.target.id === "search") {
     const pos = e.target.selectionStart;
     query = e.target.value;

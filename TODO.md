@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.2.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.3.0.
 
 ## Entregado y comprobado
 
@@ -24,7 +24,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 29 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 36 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
@@ -38,7 +38,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Memoria de equivalencias y correcciones aprobadas.
 - [ ] Canal de WhatsApp real con recepción por eventos, notificaciones y recuperación.
 - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
-- [ ] Reglas de relevancia ligadas a pedidos; prioridad independiente de relevancia.
+- [x] Reglas de relevancia por referencia exacta del mismo proveedor, independientes de prioridad; correcciones con motivo.
+- [x] Buscar mensajes sin tildes y filtrar por proveedor/estado.
+- [ ] Validar clasificación con mensajes reales anonimizados y contexto lingüístico más amplio.
 - [ ] Notificaciones nativas configurables: hoy los avisos están dentro de la app.
 - [ ] Integración comprobada con Makro España u otro proveedor real.
 - [ ] Recetas, producción, ventas, lotes y vencimientos (merma manual ya disponible).

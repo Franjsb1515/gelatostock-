@@ -178,3 +178,28 @@ test("guardar un movimiento no reescribe el historial previo", () =>
     assert.equal(changed, 4);
     assert.equal(s.load().movements[0].after, 31);
   }));
+
+test("clasificación corregida y texto original persisten tras reinicio SQLite", () =>
+  fixture((dir, open) => {
+    const store = open();
+    store.dispatch({
+      type: "message",
+      supplier: "s1",
+      text: "Oferta de café",
+      eventId: "persist-message",
+    });
+    store.dispatch({
+      type: "relevance",
+      id: "persist-message",
+      relevance: "irrelevant",
+      reason: "No lo utilizamos",
+    });
+    store.close();
+    const m = open()
+      .load()
+      .messages.find((m) => m.id === "persist-message");
+    assert.equal(m.relevance, "irrelevant");
+    assert.equal(m.relevanceReason, "No lo utilizamos");
+    assert.equal(m.text, "Oferta de café");
+    assert.equal(m.priority, "low");
+  }));

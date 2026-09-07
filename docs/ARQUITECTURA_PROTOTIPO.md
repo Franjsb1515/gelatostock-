@@ -1,4 +1,4 @@
-# Arquitectura vigente — 0.2.0
+# Arquitectura vigente — 0.3.0
 
 ## Decisión y razones
 
@@ -39,3 +39,7 @@ Se prueba rollback por error, cierre de proceso sin commit, migración, restaura
 WhatsApp, OCR, modelo local y Makro siguen pendientes. Las reglas de mensajes son simuladas y las fotos son referencias manuales. El destino es un modelo redistribuible integrado y activable dentro de la app, con correcciones aprobadas guardadas; el stock y los pedidos ordinarios deben seguir operativos sin él. Enviar/recibir mensajes externos requiere internet; preparar y consultar datos seguirá siendo local.
 
 Distribución actual Windows portátil verificada. Falta instalador firmado y paquete Mac con pruebas en hardware real. El Mac mencionado por el usuario debe confirmarse mediante sus especificaciones antes de seleccionar un modelo de IA.
+
+## Mensajes en 0.3
+
+Campos de relevancia y explicación con valores predeterminados para compatibilidad anterior. La evaluación examina referencias GS exactas y el proveedor, sin vincular ni ejecutar pedidos. La corrección manual se registra en actividad y persiste en SQLite. No hay entrenamiento ni reclasificación retrospectiva. La UI filtra en memoria; paginación sigue pendiente.

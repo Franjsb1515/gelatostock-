@@ -44,7 +44,7 @@ function createApp({
         state: store.load(),
         dataDir,
         storage: "SQLite",
-        version: "0.2.0",
+        version: "0.3.0",
       });
       return;
     }
@@ -89,7 +89,7 @@ function createApp({
           state: store.load(),
           dataDir,
           storage: "SQLite",
-          version: "0.2.0",
+          version: "0.3.0",
         });
       } catch (e) {
         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {

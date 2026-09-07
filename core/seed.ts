@@ -239,6 +239,9 @@ export function seed(): State {
         reason: "Cambio de entrega: requiere revisión.",
         read: false,
         reviewed: false,
+        relevance: "review",
+        relevanceReason:
+          "Mensaje de ejemplo: revisá su relación con un pedido.",
         at: new Date().toISOString(),
         simulated: true,
       },

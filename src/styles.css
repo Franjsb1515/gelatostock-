@@ -1751,3 +1751,16 @@ dialog::backdrop {
 .supplier-card-footer {
   gap: 8px;
 }
+
+.message-filters {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.message-filters .field {
+  margin: 0;
+}
+.message-actions {
+  flex-wrap: wrap;
+}

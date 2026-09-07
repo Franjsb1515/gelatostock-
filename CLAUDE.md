@@ -9,3 +9,5 @@ El código fuente y el historial son la base de continuidad. WhatsApp, OCR y la 
 Para cerrar una sesión: informe nuevo + CHANGELOG.md + TODO.md + pruebas con resultados. Si la interfaz cambió, guardar capturas y reconstruir la entrega cuando corresponda.
 
 Entrega vigente 0.2.0: leer reports/2026-09-07-002-sqlite-typescript.md. El núcleo está en core/ (TypeScript estricto); build/ es generado. Conservar la migración del JSON antiguo. Revisar la decisión Electron/Tauri con mediciones, evitando sustituir una implementación comprobada por una alternativa sin validar.
+
+Entrega vigente 0.3.0: leer reports/2026-09-07T22-46-07-183Z-bandeja-proveedores.md. Relevancia y prioridad separadas; no atribuir aprendizaje ni comprensión semántica a estas reglas.
