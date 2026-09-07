@@ -2,21 +2,12 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const { randomBytes } = require("node:crypto");
-const { seed, apply, validate } = require("./domain.cjs");
+const { Store } = require("../build/store.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
   port = 0,
 } = {}) {
-  fs.mkdirSync(dataDir, { recursive: true });
-  const file = path.join(dataDir, "stock.json");
-  let state = fs.existsSync(file)
-    ? validate(JSON.parse(fs.readFileSync(file, "utf8")))
-    : seed();
-  const save = (s) => {
-    fs.writeFileSync(file + ".tmp", JSON.stringify(s, null, 2), "utf8");
-    fs.renameSync(file + ".tmp", file);
-  };
-  if (!fs.existsSync(file)) save(state);
+  const store = new Store(dataDir);
   const token = randomBytes(32).toString("hex");
   const server = http.createServer(async (req, res) => {
     const origin = `http://127.0.0.1:${server.address().port}`;
@@ -49,7 +40,12 @@ function createApp({
       return;
     }
     if (u.pathname === "/api/state" && req.method === "GET") {
-      json(200, { state, dataDir });
+      json(200, {
+        state: store.load(),
+        dataDir,
+        storage: "SQLite",
+        version: "0.2.0",
+      });
       return;
     }
     if (
@@ -64,44 +60,58 @@ function createApp({
         return;
       }
       try {
-        let body = "";
+        const chunks = [];
+        let size = 0;
         for await (const chunk of req) {
-          body += chunk;
-          if (Buffer.byteLength(body) > 25000000)
-            throw Error("Archivo demasiado grande (máximo 25 MB).");
+          size += chunk.length;
+          if (size > 100_000_000)
+            throw Error("Archivo demasiado grande (máximo 100 MB).");
+          chunks.push(chunk);
         }
-        const data = JSON.parse(body || "{}");
+        const data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
         if (u.pathname === "/api/backup") {
-          const dir = path.join(dataDir, "backups");
-          fs.mkdirSync(dir, { recursive: true });
-          const dest = path.join(dir, `gelatostock-${Date.now()}.json`);
-          fs.writeFileSync(dest, JSON.stringify(state, null, 2));
-          json(200, { path: dest });
+          json(200, { path: store.backup() });
           return;
         }
         if (u.pathname === "/api/restore") {
-          const next = validate(data);
-          const backup = path.join(
-            dataDir,
-            `antes-restaurar-${Date.now()}.json`,
-          );
-          fs.writeFileSync(backup, JSON.stringify(state, null, 2));
-          next.revision = state.revision + 1;
-          next.activity.unshift({
-            id: randomBytes(8).toString("hex"),
-            at: new Date().toISOString(),
-            text: "Copia restaurada. Se conservó una copia del estado anterior.",
-          });
-          save(next);
-          state = next;
+          if (!Number.isInteger(data.revision))
+            throw Error("Falta la versión de la restauración.");
+          store.restore(data.backup, data.revision);
         } else {
-          const next = apply(state, data);
-          save(next);
-          state = next;
+          if (
+            !Number.isInteger(data.revision) ||
+            typeof data.operationId !== "string"
+          )
+            throw Error("Falta la versión o el identificador de la operación.");
+          store.dispatch(data);
         }
-        json(200, { state, dataDir });
+        json(200, {
+          state: store.load(),
+          dataDir,
+          storage: "SQLite",
+          version: "0.2.0",
+        });
       } catch (e) {
-        json(400, { error: e.message });
+        json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
+          error: e.message,
+        });
+      }
+      return;
+    }
+    if (
+      req.method === "GET" &&
+      /^\/api\/photos\/[a-zA-Z0-9-]+$/.test(u.pathname)
+    ) {
+      try {
+        const { bytes, mime } = store.photo(u.pathname.split("/").pop());
+        res.writeHead(200, {
+          "Content-Type": mime,
+          "X-Content-Type-Options": "nosniff",
+          "Cache-Control": "private, max-age=3600",
+        });
+        res.end(bytes);
+      } catch (e) {
+        json(404, { error: e.message });
       }
       return;
     }
@@ -131,7 +141,11 @@ function createApp({
     res.end(fs.readFileSync(path.join(__dirname, assets[u.pathname])));
   });
   return new Promise((resolve, reject) => {
-    server.once("error", reject);
+    server.once("error", (error) => {
+      store.close();
+      reject(error);
+    });
+    server.once("close", () => store.close());
     server.listen(port, "127.0.0.1", () =>
       resolve({
         server,

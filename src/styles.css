@@ -1720,3 +1720,34 @@ dialog::backdrop {
     padding-top: 12px;
   }
 }
+/* v0.2: actions and ledger keep controls readable in compact windows. */
+.row-actions {
+  display: flex;
+  gap: 12px;
+}
+.movement-reason {
+  display: block;
+  max-width: 370px;
+  white-space: normal;
+  margin-top: 4px;
+  color: #737e69;
+}
+.order-row > div:last-child {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.heading-actions {
+  flex-wrap: wrap;
+}
+#form-error:empty {
+  display: none;
+}
+#form-error:not(:empty) {
+  padding: 12px;
+  background: #f8e9de;
+  border-radius: 7px;
+}
+.supplier-card-footer {
+  gap: 8px;
+}

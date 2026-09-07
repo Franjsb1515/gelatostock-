@@ -165,3 +165,68 @@ test("copia con identificadores capaces de inyectar HTML se rechaza", () => {
   s.messages[0].id = 'x" onclick="alert(1)';
   assert.throws(() => validate(s));
 });
+test("entrada, salida y corrección conservan un historial compensado", () => {
+  let s = apply(seed(), {
+    type: "movement",
+    product: "p1",
+    kind: "entry",
+    value: 2,
+    reason: "Entrega",
+  });
+  const id = s.movements[0].id;
+  s = apply(s, {
+    type: "movement",
+    product: "p1",
+    kind: "exit",
+    value: 1,
+    reason: "Barra",
+  });
+  s = apply(s, { type: "reverse", id, reason: "Entrega duplicada" });
+  assert.equal(s.products[0].stock, 1.4);
+  assert.equal(s.movements.length, 3);
+  assert.throws(() => apply(s, { type: "reverse", id, reason: "Reintento" }));
+  assert.throws(() =>
+    apply(s, {
+      type: "movement",
+      product: "p1",
+      kind: "waste",
+      value: 2,
+      reason: "Merma",
+    }),
+  );
+});
+test("cancelar pendiente libera reposición y no altera stock", () => {
+  let s = apply(seed(), { type: "cart", product: "p1", packs: 6 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  assert.equal(pending(s, "p1"), 6);
+  s = apply(s, { type: "cancel", order: s.orders[0].id });
+  assert.equal(pending(s, "p1"), 0);
+  assert.equal(s.products[0].stock, 2.4);
+  assert.throws(() => apply(s, { type: "send", order: s.orders[0].id }));
+});
+test("editar presentación no cambia los pedidos ya autorizados", () => {
+  let s = apply(seed(), { type: "cart", product: "p2", packs: 2 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  const p = s.products[1];
+  s = apply(s, {
+    type: "editProduct",
+    product: p.id,
+    name: p.name,
+    detail: p.detail,
+    min: p.min,
+    target: p.target,
+    pack: 12,
+    price: 1500,
+    supplier: p.supplier,
+  });
+  assert.equal(s.orders[0].lines[0].pack, 6);
+  assert.equal(s.orders[0].lines[0].price, 690);
+});
+test("no admite fracciones de unidades ni estados recibidos inconsistentes", () => {
+  assert.throws(() =>
+    apply(seed(), { type: "count", product: "p6", value: 1.5 }),
+  );
+  const s = milkOrder();
+  s.orders[0].status = "received";
+  assert.throws(() => validate(s));
+});

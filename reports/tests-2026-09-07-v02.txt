@@ -1,0 +1,45 @@
+
+> appgelatostock@0.2.0 test
+> npm run build && node --test tests/*.test.cjs
+
+
+> appgelatostock@0.2.0 build
+> tsc -p tsconfig.json
+
+✔ conteo reemplaza stock, persiste historial y no muta estado original (8.2388ms)
+✔ rechaza cantidades negativas, NaN e infinitas (1.0734ms)
+✔ reposición considera pedidos en camino y respeta cajas (4.8338ms)
+✔ autorizar separa proveedores y vacía carrito sin tocar stock (2.3829ms)
+✔ doble autorización y doble envío no duplican pedidos (1.7079ms)
+✔ rechaza autorización con versión obsoleta (0.5115ms)
+✔ recepción parcial y total convierten cajas a litros una sola vez (1.7513ms)
+✔ reintentar la misma recepción es idempotente (1.1215ms)
+✔ recepciones imposibles y líneas duplicadas se rechazan sin cambios (1.6047ms)
+✔ mensajes relevantes y promociones se distinguen sin modificar stock (1.0949ms)
+✔ no vincula mensajes a otro proveedor (1.0037ms)
+✔ copias inválidas se rechazan (0.5581ms)
+✔ alta de producto valida presentación y objetivo (1.4346ms)
+✔ copia con identificadores capaces de inyectar HTML se rechaza (0.2987ms)
+✔ entrada, salida y corrección conservan un historial compensado (1.3006ms)
+✔ cancelar pendiente libera reposición y no altera stock (0.8153ms)
+✔ editar presentación no cambia los pedidos ya autorizados (1.1336ms)
+✔ no admite fracciones de unidades ni estados recibidos inconsistentes (0.737ms)
+✔ servidor SQLite: autenticación, revisión, persistencia y restauración (126.8564ms)
+✔ migración conserva JSON, datos y fotografías en adjuntos separados (33.5578ms)
+✔ JSON inválido no se reemplaza por datos de ejemplo (12.2609ms)
+✔ un fallo a mitad de transacción revierte stock, movimiento y operación (17.903ms)
+✔ dos conexiones detectan versión obsoleta y no pisan cambios (31.4712ms)
+✔ idempotencia persiste al reiniciar y rechaza reutilizar ID con otro contenido (21.275ms)
+✔ adjuntos se deduplican por contenido y las copias son portables (38.6188ms)
+✔ no acepta un archivo falso con extensión de imagen (12.4251ms)
+✔ restauración reemplaza relaciones en una sola transacción (16.3287ms)
+✔ terminación del proceso sin commit no deja cambios parciales (63.9718ms)
+✔ guardar un movimiento no reescribe el historial previo (57.3694ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 469.0763

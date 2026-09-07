@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.1.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.2.0.
 
 ## Entregado y comprobado
 
@@ -21,8 +21,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 
 - [ ] Confirmar productos, proveedores, recetas, unidades y sistema de ventas reales.
 - [ ] Revisar arquitectura y código con Claude.
-- [ ] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
-- [ ] Añadir edición completa de productos y proveedores; entradas/salidas/ajustes con motivos y reversión explícita.
+- [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
+- [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
+- [x] Cancelar pedidos pendientes sin alterar stock.
+- [x] Núcleo TypeScript estricto, validación de contratos y 29 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
@@ -39,9 +41,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Reglas de relevancia ligadas a pedidos; prioridad independiente de relevancia.
 - [ ] Notificaciones nativas configurables: hoy los avisos están dentro de la app.
 - [ ] Integración comprobada con Makro España u otro proveedor real.
-- [ ] Recetas, producción, ventas, mermas, lotes y vencimientos.
+- [ ] Recetas, producción, ventas, lotes y vencimientos (merma manual ya disponible).
 - [ ] Sincronización entre lugares con resolución de conflictos y único envío por pedido.
 
 ## Límites conocidos
 
-Una sola instancia/escritor por conjunto de datos. Límite de archivo 24 MB. Sin pagos, sin conectores externos, sin sincronización. El clasificador por palabras puede equivocarse: las etiquetas son revisables y no ejecutan compras. Las fotos no cambian stock.
+Una instancia de escritorio por perfil. SQLite detecta conflictos entre conexiones; no hay sincronización distribuida. Exportación JSON en memoria hasta 100 MB; fotos hasta 5 MB. Falta paginar el estado y probar gran volumen. Sin pagos, sin conectores externos, sin sincronización. El clasificador por palabras puede equivocarse: las etiquetas son revisables y no ejecutan compras. Las fotos no cambian stock.

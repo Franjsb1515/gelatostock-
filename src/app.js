@@ -63,7 +63,7 @@ const supplier = (id) => state.suppliers.find((s) => s.id === id);
 const product = (id) => state.products.find((p) => p.id === id);
 const pending = (id) =>
   state.orders
-    .filter((o) => o.status !== "received")
+    .filter((o) => !["received", "cancelled"].includes(o.status))
     .reduce(
       (n, o) =>
         n +
@@ -87,6 +87,7 @@ const statusLabel = {
   sent: "Envío simulado",
   partial: "Recepción parcial",
   received: "Recibido",
+  cancelled: "Cancelado",
 };
 const priorityLabel = {
   important: "Importante",
@@ -101,7 +102,11 @@ async function request(url, body) {
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await r.json();
-  if (!r.ok) throw Error(data.error || "No se pudo guardar.");
+  if (!r.ok) {
+    const error = Error(data.error || "No se pudo guardar.");
+    error.status = r.status;
+    throw error;
+  }
   return data;
 }
 function toast(text) {
@@ -128,7 +133,16 @@ async function mutate(a, msg) {
     if (msg) toast(msg);
     return true;
   } catch (e) {
-    toast(e.message);
+    if (e.status === 409) {
+      try {
+        const fresh = await request("/api/state");
+        state = fresh.state;
+        render();
+      } catch {}
+    }
+    if ($("#modal").open && $("#form-error"))
+      $("#form-error").textContent = e.message;
+    else toast(e.message);
     return false;
   } finally {
     busy = false;
@@ -169,13 +183,15 @@ function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.1.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.2.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
 }
 function home() {
   const important = state.messages.filter(
     (m) => m.priority === "important" && !m.reviewed,
   );
-  const open = state.orders.filter((o) => o.status !== "received");
+  const open = state.orders.filter(
+    (o) => !["received", "cancelled"].includes(o.status),
+  );
   const value = state.products.reduce(
     (n, p) => n + (p.stock / p.pack) * p.price,
     0,
@@ -204,7 +220,7 @@ function home() {
 }
 function productTable(items, compact = false) {
   return items.length
-    ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th>${compact ? "" : "<th>Mín. / objetivo</th><th>Proveedor</th>"}<th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${items.map((p) => `<tr><td><div class="product-cell"><span class="product-icon ${p.category === "Gelatería" ? "sage" : p.category === "Cafetería" ? "sand" : p.category === "Postres" ? "rose" : "lavender"}">${icon(p.icon)}</span><div><strong>${esc(p.name)}</strong><small>${esc(p.detail)}</small></div></div></td><td><strong>${num(p.stock)} <span class="unit">${p.unit}</span></strong>${pending(p.id) ? `<small class="incoming">+ ${num(pending(p.id))} en pedido</small>` : ""}</td>${compact ? "" : `<td>${num(p.min)} / ${num(p.target)} ${p.unit}</td><td>${esc(supplier(p.supplier).name)}</td>`}<td>${p.stock < p.min ? pill("Stock bajo", "peach") : pill("En orden", "sage")}</td><td>${compact ? `<button class="icon-button bordered" data-add="${p.id}" aria-label="Añadir ${esc(p.name)} al carrito">${icon("plus")}</button>` : `<button class="text-button" data-count="${p.id}">Contar</button>`}</td></tr>`).join("")}</tbody></table></div>`
+    ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th>${compact ? "" : "<th>Mín. / objetivo</th><th>Proveedor</th>"}<th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${items.map((p) => `<tr><td><div class="product-cell"><span class="product-icon ${p.category === "Gelatería" ? "sage" : p.category === "Cafetería" ? "sand" : p.category === "Postres" ? "rose" : "lavender"}">${icon(p.icon)}</span><div><strong>${esc(p.name)}</strong><small>${esc(p.detail)}</small></div></div></td><td><strong>${num(p.stock)} <span class="unit">${p.unit}</span></strong>${pending(p.id) ? `<small class="incoming">+ ${num(pending(p.id))} en pedido</small>` : ""}</td>${compact ? "" : `<td>${num(p.min)} / ${num(p.target)} ${p.unit}</td><td>${esc(supplier(p.supplier).name)}</td>`}<td>${p.stock < p.min ? pill("Stock bajo", "peach") : pill("En orden", "sage")}</td><td>${compact ? `<button class="icon-button bordered" data-add="${p.id}" aria-label="Añadir ${esc(p.name)} al carrito">${icon("plus")}</button>` : `<div class="row-actions"><button class="text-button" data-count="${p.id}">Contar</button><button class="text-button" data-action="editProduct" data-product="${p.id}">Editar</button></div>`}</td></tr>`).join("")}</tbody></table></div>`
     : '<div class="empty">' +
         icon("check") +
         "<h3>Todo en orden</h3><p>No hay productos en esta selección.</p></div>";
@@ -220,7 +236,8 @@ function stock() {
     header(
       "Inventario",
       "Cada ingrediente, cada envase y cada porción, en su lugar.",
-      btn(icon("photo") + " Cargar foto", "photo") +
+      btn(icon("plus") + " Entrada / salida", "movement", "primary") +
+        btn(icon("photo") + " Cargar foto", "photo") +
         btn(icon("plus") + " Nuevo producto", "product", "primary"),
     ) +
     `<section class="panel"><div class="toolbar"><div class="tabs">${["Todos", "Stock bajo", "Gelatería", "Cafetería", "Postres", "Envases"].map((f) => `<button data-filter="${f}" class="tab ${filter === f ? "selected" : ""}">${f}${f === "Stock bajo" ? ` <span>${low().length}</span>` : ""}</button>`).join("")}</div><label class="search">${icon("search")}<input id="search" placeholder="Buscar producto…" value="${esc(query)}" aria-label="Buscar producto"></label></div>${productTable(items)}<div class="table-footer">${items.length} productos · cantidades en su unidad base<span>Guardado en este equipo</span></div></section>`
@@ -248,7 +265,7 @@ function orders() {
         : '<div class="empty">' +
           icon("cart") +
           "<h3>Tu próximo pedido empieza aquí</h3><p>Añadí productos o prepará la reposición sugerida.</p></div>"
-    }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${money(total)}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${money(total)}</strong></div><p>Los precios son ficticios. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div><section class="panel orders-panel"><div class="panel-heading"><div><h2>Seguimiento de pedidos</h2><p>Lo enviado y lo recibido, siempre separados.</p></div></div>${state.orders.length ? state.orders.map((o) => `<article class="order-row"><div><span class="order-number">${esc(o.number)}</span><h3>${esc(supplier(o.supplier).name)}</h3><small>${date(o.at)} · ${o.lines.length} productos · ${money(o.lines.reduce((n, l) => n + l.packs * l.price, 0))}</small></div><div class="order-status">${pill(statusLabel[o.status], o.status === "received" ? "sage" : o.status === "pending" ? "sand" : "lavender")}<small>Demostración</small></div><div>${o.status === "pending" ? btn("Simular envío", "send", "secondary", `data-order="${o.id}"`) : o.status !== "received" ? btn("Registrar recepción", "receive", "secondary", `data-order="${o.id}"`) : '<span class="received-check">' + icon("check") + " Completado</span>"}</div></article>`).join("") : '<div class="empty compact">Tus pedidos aparecerán aquí cuando autorices un carrito.</div>'}</section>`
+    }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${money(total)}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${money(total)}</strong></div><p>Los precios son ficticios. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div><section class="panel orders-panel"><div class="panel-heading"><div><h2>Seguimiento de pedidos</h2><p>Lo enviado y lo recibido, siempre separados.</p></div></div>${state.orders.length ? state.orders.map((o) => `<article class="order-row"><div><span class="order-number">${esc(o.number)}</span><h3>${esc(supplier(o.supplier).name)}</h3><small>${date(o.at)} · ${o.lines.length} productos · ${money(o.lines.reduce((n, l) => n + l.packs * l.price, 0))}</small></div><div class="order-status">${pill(statusLabel[o.status], o.status === "received" ? "sage" : o.status === "pending" ? "sand" : "lavender")}<small>Demostración</small></div><div>${o.status === "pending" ? btn("Simular envío", "send", "secondary", `data-order="${o.id}"`) + btn("Cancelar", "cancelOrder", "secondary", `data-order="${o.id}"`) : !["received", "cancelled"].includes(o.status) ? btn("Registrar recepción", "receive", "secondary", `data-order="${o.id}"`) : '<span class="received-check">' + icon("check") + (o.status === "cancelled" ? " Cancelado" : " Completado") + "</span>"}</div></article>`).join("") : '<div class="empty compact">Tus pedidos aparecerán aquí cuando autorices un carrito.</div>'}</section>`
   );
 }
 function messages() {
@@ -268,17 +285,45 @@ function suppliers() {
     header(
       "Personas detrás de cada ingrediente.",
       "Tus proveedores y sus productos, reunidos en un solo lugar.",
+      btn(icon("plus") + " Nuevo proveedor", "supplierEditor", "primary"),
     ) +
-    `<div class="supplier-grid">${state.suppliers.map((s) => `<article class="panel supplier-card"><span class="supplier-avatar large ${s.color}">${esc(s.initials)}</span><h2>${esc(s.name)}</h2><p>${esc(s.category)}</p><div class="supplier-info">${icon("clock")} ${esc(s.delivery)}</div><div class="supplier-info">${icon("box")} ${state.products.filter((p) => p.supplier === s.id).length} productos en catálogo</div><div class="supplier-card-footer">${pill("Proveedor ficticio")}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`).join("")}</div><div class="notice">${icon("store")}<div><strong>Tu red de proveedores vendrá después</strong><span>Makro España y WhatsApp necesitan una integración comprobada. Estas fichas sirven para probar el flujo.</span></div></div>`
+    `<div class="supplier-grid">${state.suppliers.map((s) => `<article class="panel supplier-card"><span class="supplier-avatar large ${s.color}">${esc(s.initials)}</span><h2>${esc(s.name)}</h2><p>${esc(s.category)}</p><div class="supplier-info">${icon("clock")} ${esc(s.delivery)}</div><div class="supplier-info">${icon("box")} ${state.products.filter((p) => p.supplier === s.id).length} productos en catálogo</div><div class="supplier-card-footer">${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`).join("")}</div><div class="notice">${icon("store")}<div><strong>Tu red de proveedores vendrá después</strong><span>Makro España y WhatsApp necesitan una integración comprobada. Estas fichas sirven para probar el flujo.</span></div></div>`
   );
 }
 function activity() {
+  const kinds = {
+    count: "Conteo",
+    entry: "Entrada",
+    exit: "Salida",
+    waste: "Merma",
+    receipt: "Recepción",
+    reversal: "Corrección",
+  };
+  const ledger = state.movements || [];
   return (
     header(
       "Cada cambio tiene su historia.",
-      "Un registro de lo que ocurre en este equipo.",
+      "Movimientos trazables: ninguna corrección borra el registro original.",
+      btn("Entrada / salida", "movement", "primary"),
     ) +
-    `<section class="panel activity-panel">${state.activity.map((a) => `<div class="activity-row"><span class="activity-dot"></span><div><p>${esc(a.text)}</p><small>${date(a.at)} · ${time(a.at)}</small></div></div>`).join("")}</section>`
+    `<section class="panel"><div class="panel-heading"><div><h2>Movimientos de inventario</h2><p>Últimos 30 movimientos · ${ledger.length} registrados</p></div>${pill("Guardado en SQLite", "sage")}</div>${
+      ledger.length
+        ? `<div class="table-wrap"><table><thead><tr><th>Producto y motivo</th><th>Tipo</th><th>Cambio</th><th>Antes → después</th><th>Acción</th></tr></thead><tbody>${ledger
+            .slice(0, 30)
+            .map(
+              (m) =>
+                `<tr><td><strong>${esc(product(m.product).name)}</strong><small class="movement-reason">${esc(m.reason)} · ${date(m.at)} ${time(m.at)}</small></td><td>${pill(kinds[m.kind])}</td><td>${m.delta > 0 ? "+" : ""}${num(m.delta)} ${product(m.product).unit}</td><td>${num(m.before)} → ${num(m.after)}</td><td>${m.kind !== "receipt" && !m.reverses && !ledger.some((x) => x.reverses === m.id) ? btn("Revertir", "reverse", "secondary", `data-id="${m.id}"`) : pill(m.reverses ? "Compensación" : ledger.some((x) => x.reverses === m.id) ? "Revertido" : "Pedido")}</td></tr>`,
+            )
+            .join("")}</tbody></table></div>`
+        : '<div class="empty compact">Los nuevos conteos, entradas y salidas aparecerán aquí.</div>'
+    }</section>` +
+    `<section class="panel activity-panel orders-panel"><div class="panel-heading"><h2>Actividad reciente</h2></div>${state.activity
+      .slice(0, 50)
+      .map(
+        (a) =>
+          `<div class="activity-row"><span class="activity-dot"></span><div><p>${esc(a.text)}</p><small>${date(a.at)} · ${time(a.at)}</small></div></div>`,
+      )
+      .join("")}</section>`
   );
 }
 function settings() {
@@ -287,7 +332,7 @@ function settings() {
       "Un espacio que funciona a tu manera.",
       "Datos locales, copias de seguridad y un camino claro para crecer.",
     ) +
-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>El prototipo guarda los cambios en un archivo local. Las fotos se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. No incluye un modelo de IA ni reconocimiento automático de fotos.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} OCR y modelo local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Guardá una referencia visual y cargá sus cantidades manualmente.</p>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${state.photos.map((ph) => `<figure><img src="${esc(ph.data)}" alt="${esc(ph.name)}"><figcaption>${esc(ph.name)}<small>${esc(ph.note)}</small></figcaption></figure>`).join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'}</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.1.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. No incluye un modelo de IA ni reconocimiento automático de fotos.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} OCR y modelo local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Guardá una referencia visual y cargá sus cantidades manualmente.</p>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${state.photos.map((ph) => `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption>${esc(ph.name)}<small>${esc(ph.note)}</small></figcaption></figure>`).join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'}</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.2.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
   );
 }
 function field(label, name, value = "", type = "text", extra = "") {
@@ -339,6 +384,13 @@ function count(id) {
         p.stock,
         "number",
         'min="0" max="1000000" step="0.001" required',
+      ) +
+      field(
+        "Motivo",
+        "reason",
+        "Conteo manual",
+        "text",
+        "required maxlength=500",
       ),
     async (f) =>
       mutate(
@@ -346,6 +398,7 @@ function count(id) {
           type: "count",
           product: f.get("product"),
           value: Number(f.get("value")),
+          reason: f.get("reason"),
         },
         "Conteo guardado en este equipo.",
       ),
@@ -393,6 +446,7 @@ const readFile = (file) =>
     r.readAsDataURL(file);
   });
 async function action(name, el) {
+  if (await extendedAction(name, el)) return;
   if (name === "close") {
     $("#modal").close();
     return;
@@ -616,9 +670,12 @@ async function action(name, el) {
       `<label class="field">Archivo de copia (.json)<input type="file" name="backup" accept=".json,application/json" required></label><label class="check-label"><input type="checkbox" required> Entiendo que se reemplazarán los datos actuales.</label>`,
       async (f) => {
         const file = f.get("backup");
-        if (file.size > 25000000) throw Error("La copia supera 25 MB.");
+        if (file.size > 100000000) throw Error("La copia supera 100 MB.");
         const data = JSON.parse(await file.text());
-        const r = await request("/api/restore", data);
+        const r = await request("/api/restore", {
+          backup: data,
+          revision: state.revision,
+        });
         state = r.state;
         render();
         toast("Copia restaurada.");
@@ -689,3 +746,157 @@ request("/api/state")
     $("#app").innerHTML =
       `<div class="empty"><h1>No se pudo abrir el inventario</h1><p>${esc(e.message)}</p><p>Cerrá y volvé a abrir la aplicación. No se han reemplazado tus datos.</p></div>`;
   });
+async function extendedAction(name, el) {
+  if (name === "movement") {
+    modal(
+      "Entrada, salida o merma",
+      "Este movimiento ajusta el stock y queda registrado con su motivo.",
+      select(
+        "Producto",
+        "product",
+        state.products.map((p) => [p.id, `${p.name} (${p.unit})`]),
+      ) +
+        select("Tipo de movimiento", "kind", [
+          ["entry", "Entrada de mercadería"],
+          ["exit", "Salida / consumo"],
+          ["waste", "Merma / pérdida"],
+        ]) +
+        field(
+          "Cantidad en unidad base",
+          "value",
+          1,
+          "number",
+          'min="0.001" max="1000000" step="0.001" required',
+        ) +
+        field(
+          "Motivo",
+          "reason",
+          "",
+          "text",
+          'required maxlength="500" placeholder="Ejemplo: consumo de barra o rotura"',
+        ),
+      async (f) =>
+        mutate(
+          {
+            type: "movement",
+            product: f.get("product"),
+            kind: f.get("kind"),
+            value: Number(f.get("value")),
+            reason: f.get("reason"),
+          },
+          "Movimiento guardado.",
+        ),
+    );
+    return true;
+  }
+  if (name === "reverse") {
+    const m = state.movements.find((x) => x.id === el.dataset.id);
+    modal(
+      "Revertir un movimiento",
+      "Se añade una compensación. El movimiento original no se borra.",
+      `<p>${esc(product(m.product).name)} · compensación: ${num(-m.delta)} ${product(m.product).unit}</p>` +
+        field(
+          "Motivo de la corrección",
+          "reason",
+          "",
+          "text",
+          'required maxlength="500"',
+        ),
+      async (f) =>
+        mutate(
+          { type: "reverse", id: m.id, reason: f.get("reason") },
+          "Corrección registrada con trazabilidad.",
+        ),
+      "Registrar corrección",
+    );
+    return true;
+  }
+  if (name === "cancelOrder") {
+    const o = state.orders.find((x) => x.id === el.dataset.order);
+    modal(
+      "Cancelar " + o.number,
+      "Solo se cancela este pedido pendiente; no cambia el stock.",
+      `<p>El proveedor no recibirá nada. Estos productos volverán a considerarse para la reposición.</p>`,
+      async () =>
+        mutate({ type: "cancel", order: o.id }, "Pedido pendiente cancelado."),
+      "Cancelar pedido",
+    );
+    return true;
+  }
+  if (name === "editProduct") {
+    const p = product(el.dataset.product);
+    modal(
+      "Editar producto",
+      "La unidad base y el stock se conservan. Los pedidos existentes mantienen su presentación y precio.",
+      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Unidades base por paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${select(
+        "Proveedor",
+        "supplier",
+        state.suppliers.map((s) => [s.id, s.name]),
+        p.supplier,
+      )}</div>`,
+      async (f) => {
+        const a = Object.fromEntries(f);
+        for (const k of ["min", "target", "pack"]) a[k] = Number(a[k]);
+        a.price = Math.round(Number(a.price) * 100);
+        return mutate(
+          { type: "editProduct", product: p.id, ...a },
+          "Ficha actualizada.",
+        );
+      },
+    );
+    return true;
+  }
+  if (name === "supplierEditor") {
+    const s = el.dataset.supplier
+      ? supplier(el.dataset.supplier)
+      : { name: "", initials: "", category: "", delivery: "", color: "sage" };
+    modal(
+      s.id ? "Editar proveedor" : "Nuevo proveedor",
+      "Esta ficha es local; guardarla no conecta WhatsApp ni envía mensajes.",
+      field("Nombre", "name", s.name, "text", 'required maxlength="100"') +
+        field(
+          "Iniciales",
+          "initials",
+          s.initials,
+          "text",
+          'required maxlength="5"',
+        ) +
+        field(
+          "Especialidad",
+          "category",
+          s.category,
+          "text",
+          'required maxlength="100"',
+        ) +
+        field(
+          "Días o condiciones de entrega",
+          "delivery",
+          s.delivery,
+          "text",
+          'required maxlength="200"',
+        ) +
+        select(
+          "Color de la ficha",
+          "color",
+          [
+            ["sage", "Verde"],
+            ["rose", "Rosa"],
+            ["sand", "Arena"],
+            ["lavender", "Lavanda"],
+          ],
+          s.color,
+        ),
+      async (f) =>
+        mutate(
+          {
+            type: "supplier",
+            ...(s.id ? { id: s.id } : {}),
+            ...Object.fromEntries(f),
+          },
+          "Proveedor guardado localmente.",
+        ),
+    );
+    return true;
+  }
+  return false;
+}
