@@ -3,6 +3,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { LocalAI } = require("../src/ai.cjs");
 const samples = require("../tests/fixtures/ai-documents.json");
+const manifest = require("../runtime/ai-model.json");
+const tag = "v" + require("../package.json").version.replace(/\./g, "");
 (async () => {
   const ai = new LocalAI();
   const rows = [];
@@ -42,15 +44,15 @@ const samples = require("../tests/fixtures/ai-documents.json");
   const result = {
     at: new Date().toISOString(),
     synthetic: true,
-    model: "Qwen3 0.6B Q4",
+    model: manifest.label + " " + manifest.dtype.toUpperCase(),
     cases: rows.length,
     passed: rows.filter((r) => r.pass).length,
     peakProcessRSSMiB: Math.round(peak / 1048576),
     rows,
   };
   const name = process.argv.includes("--quick")
-    ? "ai-evaluation-v08-quick.json"
-    : "ai-evaluation-v08.json";
+    ? "ai-evaluation-" + tag + "-quick.json"
+    : "ai-evaluation-" + tag + ".json";
   fs.writeFileSync(
     path.join(__dirname, "../reports", name),
     JSON.stringify(result, null, 2),

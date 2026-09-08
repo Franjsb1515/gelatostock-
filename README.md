@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.8.0
+# GelatoStock · prototipo 0.8.1
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.8.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.8.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.8.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.8.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -38,7 +38,7 @@ Nuevas funciones: entradas, salidas y mermas con motivo; corrección mediante un
 Leer, en este orden:
 
 1. `CLAUDE.md` / `AGENTS.md`.
-2. `reports/2026-09-08T04-18-52-587Z-whatsapp-qr-cuentas.md`.
+2. `docs/PROMPT_MAESTRO_V2.md` y el informe más reciente de `reports/`.
 3. `TODO.md` y `CHANGELOG.md`.
 4. `docs/ARQUITECTURA_PROTOTIPO.md`.
 5. Los cinco documentos originales de `docs/`, empezando por `PROMPT_MAESTRO.md`.
@@ -68,7 +68,7 @@ npm run session:new -- titulo-de-la-sesion
 
 ## Evidencias
 
-`reports/tests-2026-09-08-v06.txt`, `reports/desktop-smoke-2026-09-08-v06.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
+`reports/tests-2026-09-08-v081.txt`, `reports/desktop-smoke-2026-09-08-v081.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
 
 ## Tecnología y siguiente decisión
 
@@ -114,3 +114,6 @@ Leer docs/IA_LOCAL_Y_SEGURIDAD.md antes de ampliar permisos o automatizar accion
 Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Contrasta encabezados y distingue proformas/abonos; comprueba base + cuota de IVA frente al total cuando las tres cantidades están etiquetadas en líneas separadas. No valida toda una factura ni hace contabilidad. Al cambiar el texto se retira la conclusión anterior.
 
 Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
+
+## Auditoría y mejora continua en 0.8.1
+La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.

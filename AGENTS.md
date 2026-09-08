@@ -14,3 +14,9 @@
 - Al final de cada sesión actualizar TODO.md y CHANGELOG.md; crear un informe en reports/ con resumen, archivos, pruebas, limitaciones y siguiente paso. Usar scripts/new-session.cjs como plantilla, completándola manualmente.
 - Conservar informes previos. El script crea también un diff de cambios sin commit cuando Git está disponible; no incluye archivos nuevos sin seguimiento ni sustituye un commit.
 - No marcar tareas probadas en Mac desde una ejecución en Windows.
+
+## Directriz de mejora continua (desde 0.8.1)
+- Prompt operativo para cualquier IA: docs/PROMPT_MAESTRO_V2.md. PROMPT_MAESTRO.md y docs/TODO.md son documentos de origen, no estado.
+- Cada sesión audita antes de construir y corrige al menos un hueco verificado, con evidencia de ejecución. Si no hay hallazgos, decir qué se revisó.
+- No degradar garantías existentes ni ocultar abstenciones o pruebas fallidas para aparentar avance.
+- Si un documento de continuidad o un prompt induce a error, corregirlo en la misma sesión y explicarlo en el informe.

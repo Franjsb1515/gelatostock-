@@ -117,3 +117,20 @@ test("documentos mezclados exigen revisión", () => {
   assert.equal(r.tipo, "otro");
   assert.equal(r.headings.length, 2);
 });
+
+test("sumas: etiquetas habituales en facturas españolas se reconocen sin ampliar la interpretación", () => {
+  const check = arithmeticCheck(
+    "FACTURA F-7\nBase imponible: 100,00 €\nIVA 21%: 21,00 €\nTotal a pagar: 121,00 €",
+  );
+  assert.equal(check.status, "matched");
+  assert.equal(
+    arithmeticCheck("Subtotal: 50\nCuota IVA 10 %: 5\nImporte a pagar: 56")
+      .status,
+    "mismatch",
+  );
+  for (const text of [
+    "Base: 100\nIVA 21%: 21%\nTotal: 121",
+    "Base: 100\nIVA 21%: 21\nIVA 10%: 5\nTotal: 126",
+  ])
+    assert.equal(arithmeticCheck(text).status, "not_checked");
+});

@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.8.1 — 2026-09-08 · sesión 010
+
+Auditoría de la entrega 0.8.0: parche de commit idéntico a 452dcc4, 69/69 pruebas y formato correctos, código de IA y documentos revisados. Mejoras mínimas: la comprobación de sumas reconoce etiquetas habituales (IVA 21%, Cuota IVA, Total/Importe a pagar) sin ampliar la interpretación; el trabajador de IA bloquea además tls, http2, dgram y dns; el nombre de la evaluación sigue la versión. Prompt maestro v2 y directriz de mejora continua en CLAUDE.md, AGENTS.md y docs/PROMPT_MAESTRO_V2.md.
+
+70 pruebas aprobadas, ejecutable 0.8.1 reconstruido y probado con modelo real. Informe reports/2026-09-08T15-15-49-334Z-auditoria-prompt-maestro.md.
+
 ## 0.8.0 — 2026-09-08 · sesión 009
 
 Modelo local Q4 seleccionado por evaluación; dos lecturas con abstención ante discrepancias, contraste de encabezados, proformas/abonos y sumas en céntimos. Las explicaciones generadas se descartan y se muestra únicamente el inicio del original. Al editar texto se retira el resultado anterior.

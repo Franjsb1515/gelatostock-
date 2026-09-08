@@ -20,7 +20,7 @@ function arithmeticCheck(text) {
     const m = line
       .trim()
       .match(
-        /^(base imponible|base|subtotal|IVA(?:\s*\(\d+(?:[.,]\d+)?\s*%\))?|cuota(?:\s+de)?\s+IVA|total(?:\s+factura)?|importe total)\s*:\s*(.+)$/i,
+        /^(base imponible|base|subtotal|(?:cuota(?:\s+de)?\s+)?IVA(?:\s*\(?\s*\d+(?:[.,]\d+)?\s*%\s*\)?)?|total(?:\s+factura|\s+a\s+pagar)?|importe(?:\s+total|\s+a\s+pagar))\s*:\s*(.+)$/i,
       );
     if (!m) continue;
     const label = m[1].toLowerCase();

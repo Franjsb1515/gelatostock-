@@ -18,6 +18,14 @@ for (const name of ["node:http", "node:https"]) {
 require("node:net").connect = denied;
 require("node:net").createConnection = denied;
 require("node:net").Socket.prototype.connect = denied;
+require("node:tls").connect = denied;
+require("node:http2").connect = denied;
+require("node:dgram").createSocket = denied;
+for (const dns of [require("node:dns"), require("node:dns").promises])
+  for (const name of Object.keys(dns).filter((k) =>
+    /^(lookup|resolve)/.test(k),
+  ))
+    dns[name] = denied;
 for (const name of [
   "spawn",
   "spawnSync",

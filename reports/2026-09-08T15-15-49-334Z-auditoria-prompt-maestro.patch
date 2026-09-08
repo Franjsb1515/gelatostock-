@@ -1,0 +1,313 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index d110776..5562623 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.8.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.8.1-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/AGENTS.md b/AGENTS.md
+index 555351c..1441283 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -14,3 +14,9 @@
+ - Al final de cada sesión actualizar TODO.md y CHANGELOG.md; crear un informe en reports/ con resumen, archivos, pruebas, limitaciones y siguiente paso. Usar scripts/new-session.cjs como plantilla, completándola manualmente.
+ - Conservar informes previos. El script crea también un diff de cambios sin commit cuando Git está disponible; no incluye archivos nuevos sin seguimiento ni sustituye un commit.
+ - No marcar tareas probadas en Mac desde una ejecución en Windows.
++
++## Directriz de mejora continua (desde 0.8.1)
++- Prompt operativo para cualquier IA: docs/PROMPT_MAESTRO_V2.md. PROMPT_MAESTRO.md y docs/TODO.md son documentos de origen, no estado.
++- Cada sesión audita antes de construir y corrige al menos un hueco verificado, con evidencia de ejecución. Si no hay hallazgos, decir qué se revisó.
++- No degradar garantías existentes ni ocultar abstenciones o pruebas fallidas para aparentar avance.
++- Si un documento de continuidad o un prompt induce a error, corregirlo en la misma sesión y explicarlo en el informe.
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index ab07b5e..41f1add 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.8.1 — 2026-09-08 · sesión 010
++
++Auditoría de la entrega 0.8.0: parche de commit idéntico a 452dcc4, 69/69 pruebas y formato correctos, código de IA y documentos revisados. Mejoras mínimas: la comprobación de sumas reconoce etiquetas habituales (IVA 21%, Cuota IVA, Total/Importe a pagar) sin ampliar la interpretación; el trabajador de IA bloquea además tls, http2, dgram y dns; el nombre de la evaluación sigue la versión. Prompt maestro v2 y directriz de mejora continua en CLAUDE.md, AGENTS.md y docs/PROMPT_MAESTRO_V2.md.
++
++70 pruebas aprobadas, ejecutable 0.8.1 reconstruido y probado con modelo real. Informe reports/2026-09-08T15-15-49-334Z-auditoria-prompt-maestro.md.
++
+ ## 0.8.0 — 2026-09-08 · sesión 009
+ 
+ Modelo local Q4 seleccionado por evaluación; dos lecturas con abstención ante discrepancias, contraste de encabezados, proformas/abonos y sumas en céntimos. Las explicaciones generadas se descartan y se muestra únicamente el inicio del original. Al editar texto se retira el resultado anterior.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 23be5ce..70e1cb4 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,6 +1,9 @@
+-# Entrada para Claude · entrega vigente 0.8.0
++# Entrada para Claude · entrega vigente 0.8.1
+ 
+-Lee AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
++Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
++
++## Directriz de mejora continua
++Toda IA que lea este proyecto debe dejarlo mejor de lo que lo encontró: auditar (pruebas, formato, coherencia informe/parche/commit, código tocado), corregir al menos un hueco verificado con evidencia, no degradar garantías (abstenciones de IA, permisos, datos canónicos, copias) y actualizar los documentos de continuidad, incluido este y PROMPT_MAESTRO_V2.md, si llevan a error. Ninguna afirmación sin salida de comando o captura que la respalde. Detalle en docs/PROMPT_MAESTRO_V2.md, sección 3.
+ 
+ Núcleo TypeScript estricto en core/, salida build/ generada. Interfaz/servidor/Electron en src/. SQLite y attachments son canónicos; carpetas por proveedor son copias derivadas, no otra base editable. Preserva migración del JSON y datos existentes.
+ 
+@@ -8,17 +11,19 @@ OCR español real para texto/proveedor de fotos. IA real Qwen3 0.6B Q4 para tipo
+ 
+ Control de entregas: cantidades recibidas en unidad base, solo incrementales; presentaciones del pedido son snapshots. No mezclar kg/L/ud ni sumar stock por envío. Pedidos todavía simulados.
+ 
+-WhatsApp experimental: QR real probado sin vincular cuenta. Recepción/cambio de dos números reales pendientes de prueba con el usuario. No exportar data/whatsapp/sessions ni historial privado. QR aplazado en esta sesión a petición del usuario; no auto-conectar por revisar la app.
++WhatsApp experimental: QR real probado sin vincular cuenta. Recepción/cambio de dos números reales pendientes de prueba con el usuario. No exportar data/whatsapp/sessions ni historial privado. No auto-conectar QR por revisar la app.
+ 
+-Pruebas: npm test; npm run format:check; npm run package:win; npm run test:desktop. Esta última incluye inferencia real y tarda más que unitarias. GELATO_TEST_QR=1 solo con prueba explícita. Usa fixtures en work/, nunca borres datos reales para probar. Mac no validado. Revisar seguridad, firma de paquetes, almacenamiento y rendimiento con hardware/documentos reales antes de producción.
++Pruebas: npm test; npm run format:check; npm run package:win; npm run test:desktop. Esta última incluye inferencia real y tarda más que unitarias. node scripts/evaluate-ai.cjs --quick para cambios en IA (modelo real, conserva pass:false). GELATO_TEST_QR=1 solo con prueba explícita. Usa fixtures en work/, nunca borres datos reales para probar. Mac no validado. Revisar seguridad, firma de paquetes, almacenamiento y rendimiento con hardware/documentos reales antes de producción.
+ 
+ Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+ 
+-## Punto de continuidad 0.8
+-Lee reports/2026-09-08T09-40-35-511Z-ia-reforzada.md. Q4 fue elegido tras comparar variantes: no asumir que un modelo mayor será mejor en este equipo. Experimentos descartados quedan en work/runtime de desarrollo, excluidos del ejecutable y ZIP de fuentes; scripts/package.cjs copia solo el modelo definido en el manifiesto. No incluir modelos ajenos al manifiesto al empaquetar.
++## Punto de continuidad 0.8.1
++Lee reports/2026-09-08T15-15-49-334Z-auditoria-prompt-maestro.md. Sesión 010 auditó la entrega 0.8.0 de ChatGPT: parche de commit idéntico a 452dcc4, 69/69 pruebas y formato correctos, código de IA revisado. Cambios mínimos: etiquetas habituales de IVA/total en la comprobación aritmética (menos abstenciones sin ampliar interpretación), bloqueo adicional de tls/http2/dgram/dns en el trabajador (sigue sin ser sandbox de SO) y nombre de evaluación por versión. 70 pruebas.
++
++Q4 fue elegido tras comparar variantes: no asumir que un modelo mayor será mejor en este equipo. Experimentos descartados quedan en work/runtime de desarrollo, excluidos del ejecutable y ZIP de fuentes; scripts/package.cjs copia solo el modelo definido en el manifiesto. No incluir modelos ajenos al manifiesto al empaquetar.
+ 
+ Doble lectura del mismo modelo con prompts distintos, sin independencia estadística. src/ai-review.cjs contiene reglas, NO razonamiento neuronal. La coincidencia no da permiso para actuar. Control monetario limitado a un esquema base/cuota/total sin otros conceptos; no es validación fiscal.
+ 
+-Evaluación rápida: 2/3 clasificaciones exactas; proforma quedó Por revisar. El archivo conserva pass:false deliberadamente; no ocultar abstenciones ni llamar a eso exactitud perfecta. Pruebas de seguridad/funcionamiento son distintas de métricas de calidad de clasificación. El modo de razonamiento largo en Qwen3 1.7B se descartó por latencia. Sigue pendiente razonamiento general avanzado y corpus representativo.
++Evaluación rápida: 2/3 clasificaciones exactas en 0.8.0 y 0.8.1; proforma queda Por revisar y el archivo conserva pass:false deliberadamente; no ocultar abstenciones ni llamar a eso exactitud perfecta. Pruebas de seguridad/funcionamiento son distintas de métricas de calidad de clasificación. Sigue pendiente razonamiento general avanzado y corpus representativo.
+ 
+ El usuario pide respuestas MUY breves en chat; informes técnicos completos en estos documentos. Antes de cambiar archivos, comprobar git status para evitar pisar cambios de otro colaborador.
+diff --git a/README.md b/README.md
+index 6016bff..62be65c 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.8.0
++# GelatoStock · prototipo 0.8.1
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.8.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.8.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.8.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.8.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -38,7 +38,7 @@ Nuevas funciones: entradas, salidas y mermas con motivo; corrección mediante un
+ Leer, en este orden:
+ 
+ 1. `CLAUDE.md` / `AGENTS.md`.
+-2. `reports/2026-09-08T04-18-52-587Z-whatsapp-qr-cuentas.md`.
++2. `docs/PROMPT_MAESTRO_V2.md` y el informe más reciente de `reports/`.
+ 3. `TODO.md` y `CHANGELOG.md`.
+ 4. `docs/ARQUITECTURA_PROTOTIPO.md`.
+ 5. Los cinco documentos originales de `docs/`, empezando por `PROMPT_MAESTRO.md`.
+@@ -68,7 +68,7 @@ npm run session:new -- titulo-de-la-sesion
+ 
+ ## Evidencias
+ 
+-`reports/tests-2026-09-08-v06.txt`, `reports/desktop-smoke-2026-09-08-v06.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
++`reports/tests-2026-09-08-v081.txt`, `reports/desktop-smoke-2026-09-08-v081.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
+ 
+ ## Tecnología y siguiente decisión
+ 
+@@ -114,3 +114,6 @@ Leer docs/IA_LOCAL_Y_SEGURIDAD.md antes de ampliar permisos o automatizar accion
+ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Contrasta encabezados y distingue proformas/abonos; comprueba base + cuota de IVA frente al total cuando las tres cantidades están etiquetadas en líneas separadas. No valida toda una factura ni hace contabilidad. Al cambiar el texto se retira la conclusión anterior.
+ 
+ Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
++
++## Auditoría y mejora continua en 0.8.1
++La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
+diff --git a/TODO.md b/TODO.md
+index 9d0f2fd..855c21a 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.8.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.8.1.
+ 
+ ## Entregado y comprobado
+ 
+@@ -22,11 +22,12 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ ## Antes de usar como sistema real
+ 
+ - [ ] Confirmar productos, proveedores, recetas, unidades y sistema de ventas reales.
+-- [ ] Revisar arquitectura y código con Claude.
++- [ ] Revisar arquitectura completa con Claude (pendiente core/, servidor y WhatsApp).
++- [x] Auditoría 0.8.1 de la entrega 0.8.0: parche/commit, pruebas, código de IA y documentos de continuidad.
+ - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
+ - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
+ - [x] Cancelar pedidos pendientes sin alterar stock.
+-- [x] Núcleo TypeScript estricto, validación de contratos y 69 pruebas automatizadas.
++- [x] Núcleo TypeScript estricto, validación de contratos y 70 pruebas automatizadas.
+ - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
+ - [ ] Definir autenticación y permisos si lo usa más de una persona.
+ - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
+@@ -45,7 +46,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Texto original mostrado sin explicaciones inventadas, límites de entrada/salida, cancelación y endpoints autenticados para IA.
+ - [x] Doble lectura con abstención, contraste de encabezados y comprobación limitada de importes en céntimos.
+ - [x] Resultado anterior retirado al cambiar texto o modo.
+-- [ ] Reducir abstenciones legítimas: proforma de prueba discrepó entre lecturas; conservar revisión hasta validar mejoras.
++- [ ] Reducir abstenciones legítimas: proforma de prueba discrepó entre lecturas; conservar revisión hasta validar mejoras. 0.8.1 reconoce etiquetas IVA 21%/Total a pagar en la suma; falta corpus real.
++- [x] Prompt maestro v2 y directriz de mejora continua para cualquier IA que continúe.
++- [ ] Sandbox real del trabajador de IA: hoy solo se desactivan módulos de red de Node, no el proceso nativo.
+ - [ ] Evaluación independiente de razonamiento/precisión con corpus real autorizado; no inferir certeza de la coincidencia.
+ - [ ] Memoria de equivalencias y correcciones aprobadas.
+ - [x] Diseño de WhatsApp con chats autorizados: docs/WHATSAPP_PROVEEDORES.md.
+diff --git a/docs/CHECKLIST_PRINCIPAL.md b/docs/CHECKLIST_PRINCIPAL.md
+index 2838350..96552b4 100644
+--- a/docs/CHECKLIST_PRINCIPAL.md
++++ b/docs/CHECKLIST_PRINCIPAL.md
+@@ -58,3 +58,6 @@ Adjuntar versión, equipo/SO, pruebas ejecutadas y resultados; capturas de los f
+ 
+ ## Estado incorporado en 0.7 · 2026-09-08
+ Control de entregas e IA local asistida implementados. Consultar CONTROL_DE_ENTREGAS.md e IA_LOCAL_Y_SEGURIDAD.md para el alcance vigente y los límites. La meta de automatización revisable se mantiene: quedan lectura PDF/cantidades, clasificación de adjuntos entrantes, equivalencias aprobadas y validación de producción. No elevar permisos del modelo para cubrir esos pendientes sin controles y pruebas.
++
++## Estado incorporado en 0.8.1 · 2026-09-08
++Las casillas siguen abiertas: son aceptación del negocio con datos reales, no pruebas de desarrollo. Evidencia disponible para revisarlas: persistencia, copias, conversión de presentaciones, recepción parcial y reinicio en reports/desktop-smoke-2026-09-08-v081.txt y reports/tests-2026-09-08-v081.txt; IA sin llamadas externas, cancelable y con abstenciones en docs/IA_LOCAL_Y_SEGURIDAD.md y reports/ai-evaluation-v081-quick.json. Pendientes sin evidencia: instalador gráfico firmado, Mac 8 GB, mensajes por evento con teléfono real, recuperación tras interrupciones y compras reales. Informe: reports/2026-09-08T15-15-49-334Z-auditoria-prompt-maestro.md.
+diff --git a/docs/IA_LOCAL_Y_SEGURIDAD.md b/docs/IA_LOCAL_Y_SEGURIDAD.md
+index 366bcaa..5754ae0 100644
+--- a/docs/IA_LOCAL_Y_SEGURIDAD.md
++++ b/docs/IA_LOCAL_Y_SEGURIDAD.md
+@@ -52,3 +52,6 @@ Se compararon Qwen3 0.6B Q8/Q4, Qwen3 1.7B Q8, Qwen2.5 1.5B Q8 y un clasificador
+ Evaluación reforzada rápida final: 2/3 clasificaciones esperadas; la tercera, una proforma, quedó explícitamente por revisar al discrepar las lecturas. El descuadre de total se detectó. Reporte ai-evaluation-v08-quick.json conserva esa limitación con pass:false; no se modificó la expectativa para ocultarla. Pico del proceso en esa prueba: ~2.257 MiB; latencias ~25–30 s. Falta corpus independiente, documentos reales autorizados y medición en Mac/8 GB.
+ 
+ El razonamiento general avanzado no está resuelto ni se garantiza cero errores. Esta entrega refuerza una tarea específica con modelo, contraste y reglas. Mantener revisión humana antes de cualquier futura acción.
++
++## Ajustes 0.8.1
++La comprobación aritmética reconoce además "IVA 21%", "IVA (21 %)", "Cuota IVA 10%", "Total a pagar" e "Importe a pagar" como etiquetas. Sigue exigiendo una sola base, una sola cuota y un total con importe; "IVA: 21%" sin importe o dos cuotas siguen sin comprobarse. El trabajador bloquea también tls, http2, dgram y dns dentro de Node; la dependencia nativa de ONNX sigue fuera de ese control y no existe sandbox del sistema operativo. Evaluación rápida repetida con el mismo modelo: ver reports/ai-evaluation-v081-quick.json.
+diff --git a/docs/PROMPT_MAESTRO.md b/docs/PROMPT_MAESTRO.md
+index 7f90610..bfddd06 100644
+--- a/docs/PROMPT_MAESTRO.md
++++ b/docs/PROMPT_MAESTRO.md
+@@ -1,5 +1,7 @@
+ # Prompt maestro para construir la aplicación
+ 
++> Documento de origen (2026-09-07), conservado sin cambios. Desde 0.8.1 el prompt operativo para cualquier IA que continúe es docs/PROMPT_MAESTRO_V2.md; este texto describe la meta completa, no el estado actual.
++
+ Copiar estas instrucciones al agente de desarrollo y entregarle también TODO.md, CHECKLIST_PRINCIPAL.md, CAMINO_Y_META.md y DISENO.md. Estos documentos forman una especificación inicial; no describen software ya implementado.
+ 
+ ## Tu papel y el resultado esperado
+diff --git a/docs/TODO.md b/docs/TODO.md
+index 322eb82..1bcfae5 100644
+--- a/docs/TODO.md
++++ b/docs/TODO.md
+@@ -1,5 +1,7 @@
+ # TODO — plan de implementación
+ 
++> Plan original (2026-09-07), conservado como referencia histórica. El estado real por entrega está en TODO.md de la raíz; no marcar casillas aquí.
++
+ Estado inicial: especificación preparada; aplicación aún no implementada. Mantener cada casilla abierta hasta tener evidencia de aceptación. Referencia normativa: PROMPT_MAESTRO.md.
+ 
+ ## P0 — decisiones que habilitan el trabajo
+diff --git a/package.json b/package.json
+index 3d1d398..0c418e0 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.8.0",
++  "version": "0.8.1",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/evaluate-ai.cjs b/scripts/evaluate-ai.cjs
+index b033430..b244833 100644
+--- a/scripts/evaluate-ai.cjs
++++ b/scripts/evaluate-ai.cjs
+@@ -3,6 +3,8 @@ const fs = require("node:fs");
+ const path = require("node:path");
+ const { LocalAI } = require("../src/ai.cjs");
+ const samples = require("../tests/fixtures/ai-documents.json");
++const manifest = require("../runtime/ai-model.json");
++const tag = "v" + require("../package.json").version.replace(/\./g, "");
+ (async () => {
+   const ai = new LocalAI();
+   const rows = [];
+@@ -42,15 +44,15 @@ const samples = require("../tests/fixtures/ai-documents.json");
+   const result = {
+     at: new Date().toISOString(),
+     synthetic: true,
+-    model: "Qwen3 0.6B Q4",
++    model: manifest.label + " " + manifest.dtype.toUpperCase(),
+     cases: rows.length,
+     passed: rows.filter((r) => r.pass).length,
+     peakProcessRSSMiB: Math.round(peak / 1048576),
+     rows,
+   };
+   const name = process.argv.includes("--quick")
+-    ? "ai-evaluation-v08-quick.json"
+-    : "ai-evaluation-v08.json";
++    ? "ai-evaluation-" + tag + "-quick.json"
++    : "ai-evaluation-" + tag + ".json";
+   fs.writeFileSync(
+     path.join(__dirname, "../reports", name),
+     JSON.stringify(result, null, 2),
+diff --git a/src/ai-review.cjs b/src/ai-review.cjs
+index 67766a4..48dd1df 100644
+--- a/src/ai-review.cjs
++++ b/src/ai-review.cjs
+@@ -20,7 +20,7 @@ function arithmeticCheck(text) {
+     const m = line
+       .trim()
+       .match(
+-        /^(base imponible|base|subtotal|IVA(?:\s*\(\d+(?:[.,]\d+)?\s*%\))?|cuota(?:\s+de)?\s+IVA|total(?:\s+factura)?|importe total)\s*:\s*(.+)$/i,
++        /^(base imponible|base|subtotal|(?:cuota(?:\s+de)?\s+)?IVA(?:\s*\(?\s*\d+(?:[.,]\d+)?\s*%\s*\)?)?|total(?:\s+factura|\s+a\s+pagar)?|importe(?:\s+total|\s+a\s+pagar))\s*:\s*(.+)$/i,
+       );
+     if (!m) continue;
+     const label = m[1].toLowerCase();
+diff --git a/src/ai-worker.cjs b/src/ai-worker.cjs
+index 91c6add..fbb7e4f 100644
+--- a/src/ai-worker.cjs
++++ b/src/ai-worker.cjs
+@@ -18,6 +18,14 @@ for (const name of ["node:http", "node:https"]) {
+ require("node:net").connect = denied;
+ require("node:net").createConnection = denied;
+ require("node:net").Socket.prototype.connect = denied;
++require("node:tls").connect = denied;
++require("node:http2").connect = denied;
++require("node:dgram").createSocket = denied;
++for (const dns of [require("node:dns"), require("node:dns").promises])
++  for (const name of Object.keys(dns).filter((k) =>
++    /^(lookup|resolve)/.test(k),
++  ))
++    dns[name] = denied;
+ for (const name of [
+   "spawn",
+   "spawnSync",
+diff --git a/tests/ai-review.test.cjs b/tests/ai-review.test.cjs
+index 0425272..84c4588 100644
+--- a/tests/ai-review.test.cjs
++++ b/tests/ai-review.test.cjs
+@@ -117,3 +117,20 @@ test("documentos mezclados exigen revisión", () => {
+   assert.equal(r.tipo, "otro");
+   assert.equal(r.headings.length, 2);
+ });
++
++test("sumas: etiquetas habituales en facturas españolas se reconocen sin ampliar la interpretación", () => {
++  const check = arithmeticCheck(
++    "FACTURA F-7\nBase imponible: 100,00 €\nIVA 21%: 21,00 €\nTotal a pagar: 121,00 €",
++  );
++  assert.equal(check.status, "matched");
++  assert.equal(
++    arithmeticCheck("Subtotal: 50\nCuota IVA 10 %: 5\nImporte a pagar: 56")
++      .status,
++    "mismatch",
++  );
++  for (const text of [
++    "Base: 100\nIVA 21%: 21%\nTotal: 121",
++    "Base: 100\nIVA 21%: 21\nIVA 10%: 5\nTotal: 126",
++  ])
++    assert.equal(arithmeticCheck(text).status, "not_checked");
++});

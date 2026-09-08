@@ -1,0 +1,51 @@
+{
+  "at": "2026-09-08T15:18:13.179Z",
+  "synthetic": true,
+  "model": "Qwen3 0.6B Q4",
+  "cases": 3,
+  "passed": 2,
+  "peakProcessRSSMiB": 2270,
+  "rows": [
+    {
+      "id": "peticion_factura",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 38294,
+      "pass": true
+    },
+    {
+      "id": "proforma",
+      "expected": "proforma",
+      "tipo": "otro",
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 33303,
+      "pass": false
+    },
+    {
+      "id": "total_incoherente",
+      "expected": "factura",
+      "tipo": "factura",
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "mismatch",
+      "milliseconds": 65635,
+      "pass": true
+    }
+  ]
+}

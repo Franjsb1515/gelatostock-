@@ -1,6 +1,9 @@
-# Entrada para Claude · entrega vigente 0.8.0
+# Entrada para Claude · entrega vigente 0.8.1
 
-Lee AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+
+## Directriz de mejora continua
+Toda IA que lea este proyecto debe dejarlo mejor de lo que lo encontró: auditar (pruebas, formato, coherencia informe/parche/commit, código tocado), corregir al menos un hueco verificado con evidencia, no degradar garantías (abstenciones de IA, permisos, datos canónicos, copias) y actualizar los documentos de continuidad, incluido este y PROMPT_MAESTRO_V2.md, si llevan a error. Ninguna afirmación sin salida de comando o captura que la respalde. Detalle en docs/PROMPT_MAESTRO_V2.md, sección 3.
 
 Núcleo TypeScript estricto en core/, salida build/ generada. Interfaz/servidor/Electron en src/. SQLite y attachments son canónicos; carpetas por proveedor son copias derivadas, no otra base editable. Preserva migración del JSON y datos existentes.
 
@@ -8,17 +11,19 @@ OCR español real para texto/proveedor de fotos. IA real Qwen3 0.6B Q4 para tipo
 
 Control de entregas: cantidades recibidas en unidad base, solo incrementales; presentaciones del pedido son snapshots. No mezclar kg/L/ud ni sumar stock por envío. Pedidos todavía simulados.
 
-WhatsApp experimental: QR real probado sin vincular cuenta. Recepción/cambio de dos números reales pendientes de prueba con el usuario. No exportar data/whatsapp/sessions ni historial privado. QR aplazado en esta sesión a petición del usuario; no auto-conectar por revisar la app.
+WhatsApp experimental: QR real probado sin vincular cuenta. Recepción/cambio de dos números reales pendientes de prueba con el usuario. No exportar data/whatsapp/sessions ni historial privado. No auto-conectar QR por revisar la app.
 
-Pruebas: npm test; npm run format:check; npm run package:win; npm run test:desktop. Esta última incluye inferencia real y tarda más que unitarias. GELATO_TEST_QR=1 solo con prueba explícita. Usa fixtures en work/, nunca borres datos reales para probar. Mac no validado. Revisar seguridad, firma de paquetes, almacenamiento y rendimiento con hardware/documentos reales antes de producción.
+Pruebas: npm test; npm run format:check; npm run package:win; npm run test:desktop. Esta última incluye inferencia real y tarda más que unitarias. node scripts/evaluate-ai.cjs --quick para cambios en IA (modelo real, conserva pass:false). GELATO_TEST_QR=1 solo con prueba explícita. Usa fixtures en work/, nunca borres datos reales para probar. Mac no validado. Revisar seguridad, firma de paquetes, almacenamiento y rendimiento con hardware/documentos reales antes de producción.
 
 Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
 
-## Punto de continuidad 0.8
-Lee reports/2026-09-08T09-40-35-511Z-ia-reforzada.md. Q4 fue elegido tras comparar variantes: no asumir que un modelo mayor será mejor en este equipo. Experimentos descartados quedan en work/runtime de desarrollo, excluidos del ejecutable y ZIP de fuentes; scripts/package.cjs copia solo el modelo definido en el manifiesto. No incluir modelos ajenos al manifiesto al empaquetar.
+## Punto de continuidad 0.8.1
+Lee reports/2026-09-08T15-15-49-334Z-auditoria-prompt-maestro.md. Sesión 010 auditó la entrega 0.8.0 de ChatGPT: parche de commit idéntico a 452dcc4, 69/69 pruebas y formato correctos, código de IA revisado. Cambios mínimos: etiquetas habituales de IVA/total en la comprobación aritmética (menos abstenciones sin ampliar interpretación), bloqueo adicional de tls/http2/dgram/dns en el trabajador (sigue sin ser sandbox de SO) y nombre de evaluación por versión. 70 pruebas.
+
+Q4 fue elegido tras comparar variantes: no asumir que un modelo mayor será mejor en este equipo. Experimentos descartados quedan en work/runtime de desarrollo, excluidos del ejecutable y ZIP de fuentes; scripts/package.cjs copia solo el modelo definido en el manifiesto. No incluir modelos ajenos al manifiesto al empaquetar.
 
 Doble lectura del mismo modelo con prompts distintos, sin independencia estadística. src/ai-review.cjs contiene reglas, NO razonamiento neuronal. La coincidencia no da permiso para actuar. Control monetario limitado a un esquema base/cuota/total sin otros conceptos; no es validación fiscal.
 
-Evaluación rápida: 2/3 clasificaciones exactas; proforma quedó Por revisar. El archivo conserva pass:false deliberadamente; no ocultar abstenciones ni llamar a eso exactitud perfecta. Pruebas de seguridad/funcionamiento son distintas de métricas de calidad de clasificación. El modo de razonamiento largo en Qwen3 1.7B se descartó por latencia. Sigue pendiente razonamiento general avanzado y corpus representativo.
+Evaluación rápida: 2/3 clasificaciones exactas en 0.8.0 y 0.8.1; proforma queda Por revisar y el archivo conserva pass:false deliberadamente; no ocultar abstenciones ni llamar a eso exactitud perfecta. Pruebas de seguridad/funcionamiento son distintas de métricas de calidad de clasificación. Sigue pendiente razonamiento general avanzado y corpus representativo.
 
 El usuario pide respuestas MUY breves en chat; informes técnicos completos en estos documentos. Antes de cambiar archivos, comprobar git status para evitar pisar cambios de otro colaborador.

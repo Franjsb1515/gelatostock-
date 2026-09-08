@@ -1,5 +1,7 @@
 # TODO — plan de implementación
 
+> Plan original (2026-09-07), conservado como referencia histórica. El estado real por entrega está en TODO.md de la raíz; no marcar casillas aquí.
+
 Estado inicial: especificación preparada; aplicación aún no implementada. Mantener cada casilla abierta hasta tener evidencia de aceptación. Referencia normativa: PROMPT_MAESTRO.md.
 
 ## P0 — decisiones que habilitan el trabajo

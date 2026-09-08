@@ -58,3 +58,6 @@ Adjuntar versión, equipo/SO, pruebas ejecutadas y resultados; capturas de los f
 
 ## Estado incorporado en 0.7 · 2026-09-08
 Control de entregas e IA local asistida implementados. Consultar CONTROL_DE_ENTREGAS.md e IA_LOCAL_Y_SEGURIDAD.md para el alcance vigente y los límites. La meta de automatización revisable se mantiene: quedan lectura PDF/cantidades, clasificación de adjuntos entrantes, equivalencias aprobadas y validación de producción. No elevar permisos del modelo para cubrir esos pendientes sin controles y pruebas.
+
+## Estado incorporado en 0.8.1 · 2026-09-08
+Las casillas siguen abiertas: son aceptación del negocio con datos reales, no pruebas de desarrollo. Evidencia disponible para revisarlas: persistencia, copias, conversión de presentaciones, recepción parcial y reinicio en reports/desktop-smoke-2026-09-08-v081.txt y reports/tests-2026-09-08-v081.txt; IA sin llamadas externas, cancelable y con abstenciones en docs/IA_LOCAL_Y_SEGURIDAD.md y reports/ai-evaluation-v081-quick.json. Pendientes sin evidencia: instalador gráfico firmado, Mac 8 GB, mensajes por evento con teléfono real, recuperación tras interrupciones y compras reales. Informe: reports/2026-09-08T15-15-49-334Z-auditoria-prompt-maestro.md.

@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.8.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.8.1.
 
 ## Entregado y comprobado
 
@@ -22,11 +22,12 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 ## Antes de usar como sistema real
 
 - [ ] Confirmar productos, proveedores, recetas, unidades y sistema de ventas reales.
-- [ ] Revisar arquitectura y código con Claude.
+- [ ] Revisar arquitectura completa con Claude (pendiente core/, servidor y WhatsApp).
+- [x] Auditoría 0.8.1 de la entrega 0.8.0: parche/commit, pruebas, código de IA y documentos de continuidad.
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 69 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 70 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
@@ -45,7 +46,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Texto original mostrado sin explicaciones inventadas, límites de entrada/salida, cancelación y endpoints autenticados para IA.
 - [x] Doble lectura con abstención, contraste de encabezados y comprobación limitada de importes en céntimos.
 - [x] Resultado anterior retirado al cambiar texto o modo.
-- [ ] Reducir abstenciones legítimas: proforma de prueba discrepó entre lecturas; conservar revisión hasta validar mejoras.
+- [ ] Reducir abstenciones legítimas: proforma de prueba discrepó entre lecturas; conservar revisión hasta validar mejoras. 0.8.1 reconoce etiquetas IVA 21%/Total a pagar en la suma; falta corpus real.
+- [x] Prompt maestro v2 y directriz de mejora continua para cualquier IA que continúe.
+- [ ] Sandbox real del trabajador de IA: hoy solo se desactivan módulos de red de Node, no el proceso nativo.
 - [ ] Evaluación independiente de razonamiento/precisión con corpus real autorizado; no inferir certeza de la coincidencia.
 - [ ] Memoria de equivalencias y correcciones aprobadas.
 - [x] Diseño de WhatsApp con chats autorizados: docs/WHATSAPP_PROVEEDORES.md.

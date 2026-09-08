@@ -52,3 +52,6 @@ Se compararon Qwen3 0.6B Q8/Q4, Qwen3 1.7B Q8, Qwen2.5 1.5B Q8 y un clasificador
 Evaluación reforzada rápida final: 2/3 clasificaciones esperadas; la tercera, una proforma, quedó explícitamente por revisar al discrepar las lecturas. El descuadre de total se detectó. Reporte ai-evaluation-v08-quick.json conserva esa limitación con pass:false; no se modificó la expectativa para ocultarla. Pico del proceso en esa prueba: ~2.257 MiB; latencias ~25–30 s. Falta corpus independiente, documentos reales autorizados y medición en Mac/8 GB.
 
 El razonamiento general avanzado no está resuelto ni se garantiza cero errores. Esta entrega refuerza una tarea específica con modelo, contraste y reglas. Mantener revisión humana antes de cualquier futura acción.
+
+## Ajustes 0.8.1
+La comprobación aritmética reconoce además "IVA 21%", "IVA (21 %)", "Cuota IVA 10%", "Total a pagar" e "Importe a pagar" como etiquetas. Sigue exigiendo una sola base, una sola cuota y un total con importe; "IVA: 21%" sin importe o dos cuotas siguen sin comprobarse. El trabajador bloquea también tls, http2, dgram y dns dentro de Node; la dependencia nativa de ONNX sigue fuera de ese control y no existe sandbox del sistema operativo. Evaluación rápida repetida con el mismo modelo: ver reports/ai-evaluation-v081-quick.json.

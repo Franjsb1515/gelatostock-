@@ -1,5 +1,7 @@
 # Prompt maestro para construir la aplicación
 
+> Documento de origen (2026-09-07), conservado sin cambios. Desde 0.8.1 el prompt operativo para cualquier IA que continúe es docs/PROMPT_MAESTRO_V2.md; este texto describe la meta completa, no el estado actual.
+
 Copiar estas instrucciones al agente de desarrollo y entregarle también TODO.md, CHECKLIST_PRINCIPAL.md, CAMINO_Y_META.md y DISENO.md. Estos documentos forman una especificación inicial; no describen software ya implementado.
 
 ## Tu papel y el resultado esperado
