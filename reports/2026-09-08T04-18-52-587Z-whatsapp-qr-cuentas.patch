@@ -1,0 +1,446 @@
+diff --git a/.gitignore b/.gitignore
+index 9650ac8..c2c3e2b 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -8,3 +8,5 @@ output/
+ reports/patches/
+ *.zip
+ build/
++
++runtime/browser/
+diff --git a/package.json b/package.json
+index eb16041..72aec63 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.5.0",
++  "version": "0.6.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+@@ -25,7 +25,12 @@
+   },
+   "dependencies": {
+     "@tesseract.js-data/spa": "1.0.0",
++    "qrcode": "1.5.4",
+     "tesseract.js": "7.0.0",
++    "whatsapp-web.js": "1.34.7",
+     "zod": "4.5.4"
++  },
++  "overrides": {
++    "puppeteer": "25.10.0"
+   }
+ }
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 760d2f7..1f39731 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -4,7 +4,7 @@ const fs = require("node:fs");
+ const assert = require("node:assert/strict");
+ (async () => {
+   const root = path.resolve(__dirname, "..");
+-  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v5-"));
++  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v6-"));
+   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
+   const { DatabaseSync } = require("node:sqlite");
+   const savedStock = () => {
+@@ -64,7 +64,7 @@ const assert = require("node:assert/strict");
+     assert.equal(savedStock(), 4.25);
+     assert.ok(requests.every((u) => new URL(u).hostname === "127.0.0.1"));
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v05-desktop.png"),
++      path: path.join(root, "output", "playwright", "v06-desktop.png"),
+     });
+     await window
+       .getByRole("button", { name: "Cargar foto", exact: true })
+@@ -83,7 +83,7 @@ const assert = require("node:assert/strict");
+       "s1",
+     );
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v05-ocr.png"),
++      path: path.join(root, "output", "playwright", "v06-ocr.png"),
+     });
+     await window.locator("input[name=documentDate]").fill("2026-09-01");
+     await window
+@@ -126,7 +126,7 @@ const assert = require("node:assert/strict");
+       ),
+     );
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v05-fotos.png"),
++      path: path.join(root, "output", "playwright", "v06-fotos.png"),
+       fullPage: true,
+     });
+     assert.equal(savedStock(), 4.25);
+@@ -167,7 +167,7 @@ const assert = require("node:assert/strict");
+     await window.getByRole("dialog").waitFor({ state: "hidden" });
+     assert.equal(savedStock(), 4.25);
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v05-movimientos.png"),
++      path: path.join(root, "output", "playwright", "v06-movimientos.png"),
+     });
+     await window
+       .getByRole("button", { name: "Ver mensajes", exact: true })
+@@ -220,8 +220,33 @@ const assert = require("node:assert/strict");
+       .getByRole("combobox", { name: "Mostrar", exact: true })
+       .selectOption("all");
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v05-mensajes.png"),
++      path: path.join(root, "output", "playwright", "v06-mensajes.png"),
+     });
++    await window.getByRole("button", { name: "WhatsApp", exact: true }).click();
++    await window
++      .getByRole("heading", { name: "Desconectado", exact: true })
++      .waitFor();
++    await window
++      .getByRole("heading", {
++        name: "Historial de sesiones y cambios de número",
++        exact: true,
++      })
++      .waitFor();
++    await window.screenshot({
++      path: path.join(root, "output", "playwright", "v06-whatsapp.png"),
++      fullPage: true,
++    });
++    if (process.env.GELATO_TEST_QR === "1") {
++      await window
++        .getByRole("button", { name: "Conectar por QR", exact: true })
++        .click();
++      await window
++        .getByRole("img", { name: "QR para vincular WhatsApp", exact: true })
++        .waitFor({ timeout: 60000 });
++      console.log(
++        "PASS: QR real obtenido en ejecutable empaquetado, sin vincular cuenta ni enviar mensajes.",
++      );
++    }
+     const runtime = await app.evaluate(({ app }) => ({
+       userData: app.getPath("userData"),
+       sessionData: app.getPath("sessionData"),
+diff --git a/scripts/package.cjs b/scripts/package.cjs
+index 972f0ae..5b15998 100644
+--- a/scripts/package.cjs
++++ b/scripts/package.cjs
+@@ -36,7 +36,12 @@ fs.mkdirSync(path.join(app, "node_modules"), { recursive: true });
+ const lock = require("../package-lock.json");
+ for (const [location, info] of Object.entries(lock.packages)) {
+   if (!location || info.dev || !location.startsWith("node_modules/")) continue;
++  if (info.optional && !fs.existsSync(path.join(root, location))) continue;
+   fs.cpSync(path.join(root, location), path.join(app, location), {
+     recursive: true,
+   });
+ }
++
++fs.cpSync(path.join(root, "runtime"), path.join(app, "runtime"), {
++  recursive: true,
++});
+diff --git a/src/app.js b/src/app.js
+index 4e026b8..76f2407 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,7 +1,10 @@
++let waState = null,
++  waAccount = "",
++  waBusy = false;
+ let state,
+   dataDir,
+   archiveWarning,
+-  page = "home",
++  page = location.hash === "#whatsapp" ? "whatsapp" : "home",
+   filter = "Todos",
+   query = "",
+   selectedMessage = null,
+@@ -178,6 +181,7 @@ function render() {
+     suppliers,
+     activity,
+     settings,
++    whatsapp,
+   };
+   $("#app").innerHTML =
+     `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span><small>EL ESPACIO DE TU NEGOCIO</small></span></a><div class="workspace"><div class="workspace-icon">G</div><div><strong>Gelato & Café</strong><small>Espacio de demostración</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
+@@ -185,6 +189,7 @@ function render() {
+       ["stock", "box", "Inventario"],
+       ["orders", "cart", "Compras"],
+       ["messages", "message", "Mensajes"],
++      ["whatsapp", "message", "WhatsApp"],
+       ["suppliers", "store", "Proveedores"],
+       ["activity", "clock", "Actividad"],
+     ]
+@@ -194,7 +199,123 @@ function render() {
+       )
+       .join(
+         "",
+-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.5.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
++      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.6.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
++}
++async function refreshWhatsApp() {
++  if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)
++    return;
++  try {
++    const next = await request(
++      "/api/whatsapp" +
++        (waAccount ? "?account=" + encodeURIComponent(waAccount) : ""),
++    );
++    if (JSON.stringify(next) !== JSON.stringify(waState)) {
++      waState = next;
++      render();
++    }
++  } catch {
++    /* Retain last visible state; next poll retries. */
++  }
++}
++setInterval(refreshWhatsApp, 2000);
++function whatsapp() {
++  const w = waState;
++  if (!w) {
++    setTimeout(refreshWhatsApp, 0);
++    return header("WhatsApp de proveedores", "Cargando conexión local…");
++  }
++  const names = {
++    disconnected: "Desconectado",
++    starting: "Preparando conexión…",
++    qr: "Escaneá el QR",
++    connected: "Conectado",
++    closing: "Cerrando sesión…",
++    error: "Revisar conexión",
++  };
++  return (
++    header(
++      "WhatsApp de proveedores",
++      "WhatsApp normal o Business · conexión experimental por QR",
++    ) +
++    `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo se importan chats autorizados. La sesión de WhatsApp Web puede sincronizar la cuenta completa en su perfil local. Internet y app abierta necesarios; no hay envíos desde este módulo.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}</div></section>
++ <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Al cambiar de cuenta, su lista se mantiene separada. No se importa historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} ${w.account === w.activeAccount ? btn("Dejar de importar", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
++ <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos 200 mensajes recibidos de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${w.messages.map((m) => `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`).join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'}</section>
++ <section class="panel settings-card"><h2>Historial de sesiones y cambios de número</h2>${btn("Crear copia de WhatsApp", "waBackup")}<p class="fineprint">Esta copia incluye conversaciones y adjuntos, sin credenciales. Es independiente de la copia del inventario.</p>${w.history.map((e) => `<p>${date(e.at)} ${time(e.at)} · ${esc(e.text)}</p>`).join("") || '<p class="muted">Todavía no se vinculó ninguna cuenta.</p>'}</section>`
++  );
++}
++async function whatsappAction(name, el) {
++  if (name === "waBackup") {
++    try {
++      const result = await request("/api/whatsapp", { type: "backup" });
++      modal(
++        "Copia de WhatsApp creada",
++        "Conservá la carpeta completa; las sesiones de acceso no se incluyen.",
++        `<code class="path">${esc(result.path)}</code>`,
++        async () => true,
++        "Listo",
++      );
++    } catch (e) {
++      toast(e.message);
++    }
++    return;
++  }
++  if (name === "waAllow") {
++    modal(
++      "Autorizar un chat",
++      "Solo este número se importará para la cuenta conectada.",
++      select("Proveedor registrado (opcional)", "supplier", [
++        ["", "Otro contacto"],
++        ...state.suppliers.filter((p) => p.whatsapp).map((p) => [p.id, p.name]),
++      ]) +
++        field(
++          "Número internacional",
++          "phone",
++          "",
++          "tel",
++          'placeholder="+34…" maxlength="40"',
++        ) +
++        field("Nombre del contacto", "label", "", "text", 'maxlength="100"'),
++      async (f) => {
++        waState = await request("/api/whatsapp", {
++          type: "allow",
++          ...Object.fromEntries(f),
++        });
++        render();
++        return true;
++      },
++    );
++    return;
++  }
++  if (name === "waDisconnect") {
++    modal(
++      "Cerrar sesión y cambiar número",
++      "Se conserva el historial de cada cuenta. La próxima conexión mostrará un nuevo QR.",
++      "<p>La desvinculación se registra en el historial de sesiones. Después podrás conectar el otro número.</p>",
++      async () => {
++        waState = await request("/api/whatsapp", { type: "disconnect" });
++        waAccount = "";
++        render();
++        return true;
++      },
++      "Cerrar sesión",
++    );
++    return;
++  }
++  waBusy = true;
++  try {
++    waState = await request(
++      "/api/whatsapp",
++      name === "waConnect"
++        ? { type: "connect" }
++        : { type: "allow", remove: true, phone: el.dataset.phone },
++    );
++    waAccount = "";
++    render();
++  } catch (e) {
++    toast(e.message);
++  } finally {
++    waBusy = false;
++  }
+ }
+ function home() {
+   const important = state.messages.filter(
+@@ -388,7 +509,7 @@ function settings() {
+             `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}</small>${esc(ph.name)}<small>${esc(ph.note)}</small>${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}</figcaption></figure>`,
+         )
+         .join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'
+-    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.5.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
++    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.6.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+   );
+ }
+ function field(label, name, value = "", type = "text", extra = "") {
+@@ -578,6 +699,10 @@ const readFile = (file) =>
+     r.readAsDataURL(file);
+   });
+ async function action(name, el) {
++  if (name.startsWith("wa")) {
++    await whatsappAction(name, el);
++    return;
++  }
+   if (await extendedAction(name, el)) return;
+   if (name === "close") {
+     $("#modal").close();
+@@ -935,6 +1060,12 @@ document.addEventListener("click", async (e) => {
+   }
+ });
+ document.addEventListener("change", async (e) => {
++  if (e.target.id === "wa-account") {
++    waAccount = e.target.value;
++    waState = null;
++    await refreshWhatsApp();
++    return;
++  }
+   if (["message-supplier", "message-filter"].includes(e.target.id)) {
+     const id = e.target.id;
+     if (id === "message-supplier") messageSupplier = e.target.value;
+diff --git a/src/desktop.cjs b/src/desktop.cjs
+index 3e00a32..9812117 100644
+--- a/src/desktop.cjs
++++ b/src/desktop.cjs
+@@ -27,6 +27,14 @@ if (!app.requestSingleInstanceLock()) {
+         dataDir: data,
+       });
+       server = backend.server;
++      let quitting = false;
++      app.on("before-quit", async (e) => {
++        if (quitting) return;
++        e.preventDefault();
++        quitting = true;
++        await backend.whatsapp.close();
++        app.quit();
++      });
+       const origin = new URL(backend.url).origin;
+       win = new BrowserWindow({
+         width: 1440,
+@@ -49,7 +57,9 @@ if (!app.requestSingleInstanceLock()) {
+       win.webContents.session.setPermissionRequestHandler((_w, _p, cb) =>
+         cb(false),
+       );
+-      await win.loadURL(backend.url);
++      const connectWhatsApp = process.argv.includes("--connect-whatsapp");
++      await win.loadURL(backend.url + (connectWhatsApp ? "#whatsapp" : ""));
++      if (connectWhatsApp) await backend.whatsapp.connect();
+     })
+     .catch((e) => {
+       dialog.showErrorBox("No se pudo abrir GelatoStock", e.message);
+diff --git a/src/server.cjs b/src/server.cjs
+index 0961771..8aa80ef 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -4,12 +4,14 @@ const path = require("node:path");
+ const { randomBytes } = require("node:crypto");
+ const { identifySupplier } = require("../build/identify.js");
+ const { recognizeLocal } = require("./ocr.cjs");
++const { WhatsAppConnection } = require("./whatsapp.cjs");
+ const { Store } = require("../build/store.js");
+ function createApp({
+   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
+   port = 0,
+ } = {}) {
+   const store = new Store(dataDir);
++  const whatsapp = new WhatsAppConnection(dataDir, store);
+   const token = randomBytes(32).toString("hex");
+   const server = http.createServer(async (req, res) => {
+     const origin = `http://127.0.0.1:${server.address().port}`;
+@@ -41,13 +43,17 @@ function createApp({
+       json(403, { error: "Sesión local no autorizada." });
+       return;
+     }
++    if (u.pathname === "/api/whatsapp" && req.method === "GET") {
++      json(200, whatsapp.view(u.searchParams.get("account")));
++      return;
++    }
+     if (u.pathname === "/api/state" && req.method === "GET") {
+       json(200, {
+         state: store.load(),
+         dataDir,
+         storage: "SQLite",
+         archiveWarning: store.archiveWarning,
+-        version: "0.5.0",
++        version: "0.6.0",
+       });
+       return;
+     }
+@@ -58,6 +64,7 @@ function createApp({
+         "/api/backup",
+         "/api/restore",
+         "/api/identify",
++        "/api/whatsapp",
+         "/api/ocr",
+       ].includes(u.pathname)
+     ) {
+@@ -85,6 +92,18 @@ function createApp({
+           chunks.push(chunk);
+         }
+         const data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
++        if (u.pathname === "/api/whatsapp") {
++          if (data.type === "backup") {
++            json(200, { path: whatsapp.store.backup() });
++            return;
++          }
++          if (data.type === "connect") await whatsapp.connect();
++          else if (data.type === "disconnect") await whatsapp.disconnect();
++          else if (data.type === "allow") whatsapp.allow(data);
++          else throw Error("Acción WhatsApp desconocida.");
++          json(200, whatsapp.view());
++          return;
++        }
+         if (u.pathname === "/api/identify") {
+           json(200, identifySupplier(store.load(), data));
+           return;
+@@ -118,7 +137,7 @@ function createApp({
+           dataDir,
+           storage: "SQLite",
+           archiveWarning: store.archiveWarning,
+-          version: "0.5.0",
++          version: "0.6.0",
+         });
+       } catch (e) {
+         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
+@@ -174,10 +193,14 @@ function createApp({
+       store.close();
+       reject(error);
+     });
+-    server.once("close", () => store.close());
++    server.once("close", () => {
++      store.close();
++      whatsapp.close().catch(() => {});
++    });
+     server.listen(port, "127.0.0.1", () =>
+       resolve({
+         server,
++        whatsapp,
+         url: `http://127.0.0.1:${server.address().port}/?key=${token}`,
+       }),
+     );

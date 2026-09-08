@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.5.0
+# GelatoStock · prototipo 0.6.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.5.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.6.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.5.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.6.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -38,7 +38,7 @@ Nuevas funciones: entradas, salidas y mermas con motivo; corrección mediante un
 Leer, en este orden:
 
 1. `CLAUDE.md` / `AGENTS.md`.
-2. `reports/2026-09-07T23-45-55-705Z-deteccion-proveedor-ocr.md`.
+2. `reports/2026-09-08T04-18-52-587Z-whatsapp-qr-cuentas.md`.
 3. `TODO.md` y `CHANGELOG.md`.
 4. `docs/ARQUITECTURA_PROTOTIPO.md`.
 5. Los cinco documentos originales de `docs/`, empezando por `PROMPT_MAESTRO.md`.
@@ -68,7 +68,7 @@ npm run session:new -- titulo-de-la-sesion
 
 ## Evidencias
 
-`reports/tests-2026-09-07-v05.txt`, `reports/desktop-smoke-2026-09-07-v05.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
+`reports/tests-2026-09-08-v06.txt`, `reports/desktop-smoke-2026-09-08-v06.txt` y capturas en `output/playwright/`. Mac y A18 Pro no se han probado en este entorno Windows. No se incluye binario Mac ni se garantiza todavía su rendimiento.
 
 ## Tecnología y siguiente decisión
 
@@ -89,3 +89,15 @@ En data/proveedores/indice.json figuran los nombres y sus carpetas estables. Cad
 En Proveedores → Editar, completar NIF/CIF, teléfono con prefijo internacional y otros nombres que aparezcan en documentos. Al subir una foto, el OCR español incluido lee el texto y propone una ficha existente. Verificarla y pulsar Guardar foto; queda organizada por proveedor/fecha. La fecha todavía se elige manualmente. Si falla o hay dudas, elegir proveedor en el selector. No se crea automáticamente una ficha nueva.
 
 Para una factura de Makro en imagen, crear primero su ficha con nombre/alias o NIF correcto. PDF y descarga web aún pendientes. Simular mensaje permite probar identificación por texto o número, pero no conecta WhatsApp. El motor y el español están incluidos: copiar siempre la carpeta completa del ejecutable. No requiere instalar herramientas OCR externas ni descargar modelos al primer uso.
+
+## WhatsApp QR experimental en 0.6
+
+Abrir WhatsApp → Conectar por QR. En el teléfono, tanto WhatsApp normal como Business: Dispositivos vinculados → Vincular un dispositivo. Verificar el número conectado y pulsar Autorizar chat. Elegir un proveedor con teléfono en su ficha o introducir número internacional y nombre de otro contacto. Solo esos contactos se importan para esa cuenta; no se envían mensajes.
+
+Cerrar sesión / cambiar número conserva conversaciones anteriores, registra el cierre y permite vincular otro número con QR nuevo. Al conectarlo, registra el número anterior y el nuevo. El selector Cuenta del historial permite consultar cada cuenta por separado. Si el dispositivo ya estaba desconectado, revisar Dispositivos vinculados en el teléfono para revocar la sesión anterior: un cambio local no garantiza revocación remota.
+
+Requiere internet y app abierta. No recupera historial anterior al conectar. La sesión Web puede sincronizar la cuenta completa en su perfil, aunque la importación esté filtrada. Implementación no oficial, experimental. Se ha probado obtener QR real; vinculación y recepción con la cuenta del usuario requieren su escaneo y prueba posterior.
+
+Datos del canal en data/whatsapp. Crear copia de WhatsApp incluye su SQLite y adjuntos, sin credenciales; es distinta de la copia del inventario. Restauración del canal manual, con app cerrada. Los adjuntos entrantes se archivan por cuenta/proveedor o contacto/fecha UTC, sin clasificación ni OCR automáticos todavía. PDF se archiva pero no se lee. No compartir sessions ni data con Claude.
+
+Para reconstruir el navegador en desarrollo, fijar PUPPETEER_CACHE_DIR al runtime/browser de esta carpeta y ejecutar npx puppeteer browsers install chrome; comprobar que la ruta instalada coincide con runtime/browser.json. El ejecutable ya empaquetado incluye el navegador y no necesita esa descarga.

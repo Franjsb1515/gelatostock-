@@ -27,6 +27,14 @@ if (!app.requestSingleInstanceLock()) {
         dataDir: data,
       });
       server = backend.server;
+      let quitting = false;
+      app.on("before-quit", async (e) => {
+        if (quitting) return;
+        e.preventDefault();
+        quitting = true;
+        await backend.whatsapp.close();
+        app.quit();
+      });
       const origin = new URL(backend.url).origin;
       win = new BrowserWindow({
         width: 1440,
@@ -49,7 +57,9 @@ if (!app.requestSingleInstanceLock()) {
       win.webContents.session.setPermissionRequestHandler((_w, _p, cb) =>
         cb(false),
       );
-      await win.loadURL(backend.url);
+      const connectWhatsApp = process.argv.includes("--connect-whatsapp");
+      await win.loadURL(backend.url + (connectWhatsApp ? "#whatsapp" : ""));
+      if (connectWhatsApp) await backend.whatsapp.connect();
     })
     .catch((e) => {
       dialog.showErrorBox("No se pudo abrir GelatoStock", e.message);

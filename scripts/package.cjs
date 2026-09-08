@@ -36,7 +36,12 @@ fs.mkdirSync(path.join(app, "node_modules"), { recursive: true });
 const lock = require("../package-lock.json");
 for (const [location, info] of Object.entries(lock.packages)) {
   if (!location || info.dev || !location.startsWith("node_modules/")) continue;
+  if (info.optional && !fs.existsSync(path.join(root, location))) continue;
   fs.cpSync(path.join(root, location), path.join(app, location), {
     recursive: true,
   });
 }
+
+fs.cpSync(path.join(root, "runtime"), path.join(app, "runtime"), {
+  recursive: true,
+});

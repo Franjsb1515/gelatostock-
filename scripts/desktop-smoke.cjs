@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const assert = require("node:assert/strict");
 (async () => {
   const root = path.resolve(__dirname, "..");
-  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v5-"));
+  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v6-"));
   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
   const { DatabaseSync } = require("node:sqlite");
   const savedStock = () => {
@@ -64,7 +64,7 @@ const assert = require("node:assert/strict");
     assert.equal(savedStock(), 4.25);
     assert.ok(requests.every((u) => new URL(u).hostname === "127.0.0.1"));
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v05-desktop.png"),
+      path: path.join(root, "output", "playwright", "v06-desktop.png"),
     });
     await window
       .getByRole("button", { name: "Cargar foto", exact: true })
@@ -83,7 +83,7 @@ const assert = require("node:assert/strict");
       "s1",
     );
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v05-ocr.png"),
+      path: path.join(root, "output", "playwright", "v06-ocr.png"),
     });
     await window.locator("input[name=documentDate]").fill("2026-09-01");
     await window
@@ -126,7 +126,7 @@ const assert = require("node:assert/strict");
       ),
     );
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v05-fotos.png"),
+      path: path.join(root, "output", "playwright", "v06-fotos.png"),
       fullPage: true,
     });
     assert.equal(savedStock(), 4.25);
@@ -167,7 +167,7 @@ const assert = require("node:assert/strict");
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     assert.equal(savedStock(), 4.25);
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v05-movimientos.png"),
+      path: path.join(root, "output", "playwright", "v06-movimientos.png"),
     });
     await window
       .getByRole("button", { name: "Ver mensajes", exact: true })
@@ -220,8 +220,33 @@ const assert = require("node:assert/strict");
       .getByRole("combobox", { name: "Mostrar", exact: true })
       .selectOption("all");
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v05-mensajes.png"),
+      path: path.join(root, "output", "playwright", "v06-mensajes.png"),
     });
+    await window.getByRole("button", { name: "WhatsApp", exact: true }).click();
+    await window
+      .getByRole("heading", { name: "Desconectado", exact: true })
+      .waitFor();
+    await window
+      .getByRole("heading", {
+        name: "Historial de sesiones y cambios de número",
+        exact: true,
+      })
+      .waitFor();
+    await window.screenshot({
+      path: path.join(root, "output", "playwright", "v06-whatsapp.png"),
+      fullPage: true,
+    });
+    if (process.env.GELATO_TEST_QR === "1") {
+      await window
+        .getByRole("button", { name: "Conectar por QR", exact: true })
+        .click();
+      await window
+        .getByRole("img", { name: "QR para vincular WhatsApp", exact: true })
+        .waitFor({ timeout: 60000 });
+      console.log(
+        "PASS: QR real obtenido en ejecutable empaquetado, sin vincular cuenta ni enviar mensajes.",
+      );
+    }
     const runtime = await app.evaluate(({ app }) => ({
       userData: app.getPath("userData"),
       sessionData: app.getPath("sessionData"),

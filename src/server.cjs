@@ -4,12 +4,14 @@ const path = require("node:path");
 const { randomBytes } = require("node:crypto");
 const { identifySupplier } = require("../build/identify.js");
 const { recognizeLocal } = require("./ocr.cjs");
+const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { Store } = require("../build/store.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
   port = 0,
 } = {}) {
   const store = new Store(dataDir);
+  const whatsapp = new WhatsAppConnection(dataDir, store);
   const token = randomBytes(32).toString("hex");
   const server = http.createServer(async (req, res) => {
     const origin = `http://127.0.0.1:${server.address().port}`;
@@ -41,13 +43,17 @@ function createApp({
       json(403, { error: "Sesión local no autorizada." });
       return;
     }
+    if (u.pathname === "/api/whatsapp" && req.method === "GET") {
+      json(200, whatsapp.view(u.searchParams.get("account")));
+      return;
+    }
     if (u.pathname === "/api/state" && req.method === "GET") {
       json(200, {
         state: store.load(),
         dataDir,
         storage: "SQLite",
         archiveWarning: store.archiveWarning,
-        version: "0.5.0",
+        version: "0.6.0",
       });
       return;
     }
@@ -58,6 +64,7 @@ function createApp({
         "/api/backup",
         "/api/restore",
         "/api/identify",
+        "/api/whatsapp",
         "/api/ocr",
       ].includes(u.pathname)
     ) {
@@ -85,6 +92,18 @@ function createApp({
           chunks.push(chunk);
         }
         const data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
+        if (u.pathname === "/api/whatsapp") {
+          if (data.type === "backup") {
+            json(200, { path: whatsapp.store.backup() });
+            return;
+          }
+          if (data.type === "connect") await whatsapp.connect();
+          else if (data.type === "disconnect") await whatsapp.disconnect();
+          else if (data.type === "allow") whatsapp.allow(data);
+          else throw Error("Acción WhatsApp desconocida.");
+          json(200, whatsapp.view());
+          return;
+        }
         if (u.pathname === "/api/identify") {
           json(200, identifySupplier(store.load(), data));
           return;
@@ -118,7 +137,7 @@ function createApp({
           dataDir,
           storage: "SQLite",
           archiveWarning: store.archiveWarning,
-          version: "0.5.0",
+          version: "0.6.0",
         });
       } catch (e) {
         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
@@ -174,10 +193,14 @@ function createApp({
       store.close();
       reject(error);
     });
-    server.once("close", () => store.close());
+    server.once("close", () => {
+      store.close();
+      whatsapp.close().catch(() => {});
+    });
     server.listen(port, "127.0.0.1", () =>
       resolve({
         server,
+        whatsapp,
         url: `http://127.0.0.1:${server.address().port}/?key=${token}`,
       }),
     );

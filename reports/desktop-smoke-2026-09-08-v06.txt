@@ -1,0 +1,7 @@
+
+> appgelatostock@0.6.0 test:desktop
+> node scripts/desktop-smoke.cjs
+
+PASS: QR real obtenido en ejecutable empaquetado, sin vincular cuenta ni enviar mensajes.
+PASS: OCR local automático de proveedor y propuesta en mensaje; búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.
+{"userData":"D:\\APPGELATOSTOCK\\work\\desktop-v6-zu6Uij\\runtime","sessionData":"D:\\APPGELATOSTOCK\\work\\desktop-v6-zu6Uij\\runtime"}

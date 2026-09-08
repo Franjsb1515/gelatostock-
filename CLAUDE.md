@@ -15,3 +15,5 @@ Entrega vigente 0.3.0: leer reports/2026-09-07T22-46-07-183Z-bandeja-proveedores
 Entrega vigente 0.4.0: reports/2026-09-07T23-36-54-807Z-archivo-proveedores-fotos.md. Las carpetas por proveedor son copias derivadas; SQLite/attachments siguen siendo canónicos. No borrar originales ni afirmar que OCR ya existe.
 
 Entrega vigente 0.5.0: reports/2026-09-07T23-45-55-705Z-deteccion-proveedor-ocr.md. OCR español local implementado para texto/proveedor de imágenes; cantidades, PDF y canales externos pendientes. No eliminar modelos/worker del paquete ni introducir descargas ocultas.
+
+Entrega vigente 0.6.0: reports/2026-09-08T04-18-52-587Z-whatsapp-qr-cuentas.md. WhatsApp Web experimental con QR real probado; no confundir prueba sin autenticación con recepción validada en la cuenta del usuario. No exportar data/whatsapp/sessions ni modificar cuentas al revisar.

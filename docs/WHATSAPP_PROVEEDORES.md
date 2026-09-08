@@ -1,3 +1,9 @@
+# Actualización 0.6 — 2026-09-08
+
+El usuario autorizó QR experimental con su cuenta y cambio de número. Se implementó WhatsApp Web con cuentas separadas, lista autorizada y log de cambios. QR real probado; vinculación/recepción con su teléfono pendientes. La recomendación oficial del diseño inicial se conserva como alternativa de producción, no como transporte de esta entrega. Ver el informe 2026-09-08T04-18-52-587Z-whatsapp-qr-cuentas.md.
+
+---
+
 # WhatsApp de proveedores — propuesta de integración
 
 Estado: diseño previo a conectar una cuenta. La versión 0.5 no recibe WhatsApp real. No se ha creado una conexión, servidor público, QR de sesión ni suscripción.

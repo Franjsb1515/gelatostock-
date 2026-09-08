@@ -1,7 +1,10 @@
+let waState = null,
+  waAccount = "",
+  waBusy = false;
 let state,
   dataDir,
   archiveWarning,
-  page = "home",
+  page = location.hash === "#whatsapp" ? "whatsapp" : "home",
   filter = "Todos",
   query = "",
   selectedMessage = null,
@@ -178,6 +181,7 @@ function render() {
     suppliers,
     activity,
     settings,
+    whatsapp,
   };
   $("#app").innerHTML =
     `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span><small>EL ESPACIO DE TU NEGOCIO</small></span></a><div class="workspace"><div class="workspace-icon">G</div><div><strong>Gelato & Café</strong><small>Espacio de demostración</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
@@ -185,6 +189,7 @@ function render() {
       ["stock", "box", "Inventario"],
       ["orders", "cart", "Compras"],
       ["messages", "message", "Mensajes"],
+      ["whatsapp", "message", "WhatsApp"],
       ["suppliers", "store", "Proveedores"],
       ["activity", "clock", "Actividad"],
     ]
@@ -194,7 +199,123 @@ function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.5.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.6.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
+}
+async function refreshWhatsApp() {
+  if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)
+    return;
+  try {
+    const next = await request(
+      "/api/whatsapp" +
+        (waAccount ? "?account=" + encodeURIComponent(waAccount) : ""),
+    );
+    if (JSON.stringify(next) !== JSON.stringify(waState)) {
+      waState = next;
+      render();
+    }
+  } catch {
+    /* Retain last visible state; next poll retries. */
+  }
+}
+setInterval(refreshWhatsApp, 2000);
+function whatsapp() {
+  const w = waState;
+  if (!w) {
+    setTimeout(refreshWhatsApp, 0);
+    return header("WhatsApp de proveedores", "Cargando conexión local…");
+  }
+  const names = {
+    disconnected: "Desconectado",
+    starting: "Preparando conexión…",
+    qr: "Escaneá el QR",
+    connected: "Conectado",
+    closing: "Cerrando sesión…",
+    error: "Revisar conexión",
+  };
+  return (
+    header(
+      "WhatsApp de proveedores",
+      "WhatsApp normal o Business · conexión experimental por QR",
+    ) +
+    `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo se importan chats autorizados. La sesión de WhatsApp Web puede sincronizar la cuenta completa en su perfil local. Internet y app abierta necesarios; no hay envíos desde este módulo.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}</div></section>
+ <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Al cambiar de cuenta, su lista se mantiene separada. No se importa historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} ${w.account === w.activeAccount ? btn("Dejar de importar", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
+ <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos 200 mensajes recibidos de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${w.messages.map((m) => `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`).join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'}</section>
+ <section class="panel settings-card"><h2>Historial de sesiones y cambios de número</h2>${btn("Crear copia de WhatsApp", "waBackup")}<p class="fineprint">Esta copia incluye conversaciones y adjuntos, sin credenciales. Es independiente de la copia del inventario.</p>${w.history.map((e) => `<p>${date(e.at)} ${time(e.at)} · ${esc(e.text)}</p>`).join("") || '<p class="muted">Todavía no se vinculó ninguna cuenta.</p>'}</section>`
+  );
+}
+async function whatsappAction(name, el) {
+  if (name === "waBackup") {
+    try {
+      const result = await request("/api/whatsapp", { type: "backup" });
+      modal(
+        "Copia de WhatsApp creada",
+        "Conservá la carpeta completa; las sesiones de acceso no se incluyen.",
+        `<code class="path">${esc(result.path)}</code>`,
+        async () => true,
+        "Listo",
+      );
+    } catch (e) {
+      toast(e.message);
+    }
+    return;
+  }
+  if (name === "waAllow") {
+    modal(
+      "Autorizar un chat",
+      "Solo este número se importará para la cuenta conectada.",
+      select("Proveedor registrado (opcional)", "supplier", [
+        ["", "Otro contacto"],
+        ...state.suppliers.filter((p) => p.whatsapp).map((p) => [p.id, p.name]),
+      ]) +
+        field(
+          "Número internacional",
+          "phone",
+          "",
+          "tel",
+          'placeholder="+34…" maxlength="40"',
+        ) +
+        field("Nombre del contacto", "label", "", "text", 'maxlength="100"'),
+      async (f) => {
+        waState = await request("/api/whatsapp", {
+          type: "allow",
+          ...Object.fromEntries(f),
+        });
+        render();
+        return true;
+      },
+    );
+    return;
+  }
+  if (name === "waDisconnect") {
+    modal(
+      "Cerrar sesión y cambiar número",
+      "Se conserva el historial de cada cuenta. La próxima conexión mostrará un nuevo QR.",
+      "<p>La desvinculación se registra en el historial de sesiones. Después podrás conectar el otro número.</p>",
+      async () => {
+        waState = await request("/api/whatsapp", { type: "disconnect" });
+        waAccount = "";
+        render();
+        return true;
+      },
+      "Cerrar sesión",
+    );
+    return;
+  }
+  waBusy = true;
+  try {
+    waState = await request(
+      "/api/whatsapp",
+      name === "waConnect"
+        ? { type: "connect" }
+        : { type: "allow", remove: true, phone: el.dataset.phone },
+    );
+    waAccount = "";
+    render();
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    waBusy = false;
+  }
 }
 function home() {
   const important = state.messages.filter(
@@ -388,7 +509,7 @@ function settings() {
             `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}</small>${esc(ph.name)}<small>${esc(ph.note)}</small>${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}</figcaption></figure>`,
         )
         .join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'
-    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.5.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.6.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
   );
 }
 function field(label, name, value = "", type = "text", extra = "") {
@@ -578,6 +699,10 @@ const readFile = (file) =>
     r.readAsDataURL(file);
   });
 async function action(name, el) {
+  if (name.startsWith("wa")) {
+    await whatsappAction(name, el);
+    return;
+  }
   if (await extendedAction(name, el)) return;
   if (name === "close") {
     $("#modal").close();
@@ -935,6 +1060,12 @@ document.addEventListener("click", async (e) => {
   }
 });
 document.addEventListener("change", async (e) => {
+  if (e.target.id === "wa-account") {
+    waAccount = e.target.value;
+    waState = null;
+    await refreshWhatsApp();
+    return;
+  }
   if (["message-supplier", "message-filter"].includes(e.target.id)) {
     const id = e.target.id;
     if (id === "message-supplier") messageSupplier = e.target.value;

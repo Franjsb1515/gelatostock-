@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.5.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.6.0.
 
 ## Entregado y comprobado
 
@@ -26,7 +26,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 47 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 55 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
@@ -42,8 +42,12 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Motor/modelo local redistribuible, medido en 8 GB y gestionado dentro de la app.
 - [ ] Memoria de equivalencias y correcciones aprobadas.
 - [x] Diseño de WhatsApp con chats autorizados: docs/WHATSAPP_PROVEEDORES.md.
-- [ ] Confirmar tipo de cuenta y transporte antes de implementar vinculación.
-- [ ] Canal de WhatsApp real con recepción por eventos, notificaciones y recuperación.
+- [x] Usuario elige prueba QR para WhatsApp normal/Business, con cambio de sesión.
+- [x] QR experimental, cuentas separadas, permisos por cuenta e historial de cambio de número.
+- [x] Copia de WhatsApp sin credenciales.
+- [ ] Validar vinculación y recepción con teléfono del usuario y cambio entre dos números reales.
+- [x] Implementar recepción experimental de WhatsApp por eventos, sin envíos; QR real verificado.
+- [ ] Recuperación de mensajes perdidos, notificaciones nativas y endurecimiento del canal.
 - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
 - [x] Reglas de relevancia por referencia exacta del mismo proveedor, independientes de prioridad; correcciones con motivo.
 - [x] Buscar mensajes sin tildes y filtrar por proveedor/estado.

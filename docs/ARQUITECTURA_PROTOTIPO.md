@@ -51,3 +51,7 @@ La persistencia incorpora sincronización de carpetas por proveedor después del
 ## OCR e identidad en 0.5
 
 core/identify.ts comparte identificación por texto/alias/NIF/teléfono. src/ocr.cjs utiliza Tesseract.js con worker Node y español incluidos; src/ocr-worker.cjs bloquea fetch. Una lectura simultánea, límite de entrada 5 MB y plazo 30 s. Foto conserva texto OCR opcional y proveedor confirmado. La interfaz inicia lectura al elegir archivo; no interpreta cantidades. Dependencias de producción empaquetadas según lockfile. Canales reales y PDF pendientes.
+
+## WhatsApp experimental en 0.6
+
+Módulo independiente src/whatsapp.cjs + whatsapp-store.cjs, SQLite propia bajo data/whatsapp y permisos/mensajes por número propio. Cuenta anterior se conserva al rotar sesión LocalAuth. Chrome incluido y datos de acceso excluidos de respaldos/código. Recepción de eventos filtrada y vista actualizada cada 2 segundos. Sin envíos ni OCR de adjuntos entrantes. QR real probado sin autenticación; validar con teléfono del usuario.
