@@ -1,5 +1,12 @@
 # Registro de parches y sesiones
 
+## 0.8.0 — 2026-09-08 · sesión 009
+
+Modelo local Q4 seleccionado por evaluación; dos lecturas con abstención ante discrepancias, contraste de encabezados, proformas/abonos y sumas en céntimos. Las explicaciones generadas se descartan y se muestra únicamente el inicio del original. Al editar texto se retira el resultado anterior.
+
+69 pruebas automatizadas aprobadas. Evaluación rápida: 2/3 clasificaciones exactas y una proforma enviada a revisión; no se oculta ese límite. Informe reports/2026-09-08T09-40-35-511Z-ia-reforzada.md.
+
+
 ## 0.7.0 — 2026-09-08 · sesión 008
 
 Seguimiento reemplazado por Control de entregas: cantidades por producto, pendiente visible, siguiente paso y filtros En curso/Cerrados. Recepción guiada en unidades base.

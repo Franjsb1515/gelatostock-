@@ -6,7 +6,9 @@ const { pipeline } = require("node:stream/promises");
 const { Readable } = require("node:stream");
 const manifest = require("../runtime/ai-model.json");
 (async () => {
-  const root = path.resolve(__dirname, "../runtime/models/qwen3");
+  if (!/^[a-zA-Z0-9_-]+$/.test(manifest.directory))
+    throw Error("Directorio inválido");
+  const root = path.resolve(__dirname, "../runtime/models", manifest.directory);
   for (const [name, expected] of Object.entries(manifest.files)) {
     if (name.includes("..") || path.isAbsolute(name))
       throw Error("Ruta inválida");

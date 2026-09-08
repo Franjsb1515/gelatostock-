@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const assert = require("node:assert/strict");
 (async () => {
   const root = path.resolve(__dirname, "..");
-  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v7-"));
+  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v8-"));
   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
   const { DatabaseSync } = require("node:sqlite");
   const savedStock = () => {
@@ -64,7 +64,7 @@ const assert = require("node:assert/strict");
     assert.equal(savedStock(), 4.25);
     assert.ok(requests.every((u) => new URL(u).hostname === "127.0.0.1"));
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v07-desktop.png"),
+      path: path.join(root, "output", "playwright", "v08-desktop.png"),
     });
     await window
       .getByRole("button", { name: "Cargar foto", exact: true })
@@ -83,7 +83,7 @@ const assert = require("node:assert/strict");
       "s1",
     );
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v07-ocr.png"),
+      path: path.join(root, "output", "playwright", "v08-ocr.png"),
     });
     await window.locator("input[name=documentDate]").fill("2026-09-01");
     await window
@@ -126,7 +126,7 @@ const assert = require("node:assert/strict");
       ),
     );
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v07-fotos.png"),
+      path: path.join(root, "output", "playwright", "v08-fotos.png"),
       fullPage: true,
     });
     assert.equal(savedStock(), 4.25);
@@ -167,7 +167,7 @@ const assert = require("node:assert/strict");
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     assert.equal(savedStock(), 4.25);
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v07-movimientos.png"),
+      path: path.join(root, "output", "playwright", "v08-movimientos.png"),
     });
     await window
       .getByRole("button", { name: "Ver mensajes", exact: true })
@@ -220,7 +220,7 @@ const assert = require("node:assert/strict");
       .getByRole("combobox", { name: "Mostrar", exact: true })
       .selectOption("all");
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v07-mensajes.png"),
+      path: path.join(root, "output", "playwright", "v08-mensajes.png"),
     });
     await window.getByRole("button", { name: "WhatsApp", exact: true }).click();
     await window
@@ -233,7 +233,7 @@ const assert = require("node:assert/strict");
       })
       .waitFor();
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v07-whatsapp.png"),
+      path: path.join(root, "output", "playwright", "v08-whatsapp.png"),
       fullPage: true,
     });
     if (process.env.GELATO_TEST_QR === "1") {
@@ -281,7 +281,7 @@ const assert = require("node:assert/strict");
     assert.equal(cells[2], "4 L");
     assert.equal(cells[3], "8 L");
     await window.locator(".orders-panel").screenshot({
-      path: path.join(root, "output/playwright/v07-entregas.png"),
+      path: path.join(root, "output/playwright/v08-entregas.png"),
     });
     await card
       .getByRole("button", { name: "Registrar lo que llegó", exact: true })
@@ -301,20 +301,30 @@ const assert = require("node:assert/strict");
     );
     await window.getByRole("button", { name: "IA local", exact: true }).click();
     const text =
-      "FACTURA F-123. Origen Coffee. Café 2 kg. Base 40 EUR. IVA 4 EUR. Total 44 EUR.";
+      "FACTURA F-123\nOrigen Coffee\nBase imponible: 100,00 EUR\nIVA: 21,00 EUR\nTotal: 125,00 EUR";
     await window.locator("#ai-text").fill(text);
     await window
       .getByRole("button", { name: "Analizar con IA local", exact: true })
       .click();
-    await window.locator(".ai-result").waitFor({ timeout: 125000 });
+    await window.locator(".ai-result").waitFor({ timeout: 245000 });
     assert.ok(
       (await window.locator(".ai-result").innerText()).includes(
         "Posible factura",
       ),
     );
+    assert.ok(
+      (await window.locator(".ai-result").innerText()).includes(
+        "Dos lecturas coinciden",
+      ),
+    );
+    assert.ok(
+      (await window.locator(".ai-result").innerText()).includes(
+        "no coincide con el total",
+      ),
+    );
     assert.equal(savedStock(), 4.25);
     await window.screenshot({
-      path: path.join(root, "output/playwright/v07-ia.png"),
+      path: path.join(root, "output/playwright/v08-ia.png"),
     });
     console.log(
       "PASS: modelo local REAL en ejecutable, factura reconocida sin modificar stock.",
@@ -324,10 +334,12 @@ const assert = require("node:assert/strict");
       .fill(
         "LISTA DE PRECIOS. Tarifa de septiembre. Café 20 EUR/kg. Leche 1 EUR/L. Precios orientativos. No es una factura.",
       );
+    assert.equal(await window.locator(".ai-result").count(), 0);
+    await window.locator("#ai-mode").selectOption("standard");
     await window
       .getByRole("button", { name: "Analizar con IA local", exact: true })
       .click();
-    await window.locator(".ai-result").waitFor({ timeout: 125000 });
+    await window.locator(".ai-result").waitFor({ timeout: 245000 });
     assert.ok(
       (await window.locator(".ai-result").innerText()).includes(
         "Posible lista de precios",

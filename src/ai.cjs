@@ -3,20 +3,33 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createHash } = require("node:crypto");
 const { z } = require("zod");
+const { reviewReading } = require("./ai-review.cjs");
+const manifest = require("../runtime/ai-model.json");
 const inputSchema = z
-  .object({ text: z.string().trim().min(3).max(4000) })
+  .object({
+    text: z.string().trim().min(3).max(4000),
+    mode: z.enum(["standard", "careful"]).default("careful"),
+  })
   .strict();
 const resultSchema = z
   .object({
-    tipo: z.enum([
-      "factura",
-      "albaran",
-      "lista_precios",
-      "oferta",
-      "mensaje",
-      "otro",
-    ]),
-    evidencia: z.string().min(3).max(500),
+    tipo: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .pipe(
+        z.enum([
+          "factura",
+          "proforma",
+          "abono",
+          "albaran",
+          "lista_precios",
+          "oferta",
+          "mensaje",
+          "otro",
+        ]),
+      ),
+    evidencia: z.string().min(1).max(1500),
   })
   .strict();
 function parseResult(raw, original) {
@@ -29,13 +42,14 @@ function parseResult(raw, original) {
           .replace(/\s*```$/, ""),
       ),
     );
-    const index = original
-      .toLowerCase()
-      .indexOf(parsed.evidencia.toLowerCase());
-    const evidence = original.slice(index, index + parsed.evidencia.length);
-    if (index < 0 || evidence.toLowerCase() !== parsed.evidencia.toLowerCase())
-      throw Error("Evidencia ausente del original.");
-    return { ...parsed, evidencia: evidence, review: true };
+    // The model's free-form evidence can paraphrase or invent. Never display it.
+    // The excerpt is copied by the application directly from the user's source.
+    return {
+      tipo: parsed.tipo,
+      evidencia: original.slice(0, 500),
+      source: "original_excerpt",
+      review: true,
+    };
   } catch {
     return {
       tipo: "otro",
@@ -54,7 +68,8 @@ class LocalAI {
   }
   async verify() {
     if (this.verified) return;
-    const manifest = require("../runtime/ai-model.json");
+    if (!/^[a-zA-Z0-9_-]+$/.test(manifest.directory))
+      throw Error("Directorio del modelo inválido.");
     for (const [name, expected] of Object.entries(manifest.files)) {
       if (!/^[a-zA-Z0-9_./-]+$/.test(name) || name.includes(".."))
         throw Error("Manifiesto del modelo inválido.");
@@ -63,7 +78,7 @@ class LocalAI {
         "..",
         "runtime",
         "models",
-        "qwen3",
+        manifest.directory,
         name,
       );
       const hash = createHash("sha256");
@@ -83,7 +98,7 @@ class LocalAI {
     const parsed = inputSchema.safeParse(data);
     if (!parsed.success)
       throw Error(
-        "Introduce entre 3 y 4.000 caracteres de texto, sin otros campos.",
+        "Introduce entre 3 y 4.000 caracteres y un modo de lectura válido.",
       );
     if (this.job) throw Error("Ya hay una lectura de IA en curso.");
     const job = { cancelled: false };
@@ -101,26 +116,41 @@ class LocalAI {
         job.reject = reject;
         const timer = setTimeout(
           () =>
-            reject(
-              Error("La IA superó 120 segundos. Prueba un texto más corto."),
-            ),
-          120000,
+            reject(Error("La IA superó 4 minutos. Prueba un texto más corto.")),
+          240000,
         );
         job.timer = timer;
-        worker.once("message", (m) =>
-          m.error ? reject(Error(m.error)) : resolve(m.raw),
-        );
+        worker.once("message", (m) => {
+          if (m.error) {
+            reject(Error(m.error));
+            return;
+          }
+          if (
+            !Array.isArray(m.outputs) ||
+            m.outputs.length !== (parsed.data.mode === "careful" ? 2 : 1) ||
+            m.outputs.some((x) => typeof x !== "string" || x.length > 8000)
+          ) {
+            reject(Error("Respuesta interna de IA inválida."));
+            return;
+          }
+          resolve(m.outputs);
+        });
         worker.once("error", () =>
           reject(Error("No se pudo iniciar la IA local.")),
         );
-        worker.once("exit", (code) => {
-          if (code !== 0) reject(Error("El proceso de IA se interrumpió."));
-        });
+        worker.once("exit", () =>
+          reject(Error("El proceso de IA se interrumpió antes de responder.")),
+        );
       });
       return {
-        ...parseResult(raw, parsed.data.text),
+        ...reviewReading(
+          parsed.data.text,
+          parseResult(raw[0], parsed.data.text),
+          raw[1] ? parseResult(raw[1], parsed.data.text) : undefined,
+          parsed.data.mode,
+        ),
         milliseconds: Date.now() - started,
-        model: "Qwen3 0.6B · Q8 · CPU local",
+        model: `${manifest.label} · ${manifest.dtype.toUpperCase()} · CPU local`,
       };
     } finally {
       clearTimeout(job.timer);

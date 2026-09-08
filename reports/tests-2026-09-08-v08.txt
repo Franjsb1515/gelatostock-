@@ -1,0 +1,85 @@
+
+> appgelatostock@0.8.0 test
+> npm run build && node --test tests/*.test.cjs
+
+
+> appgelatostock@0.8.0 build
+> tsc -p tsconfig.json
+
+✔ importes: formatos inequívocos y centavos, sin interpretación de separadores ambiguos (2.4229ms)
+✔ sumas: detecta descuadre sin cálculos del modelo (1.2563ms)
+✔ sumas: se abstiene con bases múltiples, impuestos porcentuales, gastos o datos ausentes (0.4589ms)
+✔ doble lectura: discrepancia o respuesta inválida exige revisión sin sustituir por una predicción segura (1.2835ms)
+✔ proforma, rectificación e instrucciones incrustadas activan revisión (1.5358ms)
+✔ coincidencia de lecturas no oculta importes incoherentes (0.1632ms)
+✔ mencionar factura en una conversación no respalda un documento de cobro (0.1523ms)
+✔ un encabezado distinto impide aceptar una clasificación coincidente pero incorrecta (2.4445ms)
+✔ documentos mezclados exigen revisión (0.2987ms)
+✔ IA: entradas limitadas, sin rutas, instrucciones ejecutables ni campos extra (3.7497ms)
+✔ IA: resultado inválido o con acciones queda por revisar (1.9382ms)
+✔ IA: un solo trabajo y cancelación durante verificación (0.6313ms)
+✔ IA: jamás muestra texto inventado por el modelo como evidencia (0.2356ms)
+✔ IA: tolera mayúsculas y devuelve el fragmento literal original (0.2092ms)
+✔ conteo reemplaza stock, persiste historial y no muta estado original (18.271ms)
+✔ rechaza cantidades negativas, NaN e infinitas (2.7897ms)
+✔ reposición considera pedidos en camino y respeta cajas (6.873ms)
+✔ autorizar separa proveedores y vacía carrito sin tocar stock (2.852ms)
+✔ doble autorización y doble envío no duplican pedidos (2.7835ms)
+✔ rechaza autorización con versión obsoleta (0.5462ms)
+✔ recepción parcial y total convierten cajas a litros una sola vez (3.2136ms)
+✔ reintentar la misma recepción es idempotente (3.9314ms)
+✔ recepciones imposibles y líneas duplicadas se rechazan sin cambios (1.8471ms)
+✔ mensajes relevantes y promociones se distinguen sin modificar stock (2.2881ms)
+✔ no vincula mensajes a otro proveedor (2.3874ms)
+✔ copias inválidas se rechazan (1.0531ms)
+✔ alta de producto valida presentación y objetivo (3.2913ms)
+✔ copia con identificadores capaces de inyectar HTML se rechaza (0.906ms)
+✔ entrada, salida y corrección conservan un historial compensado (2.8354ms)
+✔ cancelar pendiente libera reposición y no altera stock (1.6913ms)
+✔ editar presentación no cambia los pedidos ya autorizados (2.0317ms)
+✔ no admite fracciones de unidades ni estados recibidos inconsistentes (1.8669ms)
+✔ relevancia por referencia exacta no cambia prioridad ni pedidos (1.4081ms)
+✔ referencias ajenas, desconocidas o múltiples requieren revisión (3.2009ms)
+✔ pedido abierto sin referencia no basta para vincular un mensaje (1.9466ms)
+✔ corrección manual conserva original y prioridad y registra motivo (1.6165ms)
+✔ eventos repetidos no duplican y un ID con otro contenido se rechaza (3.0851ms)
+✔ copia anterior sin relevancia conserva mensajes para revisión (1.7336ms)
+✔ nombre y alias completos identifican sin depender de tildes (7.3579ms)
+✔ varios nombres quedan por revisar y el NIF distingue al emisor (0.6862ms)
+✔ WhatsApp usa el remitente conocido y no una mención en el mensaje (0.5806ms)
+✔ Makro se reconoce cuando existe una ficha local con ese nombre (11.5889ms)
+✔ el identificador no modifica el estado ni acepta entradas ilimitadas (3.8599ms)
+✔ OCR real con idioma incluido y fetch bloqueado reconoce proveedor (530.0071ms)
+✔ servidor SQLite: autenticación, revisión, persistencia y restauración (290.9284ms)
+✔ migración conserva JSON, datos y fotografías en adjuntos separados (101.7005ms)
+✔ JSON inválido no se reemplaza por datos de ejemplo (19.7782ms)
+✔ un fallo a mitad de transacción revierte stock, movimiento y operación (47.1585ms)
+✔ dos conexiones detectan versión obsoleta y no pisan cambios (78.0487ms)
+✔ idempotencia persiste al reiniciar y rechaza reutilizar ID con otro contenido (67.558ms)
+✔ adjuntos se deduplican por contenido y las copias son portables (84.0241ms)
+✔ no acepta un archivo falso con extensión de imagen (42.5626ms)
+✔ restauración reemplaza relaciones en una sola transacción (61.9755ms)
+✔ terminación del proceso sin commit no deja cambios parciales (141.4547ms)
+✔ guardar un movimiento no reescribe el historial previo (289.6221ms)
+✔ clasificación corregida y texto original persisten tras reinicio SQLite (49.6545ms)
+✔ crear proveedor crea carpeta estable y ficha aunque cambie el nombre (54.1002ms)
+✔ foto por proveedor y fecha se conserva al reclasificar y restaurar (82.0701ms)
+✔ fotos antiguas quedan sin proveedor y fechas inexistentes se rechazan (39.249ms)
+✔ fallo del archivo derivado avisa sin perder la transacción y permite recuperar (46.5866ms)
+✔ datos identificativos y OCR persisten y están en la copia portable (50.3929ms)
+✔ cambiar cuenta registra número anterior/nuevo y no mezcla conversaciones (32.3064ms)
+✔ eventos se deduplican dentro de una cuenta y no entre números propios (15.2621ms)
+✔ revocar contacto detiene importación y conserva lo importado (13.6777ms)
+✔ remitente ajeno no dispara descarga ni deja mensajes (10.968ms)
+✔ evento de sesión anterior se ignora tras un cambio (13.7915ms)
+✔ mensaje autorizado conserva la cuenta y el remitente (20.2023ms)
+✔ sesión y cuentas persisten al reiniciar sin contener QR (24.4203ms)
+✔ respaldo conserva conversaciones sin copiar credenciales (30.654ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 69
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1494.8701

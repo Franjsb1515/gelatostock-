@@ -42,6 +42,18 @@ for (const [location, info] of Object.entries(lock.packages)) {
   });
 }
 
+const manifest = require("../runtime/ai-model.json");
+if (!/^[a-zA-Z0-9_-]+$/.test(manifest.directory))
+  throw Error("Directorio de modelo inválido");
 fs.cpSync(path.join(root, "runtime"), path.join(app, "runtime"), {
   recursive: true,
+  filter: (source) => source !== path.join(root, "runtime", "models"),
 });
+for (const name of [...Object.keys(manifest.files), "LICENSE"]) {
+  if (name.includes("..") || path.isAbsolute(name))
+    throw Error("Archivo de modelo inválido");
+  const from = path.join(root, "runtime", "models", manifest.directory, name);
+  const to = path.join(app, "runtime", "models", manifest.directory, name);
+  fs.mkdirSync(path.dirname(to), { recursive: true });
+  fs.copyFileSync(from, to);
+}

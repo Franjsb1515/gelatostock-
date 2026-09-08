@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.7.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.8.0.
 
 ## Entregado y comprobado
 
@@ -26,7 +26,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 60 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 69 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
@@ -39,10 +39,14 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Identificación común por nombre/alias, NIF y teléfono; propuesta en mensaje de prueba.
 - [ ] Lectura de PDF, cantidades y fecha del documento con revisión de extracción.
 - [ ] Evaluar OCR con facturas reales autorizadas y hardware Mac.
-- [x] Modelo Qwen3 0.6B Q8 incluido y gestionado dentro de la app Windows; lecturas revisables.
+- [x] Modelo Qwen3 0.6B Q4 incluido y gestionado dentro de la app Windows; lecturas revisables.
 - [ ] Medir consumo y calidad en 8 GB/Mac real y con documentos autorizados representativos.
 - [x] Control de entregas con cantidades por línea, entregas abiertas/cerradas y recepción guiada.
-- [x] Validación de citas, límites de entrada/salida, cancelación y endpoints autenticados para IA.
+- [x] Texto original mostrado sin explicaciones inventadas, límites de entrada/salida, cancelación y endpoints autenticados para IA.
+- [x] Doble lectura con abstención, contraste de encabezados y comprobación limitada de importes en céntimos.
+- [x] Resultado anterior retirado al cambiar texto o modo.
+- [ ] Reducir abstenciones legítimas: proforma de prueba discrepó entre lecturas; conservar revisión hasta validar mejoras.
+- [ ] Evaluación independiente de razonamiento/precisión con corpus real autorizado; no inferir certeza de la coincidencia.
 - [ ] Memoria de equivalencias y correcciones aprobadas.
 - [x] Diseño de WhatsApp con chats autorizados: docs/WHATSAPP_PROVEEDORES.md.
 - [x] Usuario elige prueba QR para WhatsApp normal/Business, con cambio de sesión.

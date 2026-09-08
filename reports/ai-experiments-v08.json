@@ -1,0 +1,538 @@
+{
+  "synthetic": true,
+  "warning": "Etiquetas de experimentos, no precisión real de producción. No mide validez de citas ni política final de abstención. Los mismos casos se usaron para desarrollo.",
+  "experiments": [
+    {
+      "experiment": "qwen3-eval.json",
+      "cases": [
+        {
+          "id": "factura",
+          "expected": "factura",
+          "label": "",
+          "labelMatches": false,
+          "milliseconds": 11955
+        },
+        {
+          "id": "tarifa",
+          "expected": "lista_precios",
+          "label": "",
+          "labelMatches": false,
+          "milliseconds": 4233
+        },
+        {
+          "id": "albaran",
+          "expected": "albaran",
+          "label": "albaran",
+          "labelMatches": true,
+          "milliseconds": 10456
+        },
+        {
+          "id": "peticion_factura",
+          "expected": "mensaje",
+          "label": "",
+          "labelMatches": false,
+          "milliseconds": 10051
+        },
+        {
+          "id": "proforma",
+          "expected": "proforma",
+          "label": "factura (cobro emitido)",
+          "labelMatches": false,
+          "milliseconds": 15021
+        },
+        {
+          "id": "rectificativa",
+          "expected": "abono",
+          "label": "",
+          "labelMatches": false,
+          "milliseconds": 16347
+        },
+        {
+          "id": "oferta",
+          "expected": "oferta",
+          "label": "oferta",
+          "labelMatches": true,
+          "milliseconds": 20515
+        },
+        {
+          "id": "cancelacion",
+          "expected": "mensaje",
+          "label": "",
+          "labelMatches": false,
+          "milliseconds": 8452
+        },
+        {
+          "id": "ambiguo",
+          "expected": "mensaje",
+          "label": "abono",
+          "labelMatches": false,
+          "milliseconds": 14546
+        },
+        {
+          "id": "inyeccion",
+          "expected": "mensaje",
+          "label": "",
+          "labelMatches": false,
+          "milliseconds": 11920
+        }
+      ],
+      "matchingLabels": 2
+    },
+    {
+      "experiment": "qwen3-17-eval.json",
+      "cases": [
+        {
+          "id": "factura",
+          "expected": "factura",
+          "label": "",
+          "labelMatches": false,
+          "milliseconds": 60767
+        },
+        {
+          "id": "tarifa",
+          "expected": "lista_precios",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 49080
+        },
+        {
+          "id": "albaran",
+          "expected": "albaran",
+          "label": "albaran",
+          "labelMatches": true,
+          "milliseconds": 47755
+        },
+        {
+          "id": "peticion_factura",
+          "expected": "mensaje",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 32738
+        },
+        {
+          "id": "proforma",
+          "expected": "proforma",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 75713
+        },
+        {
+          "id": "rectificativa",
+          "expected": "abono",
+          "label": "abono",
+          "labelMatches": true,
+          "milliseconds": 32150
+        },
+        {
+          "id": "oferta",
+          "expected": "oferta",
+          "label": "oferta",
+          "labelMatches": true,
+          "milliseconds": 56739
+        },
+        {
+          "id": "cancelacion",
+          "expected": "mensaje",
+          "label": "mensaje",
+          "labelMatches": true,
+          "milliseconds": 11138
+        },
+        {
+          "id": "ambiguo",
+          "expected": "mensaje",
+          "label": "mensaje",
+          "labelMatches": true,
+          "milliseconds": 24616
+        },
+        {
+          "id": "inyeccion",
+          "expected": "mensaje",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 44526
+        }
+      ],
+      "matchingLabels": 5
+    },
+    {
+      "experiment": "qwen3-q4-eval.json",
+      "cases": [
+        {
+          "id": "factura",
+          "expected": "factura",
+          "label": "factura",
+          "labelMatches": true,
+          "milliseconds": 19243
+        },
+        {
+          "id": "tarifa",
+          "expected": "lista_precios",
+          "label": "lista_precios",
+          "labelMatches": true,
+          "milliseconds": 13815
+        },
+        {
+          "id": "albaran",
+          "expected": "albaran",
+          "label": "albaran",
+          "labelMatches": true,
+          "milliseconds": 8200
+        },
+        {
+          "id": "peticion_factura",
+          "expected": "mensaje",
+          "label": "mensaje",
+          "labelMatches": true,
+          "milliseconds": 18548
+        },
+        {
+          "id": "proforma",
+          "expected": "proforma",
+          "label": "proforma",
+          "labelMatches": true,
+          "milliseconds": 14582
+        },
+        {
+          "id": "rectificativa",
+          "expected": "abono",
+          "label": "abono",
+          "labelMatches": true,
+          "milliseconds": 13099
+        },
+        {
+          "id": "oferta",
+          "expected": "oferta",
+          "label": "oferta",
+          "labelMatches": true,
+          "milliseconds": 14523
+        },
+        {
+          "id": "cancelacion",
+          "expected": "mensaje",
+          "label": "mensaje",
+          "labelMatches": true,
+          "milliseconds": 13377
+        },
+        {
+          "id": "ambiguo",
+          "expected": "mensaje",
+          "label": "mensaje",
+          "labelMatches": true,
+          "milliseconds": 8024
+        },
+        {
+          "id": "inyeccion",
+          "expected": "mensaje",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 11413
+        }
+      ],
+      "matchingLabels": 9
+    },
+    {
+      "experiment": "qwen3-choice-eval.json",
+      "cases": [
+        {
+          "id": "factura",
+          "expected": "factura",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 949
+        },
+        {
+          "id": "tarifa",
+          "expected": "lista_precios",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 1875
+        },
+        {
+          "id": "albaran",
+          "expected": "albaran",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 2487
+        },
+        {
+          "id": "peticion_factura",
+          "expected": "mensaje",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 2249
+        },
+        {
+          "id": "proforma",
+          "expected": "proforma",
+          "label": "proforma",
+          "labelMatches": true,
+          "milliseconds": 2401
+        },
+        {
+          "id": "rectificativa",
+          "expected": "abono",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 2444
+        },
+        {
+          "id": "oferta",
+          "expected": "oferta",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 2386
+        },
+        {
+          "id": "cancelacion",
+          "expected": "mensaje",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 2377
+        },
+        {
+          "id": "ambiguo",
+          "expected": "mensaje",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 2090
+        },
+        {
+          "id": "inyeccion",
+          "expected": "mensaje",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 2399
+        }
+      ],
+      "matchingLabels": 1
+    },
+    {
+      "experiment": "qwen3-17-choice-eval.json",
+      "cases": [
+        {
+          "id": "factura",
+          "expected": "factura",
+          "label": "factura",
+          "labelMatches": true,
+          "milliseconds": 6457
+        },
+        {
+          "id": "tarifa",
+          "expected": "lista_precios",
+          "label": "lista_precios",
+          "labelMatches": true,
+          "milliseconds": 5784
+        },
+        {
+          "id": "albaran",
+          "expected": "albaran",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 5724
+        },
+        {
+          "id": "peticion_factura",
+          "expected": "mensaje",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 5353
+        },
+        {
+          "id": "proforma",
+          "expected": "proforma",
+          "label": "proforma",
+          "labelMatches": true,
+          "milliseconds": 5839
+        },
+        {
+          "id": "rectificativa",
+          "expected": "abono",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 6251
+        },
+        {
+          "id": "oferta",
+          "expected": "oferta",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 5701
+        },
+        {
+          "id": "cancelacion",
+          "expected": "mensaje",
+          "label": "mensaje",
+          "labelMatches": true,
+          "milliseconds": 5629
+        },
+        {
+          "id": "ambiguo",
+          "expected": "mensaje",
+          "label": "proforma",
+          "labelMatches": false,
+          "milliseconds": 5081
+        },
+        {
+          "id": "inyeccion",
+          "expected": "mensaje",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 6007
+        }
+      ],
+      "matchingLabels": 4
+    },
+    {
+      "experiment": "qwen25-choice-eval.json",
+      "cases": [
+        {
+          "id": "factura",
+          "expected": "factura",
+          "label": "abono",
+          "labelMatches": false,
+          "milliseconds": 5404
+        },
+        {
+          "id": "tarifa",
+          "expected": "lista_precios",
+          "label": "lista_precios",
+          "labelMatches": true,
+          "milliseconds": 5011
+        },
+        {
+          "id": "albaran",
+          "expected": "albaran",
+          "label": "lista_precios",
+          "labelMatches": false,
+          "milliseconds": 4920
+        },
+        {
+          "id": "peticion_factura",
+          "expected": "mensaje",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 4594
+        },
+        {
+          "id": "proforma",
+          "expected": "proforma",
+          "label": "proforma",
+          "labelMatches": true,
+          "milliseconds": 4867
+        },
+        {
+          "id": "rectificativa",
+          "expected": "abono",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 4947
+        },
+        {
+          "id": "oferta",
+          "expected": "oferta",
+          "label": "lista_precios",
+          "labelMatches": false,
+          "milliseconds": 4827
+        },
+        {
+          "id": "cancelacion",
+          "expected": "mensaje",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 4795
+        },
+        {
+          "id": "ambiguo",
+          "expected": "mensaje",
+          "label": "factura",
+          "labelMatches": false,
+          "milliseconds": 4554
+        },
+        {
+          "id": "inyeccion",
+          "expected": "mensaje",
+          "label": "abono",
+          "labelMatches": false,
+          "milliseconds": 4839
+        }
+      ],
+      "matchingLabels": 2
+    },
+    {
+      "experiment": "qwen25-simple-eval.json",
+      "cases": [
+        {
+          "id": "factura",
+          "expected": "factura",
+          "label": "abono por facturación\nfactura del año",
+          "labelMatches": false,
+          "milliseconds": 6374
+        },
+        {
+          "id": "tarifa",
+          "expected": "lista_precios",
+          "label": "clasifica el texto según la siguiente clasificación:\n\nfact",
+          "labelMatches": false,
+          "milliseconds": 5656
+        },
+        {
+          "id": "albaran",
+          "expected": "albaran",
+          "label": "clasificación: factura\n\nresumen:\nfactura",
+          "labelMatches": false,
+          "milliseconds": 5559
+        },
+        {
+          "id": "peticion_factura",
+          "expected": "mensaje",
+          "label": "claro, puedo ayudarte a formatear y organ",
+          "labelMatches": false,
+          "milliseconds": 5406
+        },
+        {
+          "id": "proforma",
+          "expected": "proforma",
+          "label": "clasificación: factura, proforma, oferta",
+          "labelMatches": false,
+          "milliseconds": 5545
+        },
+        {
+          "id": "rectificativa",
+          "expected": "abono",
+          "label": "abono por devolución de 5 paquetes.",
+          "labelMatches": false,
+          "milliseconds": 5528
+        },
+        {
+          "id": "oferta",
+          "expected": "oferta",
+          "label": "clasifica el siguiente texto como \"alban\".",
+          "labelMatches": false,
+          "milliseconds": 6321
+        },
+        {
+          "id": "cancelacion",
+          "expected": "mensaje",
+          "label": "el texto no es claro para determinar la respuesta correcta",
+          "labelMatches": false,
+          "milliseconds": 5465
+        },
+        {
+          "id": "ambiguo",
+          "expected": "mensaje",
+          "label": "clasifica la siguiente oración como \"albaran",
+          "labelMatches": false,
+          "milliseconds": 4959
+        },
+        {
+          "id": "inyeccion",
+          "expected": "mensaje",
+          "label": "ignoro las sugerencias previas y me dirijo a",
+          "labelMatches": false,
+          "milliseconds": 5648
+        }
+      ],
+      "matchingLabels": 0
+    }
+  ]
+}

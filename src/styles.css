@@ -1895,3 +1895,14 @@ dialog::backdrop {
   padding-left: 14px;
   border-left: 3px solid #69815b;
 }
+
+.ai-warning {
+  border-left: 3px solid #97632d;
+  padding-left: 12px;
+  color: #69441f;
+}
+.ai-math {
+  border-top: 1px solid #c7d2bc;
+  margin-top: 18px;
+  padding-top: 14px;
+}

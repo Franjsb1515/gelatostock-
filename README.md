@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.7.0
+# GelatoStock · prototipo 0.8.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.7.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.8.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.7.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.8.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -106,6 +106,11 @@ Para reconstruir el navegador en desarrollo, fijar PUPPETEER_CACHE_DIR al runtim
 
 Compras → Control de entregas muestra pedido, recibido y falta recibir por producto. En curso y Cerrados separan el trabajo pendiente. Registrar lo que llegó añade únicamente esa entrega al inventario. Guía y ejemplo con cajas/litros: docs/CONTROL_DE_ENTREGAS.md.
 
-IA local abre un editor para analizar hasta 4.000 caracteres. También hay accesos desde fotos con OCR guardado y textos de mensajes. Qwen3 0.6B Q8 está incluido en el paquete: propone tipo de documento y cita verificable, sin modificar datos ni ejecutar acciones. El texto se analiza al pulsar el botón, no automáticamente al recibirlo. Resultado revisable; puede equivocarse. Sin API, coste por tokens ni descargas durante el uso. PDF, aprendizaje de correcciones y clasificación automática de adjuntos siguen pendientes.
+IA local abre un editor para analizar hasta 4.000 caracteres. También hay accesos desde fotos con OCR guardado y textos de mensajes. Qwen3 0.6B Q4 está incluido en el paquete: propone tipo de documento y muestra el inicio del original para contrastarlo, sin modificar datos ni ejecutar acciones. El texto se analiza al pulsar el botón, no automáticamente al recibirlo. Resultado revisable; puede equivocarse. Sin API, coste por tokens ni descargas durante el uso. PDF, aprendizaje de correcciones y clasificación automática de adjuntos siguen pendientes.
 
 Leer docs/IA_LOCAL_Y_SEGURIDAD.md antes de ampliar permisos o automatizar acciones. Incluye controles, límites, fallos observados y reproducción del modelo. El prototipo no garantiza riesgo cero y aún requiere revisión independiente antes de producción.
+
+## IA reforzada en 0.8
+Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Contrasta encabezados y distingue proformas/abonos; comprueba base + cuota de IVA frente al total cuando las tres cantidades están etiquetadas en líneas separadas. No valida toda una factura ni hace contabilidad. Al cambiar el texto se retira la conclusión anterior.
+
+Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.

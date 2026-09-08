@@ -8,6 +8,7 @@ test("IA: entradas limitadas, sin rutas, instrucciones ejecutables ni campos ext
     { text: "a".repeat(4001) },
     { text: "hola", path: "C:/secreto" },
     { text: 123 },
+    { text: "Factura F-1", mode: "ejecutar" },
   ])
     await assert.rejects(ai.analyze(data), /caracteres/);
   assert.equal(ai.job, null);
@@ -17,7 +18,7 @@ test("IA: resultado inválido o con acciones queda por revisar", () => {
     "no json",
     '{"tipo":"factura","evidencia":"ok","execute":"delete"}',
     '{"tipo":"comprar","evidencia":"ok"}',
-    '{"tipo":"factura","evidencia":"' + "a".repeat(501) + '"}',
+    '{"tipo":"factura","evidencia":"' + "a".repeat(1501) + '"}',
   ])
     assert.equal(parseResult(raw, "documento").invalid, true);
   assert.deepEqual(
@@ -25,7 +26,12 @@ test("IA: resultado inválido o con acciones queda por revisar", () => {
       '{"tipo":"lista_precios","evidencia":"Tarifa de café"}',
       "Tarifa de café",
     ),
-    { tipo: "lista_precios", evidencia: "Tarifa de café", review: true },
+    {
+      tipo: "lista_precios",
+      evidencia: "Tarifa de café",
+      source: "original_excerpt",
+      review: true,
+    },
   );
 });
 test("IA: un solo trabajo y cancelación durante verificación", async () => {
@@ -43,14 +49,13 @@ test("IA: un solo trabajo y cancelación durante verificación", async () => {
   assert.equal(ai.job, null);
 });
 
-test("IA: rechaza evidencia inventada aunque el JSON sea válido", () => {
-  assert.equal(
-    parseResult(
-      '{"tipo":"factura","evidencia":"Total 999 EUR"}',
-      "Total 10 EUR",
-    ).invalid,
-    true,
+test("IA: jamás muestra texto inventado por el modelo como evidencia", () => {
+  const r = parseResult(
+    '{"tipo":"factura","evidencia":"Total 999 EUR"}',
+    "Total 10 EUR",
   );
+  assert.equal(r.evidencia, "Total 10 EUR");
+  assert.equal(r.source, "original_excerpt");
 });
 
 test("IA: tolera mayúsculas y devuelve el fragmento literal original", () => {
@@ -59,6 +64,6 @@ test("IA: tolera mayúsculas y devuelve el fragmento literal original", () => {
       '{"tipo":"lista_precios","evidencia":"TARIFA SEPTIEMBRE"}',
       "Tarifa septiembre: café",
     ).evidencia,
-    "Tarifa septiembre",
+    "Tarifa septiembre: café",
   );
 });

@@ -55,7 +55,7 @@ function createApp({
         dataDir,
         storage: "SQLite",
         archiveWarning: store.archiveWarning,
-        version: "0.7.0",
+        version: "0.8.0",
       });
       return;
     }
@@ -152,7 +152,7 @@ function createApp({
           dataDir,
           storage: "SQLite",
           archiveWarning: store.archiveWarning,
-          version: "0.7.0",
+          version: "0.8.0",
         });
       } catch (e) {
         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
