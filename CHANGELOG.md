@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.9.0 — 2026-09-08 · sesión 012
+
+Producción y recetas: recetas con rendimiento e ingredientes en unidad base; registrar kilos producidos calcula por reglas el consumo estimado, que la persona corrige y aprueba antes de descontar; entrada del producto terminado; hoja diaria; aviso de mínimos. Respuestas de proveedores: reglas deterministas marcan categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación), resuelven fechas relativas y señalan lo que hay que leer; filtro «Debes leer», aviso en Resumen y respuestas vinculadas en Control de entregas. Segunda lectura opcional con el modelo local que solo anota una categoría. Base SQLite user_version 2 con tablas recipes y productions.
+
+Auditoría de seguridad con sonda local (26 comprobaciones), clave de sesión fuera de la URL, comparación en tiempo constante, caché validada del estado (lecturas 4× más rápidas) y lectura por reglas de los mensajes importados de WhatsApp. Reglas afinadas con un corpus de 60 respuestas rutinarias más 20 reservadas (60/60 y 20/20 tras afinar; 15/20 en la primera pasada sin afinar), incorporadas como prueba de regresión. 82 pruebas aprobadas, ejecutable 0.9.0 reconstruido y probado con modelo real. Evaluación de respuestas de proveedor con modelo y reglas en reports/ai-replies-v090.json. Informe reports/2026-09-08T16-18-04-876Z-recetas-produccion-respuestas.md.
+
 ## 0.8.2 — 2026-09-08 · sesión 011
 
 Chat de dudas dentro de IA local: el mismo modelo Qwen3 0.6B Q4 responde en español usando una guía fija escrita a mano (src/ai-help.cjs) y, si se marca, el texto del editor. No consulta inventario ni pedidos, no ejecuta acciones; respuesta en texto plano acotado, últimos 6 mensajes, un trabajo a la vez, cancelable. Se probó reforzar los prompts para proforma/abono: empeoró (7/11 frente a 10/11 en la evaluación completa), así que se conservan los prompts de 0.8.1 y queda la evaluación de 11 casos como línea base. Versión mostrada y servida desde package.json (antes literal 0.8.0 en servidor e interfaz).

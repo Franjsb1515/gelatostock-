@@ -1927,3 +1927,79 @@ dialog::backdrop {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.reply-reading {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #c7d2bc;
+}
+.reply-reading h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.order-replies {
+  padding: 12px 20px 0;
+  font-size: 0.92rem;
+}
+.order-replies p {
+  margin: 6px 0;
+}
+.home-notice strong + span {
+  display: block;
+}
+.production-card {
+  border: 1px solid #dfe5d6;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: #fbfaf6;
+}
+.production-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.inline-input {
+  width: 110px;
+  padding: 6px 8px;
+  border: 1px solid #c7d2bc;
+  border-radius: 8px;
+  font: inherit;
+}
+.inline-input.wide {
+  width: 100%;
+}
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.recipe-card {
+  border: 1px solid #dfe5d6;
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff;
+}
+.recipe-card ul {
+  margin: 10px 0;
+  padding-left: 18px;
+}
+.ingredient-row {
+  display: grid;
+  grid-template-columns: 1fr 120px auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.wa-reading {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}

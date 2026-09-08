@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.8.2.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.0.
 
 ## Entregado y comprobado
 
@@ -27,7 +27,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 72 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 82 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
@@ -50,6 +50,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Prompt maestro v2 y directriz de mejora continua para cualquier IA que continúe.
 - [x] Chat de dudas local con guía fija y texto del editor; sin acceso a datos ni acciones.
 - [x] Línea base de clasificación con 11 casos sintéticos (10/11, sin errores aceptados); repetirla ante cualquier cambio de prompt o modelo.
+- [x] Comparativa de modelos para respuestas de proveedor (0.6B Q4 55/80, 1.7B Q8 36/80 frente a reglas 80/80): reglas como lectura principal; no cambiar de modelo sin repetir reports/ai-replies-exp-*.
 - [ ] Evaluar el chat con preguntas reales del usuario; medir respuestas incorrectas o inventadas y ajustar la guía.
 - [ ] Chat con contexto de inventario/pedidos: solo tras definir qué datos se exponen y con pruebas de fuga.
 - [ ] Sandbox real del trabajador de IA: hoy solo se desactivan módulos de red de Node, no el proceso nativo.
@@ -68,7 +69,11 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Validar clasificación con mensajes reales anonimizados y contexto lingüístico más amplio.
 - [ ] Notificaciones nativas configurables: hoy los avisos están dentro de la app.
 - [ ] Integración comprobada con Makro España u otro proveedor real.
-- [ ] Recetas, producción, ventas, lotes y vencimientos (merma manual ya disponible).
+- [x] Recetas y producción con consumo estimado aprobado por la persona, producto terminado y hoja diaria (docs/PRODUCCION_Y_RECETAS.md).
+- [ ] Ventas, lotes y vencimientos; mermas y rendimientos por receta.
+- [x] Lectura por reglas de respuestas de proveedores (categoría, fecha resuelta, qué leer) y segunda lectura opcional con IA que solo anota.
+- [ ] Lectura automática de respuestas de WhatsApp importadas y aviso al recibirlas; hoy las reglas se aplican a los mensajes de la bandeja.
+- [ ] Validar categorías y fechas con respuestas reales de proveedores (corpus sintético de 80 mensajes ya en pruebas; estimación de generalización 75 % con el resto marcado para leer); ampliar horas y tramos.
 - [ ] Sincronización entre lugares con resolución de conflictos y único envío por pedido.
 
 ## Límites conocidos

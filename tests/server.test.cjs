@@ -12,7 +12,9 @@ test("servidor SQLite: autenticación, revisión, persistencia y restauración",
   try {
     app = await createApp({ dataDir: dir });
     let origin = new URL(app.url).origin;
-    const login = await fetch(app.url);
+    const login = await fetch(app.url, { redirect: "manual" });
+    assert.equal(login.status, 302);
+    assert.equal(login.headers.get("location"), "/");
     const cookie = login.headers.get("set-cookie").split(";")[0];
     const headers = {
       "Content-Type": "application/json",
@@ -102,7 +104,7 @@ test("servidor SQLite: autenticación, revisión, persistencia y restauración",
     await new Promise((r) => app.server.close(r));
     app = await createApp({ dataDir: dir });
     origin = new URL(app.url).origin;
-    const nextLogin = await fetch(app.url);
+    const nextLogin = await fetch(app.url, { redirect: "manual" });
     headers.Cookie = nextLogin.headers.get("set-cookie").split(";")[0];
     headers.Origin = origin;
     assert.equal((await get()).products[0].stock, 7);

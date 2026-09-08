@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { interpretReply, labels as replyLabels } from "./messages";
 import {
   stateSchema,
   parseAction,
@@ -8,6 +9,12 @@ import {
   type Message,
 } from "./schema";
 export { seed } from "./seed";
+export {
+  interpretReply,
+  resolveDate,
+  replyCategories,
+  labels as replyLabels,
+} from "./messages";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
 export function ensure(value: unknown, message: string): asserts value {
   if (!value) throw Error(message);
@@ -40,8 +47,45 @@ export function needed(s: State, p: Product): number {
 }
 export function classify(
   text: string,
+  at = now(),
+): Pick<Message, "kind" | "priority" | "reason" | "interpretation"> {
+  const base = classifyLegacy(text.toLowerCase());
+  const interpretation =
+    base.kind === "promotion"
+      ? {
+          category: "other" as const,
+          needsReading: false,
+          summary:
+            "Promoción informativa; no requiere respuesta ni cambia pedidos.",
+        }
+      : interpretReply(text, at);
+  const byCategory: Partial<
+    Record<typeof interpretation.category, Pick<Message, "kind" | "priority">>
+  > = {
+    out_of_stock: { kind: "change", priority: "important" },
+    cancellation: { kind: "change", priority: "important" },
+    change: { kind: "change", priority: "important" },
+    question: { kind: "unknown", priority: "important" },
+    delivery_date: { kind: "delivery", priority: "important" },
+    confirmation: { kind: "confirmation", priority: "normal" },
+  };
+  const mapped =
+    base.kind === "promotion"
+      ? base
+      : byCategory[interpretation.category] || base;
+  return {
+    kind: mapped.kind,
+    priority: mapped.priority,
+    reason:
+      base.kind === "promotion"
+        ? base.reason
+        : replyLabels[interpretation.category] + ". " + interpretation.summary,
+    interpretation,
+  };
+}
+function classifyLegacy(
+  t: string,
 ): Pick<Message, "kind" | "priority" | "reason"> {
-  const t = text.toLowerCase();
   if (
     /cancel|agotad|no (queda|tenemos)|sin stock|sube|subida|sustit|solo (queda|tenemos)|sólo (queda|tenemos)/.test(
       t,
@@ -185,6 +229,31 @@ export function validate(input: unknown): State {
           s.orders.some((o) => o.id === m.order && o.supplier === m.supplier)),
       "Asociación de mensaje inválida.",
     );
+  ensure(
+    unique(s.recipes.map((r) => r.id)) &&
+      unique(s.productions.map((p) => p.id)),
+    "Identificadores repetidos.",
+  );
+  for (const r of s.recipes) {
+    ensure(
+      (!r.product || products.has(r.product)) &&
+        unique(r.ingredients.map((i) => i.product)) &&
+        r.ingredients.every((i) => products.has(i.product)),
+      "Receta con productos inexistentes o repetidos.",
+    );
+    ensure(
+      !r.product || !r.ingredients.some((i) => i.product === r.product),
+      "El producto terminado no puede ser ingrediente de su propia receta.",
+    );
+  }
+  for (const p of s.productions)
+    ensure(
+      s.recipes.some((r) => r.id === p.recipe) &&
+        unique(p.lines.map((l) => l.product)) &&
+        p.lines.every((l) => products.has(l.product)) &&
+        (!p.output || products.has(p.output.product)),
+      "Producción con datos inexistentes.",
+    );
   for (const photo of s.photos)
     ensure(
       !photo.supplier || suppliers.has(photo.supplier),
@@ -203,6 +272,13 @@ export function validate(input: unknown): State {
             o.id === m.order && o.lines.some((l) => l.product === m.product),
         ),
         "Pedido del movimiento inexistente.",
+      );
+    if (m.production)
+      ensure(
+        s.productions.some(
+          (p) => p.id === m.production && p.status === "applied",
+        ),
+        "Producción del movimiento inexistente.",
       );
     if (m.reverses) {
       const original = s.movements.find((x) => x.id === m.reverses);
@@ -226,7 +302,7 @@ function move(
   delta: number,
   kind: Movement["kind"],
   reason: string,
-  extra: Partial<Pick<Movement, "order" | "reverses">> = {},
+  extra: Partial<Pick<Movement, "order" | "reverses" | "production">> = {},
 ): void {
   const p = item(s.products, product),
     after = round(p.stock + delta);
@@ -464,6 +540,140 @@ export function apply(state: State, input: unknown): State {
       m.relevance = a.relevance;
       m.relevanceReason = a.reason;
       note = `Relevancia del mensaje ${m.id}: ${previous} → ${a.relevance}. Motivo: ${a.reason}`;
+      break;
+    }
+    case "aiNote": {
+      const m = item(s.messages, a.id);
+      m.aiReading = {
+        category: a.category,
+        status: a.status,
+        model: a.model,
+        at: now(),
+      };
+      note = `Lectura de IA anotada en un mensaje de ${item(s.suppliers, m.supplier).name}: ${replyLabels[a.category]} (${a.status === "agreement" ? "lecturas coincidentes" : a.status === "disagreement" ? "lecturas discrepantes" : "sin lectura válida"}). Solo es una propuesta.`;
+      break;
+    }
+    case "recipe": {
+      const { type, revision, operationId, id, ...fields } = a;
+      ensure(
+        new Set(fields.ingredients.map((i) => i.product)).size ===
+          fields.ingredients.length,
+        "Ingredientes repetidos.",
+      );
+      for (const i of fields.ingredients) {
+        const p = item(s.products, i.product);
+        if (p.unit === "ud")
+          ensure(
+            Number.isInteger(i.quantity),
+            `${p.name} se mide en unidades enteras.`,
+          );
+      }
+      if (fields.product) {
+        const p = item(s.products, fields.product);
+        ensure(p.unit === "kg", "El producto terminado debe medirse en kg.");
+      }
+      if (id) Object.assign(item(s.recipes, id), fields);
+      else s.recipes.push({ id: randomUUID(), ...fields });
+      note = `Receta guardada: ${fields.name} (rinde ${fields.yield} kg).`;
+      break;
+    }
+    case "deleteRecipe": {
+      const r = item(s.recipes, a.id);
+      ensure(
+        !s.productions.some(
+          (p) => p.recipe === r.id && p.status !== "discarded",
+        ),
+        "La receta tiene producciones registradas; se conserva por trazabilidad.",
+      );
+      s.recipes = s.recipes.filter((x) => x.id !== r.id);
+      s.productions = s.productions.filter((p) => p.recipe !== r.id);
+      note = `Receta eliminada: ${r.name}.`;
+      break;
+    }
+    case "produce": {
+      const r = item(s.recipes, a.recipe);
+      const factor = a.quantity / r.yield;
+      const lines = r.ingredients.map((i) => {
+        const p = item(s.products, i.product);
+        const raw = i.quantity * factor;
+        return {
+          product: i.product,
+          quantity: p.unit === "ud" ? Math.ceil(raw - 1e-9) : round(raw),
+        };
+      });
+      s.productions.unshift({
+        id: randomUUID(),
+        recipe: r.id,
+        name: r.name,
+        quantity: a.quantity,
+        date: a.date,
+        at: now(),
+        status: "proposed",
+        lines,
+        ...(r.product
+          ? { output: { product: r.product, quantity: a.quantity } }
+          : {}),
+        note: "",
+      });
+      note = `Producción propuesta: ${a.quantity} kg de ${r.name} (${a.date}). Consumo estimado por receta; nada cambia hasta aprobarlo.`;
+      break;
+    }
+    case "applyProduction": {
+      const p = item(s.productions, a.id);
+      ensure(p.status === "proposed", "Esta producción ya se resolvió.");
+      const r = item(s.recipes, p.recipe);
+      ensure(
+        new Set(a.lines.map((l) => l.product)).size === a.lines.length &&
+          a.lines.every((l) =>
+            r.ingredients.some((i) => i.product === l.product),
+          ),
+        "Solo se pueden ajustar ingredientes de la receta.",
+      );
+      p.lines = a.lines.map((l) => ({
+        product: l.product,
+        quantity: l.quantity,
+      }));
+      if (p.output && a.output !== undefined) p.output.quantity = a.output;
+      p.note = a.note;
+      p.status = "applied";
+      const consumed: string[] = [];
+      for (const l of p.lines) {
+        if (!l.quantity) continue;
+        const prod = item(s.products, l.product);
+        move(
+          s,
+          l.product,
+          -l.quantity,
+          "production",
+          `Producción de ${p.quantity} kg de ${p.name} (${p.date}), aprobada`,
+          { production: p.id },
+        );
+        consumed.push(`${prod.name} ${l.quantity} ${prod.unit}`);
+      }
+      if (p.output && p.output.quantity)
+        move(
+          s,
+          p.output.product,
+          p.output.quantity,
+          "output",
+          `Producto terminado: ${p.name} (${p.date})`,
+          { production: p.id },
+        );
+      const short = s.products.filter(
+        (x) => p.lines.some((l) => l.product === x.id) && x.stock < x.min,
+      );
+      note =
+        `Producción aprobada: ${p.quantity} kg de ${p.name} (${p.date}). Consumo: ${consumed.join(", ") || "sin consumo"}.` +
+        (short.length
+          ? ` Por debajo del mínimo tras producir: ${short.map((x) => x.name).join(", ")}. Revisa la reposición.`
+          : "");
+      break;
+    }
+    case "discardProduction": {
+      const p = item(s.productions, a.id);
+      ensure(p.status === "proposed", "Esta producción ya se resolvió.");
+      p.status = "discarded";
+      note = `Producción descartada sin cambios de stock: ${p.name} (${p.date}).`;
       break;
     }
     case "link": {

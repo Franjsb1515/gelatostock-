@@ -254,5 +254,19 @@ export function seed(): State {
       },
     ],
     photos: [],
+    recipes: [
+      {
+        id: "r1",
+        name: "Gelato de chocolate",
+        product: "p4",
+        yield: 1,
+        ingredients: [
+          { product: "p2", quantity: 0.5 },
+          { product: "p10", quantity: 0.2 },
+        ],
+        note: "Ejemplo: por cada kilo de gelato, medio litro de leche y 200 ml de nata. Ajusta a tu receta real.",
+      },
+    ],
+    productions: [],
   };
 }

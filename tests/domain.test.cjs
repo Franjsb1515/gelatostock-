@@ -324,3 +324,251 @@ test("copia anterior sin relevancia conserva mensajes para revisión", () => {
     s.messages.map((m) => m.text),
   );
 });
+
+const { interpretReply, resolveDate } = require("../src/domain.cjs");
+const AT = "2026-09-08T10:00:00.000Z"; // martes
+test("respuestas de proveedor: falta de producto, confirmación y fecha resuelta", () => {
+  const falta = interpretReply(
+    "Hola, no tengo nata esta semana, lo siento",
+    AT,
+  );
+  assert.equal(falta.category, "out_of_stock");
+  assert.equal(falta.needsReading, true);
+  assert.match(falta.missing, /nata/);
+  const ok = interpretReply("Ok perfecto, anotado", AT);
+  assert.equal(ok.category, "confirmation");
+  assert.equal(ok.needsReading, false);
+  const lunes = interpretReply("El pedido llega el lunes", AT);
+  assert.equal(lunes.category, "delivery_date");
+  assert.equal(lunes.deliveryDate, "2026-09-14");
+  assert.equal(lunes.needsReading, false);
+  const retraso = interpretReply("No podremos entregar hasta el jueves", AT);
+  assert.equal(retraso.category, "delivery_date");
+  assert.equal(retraso.deliveryDate, "2026-09-10");
+  assert.equal(retraso.needsReading, true);
+  assert.equal(
+    interpretReply("¿Prefieres esperar al lunes o cancelar?", AT).category,
+    "cancellation",
+  );
+  assert.equal(
+    interpretReply("¿Te viene bien a las 10?", AT).category,
+    "question",
+  );
+  assert.equal(interpretReply("Solo quedan dos cajas", AT).category, "change");
+  assert.equal(interpretReply("asdf qwer", AT).needsReading, true);
+});
+test("fechas relativas: mañana, día del mes, dd/mm, en N días y sin fecha exacta", () => {
+  assert.equal(resolveDate("llega mañana", AT).date, "2026-09-09");
+  assert.equal(resolveDate("pasado mañana sin falta", AT).date, "2026-09-10");
+  assert.equal(resolveDate("te lo mando el 20", AT).date, "2026-09-20");
+  assert.equal(resolveDate("el día 3 lo tienes", AT).date, "2026-10-03");
+  assert.equal(resolveDate("sale el 15/09", AT).date, "2026-09-15");
+  assert.equal(resolveDate("en 3 días", AT).date, "2026-09-11");
+  assert.equal(resolveDate("la semana que viene", AT).date, undefined);
+  assert.equal(
+    resolveDate("la semana que viene", AT).hint,
+    "la semana que viene",
+  );
+  assert.equal(resolveDate("martes", AT).date, "2026-09-15");
+  assert.deepEqual(resolveDate("gracias", AT), {});
+});
+test("mensaje nuevo guarda interpretación y la anotación de IA no cambia stock ni pedidos", () => {
+  let s = apply(seed(), {
+    type: "message",
+    supplier: "s2",
+    text: "No tenemos leche hasta el viernes",
+  });
+  const m = s.messages[0];
+  assert.equal(m.interpretation.category, "out_of_stock");
+  assert.equal(m.interpretation.needsReading, true);
+  assert.equal(m.priority, "important");
+  const before = JSON.stringify([s.products, s.orders]);
+  s = apply(s, {
+    type: "aiNote",
+    id: m.id,
+    category: "out_of_stock",
+    status: "agreement",
+    model: "prueba",
+  });
+  assert.equal(s.messages[0].aiReading.category, "out_of_stock");
+  assert.equal(JSON.stringify([s.products, s.orders]), before);
+  assert.throws(() =>
+    apply(s, {
+      type: "aiNote",
+      id: m.id,
+      category: "comprar",
+      status: "agreement",
+      model: "x",
+    }),
+  );
+});
+test("receta: valida productos, unidades enteras y producto terminado en kg", () => {
+  const base = seed();
+  assert.equal(base.recipes.length, 1);
+  assert.throws(
+    () =>
+      apply(base, {
+        type: "recipe",
+        name: "Mala",
+        yield: 1,
+        ingredients: [{ product: "p6", quantity: 1.5 }],
+      }),
+    /enteras/,
+  );
+  assert.throws(
+    () =>
+      apply(base, {
+        type: "recipe",
+        name: "Mala",
+        product: "p2",
+        yield: 1,
+        ingredients: [{ product: "p1", quantity: 0.1 }],
+      }),
+    /kg/,
+  );
+  assert.throws(() =>
+    apply(base, {
+      type: "recipe",
+      name: "Mala",
+      yield: 1,
+      ingredients: [
+        { product: "p2", quantity: 1 },
+        { product: "p2", quantity: 1 },
+      ],
+    }),
+  );
+  const s = apply(base, {
+    type: "recipe",
+    name: "Gelato de vainilla",
+    product: "p5",
+    yield: 5,
+    ingredients: [
+      { product: "p2", quantity: 3 },
+      { product: "p6", quantity: 2 },
+    ],
+  });
+  assert.equal(s.recipes.length, 2);
+  const edited = apply(s, {
+    type: "recipe",
+    id: s.recipes[1].id,
+    name: "Gelato de vainilla",
+    product: "p5",
+    yield: 5,
+    ingredients: [{ product: "p2", quantity: 2.5 }],
+  });
+  assert.equal(edited.recipes[1].ingredients.length, 1);
+});
+test("producción: propuesta escalada, aprobación editable, terminado y descarte", () => {
+  let s = apply(seed(), {
+    type: "recipe",
+    name: "Gelato de vainilla",
+    product: "p5",
+    yield: 5,
+    ingredients: [
+      { product: "p2", quantity: 3 },
+      { product: "p6", quantity: 2 },
+    ],
+  });
+  const recipe = s.recipes[1].id;
+  const milk = () => s.products.find((p) => p.id === "p2").stock;
+  const cups = () => s.products.find((p) => p.id === "p6").stock;
+  const vanilla = () => s.products.find((p) => p.id === "p5").stock;
+  const before = [milk(), cups(), vanilla()];
+  s = apply(s, { type: "produce", recipe, quantity: 2, date: "2026-09-08" });
+  const p = s.productions[0];
+  assert.equal(p.status, "proposed");
+  assert.deepEqual(p.lines, [
+    { product: "p2", quantity: 1.2 },
+    { product: "p6", quantity: 1 },
+  ]);
+  assert.deepEqual(p.output, { product: "p5", quantity: 2 });
+  assert.deepEqual([milk(), cups(), vanilla()], before);
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "applyProduction",
+        id: p.id,
+        lines: [{ product: "p1", quantity: 1 }],
+      }),
+    /ingredientes/,
+  );
+  s = apply(s, {
+    type: "applyProduction",
+    id: p.id,
+    lines: [
+      { product: "p2", quantity: 1.5 },
+      { product: "p6", quantity: 0 },
+    ],
+    output: 1.8,
+    note: "Se usó más leche",
+  });
+  assert.equal(s.productions[0].status, "applied");
+  assert.equal(milk(), before[0] - 1.5);
+  assert.equal(cups(), before[1]);
+  assert.equal(vanilla(), before[2] + 1.8);
+  assert.equal(s.movements.filter((m) => m.production === p.id).length, 2);
+  assert.equal(s.movements.find((m) => m.kind === "production").delta, -1.5);
+  assert.throws(() =>
+    apply(s, { type: "applyProduction", id: p.id, lines: [] }),
+  );
+  s = apply(s, { type: "produce", recipe, quantity: 1, date: "2026-09-09" });
+  s = apply(s, { type: "discardProduction", id: s.productions[0].id });
+  assert.equal(s.productions[0].status, "discarded");
+  assert.equal(milk(), before[0] - 1.5);
+  assert.throws(
+    () => apply(s, { type: "deleteRecipe", id: recipe }),
+    /trazabilidad/,
+  );
+  const reversed = apply(s, {
+    type: "reverse",
+    id: s.movements.find((m) => m.kind === "production").id,
+    reason: "Error de cálculo",
+  });
+  assert.equal(reversed.products.find((x) => x.id === "p2").stock, before[0]);
+});
+test("producción no deja stock negativo y avisa de mínimos", () => {
+  let s = apply(seed(), {
+    type: "produce",
+    recipe: "r1",
+    quantity: 100,
+    date: "2026-09-08",
+  });
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "applyProduction",
+        id: s.productions[0].id,
+        lines: s.productions[0].lines,
+      }),
+    /negativo/,
+  );
+  s = apply(seed(), {
+    type: "produce",
+    recipe: "r1",
+    quantity: 10,
+    date: "2026-09-08",
+  });
+  s = apply(s, {
+    type: "applyProduction",
+    id: s.productions[0].id,
+    lines: s.productions[0].lines,
+  });
+  assert.match(s.activity[0].text, /mínimo/);
+  assert.equal(s.products.find((p) => p.id === "p2").stock, 3);
+  assert.equal(
+    s.products.find((p) => p.id === "p4").stock,
+    seed().products.find((p) => p.id === "p4").stock + 10,
+  );
+});
+test("respuestas rutinarias: el corpus de desarrollo se lee por reglas con la categoría esperada", () => {
+  const corpus = require("./fixtures/ai-replies-corpus.json");
+  const failures = corpus.filter((x) => {
+    const r = interpretReply(x.text, AT);
+    return !(x.accept || [x.expected]).includes(r.category);
+  });
+  assert.deepEqual(
+    failures.map((x) => x.id),
+    [],
+  );
+  assert.ok(corpus.length >= 60);
+});

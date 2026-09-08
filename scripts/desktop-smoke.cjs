@@ -7,14 +7,14 @@ const assert = require("node:assert/strict");
   const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v8-"));
   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
   const { DatabaseSync } = require("node:sqlite");
-  const savedStock = () => {
+  const savedStock = (id = "p1") => {
     const db = new DatabaseSync(path.join(dir, "gelatostock.sqlite"), {
       readOnly: true,
     });
     try {
       return (
         Number(
-          db.prepare("SELECT stock_milli FROM products WHERE id='p1'").get()
+          db.prepare("SELECT stock_milli FROM products WHERE id=?").get(id)
             .stock_milli,
         ) / 1000
       );
@@ -169,9 +169,7 @@ const assert = require("node:assert/strict");
     await window.screenshot({
       path: path.join(root, "output", "playwright", "v08-movimientos.png"),
     });
-    await window
-      .getByRole("button", { name: "Ver mensajes", exact: true })
-      .click();
+    await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
     await window
       .getByRole("button", { name: "Simular mensaje", exact: true })
       .click();
@@ -299,6 +297,73 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: pedido 2 cajas de 6 L; recepción 4 L, pendiente 8 L; recepción final cierra el pedido.",
     );
+    await window
+      .getByRole("button", { name: "Producción", exact: true })
+      .click();
+    await window
+      .getByRole("button", { name: "Registrar producción", exact: true })
+      .click();
+    await window.locator('#modal-form [name="quantity"]').fill("4");
+    await window
+      .getByRole("button", { name: "Calcular consumo", exact: true })
+      .click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    await window.locator(".production-card").waitFor();
+    const milkBefore = savedStock("p2"),
+      chocolateBefore = savedStock("p4");
+    assert.ok(
+      (await window.locator(".production-card").innerText()).includes(
+        "Leche entera",
+      ),
+    );
+    assert.equal(savedStock("p2"), milkBefore);
+    await window.locator('[data-prod-line="p2"]').fill("1.5");
+    await window
+      .getByRole("button", { name: "Aprobar y descontar", exact: true })
+      .click();
+    await window.locator(".production-card").waitFor({ state: "detached" });
+    assert.equal(
+      savedStock("p2"),
+      Math.round((milkBefore - 1.5) * 1000) / 1000,
+    );
+    assert.equal(savedStock("p4"), chocolateBefore + 4);
+    assert.ok(
+      (await window.locator("main").innerText()).includes(
+        "Gelato de chocolate",
+      ),
+    );
+    await window.screenshot({
+      path: path.join(root, "output/playwright/v09-produccion.png"),
+    });
+    console.log(
+      "PASS: producción de 4 kg: consumo estimado (2 L leche) corregido a 1,5 L y aprobado; terminado +4 kg; nada cambió antes de aprobar.",
+    );
+    await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
+    await window
+      .getByRole("button", { name: "Simular mensaje", exact: true })
+      .click();
+    await window
+      .getByRole("textbox", { name: "Mensaje del proveedor", exact: true })
+      .fill("No tenemos nata hasta el lunes, ¿te vale así?");
+    await window
+      .locator("#modal-form select[name=supplier]")
+      .selectOption("s2");
+    await window
+      .getByRole("button", { name: "Recibir mensaje de prueba", exact: true })
+      .click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    await window
+      .getByRole("searchbox", { name: "Buscar mensajes", exact: true })
+      .fill("");
+    await window.locator("#message-filter").selectOption("toread");
+    await window.locator(".reply-reading").first().waitFor();
+    const reading = await window.locator(".reply-reading").first().innerText();
+    assert.ok(reading.includes("Falta de producto"), reading);
+    assert.ok(reading.includes("Debes leer"), reading);
+    assert.ok(reading.includes("Entrega indicada"), reading);
+    console.log(
+      "PASS: respuesta de proveedor leída por reglas: falta de producto, fecha resuelta y marcada para leer.",
+    );
     await window.getByRole("button", { name: "IA local", exact: true }).click();
     const text =
       "FACTURA F-123\nOrigen Coffee\nBase imponible: 100,00 EUR\nIVA: 21,00 EUR\nTotal: 125,00 EUR";
@@ -364,6 +429,32 @@ const assert = require("node:assert/strict");
       "PASS: chat de dudas con modelo REAL responde texto plano sin modificar stock: " +
         JSON.stringify(answer.slice(0, 160)),
     );
+    await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
+    await window
+      .getByRole("searchbox", { name: "Buscar mensajes", exact: true })
+      .fill("");
+    await window.locator("#message-filter").selectOption("toread");
+    await window.locator(".reply-reading").first().waitFor();
+    await window
+      .getByRole("button", {
+        name: "Segunda lectura con IA local",
+        exact: true,
+      })
+      .click();
+    await window
+      .locator(".reply-reading")
+      .filter({ hasText: "Segunda lectura (IA local" })
+      .first()
+      .waitFor({ timeout: 245000 });
+    const second = await window.locator(".reply-reading").first().innerText();
+    assert.equal(savedStock(), 4.25);
+    console.log(
+      "PASS: segunda lectura de respuesta de proveedor con modelo REAL anotada sin cambiar stock: " +
+        JSON.stringify(
+          second.split("Segunda lectura (IA local")[1]?.slice(0, 120),
+        ),
+    );
+    await window.getByRole("button", { name: "IA local", exact: true }).click();
     await window
       .getByRole("button", { name: "Analizar con IA local", exact: true })
       .click();
@@ -395,7 +486,7 @@ const assert = require("node:assert/strict");
       .getByRole("heading", { name: "Un buen día empieza en orden." })
       .waitFor();
     assert.equal(savedStock(), 4.25);
-    await w2.getByRole("button", { name: "Ver mensajes", exact: true }).click();
+    await w2.locator('.icon-button[aria-label="Ver mensajes"]').click();
     await w2
       .getByRole("searchbox", { name: "Buscar mensajes", exact: true })
       .fill("exclusiva de cafe");

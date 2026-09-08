@@ -1,0 +1,253 @@
+{
+  "name": "qwen3-q4-v2-think",
+  "synthetic": true,
+  "cases": 30,
+  "passed": 18,
+  "invalid": 7,
+  "wrong": 5,
+  "loadMs": 3642,
+  "avgMs": 60519,
+  "peakRSSMiB": 2652,
+  "rows": [
+    {
+      "id": "c01",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 71256,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c02",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 48778,
+      "raw": "```json\n{\"categoria\": \"confirmacion\"}\n```"
+    },
+    {
+      "id": "c03",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 60544,
+      "raw": "{\"categoria\": \"falta\"}"
+    },
+    {
+      "id": "c04",
+      "expected": "change",
+      "model": "confirmation",
+      "pass": false,
+      "ms": 54661,
+      "raw": "{\"categoria\": \"confirmacion\"}"
+    },
+    {
+      "id": "c05",
+      "expected": "cancellation",
+      "model": "cancellation",
+      "pass": true,
+      "ms": 40961,
+      "raw": "```json\n{\"categoria\": \"cancelacion\"}\n```"
+    },
+    {
+      "id": "c06",
+      "expected": "question",
+      "model": "confirmation",
+      "pass": false,
+      "ms": 58145,
+      "raw": "{\"categoria\": \"confirmacion\"}"
+    },
+    {
+      "id": "c07",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 46742,
+      "raw": "{\"categoria\": \"entrega\"}"
+    },
+    {
+      "id": "c08",
+      "expected": "change",
+      "model": null,
+      "pass": false,
+      "ms": 92029,
+      "raw": "<think>\nOkay, let's tackle this. The user provided a message: \"Aviso: el café su"
+    },
+    {
+      "id": "c09",
+      "expected": "out_of_stock",
+      "model": null,
+      "pass": false,
+      "ms": 93151,
+      "raw": "<think>\nOkay, let's tackle this. The user is saying that they don't have Madagas"
+    },
+    {
+      "id": "c10",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 51027,
+      "raw": "```json\n{\"categoria\": \"confirmacion\"}\n```"
+    },
+    {
+      "id": "c11",
+      "expected": "other",
+      "model": "other",
+      "pass": true,
+      "ms": 58341,
+      "raw": "{\"categoria\": \"otro\"}"
+    },
+    {
+      "id": "c12",
+      "expected": "other",
+      "model": "confirmation",
+      "pass": false,
+      "ms": 47758,
+      "raw": "{\"categoria\": \"confirmacion\"}"
+    },
+    {
+      "id": "c13",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 36680,
+      "raw": "```json\n{\"categoria\": \"confirmacion\"}\n```"
+    },
+    {
+      "id": "c14",
+      "expected": "delivery_date",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 51465,
+      "raw": "{\"categoria\": \"confirmacion\"}"
+    },
+    {
+      "id": "c15",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 44918,
+      "raw": "```json\n{\"categoria\": \"no otro\"}\n```"
+    },
+    {
+      "id": "c16",
+      "expected": "delivery_date",
+      "model": null,
+      "pass": false,
+      "ms": 95312,
+      "raw": "<think>\nOkay, let's see. The user is saying, \"Hola! el repartidor pasa el martes"
+    },
+    {
+      "id": "c17",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 50132,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c18",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 56205,
+      "raw": "```json\n{\"categoria\": \"confirmacion\"}\n```"
+    },
+    {
+      "id": "c19",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 40975,
+      "raw": "```json\n{\"categoria\": \"pregunta\"}\n```"
+    },
+    {
+      "id": "c20",
+      "expected": "delivery_date",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 42027,
+      "raw": "```json\n{\"categoria\": \"falta\"}\n```"
+    },
+    {
+      "id": "c21",
+      "expected": "question",
+      "model": null,
+      "pass": false,
+      "ms": 56348,
+      "raw": "{\"categoria\": \"delivery\"}"
+    },
+    {
+      "id": "c22",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 84029,
+      "raw": "{\"categoria\": \"falta\"}"
+    },
+    {
+      "id": "c23",
+      "expected": "change",
+      "model": null,
+      "pass": false,
+      "ms": 81169,
+      "raw": "{\"categoria\": \"no se entiende\"}"
+    },
+    {
+      "id": "c24",
+      "expected": "cancellation",
+      "model": "cancellation",
+      "pass": true,
+      "ms": 39707,
+      "raw": "```json\n{\"categoria\": \"cancelacion\"}\n```"
+    },
+    {
+      "id": "c25",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 69600,
+      "raw": "{\"categoria\": \"entrega\"}"
+    },
+    {
+      "id": "c26",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 95278,
+      "raw": "<think>\nOkay, let's tackle this. The user sent \"Genial, quedamos así\". First, I "
+    },
+    {
+      "id": "c27",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 79526,
+      "raw": "```json\n{\"categoria\": \"pregunta\"}\n```"
+    },
+    {
+      "id": "c28",
+      "expected": "delivery_date",
+      "model": "confirmation",
+      "pass": false,
+      "ms": 62485,
+      "raw": "{\"categoria\": \"confirmacion\"}"
+    },
+    {
+      "id": "c29",
+      "expected": "change",
+      "model": "change",
+      "pass": true,
+      "ms": 40980,
+      "raw": "{\n  \"categoria\": \"cambio\"\n}"
+    },
+    {
+      "id": "c30",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 65333,
+      "raw": "{\"categoria\": \"falta\"}"
+    }
+  ]
+}

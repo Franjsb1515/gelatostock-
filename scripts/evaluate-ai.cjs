@@ -12,6 +12,51 @@ const tag = "v" + require("../package.json").version.replace(/\./g, "");
   const sampler = setInterval(() => {
     peak = Math.max(peak, process.memoryUsage().rss);
   }, 250);
+  if (process.argv.includes("--replies")) {
+    const replies = require("../tests/fixtures/ai-replies.json");
+    const { interpretReply } = require("../src/domain.cjs");
+    for (const sample of replies) {
+      const r = await ai.readReply(sample.text);
+      const rules = interpretReply(sample.text, new Date().toISOString());
+      const pass = r.category === sample.expected;
+      rows.push({
+        id: sample.id,
+        expected: sample.expected,
+        model: r.category,
+        status: r.status,
+        rules: rules.category,
+        rulesPass: rules.category === sample.expected,
+        milliseconds: r.milliseconds,
+        pass,
+      });
+      console.log(
+        (pass ? "PASS: " : "FAIL: ") +
+          sample.id +
+          " · reglas " +
+          (rules.category === sample.expected ? "ok" : rules.category),
+      );
+    }
+    clearInterval(sampler);
+    await ai.cancel();
+    const result = {
+      at: new Date().toISOString(),
+      synthetic: true,
+      kind: "replies",
+      model: manifest.label + " " + manifest.dtype.toUpperCase(),
+      cases: rows.length,
+      passed: rows.filter((r) => r.pass).length,
+      rulesPassed: rows.filter((r) => r.rulesPass).length,
+      peakProcessRSSMiB: Math.round(peak / 1048576),
+      rows,
+    };
+    fs.writeFileSync(
+      path.join(__dirname, "../reports", "ai-replies-" + tag + ".json"),
+      JSON.stringify(result, null, 2),
+    );
+    console.log(JSON.stringify(result));
+    if (result.passed !== result.cases) process.exitCode = 1;
+    return;
+  }
   const selected = process.argv.includes("--quick")
     ? samples.filter((s) =>
         ["proforma", "peticion_factura", "total_incoherente"].includes(s.id),

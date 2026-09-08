@@ -1,0 +1,653 @@
+{
+  "name": "qwen3-q4-v2",
+  "synthetic": true,
+  "cases": 80,
+  "passed": 49,
+  "invalid": 13,
+  "wrong": 18,
+  "loadMs": 2519,
+  "avgMs": 5747,
+  "peakRSSMiB": 2648,
+  "rows": [
+    {
+      "id": "c01",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4437,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c02",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 4409,
+      "raw": "{\n  \"categoria\": \"confirmacion\"\n}"
+    },
+    {
+      "id": "c03",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 4596,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c04",
+      "expected": "change",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 4369,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c05",
+      "expected": "cancellation",
+      "model": "cancellation",
+      "pass": true,
+      "ms": 4610,
+      "raw": "{\n  \"categoria\": \"cancelacion\"\n}"
+    },
+    {
+      "id": "c06",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 4421,
+      "raw": "```json\n{\"categoria\": \"pregunta\"}\n```"
+    },
+    {
+      "id": "c07",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4343,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c08",
+      "expected": "change",
+      "model": "change",
+      "pass": true,
+      "ms": 4307,
+      "raw": "{\n  \"categoria\": \"cambio\"\n}"
+    },
+    {
+      "id": "c09",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 4507,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c10",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 4453,
+      "raw": "{\n  \"categoria\": \"confirmacion\"\n}"
+    },
+    {
+      "id": "c11",
+      "expected": "other",
+      "model": null,
+      "pass": false,
+      "ms": 4389,
+      "raw": "{\"categoria\": \"no se entiende\"}"
+    },
+    {
+      "id": "c12",
+      "expected": "other",
+      "model": "confirmation",
+      "pass": false,
+      "ms": 4430,
+      "raw": "```json\n{\"categoria\": \"confirmacion\"}\n```"
+    },
+    {
+      "id": "c13",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 4567,
+      "raw": "```json\n{\"categoria\": \"no entiende\"}\n```"
+    },
+    {
+      "id": "c14",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4379,
+      "raw": "```json\n{\"categoria\": \"entrega\"}\n```"
+    },
+    {
+      "id": "c15",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 7991,
+      "raw": "{\n  \"categoria\": \"no tiene\",\n  \"significado\": \"El mensaje indica que el proveedo"
+    },
+    {
+      "id": "c16",
+      "expected": "delivery_date",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 4284,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c17",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 4403,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c18",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 4874,
+      "raw": "```json\n{\"categoria\": \"confirmacion\"}\n```"
+    },
+    {
+      "id": "c19",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 4605,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "c20",
+      "expected": "delivery_date",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 4348,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c21",
+      "expected": "question",
+      "model": "delivery_date",
+      "pass": false,
+      "ms": 4123,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c22",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 4408,
+      "raw": "```json\n{\"categoria\": \"falta\"}\n```"
+    },
+    {
+      "id": "c23",
+      "expected": "change",
+      "model": "change",
+      "pass": true,
+      "ms": 4169,
+      "raw": "{\n  \"categoria\": \"cambio\"\n}"
+    },
+    {
+      "id": "c24",
+      "expected": "cancellation",
+      "model": "cancellation",
+      "pass": true,
+      "ms": 4175,
+      "raw": "```json\n{\"categoria\": \"cancelacion\"}\n```"
+    },
+    {
+      "id": "c25",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4110,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c26",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 4801,
+      "raw": "```json\n{\"categoria\": \"no se entiende\"}\n```"
+    },
+    {
+      "id": "c27",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 4163,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "c28",
+      "expected": "delivery_date",
+      "model": null,
+      "pass": false,
+      "ms": 4514,
+      "raw": "```json\n{\"categoria\": \"delivery\"}\n```"
+    },
+    {
+      "id": "c29",
+      "expected": "change",
+      "model": "change",
+      "pass": true,
+      "ms": 4176,
+      "raw": "{\n  \"categoria\": \"cambio\"\n}"
+    },
+    {
+      "id": "c30",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 4114,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c31",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4624,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c32",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 4435,
+      "raw": "{\n  \"categoria\": \"confirmacion\"\n}"
+    },
+    {
+      "id": "c33",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 6471,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "c34",
+      "expected": "other",
+      "model": null,
+      "pass": false,
+      "ms": 4244,
+      "raw": "{\n  \"categoria\": \"oferta\"\n}"
+    },
+    {
+      "id": "c35",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 4223,
+      "raw": "```json\n{\"categoria\": \"confirmacion\"}\n```"
+    },
+    {
+      "id": "c36",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4218,
+      "raw": "```json\n{\"categoria\": \"entrega\"}\n```"
+    },
+    {
+      "id": "c37",
+      "expected": "delivery_date",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 4267,
+      "raw": "```json\n{\"categoria\": \"falta\"}\n```"
+    },
+    {
+      "id": "c38",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 4085,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c39",
+      "expected": "other",
+      "model": null,
+      "pass": false,
+      "ms": 4022,
+      "raw": "{\"categoria\": \"no se entiende\"}"
+    },
+    {
+      "id": "c40",
+      "expected": "change",
+      "model": "change",
+      "pass": true,
+      "ms": 4959,
+      "raw": "{\n  \"categoria\": \"cambio\"\n}"
+    },
+    {
+      "id": "c41",
+      "expected": "cancellation",
+      "model": "cancellation",
+      "pass": true,
+      "ms": 6756,
+      "raw": "```json\n{\"categoria\": \"cancelacion\"}\n```"
+    },
+    {
+      "id": "c42",
+      "expected": "question",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 4528,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c43",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 4182,
+      "raw": "```json\n{\"categoria\": \"no tiene\"}\n```"
+    },
+    {
+      "id": "c44",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4617,
+      "raw": "```json\n{\"categoria\": \"entrega\"}\n```"
+    },
+    {
+      "id": "c45",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 5108,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c46",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 4264,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "c47",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 5829,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c48",
+      "expected": "confirmation",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4147,
+      "raw": "```json\n{\"categoria\": \"entrega\"}\n```"
+    },
+    {
+      "id": "c49",
+      "expected": "change",
+      "model": "change",
+      "pass": true,
+      "ms": 4269,
+      "raw": "```json\n{\"categoria\": \"cambio\"}\n```"
+    },
+    {
+      "id": "c50",
+      "expected": "change",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 6254,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c51",
+      "expected": "other",
+      "model": "confirmation",
+      "pass": false,
+      "ms": 6220,
+      "raw": "{\n  \"categoria\": \"confirmacion\"\n}"
+    },
+    {
+      "id": "c52",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4159,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c53",
+      "expected": "cancellation",
+      "model": "cancellation",
+      "pass": true,
+      "ms": 4237,
+      "raw": "```json\n{\"categoria\": \"cancelacion\"}\n```"
+    },
+    {
+      "id": "c54",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 4093,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "c55",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "pass": true,
+      "ms": 4990,
+      "raw": "{\n  \"categoria\": \"confirmacion\"\n}"
+    },
+    {
+      "id": "c56",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 6698,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "c57",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4836,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "c58",
+      "expected": "confirmation",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 4729,
+      "raw": "```json\n{\"categoria\": \"falta\"}\n```"
+    },
+    {
+      "id": "c59",
+      "expected": "question",
+      "model": "confirmation",
+      "pass": false,
+      "ms": 4551,
+      "raw": "{\n  \"categoria\": \"confirmacion\"\n}"
+    },
+    {
+      "id": "c60",
+      "expected": "delivery_date",
+      "model": "question",
+      "pass": false,
+      "ms": 4940,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "h01",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 5298,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "h02",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 5148,
+      "raw": "{\n  \"categoria\": \"no se entiende\"\n}"
+    },
+    {
+      "id": "h03",
+      "expected": "out_of_stock",
+      "model": "question",
+      "pass": false,
+      "ms": 4611,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "h04",
+      "expected": "change",
+      "model": "question",
+      "pass": false,
+      "ms": 4782,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "h05",
+      "expected": "cancellation",
+      "model": "cancellation",
+      "pass": true,
+      "ms": 4785,
+      "raw": "```json\n{\"categoria\": \"cancelacion\"}\n```"
+    },
+    {
+      "id": "h06",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 4566,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "h07",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 4562,
+      "raw": "```json\n{\"categoria\": \"entrega\"}\n```"
+    },
+    {
+      "id": "h08",
+      "expected": "change",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 4578,
+      "raw": "```json\n{\"categoria\": \"falta\"}\n```"
+    },
+    {
+      "id": "h09",
+      "expected": "confirmation",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 8845,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "h10",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 11119,
+      "raw": "{\n  \"categoria\": \"pregunta\"\n}"
+    },
+    {
+      "id": "h11",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "pass": true,
+      "ms": 11242,
+      "raw": "{\n  \"categoria\": \"falta\"\n}"
+    },
+    {
+      "id": "h12",
+      "expected": "other",
+      "model": null,
+      "pass": false,
+      "ms": 12381,
+      "raw": "{\n  \"categoria\": \"no entiende\"\n}"
+    },
+    {
+      "id": "h13",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 11406,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "h14",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 10662,
+      "raw": "```json\n{\"categoria\": \"no problema\"}\n```"
+    },
+    {
+      "id": "h15",
+      "expected": "delivery_date",
+      "model": "delivery_date",
+      "pass": true,
+      "ms": 10359,
+      "raw": "{\n  \"categoria\": \"entrega\"\n}"
+    },
+    {
+      "id": "h16",
+      "expected": "question",
+      "model": "question",
+      "pass": true,
+      "ms": 11075,
+      "raw": "```json\n{\"categoria\": \"pregunta\"}\n```"
+    },
+    {
+      "id": "h17",
+      "expected": "change",
+      "model": "out_of_stock",
+      "pass": false,
+      "ms": 12966,
+      "raw": "```json\n{\"categoria\": \"falta\"}\n```"
+    },
+    {
+      "id": "h18",
+      "expected": "cancellation",
+      "model": "confirmation",
+      "pass": false,
+      "ms": 19401,
+      "raw": "```json\n{\"categoria\": \"confirmacion\"}\n```"
+    },
+    {
+      "id": "h19",
+      "expected": "delivery_date",
+      "model": null,
+      "pass": false,
+      "ms": 10539,
+      "raw": "```json\n{\"categoria\": \"delivery\"}\n```"
+    },
+    {
+      "id": "h20",
+      "expected": "confirmation",
+      "model": null,
+      "pass": false,
+      "ms": 11032,
+      "raw": "```json\n{\"categoria\": \"no entiende\"}\n```"
+    }
+  ]
+}

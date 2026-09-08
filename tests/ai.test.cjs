@@ -100,3 +100,44 @@ test("chat: la respuesta se limpia a texto plano acotado y nunca queda vacía", 
   const long = sanitizeAnswer("palabra ".repeat(400));
   assert.ok(long.length <= 1201 && long.endsWith("…"));
 });
+
+test("respuestas de proveedor: contrato cerrado y discrepancia sin inventar", () => {
+  const { parseReply, combineReplies } = require("../src/ai.cjs");
+  assert.equal(parseReply('{"categoria":"OUT_OF_STOCK"}'), "out_of_stock");
+  assert.equal(
+    parseReply('```json\n{"categoria":"confirmation"}\n```'),
+    "confirmation",
+  );
+  for (const raw of [
+    '{"categoria":"comprar"}',
+    '{"categoria":"change","accion":"cancelar"}',
+    "sí",
+    "",
+  ])
+    assert.equal(parseReply(raw), null);
+  assert.deepEqual(combineReplies("change", "change"), {
+    category: "change",
+    status: "agreement",
+  });
+  assert.deepEqual(combineReplies("change", "question"), {
+    category: "other",
+    status: "disagreement",
+  });
+  assert.deepEqual(combineReplies(null, "question"), {
+    category: "other",
+    status: "invalid",
+  });
+});
+
+test("respuestas de proveedor: etiquetas en español del modelo se traducen al contrato interno", () => {
+  const { parseReply } = require("../src/ai.cjs");
+  for (const [raw, expected] of [
+    ['{"categoria":"falta"}', "out_of_stock"],
+    ['{"categoria":"Cancelación"}', "cancellation"],
+    ['{"categoria":"entrega"}', "delivery_date"],
+    ['{"categoria":"confirmacion"}', "confirmation"],
+    ['{"categoria":"otro"}', "other"],
+  ])
+    assert.equal(parseReply(raw), expected);
+  assert.equal(parseReply('{"categoria":"comprar ahora"}'), null);
+});

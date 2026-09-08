@@ -367,3 +367,40 @@ test("datos identificativos y OCR persisten y están en la copia portable", () =
     assert.equal(restored.photos[0].ocrText, "ORIGEN COFFEE");
     assert.equal(saved.photos[0].ocrText, "ORIGEN COFFEE");
   }));
+
+test("recetas y producciones persisten en SQLite y sobreviven al reinicio", () =>
+  fixture((dir, open) => {
+    let store = open();
+    store.dispatch({
+      type: "recipe",
+      name: "Gelato de pistacho",
+      product: "p3",
+      yield: 2,
+      ingredients: [{ product: "p2", quantity: 1 }],
+    });
+    let s = store.load();
+    const recipe = s.recipes.find((r) => r.name === "Gelato de pistacho");
+    s = store.dispatch({
+      type: "produce",
+      recipe: recipe.id,
+      quantity: 4,
+      date: "2026-09-08",
+    });
+    s = store.dispatch({
+      type: "applyProduction",
+      id: s.productions[0].id,
+      lines: s.productions[0].lines,
+    });
+    store.close();
+    store = open();
+    const again = store.load();
+    assert.equal(again.recipes.length, 2);
+    assert.equal(again.productions[0].status, "applied");
+    assert.equal(again.products.find((p) => p.id === "p2").stock, 6);
+    assert.equal(again.products.find((p) => p.id === "p3").stock, 7.2);
+    assert.equal(again.movements.filter((m) => m.production).length, 2);
+    assert.equal(
+      Number(store.db.prepare("PRAGMA user_version").get().user_version),
+      2,
+    );
+  }));

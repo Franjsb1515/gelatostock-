@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { replyCategories } from "./messages";
 export const idSchema = z.string().regex(/^[a-zA-Z0-9-]{1,100}$/);
 export const quantity = z
   .number()
@@ -94,6 +95,48 @@ const messageSchema = z.object({
   at,
   simulated: z.literal(true),
   order: idSchema.optional(),
+  interpretation: z
+    .object({
+      category: z.enum(replyCategories),
+      needsReading: z.boolean(),
+      deliveryDate: documentDate.optional(),
+      deliveryHint: text(100).optional(),
+      missing: text(120).optional(),
+      summary: text(300),
+    })
+    .optional(),
+  aiReading: z
+    .object({
+      category: z.enum(replyCategories),
+      status: z.enum(["agreement", "disagreement", "invalid"]),
+      model: text(100),
+      at,
+    })
+    .optional(),
+});
+const ingredientSchema = z.object({
+  product: idSchema,
+  quantity: quantity.refine((n) => n > 0),
+});
+export const recipeFields = {
+  name: text(100),
+  product: idSchema.optional(),
+  yield: quantity.refine((n) => n > 0),
+  ingredients: z.array(ingredientSchema).min(1).max(100),
+  note: z.string().max(500).default(""),
+};
+const recipeSchema = z.object({ id: idSchema, ...recipeFields });
+const productionSchema = z.object({
+  id: idSchema,
+  recipe: idSchema,
+  name: text(100),
+  quantity: quantity.refine((n) => n > 0),
+  date: documentDate,
+  at,
+  status: z.enum(["proposed", "applied", "discarded"]),
+  lines: z.array(z.object({ product: idSchema, quantity })).max(100),
+  output: z.object({ product: idSchema, quantity }).optional(),
+  note: z.string().max(500).default(""),
 });
 const photoSchema = z
   .object({
@@ -119,7 +162,16 @@ const photoSchema = z
 export const movementSchema = z.object({
   id: idSchema,
   product: idSchema,
-  kind: z.enum(["count", "entry", "exit", "waste", "receipt", "reversal"]),
+  kind: z.enum([
+    "count",
+    "entry",
+    "exit",
+    "waste",
+    "receipt",
+    "reversal",
+    "production",
+    "output",
+  ]),
   delta: signedQuantity,
   before: quantity,
   after: quantity,
@@ -127,6 +179,7 @@ export const movementSchema = z.object({
   at,
   order: idSchema.optional(),
   reverses: idSchema.optional(),
+  production: idSchema.optional(),
 });
 export const stateSchema = z.object({
   version: z.literal(1),
@@ -151,12 +204,16 @@ export const stateSchema = z.object({
   photos: z.array(photoSchema).max(100000),
   processed: z.array(idSchema).default([]),
   movements: z.array(movementSchema).default([]),
+  recipes: z.array(recipeSchema).max(10000).default([]),
+  productions: z.array(productionSchema).max(100000).default([]),
 });
 export type State = z.infer<typeof stateSchema>;
 export type Product = z.infer<typeof productSchema>;
 export type Movement = z.infer<typeof movementSchema>;
 export type Photo = State["photos"][number];
 export type Message = State["messages"][number];
+export type Recipe = State["recipes"][number];
+export type Production = State["productions"][number];
 const productInput = z.object({ type: z.literal("product"), ...productFields });
 export const actionSchema = z.intersection(
   z.object({
@@ -229,6 +286,33 @@ export const actionSchema = z.intersection(
       reason: text(500),
     }),
     z.object({ type: z.literal("link"), id: idSchema, order: idSchema }),
+    z.object({
+      type: z.literal("aiNote"),
+      id: idSchema,
+      category: z.enum(replyCategories),
+      status: z.enum(["agreement", "disagreement", "invalid"]),
+      model: text(100),
+    }),
+    z.object({
+      type: z.literal("recipe"),
+      id: idSchema.optional(),
+      ...recipeFields,
+    }),
+    z.object({ type: z.literal("deleteRecipe"), id: idSchema }),
+    z.object({
+      type: z.literal("produce"),
+      recipe: idSchema,
+      quantity: quantity.refine((n) => n > 0),
+      date: documentDate,
+    }),
+    z.object({
+      type: z.literal("applyProduction"),
+      id: idSchema,
+      lines: z.array(z.object({ product: idSchema, quantity })).max(100),
+      output: quantity.optional(),
+      note: z.string().max(500).default(""),
+    }),
+    z.object({ type: z.literal("discardProduction"), id: idSchema }),
     z.object({
       type: z.literal("organizePhoto"),
       id: idSchema,

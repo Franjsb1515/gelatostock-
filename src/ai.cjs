@@ -80,6 +80,56 @@ function parseResult(raw, original) {
     };
   }
 }
+const replyCategories = [
+  "out_of_stock",
+  "cancellation",
+  "change",
+  "question",
+  "delivery_date",
+  "confirmation",
+  "other",
+];
+const replyAliases = {
+  falta: "out_of_stock",
+  cancelacion: "cancellation",
+  cancelación: "cancellation",
+  cambio: "change",
+  pregunta: "question",
+  entrega: "delivery_date",
+  confirmacion: "confirmation",
+  confirmación: "confirmation",
+  otro: "other",
+};
+const replySchema = z
+  .object({
+    categoria: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .transform((v) => replyAliases[v] || v)
+      .pipe(z.enum(replyCategories)),
+  })
+  .strict();
+function parseReply(raw) {
+  try {
+    return replySchema.parse(
+      JSON.parse(
+        raw
+          .trim()
+          .replace(/^```(?:json)?\s*/, "")
+          .replace(/\s*```$/, ""),
+      ),
+    ).categoria;
+  } catch {
+    return null;
+  }
+}
+// Two readings of a supplier reply. Agreement is not certainty; the result is an annotation only.
+function combineReplies(first, second) {
+  if (!first || !second) return { category: "other", status: "invalid" };
+  if (first !== second) return { category: "other", status: "disagreement" };
+  return { category: first, status: "agreement" };
+}
 const NO_ANSWER =
   "No tengo una respuesta fiable para eso. Consulta la guía de la app o revisa el documento original.";
 // Plain text only: no thinking blocks, no markup, bounded length. The UI escapes it again.
@@ -200,6 +250,17 @@ class LocalAI {
       model: this.modelLabel,
     };
   }
+  async readReply(text) {
+    const parsed = z.string().trim().min(1).max(5000).safeParse(text);
+    if (!parsed.success) throw Error("Mensaje vacío o demasiado largo.");
+    const started = Date.now();
+    const raw = await this.run({ kind: "reply", text: parsed.data }, 2);
+    return {
+      ...combineReplies(parseReply(raw[0]), parseReply(raw[1])),
+      milliseconds: Date.now() - started,
+      model: this.modelLabel,
+    };
+  }
   async chat(data) {
     const parsed = chatSchema.safeParse(data);
     if (!parsed.success)
@@ -223,4 +284,11 @@ class LocalAI {
     if (job.worker) await job.worker.terminate();
   }
 }
-module.exports = { LocalAI, parseResult, sanitizeAnswer, NO_ANSWER };
+module.exports = {
+  LocalAI,
+  parseResult,
+  parseReply,
+  combineReplies,
+  sanitizeAnswer,
+  NO_ANSWER,
+};

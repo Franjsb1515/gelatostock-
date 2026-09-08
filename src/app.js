@@ -21,7 +21,8 @@ let aiDraft = "",
   aiError = "",
   aiChat = [],
   aiChatUseDoc = true,
-  aiChatError = "";
+  aiChatError = "",
+  aiReplyBusy = "";
 const $ = (s) => document.querySelector(s);
 const esc = (v) =>
   String(v ?? "").replace(
@@ -194,12 +195,14 @@ function render() {
     settings,
     whatsapp,
     ai: aiPage,
+    production,
   };
   $("#app").innerHTML =
     `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span><small>EL ESPACIO DE TU NEGOCIO</small></span></a><div class="workspace"><div class="workspace-icon">G</div><div><strong>Gelato & Café</strong><small>Espacio de demostración</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
       ["home", "home", "Resumen"],
       ["stock", "box", "Inventario"],
       ["orders", "cart", "Compras"],
+      ["production", "ice", "Producción"],
       ["messages", "message", "Mensajes"],
       ["whatsapp", "message", "WhatsApp"],
       ["suppliers", "store", "Proveedores"],
@@ -212,7 +215,7 @@ function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local", production: "Producción" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
 }
 async function refreshWhatsApp() {
   if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)
@@ -252,7 +255,7 @@ function whatsapp() {
     ) +
     `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo se importan chats autorizados. La sesión de WhatsApp Web puede sincronizar la cuenta completa en su perfil local. Internet y app abierta necesarios; no hay envíos desde este módulo.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}</div></section>
  <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Al cambiar de cuenta, su lista se mantiene separada. No se importa historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} ${w.account === w.activeAccount ? btn("Dejar de importar", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
- <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos 200 mensajes recibidos de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${w.messages.map((m) => `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.text ? btn("Leer con IA local", "aiWhatsApp", "secondary", `data-id="${esc(m.id)}"`) : ""}${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`).join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'}</section>
+ <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos 200 mensajes recibidos de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${w.messages.map((m) => `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.interpretation ? `<div class="wa-reading">${pill(replyLabel[m.interpretation.category], m.interpretation.needsReading ? "peach" : "sage")} <small>${esc(m.interpretation.summary)}</small></div>` : ""}${m.text ? btn("Leer con IA local", "aiWhatsApp", "secondary", `data-id="${esc(m.id)}"`) : ""}${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`).join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'}</section>
  <section class="panel settings-card"><h2>Historial de sesiones y cambios de número</h2>${btn("Crear copia de WhatsApp", "waBackup")}<p class="fineprint">Esta copia incluye conversaciones y adjuntos, sin credenciales. Es independiente de la copia del inventario.</p>${w.history.map((e) => `<p>${date(e.at)} ${time(e.at)} · ${esc(e.text)}</p>`).join("") || '<p class="muted">Todavía no se vinculó ninguna cuenta.</p>'}</section>`
   );
 }
@@ -349,7 +352,7 @@ function home() {
         btn(icon("plus") + " Registrar stock", "count", "primary"),
     ) +
     `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> TU RESUMEN DE HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepará la reposición y seguí con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
- <section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong><small>Todo tu inventario</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Precios de demostración</small></div></article></section>
+ ${homeNotices()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong><small>Todo tu inventario</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Precios de demostración</small></div></article></section>
  <div class="dashboard-grid"><section class="panel"><div class="panel-heading"><div><h2>Un vistazo al inventario</h2><p>Los productos que necesitan atención.</p></div><button class="text-button" data-nav="stock">Ver inventario ${icon("arrow")}</button></div>${productTable(low().slice(0, 5), true)}</section><div class="right-stack"><section class="panel inbox-preview"><div class="panel-heading"><h2>Tu bandeja de entrada</h2><span class="count-bubble">${important.length}</span></div>${
    important.length
      ? important
@@ -398,6 +401,109 @@ const aiTypes = {
   mensaje: "Mensaje",
   otro: "Tipo por revisar",
 };
+const replyLabel = {
+  out_of_stock: "Falta de producto",
+  cancellation: "Cancelación",
+  change: "Cambio de condiciones",
+  question: "Pregunta del proveedor",
+  delivery_date: "Fecha de entrega",
+  confirmation: "Confirmación",
+  other: "Sin interpretar",
+};
+const toRead = () =>
+  state.messages.filter((m) => m.interpretation?.needsReading && !m.reviewed);
+const proposedProductions = () =>
+  state.productions.filter((p) => p.status === "proposed");
+function replyBlock(m) {
+  const i = m.interpretation;
+  if (!i) return "";
+  const ai = m.aiReading;
+  return `<div class="reply-reading"><div class="message-label">RESPUESTA DEL PROVEEDOR · LECTURA POR REGLAS</div><h3>${esc(replyLabel[i.category])}${i.needsReading && !m.reviewed ? " " + pill("Debes leer", "peach") : ""}</h3><p>${esc(i.summary)}</p>${i.deliveryDate ? `<p><strong>Entrega indicada:</strong> ${date(i.deliveryDate + "T12:00:00Z")}${i.deliveryHint ? " («" + esc(i.deliveryHint) + "»)" : ""}</p>` : i.deliveryHint ? `<p><strong>Plazo indicado:</strong> ${esc(i.deliveryHint)}</p>` : ""}${i.missing ? `<p><strong>Producto que falta:</strong> ${esc(i.missing)}</p>` : ""}${ai ? `<div class="muted">Segunda lectura (IA local, ${esc(ai.model)}): ${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "dos lecturas coincidentes" : ai.status === "disagreement" ? "las lecturas discrepan: revisa tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && ai.category !== i.category ? " · No coincide con las reglas: decide leyendo el original." : ""}</div>` : '<div class="muted">Sin segunda lectura de IA todavía. Es opcional y solo propone una categoría.</div>'}</div>`;
+}
+function homeNotices() {
+  const read = toRead().length,
+    proposed = proposedProductions().length;
+  if (!read && !proposed) return "";
+  return `<div class="notice subtle home-notice">${icon("alert")}<div>${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}</div></div>`;
+}
+function orderReplies(o) {
+  const replies = state.messages.filter(
+    (m) => m.order === o.id && m.interpretation,
+  );
+  if (!replies.length) return "";
+  return `<div class="order-replies"><strong>Respuestas del proveedor vinculadas</strong>${replies
+    .slice(0, 4)
+    .map(
+      (m) =>
+        `<p>${pill(replyLabel[m.interpretation.category], m.interpretation.needsReading && !m.reviewed ? "peach" : "sage")} ${esc(m.interpretation.summary)}${m.interpretation.deliveryDate ? " Entrega: " + date(m.interpretation.deliveryDate + "T12:00:00Z") + "." : ""}</p>`,
+    )
+    .join("")}</div>`;
+}
+function production() {
+  const proposed = proposedProductions();
+  const applied = state.productions.filter((p) => p.status === "applied");
+  const byDate = {};
+  for (const p of applied) (byDate[p.date] ||= []).push(p);
+  const dates = Object.keys(byDate).sort().reverse().slice(0, 30);
+  const lineText = (l) => {
+    const p = product(l.product);
+    return `${esc(p.name)} ${num(l.quantity)} ${esc(p.unit)}`;
+  };
+  return (
+    header(
+      "Producción y recetas",
+      "Cada kilo de gelato descuenta sus ingredientes, solo cuando tú lo apruebas.",
+      btn(icon("plus") + " Nueva receta", "recipeEditor") +
+        btn(icon("plus") + " Registrar producción", "produce", "primary"),
+    ) +
+    `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta, no por IA</strong><span>La app propone el consumo y el producto terminado. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div><section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Aprobar crea movimientos de salida por producción y la entrada del producto terminado.</p></div></div>${
+      proposed.length
+        ? proposed
+            .map(
+              (p) =>
+                `<article class="production-card" data-production="${esc(p.id)}"><header><div><strong>${esc(p.name)}</strong><small>${num(p.quantity)} kg · ${date(p.date + "T12:00:00Z")}</small></div>${pill("Por aprobar", "sand")}</header><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Ingrediente</th><th>Estimado por receta</th><th>Consumo real</th><th>Stock actual</th></tr></thead><tbody>${p.lines
+                  .map((l) => {
+                    const pr = product(l.product);
+                    return `<tr><td><strong>${esc(pr.name)}</strong></td><td>${num(l.quantity)} ${esc(pr.unit)}</td><td><input type="number" class="inline-input" data-prod-line="${esc(l.product)}" value="${l.quantity}" min="0" max="1000000" step="${pr.unit === "ud" ? "1" : "0.001"}" aria-label="Consumo real de ${esc(pr.name)}"> ${esc(pr.unit)}</td><td>${num(pr.stock)} ${esc(pr.unit)}${pr.stock < l.quantity ? " " + pill("Insuficiente", "peach") : ""}</td></tr>`;
+                  })
+                  .join(
+                    "",
+                  )}</tbody></table></div>${p.output ? `<p><strong>Producto terminado:</strong> ${esc(product(p.output.product).name)} <input type="number" class="inline-input" data-prod-output value="${p.output.quantity}" min="0" max="1000000" step="0.001" aria-label="Kilos de producto terminado"> kg</p>` : '<p class="muted">Esta receta no tiene producto terminado asociado; solo se descuentan ingredientes.</p>'}<label class="field">Nota (opcional)<input type="text" class="inline-input wide" data-prod-note maxlength="500" placeholder="Ejemplo: se usó más leche"></label><div class="row-actions">${btn(icon("check") + " Aprobar y descontar", "applyProduction", "primary", `data-id="${esc(p.id)}"`)}${btn("Descartar", "discardProduction", "secondary", `data-id="${esc(p.id)}"`)}</div></article>`,
+            )
+            .join("")
+        : '<div class="empty compact">No hay producciones pendientes. Registra una producción para ver el consumo estimado.</div>'
+    }</section><section class="panel"><div class="panel-heading"><div><h2>Hoja diaria de producción</h2><p>Kilos producidos por día y por gelato, con el consumo aprobado.</p></div></div>${
+      dates.length
+        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th></tr></thead><tbody>${dates
+            .map((d) =>
+              byDate[d]
+                .map(
+                  (p, i) =>
+                    `<tr>${i === 0 ? `<td rowspan="${byDate[d].length}"><strong>${date(d + "T12:00:00Z")}</strong><small>${num(byDate[d].reduce((n, x) => n + x.quantity, 0))} kg en total</small></td>` : ""}<td>${esc(p.name)}${p.note ? `<small>${esc(p.note)}</small>` : ""}</td><td>${num(p.output?.quantity ?? p.quantity)} kg</td><td>${
+                      p.lines
+                        .filter((l) => l.quantity)
+                        .map(lineText)
+                        .join(", ") || "Sin consumo"
+                    }</td></tr>`,
+                )
+                .join(""),
+            )
+            .join("")}</tbody></table></div>`
+        : '<div class="empty compact">Todavía no hay producciones aprobadas.</div>'
+    }</section><section class="panel"><div class="panel-heading"><div><h2>Recetas</h2><p>Cantidades por lo que rinde cada receta, en la unidad base de cada ingrediente.</p></div></div><div class="recipe-grid">${
+      state.recipes
+        .map(
+          (r) =>
+            `<article class="recipe-card"><h3>${esc(r.name)}</h3><small>Rinde ${num(r.yield)} kg${r.product ? " · terminado: " + esc(product(r.product).name) : " · sin producto terminado"}</small><ul>${r.ingredients.map((i) => `<li>${lineText(i)}</li>`).join("")}</ul>${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn("Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "secondary", `data-id="${esc(r.id)}"`)}</div></article>`,
+        )
+        .join("") ||
+      '<div class="empty compact">Sin recetas. Crea la primera con «Nueva receta».</div>'
+    }</div></section>`
+  );
+}
+function ingredientRow(productId = "", qty = "") {
+  return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+}
 function aiChatSection() {
   return `<section class="panel settings-card ai-chat"><h2>Dudas sobre la app o el texto</h2><p>Pregunta cómo usar GelatoStock o qué dice el texto del editor. Responde el mismo modelo local con una guía fija; no consulta tu inventario ni tus pedidos y no ejecuta acciones.</p><div class="ai-chat-log" aria-live="polite">${aiChat.map((m) => `<article class="ai-chat-msg ${m.role}"><strong>${m.role === "user" ? "Tú" : "IA local"}</strong><p class="${m.role === "assistant" ? "ai-chat-answer" : ""}">${esc(m.content)}</p></article>`).join("") || '<p class="muted">Ejemplo: «¿Qué hace Control de entregas?» o «¿Este texto es una factura o un presupuesto?»</p>'}</div><label class="check"><input type="checkbox" id="ai-chat-doc" ${aiChatUseDoc ? "checked" : ""} ${aiBusy ? "disabled" : ""}> Usar el texto del editor como contexto</label><label class="field">Tu pregunta<textarea id="ai-chat-input" maxlength="1500" rows="3" ${aiBusy ? "disabled" : ""}></textarea></label><div class="setting-actions">${btn(aiBusy ? "Respondiendo en este equipo…" : "Preguntar a la IA local", "aiChatSend", "primary", aiBusy ? "disabled" : "")}${aiBusy ? btn("Detener", "aiCancel") : ""}${aiChat.length ? btn("Vaciar chat", "aiChatClear", "secondary") : ""}</div>${aiChatError ? `<p role="alert">${esc(aiChatError)}</p>` : ""}<small>Respuestas orientativas generadas en este equipo; pueden ser incorrectas o incompletas. El chat se conserva solo en esta ventana. Se envían al modelo los últimos 6 mensajes.</small></section>`;
 }
@@ -442,7 +548,7 @@ function orderTracking() {
           })
           .join(
             "",
-          )}</tbody></table></div><footer class="delivery-next"><div><strong>${hint}</strong><small>${o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "secondary", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
+          )}</tbody></table></div>${orderReplies(o)}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "secondary", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
       })
       .join("") ||
     '<div class="panel empty compact">' +
@@ -492,7 +598,10 @@ function messages() {
         (messageFilter === "important" &&
           x.priority === "important" &&
           !x.reviewed) ||
-        (messageFilter === "relevant" && x.relevance === "relevant")) &&
+        (messageFilter === "relevant" && x.relevance === "relevant") ||
+        (messageFilter === "toread" &&
+          x.interpretation?.needsReading &&
+          !x.reviewed)) &&
       fold(x.text + " " + supplier(x.supplier).name).includes(
         fold(messageQuery),
       ),
@@ -511,6 +620,7 @@ function messages() {
         pending: "Sin revisar",
         important: "Importantes pendientes",
         relevant: "Relacionados con pedidos",
+        toread: "Debes leer",
       },
     )
       .map(
@@ -519,7 +629,7 @@ function messages() {
       )
       .join(
         "",
-      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Bandeja de proveedores <span>${list.length} de ${state.messages.length}</span></div>${list.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(supplier(x.supplier).name)}</strong><small>${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? "Revisado" : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div><div class="message-detail">${m ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>Mensaje de demostración · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? "Revisado" : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div><div class="interpretation"><div class="message-label">${icon("leaf")} LECTURA ASISTIDA POR REGLAS</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p><div class="muted">${m.order ? "Vinculado a " + esc(state.orders.find((o) => o.id === m.order)?.number) : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="message-actions">${btn("Leer con IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : icon("check") + " Marcar revisado", "review", "primary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div><p class="fineprint">Revisar un mensaje no acepta sobrecostes ni sustituciones. La conexión real se añadirá en una siguiente etapa.</p></div>` : '<div class="empty">No hay mensajes que coincidan con estos filtros.</div>'}</div></section>`
+      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Bandeja de proveedores <span>${list.length} de ${state.messages.length}</span></div>${list.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(supplier(x.supplier).name)}</strong><small>${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? "Revisado" : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div><div class="message-detail">${m ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>Mensaje de demostración · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? "Revisado" : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div><div class="interpretation"><div class="message-label">${icon("leaf")} LECTURA ASISTIDA POR REGLAS</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p>${replyBlock(m)}<div class="muted">${m.order ? "Vinculado a " + esc(state.orders.find((o) => o.id === m.order)?.number) : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : icon("check") + " Marcar revisado", "review", "primary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div><p class="fineprint">Revisar un mensaje no acepta sobrecostes ni sustituciones. La conexión real se añadirá en una siguiente etapa.</p></div>` : '<div class="empty">No hay mensajes que coincidan con estos filtros.</div>'}</div></section>`
   );
 }
 function suppliers() {
@@ -847,6 +957,172 @@ async function action(name, el) {
     render();
     return;
   }
+  if (name === "recipeEditor") {
+    const r = el.dataset.id
+      ? state.recipes.find((x) => x.id === el.dataset.id)
+      : { name: "", product: "", yield: 1, ingredients: [], note: "" };
+    modal(
+      r.id ? "Editar receta" : "Nueva receta",
+      "Indica cuánto rinde la receta y cuánto usa de cada ingrediente para esa cantidad.",
+      field(
+        "Nombre de la receta",
+        "name",
+        r.name,
+        "text",
+        'required maxlength="100"',
+      ) +
+        select(
+          "Producto terminado (en kg)",
+          "product",
+          [
+            ["", "Sin producto terminado"],
+            ...state.products
+              .filter((p) => p.unit === "kg")
+              .map((p) => [p.id, p.name]),
+          ],
+          r.product || "",
+        ) +
+        field(
+          "Rinde (kg de gelato)",
+          "yield",
+          r.yield,
+          "number",
+          'min="0.001" max="1000000" step="0.001" required',
+        ) +
+        `<div class="field"><span>Ingredientes para esa cantidad</span><div id="ingredient-rows">${(r.ingredients.length ? r.ingredients : [{ product: "", quantity: "" }]).map((i) => ingredientRow(i.product, i.quantity)).join("")}</div>${btn(icon("plus") + " Añadir ingrediente", "addIngredient", "secondary")}</div>` +
+        `<label class="field">Nota<textarea name="note" maxlength="500">${esc(r.note || "")}</textarea></label>`,
+      async (f) => {
+        const products = f.getAll("ing-product"),
+          quantities = f.getAll("ing-qty");
+        const ingredients = products
+          .map((p, i) => ({ product: p, quantity: Number(quantities[i]) }))
+          .filter((i) => i.product);
+        return mutate(
+          {
+            type: "recipe",
+            ...(r.id ? { id: r.id } : {}),
+            name: f.get("name"),
+            ...(f.get("product") ? { product: f.get("product") } : {}),
+            yield: Number(f.get("yield")),
+            ingredients,
+            note: f.get("note") || "",
+          },
+          "Receta guardada.",
+        );
+      },
+    );
+    return;
+  }
+  if (name === "addIngredient") {
+    $("#ingredient-rows")?.insertAdjacentHTML("beforeend", ingredientRow());
+    return;
+  }
+  if (name === "removeIngredient") {
+    const rows = $("#ingredient-rows");
+    if (rows && rows.children.length > 1)
+      el.closest(".ingredient-row").remove();
+    return;
+  }
+  if (name === "deleteRecipe") {
+    const r = state.recipes.find((x) => x.id === el.dataset.id);
+    modal(
+      "Eliminar receta",
+      "Solo se puede eliminar si no tiene producciones aprobadas.",
+      `<p>${esc(r.name)}</p>`,
+      async () =>
+        mutate({ type: "deleteRecipe", id: r.id }, "Receta eliminada."),
+      "Eliminar",
+    );
+    return;
+  }
+  if (name === "produce") {
+    if (!state.recipes.length) {
+      toast("Crea primero una receta.");
+      return;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    modal(
+      "Registrar producción",
+      "La app calcula el consumo por receta. Nada cambia hasta que apruebes la propuesta.",
+      select(
+        "Receta",
+        "recipe",
+        state.recipes.map((r) => [r.id, r.name]),
+        el.dataset.recipe || state.recipes[0].id,
+      ) +
+        field(
+          "Kilos producidos",
+          "quantity",
+          1,
+          "number",
+          'min="0.001" max="1000000" step="0.001" required',
+        ) +
+        field("Día de producción", "date", today, "date", "required"),
+      async (f) => {
+        const ok = await mutate(
+          {
+            type: "produce",
+            recipe: f.get("recipe"),
+            quantity: Number(f.get("quantity")),
+            date: f.get("date"),
+          },
+          "Consumo estimado listo para revisar.",
+        );
+        if (ok) nav("production");
+        return ok;
+      },
+      "Calcular consumo",
+    );
+    return;
+  }
+  if (name === "applyProduction") {
+    const card = el.closest("[data-production]");
+    const lines = [...card.querySelectorAll("[data-prod-line]")].map((i) => ({
+      product: i.dataset.prodLine,
+      quantity: Number(i.value),
+    }));
+    const output = card.querySelector("[data-prod-output]");
+    await mutate(
+      {
+        type: "applyProduction",
+        id: el.dataset.id,
+        lines,
+        ...(output ? { output: Number(output.value) } : {}),
+        note: card.querySelector("[data-prod-note]")?.value || "",
+      },
+      "Producción aprobada: ingredientes descontados.",
+    );
+    return;
+  }
+  if (name === "discardProduction") {
+    await mutate(
+      { type: "discardProduction", id: el.dataset.id },
+      "Producción descartada sin cambios.",
+    );
+    return;
+  }
+  if (name === "aiReadReply") {
+    if (aiBusy || aiReplyBusy) return;
+    aiReplyBusy = el.dataset.id;
+    render();
+    try {
+      const data = await request("/api/ai/message", { id: el.dataset.id });
+      state = data.state;
+      toast(
+        data.reading.status === "agreement"
+          ? "Segunda lectura anotada: " +
+              replyLabel[data.reading.category] +
+              ". Solo es una propuesta."
+          : "La IA no dio una lectura consistente; se anota como sin interpretar.",
+      );
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      aiReplyBusy = "";
+      render();
+    }
+    return;
+  }
   if (name === "aiCancel") {
     try {
       await request("/api/ai/cancel", {});
@@ -1025,11 +1301,6 @@ async function action(name, el) {
           messageQuery = "";
           messageSupplier = "all";
           messageFilter = "all";
-          let orderFilter = "open";
-          let aiDraft = "",
-            aiBusy = false,
-            aiResult = null,
-            aiError = "";
           selectedMessage = state.messages[0].id;
           nav("messages");
         }
@@ -1221,6 +1492,10 @@ document.addEventListener("click", async (e) => {
       { type: "cart", product: el.dataset.remove, packs: 0 },
       "Producto retirado.",
     );
+  } else if (el.dataset.filterMessages) {
+    messageFilter = el.dataset.filterMessages;
+    nav("messages");
+    return;
   } else if (el.dataset.openMessage) {
     selectedMessage = el.dataset.openMessage;
     page = "messages";

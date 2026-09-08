@@ -1,8 +1,9 @@
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
-const { randomBytes } = require("node:crypto");
+const { randomBytes, timingSafeEqual } = require("node:crypto");
 const { identifySupplier } = require("../build/identify.js");
+const { interpretReply } = require("../build/messages.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { LocalAI } = require("./ai.cjs");
@@ -16,12 +17,25 @@ function createApp({
   const ai = new LocalAI();
   const whatsapp = new WhatsAppConnection(dataDir, store);
   const token = randomBytes(32).toString("hex");
+  const sameToken = (value) =>
+    typeof value === "string" &&
+    value.length === token.length &&
+    timingSafeEqual(Buffer.from(value), Buffer.from(token));
+  // Rules only: category, resolved date and "needs reading" for each imported message.
+  const annotate = (view) => ({
+    ...view,
+    messages: (view.messages || []).map((m) => ({
+      ...m,
+      interpretation: m.text ? interpretReply(m.text, m.at) : undefined,
+    })),
+  });
   const server = http.createServer(async (req, res) => {
     const origin = `http://127.0.0.1:${server.address().port}`;
     const json = (status, value) => {
       res.writeHead(status, {
         "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
       });
       res.end(JSON.stringify(value));
     };
@@ -32,22 +46,33 @@ function createApp({
     const u = new URL(req.url, origin);
     const authenticated = (req.headers.cookie || "")
       .split("; ")
-      .includes(`gelato=${token}`);
+      .some((c) => c.startsWith("gelato=") && sameToken(c.slice(7)));
     if (u.pathname === "/" && req.method === "GET") {
-      if (u.searchParams.get("key") !== token && !authenticated) {
+      const key = u.searchParams.get("key");
+      if (key !== null && !sameToken(key)) {
         json(403, { error: "Abrí la aplicación desde su acceso de inicio." });
         return;
       }
-      res.setHeader(
-        "Set-Cookie",
-        `gelato=${token}; HttpOnly; SameSite=Strict; Path=/`,
-      );
+      if (key !== null) {
+        // Bootstrap: set the session cookie and drop the key from the visible URL.
+        res.writeHead(302, {
+          "Set-Cookie": `gelato=${token}; HttpOnly; SameSite=Strict; Path=/`,
+          Location: "/",
+          "Cache-Control": "no-store",
+        });
+        res.end();
+        return;
+      }
+      if (!authenticated) {
+        json(403, { error: "Abrí la aplicación desde su acceso de inicio." });
+        return;
+      }
     } else if (!authenticated) {
       json(403, { error: "Sesión local no autorizada." });
       return;
     }
     if (u.pathname === "/api/whatsapp" && req.method === "GET") {
-      json(200, whatsapp.view(u.searchParams.get("account")));
+      json(200, annotate(whatsapp.view(u.searchParams.get("account"))));
       return;
     }
     if (u.pathname === "/api/state" && req.method === "GET") {
@@ -66,6 +91,7 @@ function createApp({
         "/api/ai",
         "/api/ai/cancel",
         "/api/ai/chat",
+        "/api/ai/message",
         "/api/action",
         "/api/backup",
         "/api/restore",
@@ -113,6 +139,30 @@ function createApp({
           json(200, await ai.chat(data));
           return;
         }
+        if (u.pathname === "/api/ai/message") {
+          // The model only proposes a category; the annotation never touches stock or orders.
+          const message = store
+            .load()
+            .messages.find((m) => m.id === String(data.id || ""));
+          if (!message) throw Error("Mensaje inexistente.");
+          const reading = await ai.readReply(message.text);
+          const state = store.dispatch({
+            type: "aiNote",
+            id: message.id,
+            category: reading.category,
+            status: reading.status,
+            model: reading.model,
+          });
+          json(200, {
+            state,
+            dataDir,
+            storage: "SQLite",
+            archiveWarning: store.archiveWarning,
+            version,
+            reading,
+          });
+          return;
+        }
         if (u.pathname === "/api/whatsapp") {
           if (data.type === "backup") {
             json(200, { path: whatsapp.store.backup() });
@@ -122,7 +172,7 @@ function createApp({
           else if (data.type === "disconnect") await whatsapp.disconnect();
           else if (data.type === "allow") whatsapp.allow(data);
           else throw Error("Acción WhatsApp desconocida.");
-          json(200, whatsapp.view());
+          json(200, annotate(whatsapp.view()));
           return;
         }
         if (u.pathname === "/api/identify") {

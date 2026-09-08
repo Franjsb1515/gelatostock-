@@ -23,10 +23,15 @@ const entityTables = [
   "activity",
   "movements",
   "photos",
+  "recipes",
+  "productions",
 ] as const;
 type Table = (typeof entityTables)[number];
 export class Store {
   archiveWarning: string | undefined;
+  // Validated snapshot of the last read/write. Cleared on every write so a
+  // concurrent writer (another connection) is noticed on the next load.
+  private cached: State | undefined;
   readonly db: DatabaseSync;
   readonly file: string;
   readonly attachments: string;
@@ -44,7 +49,7 @@ export class Store {
         this.db.prepare("PRAGMA user_version").get()?.user_version,
       );
       ensure(
-        version <= 1,
+        version <= 2,
         "La base de datos pertenece a una versión más nueva.",
       );
       this.db
@@ -59,9 +64,11 @@ export class Store {
    CREATE TABLE IF NOT EXISTS movements(id TEXT PRIMARY KEY,product TEXT NOT NULL REFERENCES products(id),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS photos(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY,fingerprint TEXT,position INTEGER NOT NULL);
+   CREATE TABLE IF NOT EXISTS recipes(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+   CREATE TABLE IF NOT EXISTS productions(id TEXT PRIMARY KEY,recipe TEXT NOT NULL REFERENCES recipes(id),status TEXT NOT NULL CHECK(status IN ('proposed','applied','discarded')),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE INDEX IF NOT EXISTS order_lines_product ON order_lines(product);
    CREATE INDEX IF NOT EXISTS movements_product ON movements(product);
-   PRAGMA user_version=1;`);
+   PRAGMA user_version=2;`);
       ensure(
         this.db.prepare("PRAGMA quick_check").get()?.quick_check === "ok",
         "La base no pasó la comprobación de integridad.",
@@ -199,12 +206,28 @@ export class Store {
   private jsonRows(table: Table): unknown[] {
     return this.db
       .prepare(
-        `SELECT data FROM ${table} ORDER BY position ${["orders", "messages", "activity", "movements", "photos"].includes(table) ? "DESC" : "ASC"}`,
+        `SELECT data FROM ${table} ORDER BY position ${["orders", "messages", "activity", "movements", "photos", "productions"].includes(table) ? "DESC" : "ASC"}`,
       )
       .all()
       .map((row) => JSON.parse(String(row.data)));
   }
   load(): State {
+    // Another connection may have written: the meta revision is the cheap check.
+    if (this.cached) {
+      const row = this.db
+        .prepare(
+          "SELECT json_extract(data,'$.revision') AS revision FROM meta WHERE id=1",
+        )
+        .get();
+      if (row && Number(row.revision) === this.cached.revision)
+        return structuredClone(this.cached);
+      this.cached = undefined;
+    }
+    const state = this.read();
+    this.cached = state;
+    return structuredClone(state);
+  }
+  private read(): State {
     const meta = this.db.prepare("SELECT data FROM meta WHERE id=1").get();
     ensure(meta, "Base vacía.");
     const header: unknown = JSON.parse(String(meta.data));
@@ -231,6 +254,8 @@ export class Store {
       activity: this.jsonRows("activity"),
       movements: this.jsonRows("movements"),
       photos: this.jsonRows("photos"),
+      recipes: this.jsonRows("recipes"),
+      productions: this.jsonRows("productions"),
       processed: this.db
         .prepare("SELECT id FROM operations ORDER BY position")
         .all()
@@ -275,6 +300,7 @@ export class Store {
     return photo;
   }
   private write(input: State): void {
+    this.cached = undefined;
     this.db.exec("PRAGMA defer_foreign_keys=ON");
     const s = validate(input);
     s.photos = s.photos.map((p) => this.storePhoto(p));
@@ -325,6 +351,12 @@ export class Store {
         product: s.movements[i]!.product,
       })),
       photos: basic(s.photos, true),
+      recipes: basic(s.recipes),
+      productions: basic(s.productions, true).map((r, i) => ({
+        ...r,
+        recipe: s.productions[i]!.recipe,
+        status: s.productions[i]!.status,
+      })),
     };
     // Remove child rows before parent rows. Tables are a fixed internal allowlist.
     for (const table of [...entityTables].reverse()) {
@@ -364,6 +396,8 @@ export class Store {
       activity,
       movements,
       photos,
+      recipes,
+      productions,
       processed,
       ...meta
     } = s;
@@ -407,6 +441,7 @@ export class Store {
       this.syncArchive();
       return this.load();
     } catch (error) {
+      this.cached = undefined;
       if (this.db.isTransaction) this.db.exec("ROLLBACK");
       throw error;
     }
@@ -486,11 +521,13 @@ export class Store {
       this.syncArchive();
       return this.load();
     } catch (error) {
+      this.cached = undefined;
       if (this.db.isTransaction) this.db.exec("ROLLBACK");
       throw error;
     }
   }
   close(): void {
+    this.cached = undefined;
     this.db.close();
   }
 }
