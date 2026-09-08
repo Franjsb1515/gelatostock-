@@ -60,3 +60,7 @@ No incluye pagos autónomos, integración universal con cualquier web, entrenami
 ## Información pendiente
 
 Elaboración propia o compra de productos; sistema de ventas; lista y enlaces de proveedores; cuenta/canal de WhatsApp; número de usuarios y equipos; muestras de documentos; presupuesto de conectividad externa. Recoger cada dato cuando afecte a la etapa correspondiente.
+
+
+## Estado incorporado en 0.7 · 2026-09-08
+Control de entregas e IA local asistida implementados. Consultar CONTROL_DE_ENTREGAS.md e IA_LOCAL_Y_SEGURIDAD.md para el alcance vigente y los límites. La meta de automatización revisable se mantiene: quedan lectura PDF/cantidades, clasificación de adjuntos entrantes, equivalencias aprobadas y validación de producción. No elevar permisos del modelo para cubrir esos pendientes sin controles y pruebas.

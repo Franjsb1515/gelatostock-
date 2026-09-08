@@ -1,5 +1,14 @@
 # Registro de parches y sesiones
 
+## 0.7.0 — 2026-09-08 · sesión 008
+
+Seguimiento reemplazado por Control de entregas: cantidades por producto, pendiente visible, siguiente paso y filtros En curso/Cerrados. Recepción guiada en unidades base.
+
+IA Qwen3 0.6B Q8 integrada en el paquete, sin descargas al usarla. Tipo de documento propuesto y fragmento comprobado contra el original; accesos desde fotos OCR/mensajes; cancelación, límites e integridad de modelos. Resumen libre descartado por alucinaciones observadas. Sin automatizar acciones ni conectar QR en esta sesión.
+
+Informe: reports/2026-09-08T09-22-50-015Z-entregas-ia-local.md.
+
+
 ## 0.6.0 — 2026-09-08 · sesión 007
 
 Conector experimental WhatsApp Web con QR real, número conectado, chats autorizados por cuenta, historial separado y registro de cambio de número. Recepción sin envíos, adjuntos validados y copia independiente sin credenciales. Chrome incluido en D y cierre compatible con Puppeteer actualizado.

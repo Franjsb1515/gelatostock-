@@ -1764,3 +1764,134 @@ dialog::backdrop {
 .message-actions {
   flex-wrap: wrap;
 }
+
+.tracking-intro {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 32px;
+  align-items: start;
+  margin: 32px 0 24px;
+}
+.tracking-intro h2 {
+  font-size: 26px;
+  margin: 10px 0;
+}
+.tracking-intro p {
+  line-height: 1.65;
+  max-width: 640px;
+  color: #566152;
+}
+.tracking-example {
+  background: #eaf0e5;
+  border-radius: 12px;
+  padding: 20px;
+}
+.tracking-example p {
+  margin: 8px 0;
+}
+.tracking-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+.delivery-list {
+  display: grid;
+  gap: 20px;
+}
+.delivery-card {
+  background: #fffefa;
+  border: 1px solid #dce2d4;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.delivery-card > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 24px 12px;
+}
+.delivery-card h3 {
+  font-size: 22px;
+  margin: 8px 0;
+}
+.delivery-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 24px 18px;
+  color: #566152;
+  font-size: 13px;
+}
+.delivery-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.delivery-table th {
+  text-align: left;
+  font-size: 12px;
+  background: #f3f5ee;
+  padding: 12px 24px;
+  color: #52604a;
+}
+.delivery-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #edf0e7;
+}
+.delivery-table small,
+.delivery-next small {
+  display: block;
+  color: #62705a;
+  margin-top: 5px;
+}
+.delivery-next {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  padding: 20px 24px;
+  background: #fafbf6;
+  font-size: 13px;
+}
+.delivery-next strong {
+  font-weight: 500;
+}
+.table-scroll {
+  overflow: auto;
+}
+.ai-result {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+  padding: 20px;
+  background: #f0f4ea;
+  border-radius: 12px;
+}
+.ai-editor {
+  min-height: 180px;
+  resize: vertical;
+  width: 100%;
+}
+@media (max-width: 1100px) {
+  .tracking-intro {
+    grid-template-columns: 1fr;
+  }
+  .delivery-next {
+    align-items: start;
+    flex-direction: column;
+  }
+  .delivery-table td,
+  .delivery-table th {
+    padding: 12px;
+  }
+}
+
+.delivery-next {
+  color: #46563d;
+  margin: 0;
+  max-width: none;
+}
+.ai-result blockquote {
+  margin: 12px 0;
+  padding-left: 14px;
+  border-left: 3px solid #69815b;
+}

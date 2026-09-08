@@ -1,0 +1,743 @@
+diff --git a/.gitignore b/.gitignore
+index c2c3e2b..fbb7e83 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -10,3 +10,5 @@ reports/patches/
+ build/
+ 
+ runtime/browser/
++
++runtime/models/
+diff --git a/package.json b/package.json
+index 72aec63..d37d924 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.6.0",
++  "version": "0.7.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+@@ -24,6 +24,7 @@
+     "typescript": "7.0.2"
+   },
+   "dependencies": {
++    "@huggingface/transformers": "4.2.0",
+     "@tesseract.js-data/spa": "1.0.0",
+     "qrcode": "1.5.4",
+     "tesseract.js": "7.0.0",
+@@ -31,6 +32,8 @@
+     "zod": "4.5.4"
+   },
+   "overrides": {
+-    "puppeteer": "25.10.0"
++    "puppeteer": "25.10.0",
++    "sharp": "0.35.0",
++    "adm-zip": "0.6.0"
+   }
+ }
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 1f39731..3af7d01 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -4,7 +4,7 @@ const fs = require("node:fs");
+ const assert = require("node:assert/strict");
+ (async () => {
+   const root = path.resolve(__dirname, "..");
+-  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v6-"));
++  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v7-"));
+   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
+   const { DatabaseSync } = require("node:sqlite");
+   const savedStock = () => {
+@@ -64,7 +64,7 @@ const assert = require("node:assert/strict");
+     assert.equal(savedStock(), 4.25);
+     assert.ok(requests.every((u) => new URL(u).hostname === "127.0.0.1"));
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v06-desktop.png"),
++      path: path.join(root, "output", "playwright", "v07-desktop.png"),
+     });
+     await window
+       .getByRole("button", { name: "Cargar foto", exact: true })
+@@ -83,7 +83,7 @@ const assert = require("node:assert/strict");
+       "s1",
+     );
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v06-ocr.png"),
++      path: path.join(root, "output", "playwright", "v07-ocr.png"),
+     });
+     await window.locator("input[name=documentDate]").fill("2026-09-01");
+     await window
+@@ -126,7 +126,7 @@ const assert = require("node:assert/strict");
+       ),
+     );
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v06-fotos.png"),
++      path: path.join(root, "output", "playwright", "v07-fotos.png"),
+       fullPage: true,
+     });
+     assert.equal(savedStock(), 4.25);
+@@ -167,7 +167,7 @@ const assert = require("node:assert/strict");
+     await window.getByRole("dialog").waitFor({ state: "hidden" });
+     assert.equal(savedStock(), 4.25);
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v06-movimientos.png"),
++      path: path.join(root, "output", "playwright", "v07-movimientos.png"),
+     });
+     await window
+       .getByRole("button", { name: "Ver mensajes", exact: true })
+@@ -220,7 +220,7 @@ const assert = require("node:assert/strict");
+       .getByRole("combobox", { name: "Mostrar", exact: true })
+       .selectOption("all");
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v06-mensajes.png"),
++      path: path.join(root, "output", "playwright", "v07-mensajes.png"),
+     });
+     await window.getByRole("button", { name: "WhatsApp", exact: true }).click();
+     await window
+@@ -233,7 +233,7 @@ const assert = require("node:assert/strict");
+       })
+       .waitFor();
+     await window.screenshot({
+-      path: path.join(root, "output", "playwright", "v06-whatsapp.png"),
++      path: path.join(root, "output", "playwright", "v07-whatsapp.png"),
+       fullPage: true,
+     });
+     if (process.env.GELATO_TEST_QR === "1") {
+@@ -247,6 +247,104 @@ const assert = require("node:assert/strict");
+         "PASS: QR real obtenido en ejecutable empaquetado, sin vincular cuenta ni enviar mensajes.",
+       );
+     }
++
++    await window.getByRole("button", { name: "Compras", exact: true }).click();
++    await window
++      .getByRole("button", { name: "Añadir producto", exact: true })
++      .click();
++    await window.locator("#modal-form select[name=product]").selectOption("p2");
++    await window.locator("#modal-form input[name=packs]").fill("2");
++    await window.getByRole("button", { name: "Guardar", exact: true }).click();
++    await window.getByRole("dialog").waitFor({ state: "hidden" });
++    await window.getByRole("button", { name: /Revisar y autorizar/ }).click();
++    await window
++      .getByRole("button", { name: "Autorizar demostración", exact: true })
++      .click();
++    await window.getByRole("dialog").waitFor({ state: "hidden" });
++    let card = window.locator(".delivery-card").first();
++    await card
++      .getByRole("button", { name: "Simular envío", exact: true })
++      .click();
++    await card
++      .getByRole("button", { name: "Registrar lo que llegó", exact: true })
++      .click();
++    await window.locator("#modal-form input[name=p2]").fill("4");
++    await window.getByRole("button", { name: "Guardar", exact: true }).click();
++    await window.getByRole("dialog").waitFor({ state: "hidden" });
++    assert.ok((await card.innerText()).includes("Recepción parcial"));
++    const cells = await card
++      .locator("tbody tr")
++      .first()
++      .locator("td")
++      .allTextContents();
++    assert.equal(cells[1], "12 L");
++    assert.equal(cells[2], "4 L");
++    assert.equal(cells[3], "8 L");
++    await window.locator(".orders-panel").screenshot({
++      path: path.join(root, "output/playwright/v07-entregas.png"),
++    });
++    await card
++      .getByRole("button", { name: "Registrar lo que llegó", exact: true })
++      .click();
++    await window.locator("#modal-form input[name=p2]").fill("8");
++    await window.getByRole("button", { name: "Guardar", exact: true }).click();
++    await window.getByRole("dialog").waitFor({ state: "hidden" });
++    assert.equal(await window.locator(".delivery-card").count(), 0);
++    await window.getByRole("button", { name: /Cerrados ·/ }).click();
++    await window
++      .locator(".delivery-card")
++      .getByText("Recibido", { exact: true })
++      .first()
++      .waitFor();
++    console.log(
++      "PASS: pedido 2 cajas de 6 L; recepción 4 L, pendiente 8 L; recepción final cierra el pedido.",
++    );
++    await window.getByRole("button", { name: "IA local", exact: true }).click();
++    const text =
++      "FACTURA F-123. Origen Coffee. Café 2 kg. Base 40 EUR. IVA 4 EUR. Total 44 EUR.";
++    await window.locator("#ai-text").fill(text);
++    await window
++      .getByRole("button", { name: "Analizar con IA local", exact: true })
++      .click();
++    await window.locator(".ai-result").waitFor({ timeout: 125000 });
++    assert.ok(
++      (await window.locator(".ai-result").innerText()).includes(
++        "Posible factura",
++      ),
++    );
++    assert.equal(savedStock(), 4.25);
++    await window.screenshot({
++      path: path.join(root, "output/playwright/v07-ia.png"),
++    });
++    console.log(
++      "PASS: modelo local REAL en ejecutable, factura reconocida sin modificar stock.",
++    );
++    await window
++      .locator("#ai-text")
++      .fill(
++        "LISTA DE PRECIOS. Tarifa de septiembre. Café 20 EUR/kg. Leche 1 EUR/L. Precios orientativos. No es una factura.",
++      );
++    await window
++      .getByRole("button", { name: "Analizar con IA local", exact: true })
++      .click();
++    await window.locator(".ai-result").waitFor({ timeout: 125000 });
++    assert.ok(
++      (await window.locator(".ai-result").innerText()).includes(
++        "Posible lista de precios",
++      ),
++    );
++    console.log("PASS: modelo local diferencia lista de precios de factura.");
++    await window
++      .getByRole("button", { name: "Analizar con IA local", exact: true })
++      .click();
++    await window
++      .getByRole("button", { name: "Detener lectura", exact: true })
++      .click();
++    await window
++      .getByRole("button", { name: "Analizar con IA local", exact: true })
++      .waitFor();
++    await window.getByRole("alert").filter({ hasText: "cancelada" }).waitFor();
++    console.log("PASS: cancelación desde la interfaz.");
+     const runtime = await app.evaluate(({ app }) => ({
+       userData: app.getPath("userData"),
+       sessionData: app.getPath("sessionData"),
+diff --git a/src/app.js b/src/app.js
+index 76f2407..0b75b77 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -12,6 +12,11 @@ let state,
+   messageQuery = "",
+   messageSupplier = "all",
+   messageFilter = "all";
++let orderFilter = "open";
++let aiDraft = "",
++  aiBusy = false,
++  aiResult = null,
++  aiError = "";
+ const $ = (s) => document.querySelector(s);
+ const esc = (v) =>
+   String(v ?? "").replace(
+@@ -182,6 +187,7 @@ function render() {
+     activity,
+     settings,
+     whatsapp,
++    ai: aiPage,
+   };
+   $("#app").innerHTML =
+     `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span><small>EL ESPACIO DE TU NEGOCIO</small></span></a><div class="workspace"><div class="workspace-icon">G</div><div><strong>Gelato & Café</strong><small>Espacio de demostración</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
+@@ -192,6 +198,7 @@ function render() {
+       ["whatsapp", "message", "WhatsApp"],
+       ["suppliers", "store", "Proveedores"],
+       ["activity", "clock", "Actividad"],
++      ["ai", "leaf", "IA local"],
+     ]
+       .map(
+         ([id, i, label]) =>
+@@ -199,7 +206,7 @@ function render() {
+       )
+       .join(
+         "",
+-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.6.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
++      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v0.7.0</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
+ }
+ async function refreshWhatsApp() {
+   if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)
+@@ -239,7 +246,7 @@ function whatsapp() {
+     ) +
+     `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo se importan chats autorizados. La sesión de WhatsApp Web puede sincronizar la cuenta completa en su perfil local. Internet y app abierta necesarios; no hay envíos desde este módulo.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}</div></section>
+  <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Al cambiar de cuenta, su lista se mantiene separada. No se importa historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} ${w.account === w.activeAccount ? btn("Dejar de importar", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
+- <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos 200 mensajes recibidos de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${w.messages.map((m) => `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`).join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'}</section>
++ <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos 200 mensajes recibidos de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${w.messages.map((m) => `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.text ? btn("Leer con IA local", "aiWhatsApp", "secondary", `data-id="${esc(m.id)}"`) : ""}${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`).join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'}</section>
+  <section class="panel settings-card"><h2>Historial de sesiones y cambios de número</h2>${btn("Crear copia de WhatsApp", "waBackup")}<p class="fineprint">Esta copia incluye conversaciones y adjuntos, sin credenciales. Es independiente de la copia del inventario.</p>${w.history.map((e) => `<p>${date(e.at)} ${time(e.at)} · ${esc(e.text)}</p>`).join("") || '<p class="muted">Todavía no se vinculó ninguna cuenta.</p>'}</section>`
+   );
+ }
+@@ -375,6 +382,65 @@ function stock() {
+     `<section class="panel"><div class="toolbar"><div class="tabs">${["Todos", "Stock bajo", "Gelatería", "Cafetería", "Postres", "Envases"].map((f) => `<button data-filter="${f}" class="tab ${filter === f ? "selected" : ""}">${f}${f === "Stock bajo" ? ` <span>${low().length}</span>` : ""}</button>`).join("")}</div><label class="search">${icon("search")}<input id="search" placeholder="Buscar producto…" value="${esc(query)}" aria-label="Buscar producto"></label></div>${productTable(items)}<div class="table-footer">${items.length} productos · cantidades en su unidad base<span>Guardado en este equipo</span></div></section>`
+   );
+ }
++const aiTypes = {
++  factura: "Posible factura",
++  albaran: "Posible albarán",
++  lista_precios: "Posible lista de precios",
++  oferta: "Posible oferta",
++  mensaje: "Mensaje",
++  otro: "Tipo por revisar",
++};
++function aiPage() {
++  return (
++    header(
++      "Una segunda lectura, en tu equipo.",
++      "Interpreta textos de proveedores sin enviar tus documentos a una IA externa.",
++    ) +
++    `<div class="settings-grid"><section class="panel settings-card"><h2>Texto que quieres revisar</h2><p>Pega un mensaje o abre el texto de una foto desde Configuración. Revisa el OCR antes de analizarlo. Para PDF todavía debes copiar el texto.</p><label class="field">Documento o mensaje<textarea id="ai-text" class="ai-editor" maxlength="4000" ${aiBusy ? "disabled" : ""}>${esc(aiDraft)}</textarea></label><small>Máximo 4.000 caracteres. Se analiza únicamente este texto.</small><div class="setting-actions">${btn(aiBusy ? "Leyendo en este equipo…" : "Analizar con IA local", "aiAnalyze", "primary", aiBusy ? "disabled" : "")}${aiBusy ? btn("Detener lectura", "aiCancel") : ""}</div><p role="status">${aiBusy ? "Cargando el modelo y leyendo. Puede tardar hasta 2 minutos; puedes seguir usando otras pantallas." : "Modelo incluido · Qwen3 0.6B · sin pagos por uso"}</p>${aiError ? `<p role="alert">${esc(aiError)}</p>` : ""}</section><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Lectura para revisar</h2>${aiResult ? `<div class="ai-result"><strong>${esc(aiTypes[aiResult.tipo])}</strong>${aiResult.invalid ? `<p>${esc(aiResult.reason)}</p>` : `<p>Fragmento literal del original:</p><blockquote>${esc(aiResult.evidencia)}</blockquote>`}<small>${num(aiResult.milliseconds / 1000)} segundos · ${esc(aiResult.model)}</small></div>` : "<p>Al analizar verás un posible tipo de documento y un fragmento literal comprobado.</p>"}<p>La IA puede equivocarse o inventar detalles. Contrasta su propuesta con el original. Una lista de precios no acredita una compra ni una recepción.</p><ul class="feature-list"><li>${icon("check")} No modifica stock ni registra facturas</li><li>${icon("check")} No compra, no envía mensajes y no abre enlaces</li><li>${icon("check")} Texto y resultado no se guardan en registros de IA</li></ul><small>El resultado se conserva en esta ventana hasta sustituirlo o cerrar la app. El documento original, si lo guardaste, permanece en su archivo.</small></section></div>`
++  );
++}
++function orderTracking() {
++  const open = state.orders.filter(
++    (o) => !["received", "cancelled"].includes(o.status),
++  );
++  const closed = state.orders.filter((o) =>
++    ["received", "cancelled"].includes(o.status),
++  );
++  const list = orderFilter === "open" ? open : closed;
++  return `<section class="orders-panel"><div class="tracking-intro"><div><span class="eyebrow">DESPUÉS DEL CARRITO</span><h2>Control de entregas</h2><p>Comprueba qué llegó y qué falta en cada pedido. Solo las cantidades que registres como recibidas se suman al inventario.</p></div><div class="tracking-example"><strong>Un ejemplo</strong><p>Pides 6 cajas y llegan 4: registras esas 4. Las otras 2 siguen pendientes.</p><small>Los pedidos de este prototipo son de demostración.</small></div></div><div class="tracking-tabs" aria-label="Filtrar entregas">${btn(`En curso · ${open.length}`, "orderFilter", orderFilter === "open" ? "primary" : "secondary", 'data-filter="open" aria-pressed="' + (orderFilter === "open") + '"')}${btn(`Cerrados · ${closed.length}`, "orderFilter", orderFilter === "closed" ? "primary" : "secondary", 'data-filter="closed" aria-pressed="' + (orderFilter === "closed") + '"')}</div><div class="delivery-list">${
++    list
++      .map((o) => {
++        const finished = o.lines.filter(
++          (l) => Math.round((l.packs * l.pack - l.received) * 1000) === 0,
++        ).length;
++        const hint = {
++          pending: "Siguiente paso: simular el envío para probar una entrega.",
++          sent: "Siguiente paso: cuando llegue mercancía, registra las cantidades recibidas.",
++          partial:
++            "Siguiente paso: registra la próxima entrega de los productos que faltan.",
++          received:
++            "Entrega completada. Las cantidades ya están en el inventario.",
++          cancelled: "Pedido cancelado. No se espera mercancía.",
++        }[o.status];
++        return `<article class="delivery-card" data-order-card="${esc(o.id)}"><header><div><span class="order-number">${esc(o.number)} · ${date(o.at)}</span><h3>${esc(supplier(o.supplier).name)}</h3></div>${pill(statusLabel[o.status], o.status === "received" ? "sage" : "sand")}</header><div class="delivery-progress"><span>${finished} de ${o.lines.length} productos recibidos por completo</span><strong>${money(o.lines.reduce((n, l) => n + l.packs * l.price, 0))} <small>estimados</small></strong></div><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto / presentación</th><th>Pedido</th><th>Recibido</th><th>${o.status === "cancelled" ? "No entregado" : "Falta recibir"}</th></tr></thead><tbody>${o.lines
++          .map((l) => {
++            const p = product(l.product);
++            const rem =
++              Math.round((l.packs * l.pack - l.received) * 1000) / 1000;
++            return `<tr><td><strong>${esc(p.name)}</strong><small>${l.packs} × ${num(l.pack)} ${esc(p.unit)} por presentación</small></td><td>${num(l.packs * l.pack)} ${esc(p.unit)}</td><td>${num(l.received)} ${esc(p.unit)}</td><td><strong>${num(rem)} ${esc(p.unit)}</strong></td></tr>`;
++          })
++          .join(
++            "",
++          )}</tbody></table></div><footer class="delivery-next"><div><strong>${hint}</strong><small>${o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "secondary", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
++      })
++      .join("") ||
++    '<div class="panel empty compact">' +
++      (orderFilter === "open"
++        ? "No hay entregas pendientes. Los nuevos pedidos aparecerán aquí al autorizar el carrito."
++        : "Los pedidos completados y cancelados aparecerán aquí.") +
++      "</div>"
++  }</div></section>`;
++}
+ function orders() {
+   const total = state.cart.reduce(
+     (n, l) => n + l.packs * product(l.product).price,
+@@ -397,7 +463,7 @@ function orders() {
+         : '<div class="empty">' +
+           icon("cart") +
+           "<h3>Tu próximo pedido empieza aquí</h3><p>Añadí productos o prepará la reposición sugerida.</p></div>"
+-    }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${money(total)}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${money(total)}</strong></div><p>Los precios son ficticios. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div><section class="panel orders-panel"><div class="panel-heading"><div><h2>Seguimiento de pedidos</h2><p>Enviar un pedido no suma stock. Registrá únicamente las cantidades que llegaron físicamente.</p></div></div>${state.orders.length ? state.orders.map((o) => `<article class="order-row"><div><span class="order-number">${esc(o.number)}</span><h3>${esc(supplier(o.supplier).name)}</h3><small>${date(o.at)} · ${o.lines.length} ${o.lines.length === 1 ? "tipo de producto" : "tipos de producto"} · Estimado: ${money(o.lines.reduce((n, l) => n + l.packs * l.price, 0))}</small></div><div class="order-status">${pill(statusLabel[o.status], o.status === "received" ? "sage" : o.status === "pending" ? "sand" : "lavender")}<small>${{ pending: "Aún no enviado", sent: "No se contactó al proveedor", partial: "Faltan cantidades por recibir", received: "Cantidades registradas en stock", cancelled: "No se espera esta entrega" }[o.status]}</small></div><div>${o.status === "pending" ? btn("Simular envío", "send", "secondary", `data-order="${o.id}"`) + btn("Cancelar", "cancelOrder", "secondary", `data-order="${o.id}"`) : !["received", "cancelled"].includes(o.status) ? btn("Registrar recepción", "receive", "secondary", `data-order="${o.id}"`) : '<span class="received-check">' + icon("check") + (o.status === "cancelled" ? " Cancelado" : " Completado") + "</span>"}</div></article>`).join("") : '<div class="empty compact">Tus pedidos aparecerán aquí cuando autorices un carrito.</div>'}</section>`
++    }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${money(total)}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${money(total)}</strong></div><p>Los precios son ficticios. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div>${orderTracking()}`
+   );
+ }
+ function messages() {
+@@ -442,7 +508,7 @@ function messages() {
+       )
+       .join(
+         "",
+-      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Bandeja de proveedores <span>${list.length} de ${state.messages.length}</span></div>${list.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(supplier(x.supplier).name)}</strong><small>${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? "Revisado" : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div><div class="message-detail">${m ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>Mensaje de demostración · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? "Revisado" : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div><div class="interpretation"><div class="message-label">${icon("leaf")} LECTURA ASISTIDA POR REGLAS</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p><div class="muted">${m.order ? "Vinculado a " + esc(state.orders.find((o) => o.id === m.order)?.number) : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="message-actions">${btn(m.reviewed ? "Mensaje revisado" : icon("check") + " Marcar revisado", "review", "primary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div><p class="fineprint">Revisar un mensaje no acepta sobrecostes ni sustituciones. La conexión real se añadirá en una siguiente etapa.</p></div>` : '<div class="empty">No hay mensajes que coincidan con estos filtros.</div>'}</div></section>`
++      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Bandeja de proveedores <span>${list.length} de ${state.messages.length}</span></div>${list.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(supplier(x.supplier).name)}</strong><small>${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? "Revisado" : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div><div class="message-detail">${m ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>Mensaje de demostración · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? "Revisado" : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div><div class="interpretation"><div class="message-label">${icon("leaf")} LECTURA ASISTIDA POR REGLAS</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p><div class="muted">${m.order ? "Vinculado a " + esc(state.orders.find((o) => o.id === m.order)?.number) : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="message-actions">${btn("Leer con IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : icon("check") + " Marcar revisado", "review", "primary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div><p class="fineprint">Revisar un mensaje no acepta sobrecostes ni sustituciones. La conexión real se añadirá en una siguiente etapa.</p></div>` : '<div class="empty">No hay mensajes que coincidan con estos filtros.</div>'}</div></section>`
+   );
+ }
+ function suppliers() {
+@@ -497,7 +563,7 @@ function settings() {
+       "Un espacio que funciona a tu manera.",
+       "Datos locales, copias de seguridad y un camino claro para crecer.",
+     ) +
+-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Pendiente de implementación", "sand")}<p>Este prototipo interpreta mensajes mediante reglas locales. Incluye OCR local en español para proponer proveedores al cargar fotos. No incluye un modelo conversacional de IA.</p><ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Modelo conversacional local en una próxima etapa</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Fotos ordenadas por proveedor y fecha del documento. Las anteriores quedan sin proveedor hasta clasificarlas.</p>${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
++    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Modelo local incluido", "sage")}<p>Qwen3 0.6B propone el tipo de documento y señala un fragmento literal del texto que elijas. El OCR español sigue leyendo las fotos dentro del equipo.</p>${btn("Abrir IA local", "aiOpen", "primary")}<ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Lecturas revisables; sin acciones automáticas</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Fotos ordenadas por proveedor y fecha del documento. Las anteriores quedan sin proveedor hasta clasificarlas.</p>${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
+       [...state.photos]
+         .sort(
+           (a, b) =>
+@@ -506,10 +572,10 @@ function settings() {
+         )
+         .map(
+           (ph) =>
+-            `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}</small>${esc(ph.name)}<small>${esc(ph.note)}</small>${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}</figcaption></figure>`,
++            `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}</small>${esc(ph.name)}<small>${esc(ph.note)}</small>${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}${ph.ocrText ? btn("Revisar texto con IA", "aiPhoto", "secondary", `data-id="${ph.id}"`) : ""}</figcaption></figure>`,
+         )
+         .join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'
+-    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.6.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
++    }</div></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión 0.7.0</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+   );
+ }
+ function field(label, name, value = "", type = "text", extra = "") {
+@@ -699,6 +765,59 @@ const readFile = (file) =>
+     r.readAsDataURL(file);
+   });
+ async function action(name, el) {
++  if (name === "aiOpen") {
++    nav("ai");
++    return;
++  }
++  if (name === "aiPhoto" || name === "aiMessage" || name === "aiWhatsApp") {
++    if (aiBusy) {
++      toast("Espera o detén la lectura actual desde IA local.");
++      return;
++    }
++    aiDraft =
++      name === "aiPhoto"
++        ? state.photos.find((x) => x.id === el.dataset.id)?.ocrText || ""
++        : name === "aiMessage"
++          ? state.messages.find((x) => x.id === el.dataset.id)?.text || ""
++          : waState?.messages.find((x) => String(x.id) === el.dataset.id)
++              ?.text || "";
++    aiResult = null;
++    aiError = "";
++    nav("ai");
++    return;
++  }
++  if (name === "aiAnalyze") {
++    if (aiBusy) return;
++    aiDraft = $("#ai-text").value;
++    aiBusy = true;
++    aiResult = null;
++    aiError = "";
++    render();
++    try {
++      aiResult = await request("/api/ai", { text: aiDraft });
++    } catch (e) {
++      aiError = e.message;
++    } finally {
++      aiBusy = false;
++      if (page === "ai") render();
++      else toast("La lectura de IA ha terminado. Consulta IA local.");
++    }
++    return;
++  }
++  if (name === "aiCancel") {
++    try {
++      await request("/api/ai/cancel", {});
++    } catch (e) {
++      toast(e.message);
++    }
++    return;
++  }
++
++  if (name === "orderFilter") {
++    orderFilter = el.dataset.filter;
++    render();
++    return;
++  }
+   if (name.startsWith("wa")) {
+     await whatsappAction(name, el);
+     return;
+@@ -803,14 +922,14 @@ async function action(name, el) {
+   if (name === "receive") {
+     const o = state.orders.find((o) => o.id === el.dataset.order);
+     modal(
+-      "Registrar recepción · " + o.number,
+-      "Ingresá solo lo que llegó en esta entrega. El resto quedará pendiente.",
++      "Qué llegó · " + o.number,
++      "Escribe las cantidades de esta entrega en kg, L o unidades, no el número de cajas. Se sumarán al stock al guardar. Deja 0 si no llegó ese producto.",
+       o.lines
+         .map((l) => {
+           const p = product(l.product);
+           const rem = Math.round((l.packs * l.pack - l.received) * 1000) / 1000;
+           return field(
+-            `${p.name} · quedan ${num(rem)} ${p.unit}`,
++            `${p.name} · recibidos ${num(l.received)} de ${num(l.packs * l.pack)} ${p.unit} · faltan ${num(rem)} ${p.unit}`,
+             l.product,
+             0,
+             "number",
+@@ -863,6 +982,11 @@ async function action(name, el) {
+           messageQuery = "";
+           messageSupplier = "all";
+           messageFilter = "all";
++          let orderFilter = "open";
++          let aiDraft = "",
++            aiBusy = false,
++            aiResult = null,
++            aiError = "";
+           selectedMessage = state.messages[0].id;
+           nav("messages");
+         }
+@@ -1059,6 +1183,9 @@ document.addEventListener("click", async (e) => {
+     await mutate({ type: "read", id: selectedMessage });
+   }
+ });
++document.addEventListener("input", (e) => {
++  if (e.target.id === "ai-text") aiDraft = e.target.value;
++});
+ document.addEventListener("change", async (e) => {
+   if (e.target.id === "wa-account") {
+     waAccount = e.target.value;
+diff --git a/src/desktop.cjs b/src/desktop.cjs
+index 9812117..450284e 100644
+--- a/src/desktop.cjs
++++ b/src/desktop.cjs
+@@ -32,6 +32,7 @@ if (!app.requestSingleInstanceLock()) {
+         if (quitting) return;
+         e.preventDefault();
+         quitting = true;
++        await backend.ai.cancel();
+         await backend.whatsapp.close();
+         app.quit();
+       });
+diff --git a/src/server.cjs b/src/server.cjs
+index 8aa80ef..41efc84 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -5,12 +5,14 @@ const { randomBytes } = require("node:crypto");
+ const { identifySupplier } = require("../build/identify.js");
+ const { recognizeLocal } = require("./ocr.cjs");
+ const { WhatsAppConnection } = require("./whatsapp.cjs");
++const { LocalAI } = require("./ai.cjs");
+ const { Store } = require("../build/store.js");
+ function createApp({
+   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
+   port = 0,
+ } = {}) {
+   const store = new Store(dataDir);
++  const ai = new LocalAI();
+   const whatsapp = new WhatsAppConnection(dataDir, store);
+   const token = randomBytes(32).toString("hex");
+   const server = http.createServer(async (req, res) => {
+@@ -53,13 +55,15 @@ function createApp({
+         dataDir,
+         storage: "SQLite",
+         archiveWarning: store.archiveWarning,
+-        version: "0.6.0",
++        version: "0.7.0",
+       });
+       return;
+     }
+     if (
+       req.method === "POST" &&
+       [
++        "/api/ai",
++        "/api/ai/cancel",
+         "/api/action",
+         "/api/backup",
+         "/api/restore",
+@@ -82,16 +86,27 @@ function createApp({
+           size += chunk.length;
+           if (
+             size >
+-            (u.pathname === "/api/ocr"
+-              ? 8_100_000
+-              : u.pathname === "/api/identify"
+-                ? 100_000
+-                : 100_000_000)
++            (u.pathname.startsWith("/api/ai")
++              ? 20000
++              : u.pathname === "/api/ocr"
++                ? 8_100_000
++                : u.pathname === "/api/identify"
++                  ? 100_000
++                  : 100_000_000)
+           )
+             throw Error("Archivo demasiado grande (máximo 100 MB).");
+           chunks.push(chunk);
+         }
+         const data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
++        if (u.pathname === "/api/ai/cancel") {
++          await ai.cancel();
++          json(200, { cancelled: true });
++          return;
++        }
++        if (u.pathname === "/api/ai") {
++          json(200, await ai.analyze(data));
++          return;
++        }
+         if (u.pathname === "/api/whatsapp") {
+           if (data.type === "backup") {
+             json(200, { path: whatsapp.store.backup() });
+@@ -137,7 +152,7 @@ function createApp({
+           dataDir,
+           storage: "SQLite",
+           archiveWarning: store.archiveWarning,
+-          version: "0.6.0",
++          version: "0.7.0",
+         });
+       } catch (e) {
+         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
+@@ -194,6 +209,7 @@ function createApp({
+       reject(error);
+     });
+     server.once("close", () => {
++      ai.cancel().catch(() => {});
+       store.close();
+       whatsapp.close().catch(() => {});
+     });
+@@ -201,6 +217,7 @@ function createApp({
+       resolve({
+         server,
+         whatsapp,
++        ai,
+         url: `http://127.0.0.1:${server.address().port}/?key=${token}`,
+       }),
+     );
+diff --git a/src/styles.css b/src/styles.css
+index e5cec32..0efb543 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -1764,3 +1764,134 @@ dialog::backdrop {
+ .message-actions {
+   flex-wrap: wrap;
+ }
++
++.tracking-intro {
++  display: grid;
++  grid-template-columns: 1.5fr 1fr;
++  gap: 32px;
++  align-items: start;
++  margin: 32px 0 24px;
++}
++.tracking-intro h2 {
++  font-size: 26px;
++  margin: 10px 0;
++}
++.tracking-intro p {
++  line-height: 1.65;
++  max-width: 640px;
++  color: #566152;
++}
++.tracking-example {
++  background: #eaf0e5;
++  border-radius: 12px;
++  padding: 20px;
++}
++.tracking-example p {
++  margin: 8px 0;
++}
++.tracking-tabs {
++  display: flex;
++  gap: 10px;
++  margin: 20px 0;
++}
++.delivery-list {
++  display: grid;
++  gap: 20px;
++}
++.delivery-card {
++  background: #fffefa;
++  border: 1px solid #dce2d4;
++  border-radius: 14px;
++  overflow: hidden;
++}
++.delivery-card > header {
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++  padding: 22px 24px 12px;
++}
++.delivery-card h3 {
++  font-size: 22px;
++  margin: 8px 0;
++}
++.delivery-progress {
++  display: flex;
++  justify-content: space-between;
++  gap: 20px;
++  padding: 0 24px 18px;
++  color: #566152;
++  font-size: 13px;
++}
++.delivery-table {
++  width: 100%;
++  border-collapse: collapse;
++}
++.delivery-table th {
++  text-align: left;
++  font-size: 12px;
++  background: #f3f5ee;
++  padding: 12px 24px;
++  color: #52604a;
++}
++.delivery-table td {
++  padding: 16px 24px;
++  border-bottom: 1px solid #edf0e7;
++}
++.delivery-table small,
++.delivery-next small {
++  display: block;
++  color: #62705a;
++  margin-top: 5px;
++}
++.delivery-next {
++  display: flex;
++  justify-content: space-between;
++  gap: 20px;
++  align-items: center;
++  padding: 20px 24px;
++  background: #fafbf6;
++  font-size: 13px;
++}
++.delivery-next strong {
++  font-weight: 500;
++}
++.table-scroll {
++  overflow: auto;
++}
++.ai-result {
++  white-space: pre-wrap;
++  overflow-wrap: anywhere;
++  line-height: 1.7;
++  padding: 20px;
++  background: #f0f4ea;
++  border-radius: 12px;
++}
++.ai-editor {
++  min-height: 180px;
++  resize: vertical;
++  width: 100%;
++}
++@media (max-width: 1100px) {
++  .tracking-intro {
++    grid-template-columns: 1fr;
++  }
++  .delivery-next {
++    align-items: start;
++    flex-direction: column;
++  }
++  .delivery-table td,
++  .delivery-table th {
++    padding: 12px;
++  }
++}
++
++.delivery-next {
++  color: #46563d;
++  margin: 0;
++  max-width: none;
++}
++.ai-result blockquote {
++  margin: 12px 0;
++  padding-left: 14px;
++  border-left: 3px solid #69815b;
++}
+diff --git a/tests/server.test.cjs b/tests/server.test.cjs
+index d8cd9f0..d40ef7e 100644
+--- a/tests/server.test.cjs
++++ b/tests/server.test.cjs
+@@ -42,6 +42,25 @@ test("servidor SQLite: autenticación, revisión, persistencia y restauración",
+       ).status,
+       403,
+     );
++    const beforeAI = await get();
++    for (const [headersAI, body, status] of [
++      [
++        { "Content-Type": "application/json", Origin: origin },
++        { text: "factura" },
++        403,
++      ],
++      [{ ...headers, Origin: "https://example.com" }, { text: "factura" }, 403],
++      [headers, { text: "factura", path: "../data/whatsapp/sessions" }, 400],
++      [headers, { text: "a".repeat(21000) }, 400],
++    ]) {
++      const r = await fetch(origin + "/api/ai", {
++        method: "POST",
++        headers: headersAI,
++        body: JSON.stringify(body),
++      });
++      assert.equal(r.status, status);
++    }
++    assert.deepEqual(await get(), beforeAI);
+     // The API now requires optimistic revision + stable operation ID to prevent lost writes.
+     assert.equal(
+       (

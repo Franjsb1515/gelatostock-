@@ -5,12 +5,14 @@ const { randomBytes } = require("node:crypto");
 const { identifySupplier } = require("../build/identify.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
+const { LocalAI } = require("./ai.cjs");
 const { Store } = require("../build/store.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
   port = 0,
 } = {}) {
   const store = new Store(dataDir);
+  const ai = new LocalAI();
   const whatsapp = new WhatsAppConnection(dataDir, store);
   const token = randomBytes(32).toString("hex");
   const server = http.createServer(async (req, res) => {
@@ -53,13 +55,15 @@ function createApp({
         dataDir,
         storage: "SQLite",
         archiveWarning: store.archiveWarning,
-        version: "0.6.0",
+        version: "0.7.0",
       });
       return;
     }
     if (
       req.method === "POST" &&
       [
+        "/api/ai",
+        "/api/ai/cancel",
         "/api/action",
         "/api/backup",
         "/api/restore",
@@ -82,16 +86,27 @@ function createApp({
           size += chunk.length;
           if (
             size >
-            (u.pathname === "/api/ocr"
-              ? 8_100_000
-              : u.pathname === "/api/identify"
-                ? 100_000
-                : 100_000_000)
+            (u.pathname.startsWith("/api/ai")
+              ? 20000
+              : u.pathname === "/api/ocr"
+                ? 8_100_000
+                : u.pathname === "/api/identify"
+                  ? 100_000
+                  : 100_000_000)
           )
             throw Error("Archivo demasiado grande (máximo 100 MB).");
           chunks.push(chunk);
         }
         const data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
+        if (u.pathname === "/api/ai/cancel") {
+          await ai.cancel();
+          json(200, { cancelled: true });
+          return;
+        }
+        if (u.pathname === "/api/ai") {
+          json(200, await ai.analyze(data));
+          return;
+        }
         if (u.pathname === "/api/whatsapp") {
           if (data.type === "backup") {
             json(200, { path: whatsapp.store.backup() });
@@ -137,7 +152,7 @@ function createApp({
           dataDir,
           storage: "SQLite",
           archiveWarning: store.archiveWarning,
-          version: "0.6.0",
+          version: "0.7.0",
         });
       } catch (e) {
         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
@@ -194,6 +209,7 @@ function createApp({
       reject(error);
     });
     server.once("close", () => {
+      ai.cancel().catch(() => {});
       store.close();
       whatsapp.close().catch(() => {});
     });
@@ -201,6 +217,7 @@ function createApp({
       resolve({
         server,
         whatsapp,
+        ai,
         url: `http://127.0.0.1:${server.address().port}/?key=${token}`,
       }),
     );

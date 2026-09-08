@@ -42,6 +42,25 @@ test("servidor SQLite: autenticación, revisión, persistencia y restauración",
       ).status,
       403,
     );
+    const beforeAI = await get();
+    for (const [headersAI, body, status] of [
+      [
+        { "Content-Type": "application/json", Origin: origin },
+        { text: "factura" },
+        403,
+      ],
+      [{ ...headers, Origin: "https://example.com" }, { text: "factura" }, 403],
+      [headers, { text: "factura", path: "../data/whatsapp/sessions" }, 400],
+      [headers, { text: "a".repeat(21000) }, 400],
+    ]) {
+      const r = await fetch(origin + "/api/ai", {
+        method: "POST",
+        headers: headersAI,
+        body: JSON.stringify(body),
+      });
+      assert.equal(r.status, status);
+    }
+    assert.deepEqual(await get(), beforeAI);
     // The API now requires optimistic revision + stable operation ID to prevent lost writes.
     assert.equal(
       (

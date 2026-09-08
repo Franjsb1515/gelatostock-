@@ -32,6 +32,7 @@ if (!app.requestSingleInstanceLock()) {
         if (quitting) return;
         e.preventDefault();
         quitting = true;
+        await backend.ai.cancel();
         await backend.whatsapp.close();
         app.quit();
       });

@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.6.0
+# GelatoStock · prototipo 0.7.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.6.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.7.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.6.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.7.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -27,7 +27,7 @@ Todos los proveedores, precios y datos iniciales son ficticios. La aplicación n
 
 ## Qué está pendiente
 
-Modelo conversacional de IA local, OCR de cantidades/PDF, WhatsApp real, webhooks externos, Makro España, recetas/ventas, sincronización, instalador firmado y paquete Mac validado. La interfaz señala esas limitaciones. Los mensajes se clasifican con reglas; las fotos se leen para proponer proveedor, sin extraer cantidades.
+Lectura automática de cantidades/PDF, validación de WhatsApp con el teléfono del usuario, webhooks externos, Makro España, recetas/ventas, sincronización, instalador firmado y paquete Mac validado. La interfaz señala esas limitaciones. Los mensajes se clasifican con reglas; las fotos se leen para proponer proveedor, sin extraer cantidades.
 
 La base actual es SQLite con transacciones y fotografías separadas. Al abrir esta versión, migra el antiguo stock.json si existe, conserva el original y genera una copia previa en data/backups. Desde entonces la fuente vigente es data/gelatostock.sqlite. Usar las copias exportadas desde Configuración para trasladar datos: incluyen las fotografías. No copiar solo un SQLite abierto ni seguir operando en el ejecutable 0.1.
 
@@ -101,3 +101,11 @@ Requiere internet y app abierta. No recupera historial anterior al conectar. La 
 Datos del canal en data/whatsapp. Crear copia de WhatsApp incluye su SQLite y adjuntos, sin credenciales; es distinta de la copia del inventario. Restauración del canal manual, con app cerrada. Los adjuntos entrantes se archivan por cuenta/proveedor o contacto/fecha UTC, sin clasificación ni OCR automáticos todavía. PDF se archiva pero no se lee. No compartir sessions ni data con Claude.
 
 Para reconstruir el navegador en desarrollo, fijar PUPPETEER_CACHE_DIR al runtime/browser de esta carpeta y ejecutar npx puppeteer browsers install chrome; comprobar que la ruta instalada coincide con runtime/browser.json. El ejecutable ya empaquetado incluye el navegador y no necesita esa descarga.
+
+## Entregas e IA local en 0.7
+
+Compras → Control de entregas muestra pedido, recibido y falta recibir por producto. En curso y Cerrados separan el trabajo pendiente. Registrar lo que llegó añade únicamente esa entrega al inventario. Guía y ejemplo con cajas/litros: docs/CONTROL_DE_ENTREGAS.md.
+
+IA local abre un editor para analizar hasta 4.000 caracteres. También hay accesos desde fotos con OCR guardado y textos de mensajes. Qwen3 0.6B Q8 está incluido en el paquete: propone tipo de documento y cita verificable, sin modificar datos ni ejecutar acciones. El texto se analiza al pulsar el botón, no automáticamente al recibirlo. Resultado revisable; puede equivocarse. Sin API, coste por tokens ni descargas durante el uso. PDF, aprendizaje de correcciones y clasificación automática de adjuntos siguen pendientes.
+
+Leer docs/IA_LOCAL_Y_SEGURIDAD.md antes de ampliar permisos o automatizar acciones. Incluye controles, límites, fallos observados y reproducción del modelo. El prototipo no garantiza riesgo cero y aún requiere revisión independiente antes de producción.

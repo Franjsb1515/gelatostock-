@@ -1,0 +1,76 @@
+
+> appgelatostock@0.7.0 test
+> npm run build && node --test tests/*.test.cjs
+
+
+> appgelatostock@0.7.0 build
+> tsc -p tsconfig.json
+
+✔ IA: entradas limitadas, sin rutas, instrucciones ejecutables ni campos extra (5.1128ms)
+✔ IA: resultado inválido o con acciones queda por revisar (2.9494ms)
+✔ IA: un solo trabajo y cancelación durante verificación (0.3362ms)
+✔ IA: rechaza evidencia inventada aunque el JSON sea válido (0.1121ms)
+✔ IA: tolera mayúsculas y devuelve el fragmento literal original (0.1008ms)
+✔ conteo reemplaza stock, persiste historial y no muta estado original (13.886ms)
+✔ rechaza cantidades negativas, NaN e infinitas (1.0901ms)
+✔ reposición considera pedidos en camino y respeta cajas (3.7559ms)
+✔ autorizar separa proveedores y vacía carrito sin tocar stock (3.0526ms)
+✔ doble autorización y doble envío no duplican pedidos (1.6304ms)
+✔ rechaza autorización con versión obsoleta (0.6481ms)
+✔ recepción parcial y total convierten cajas a litros una sola vez (2.4038ms)
+✔ reintentar la misma recepción es idempotente (2.9987ms)
+✔ recepciones imposibles y líneas duplicadas se rechazan sin cambios (1.5011ms)
+✔ mensajes relevantes y promociones se distinguen sin modificar stock (1.3758ms)
+✔ no vincula mensajes a otro proveedor (2.028ms)
+✔ copias inválidas se rechazan (0.75ms)
+✔ alta de producto valida presentación y objetivo (1.5561ms)
+✔ copia con identificadores capaces de inyectar HTML se rechaza (0.3933ms)
+✔ entrada, salida y corrección conservan un historial compensado (2.4483ms)
+✔ cancelar pendiente libera reposición y no altera stock (1.5495ms)
+✔ editar presentación no cambia los pedidos ya autorizados (1.2815ms)
+✔ no admite fracciones de unidades ni estados recibidos inconsistentes (1.5464ms)
+✔ relevancia por referencia exacta no cambia prioridad ni pedidos (3.1301ms)
+✔ referencias ajenas, desconocidas o múltiples requieren revisión (2.157ms)
+✔ pedido abierto sin referencia no basta para vincular un mensaje (0.855ms)
+✔ corrección manual conserva original y prioridad y registra motivo (1.2193ms)
+✔ eventos repetidos no duplican y un ID con otro contenido se rechaza (1.001ms)
+✔ copia anterior sin relevancia conserva mensajes para revisión (0.4947ms)
+✔ nombre y alias completos identifican sin depender de tildes (9.3447ms)
+✔ varios nombres quedan por revisar y el NIF distingue al emisor (0.8459ms)
+✔ WhatsApp usa el remitente conocido y no una mención en el mensaje (0.6314ms)
+✔ Makro se reconoce cuando existe una ficha local con ese nombre (11.7234ms)
+✔ el identificador no modifica el estado ni acepta entradas ilimitadas (2.0617ms)
+✔ OCR real con idioma incluido y fetch bloqueado reconoce proveedor (853.4571ms)
+✔ servidor SQLite: autenticación, revisión, persistencia y restauración (420.0194ms)
+✔ migración conserva JSON, datos y fotografías en adjuntos separados (80.0629ms)
+✔ JSON inválido no se reemplaza por datos de ejemplo (19.661ms)
+✔ un fallo a mitad de transacción revierte stock, movimiento y operación (53.409ms)
+✔ dos conexiones detectan versión obsoleta y no pisan cambios (87.5557ms)
+✔ idempotencia persiste al reiniciar y rechaza reutilizar ID con otro contenido (65.3911ms)
+✔ adjuntos se deduplican por contenido y las copias son portables (176.7813ms)
+✔ no acepta un archivo falso con extensión de imagen (60.8698ms)
+✔ restauración reemplaza relaciones en una sola transacción (85.2386ms)
+✔ terminación del proceso sin commit no deja cambios parciales (174.1376ms)
+✔ guardar un movimiento no reescribe el historial previo (376.4608ms)
+✔ clasificación corregida y texto original persisten tras reinicio SQLite (61.7846ms)
+✔ crear proveedor crea carpeta estable y ficha aunque cambie el nombre (67.8614ms)
+✔ foto por proveedor y fecha se conserva al reclasificar y restaurar (120.0896ms)
+✔ fotos antiguas quedan sin proveedor y fechas inexistentes se rechazan (54.0342ms)
+✔ fallo del archivo derivado avisa sin perder la transacción y permite recuperar (65.2535ms)
+✔ datos identificativos y OCR persisten y están en la copia portable (67.7805ms)
+✔ cambiar cuenta registra número anterior/nuevo y no mezcla conversaciones (25.2495ms)
+✔ eventos se deduplican dentro de una cuenta y no entre números propios (16.0084ms)
+✔ revocar contacto detiene importación y conserva lo importado (14.6366ms)
+✔ remitente ajeno no dispara descarga ni deja mensajes (12.2147ms)
+✔ evento de sesión anterior se ignora tras un cambio (12.0525ms)
+✔ mensaje autorizado conserva la cuenta y el remitente (12.4662ms)
+✔ sesión y cuentas persisten al reiniciar sin contener QR (14.8167ms)
+✔ respaldo conserva conversaciones sin copiar credenciales (24.4379ms)
+ℹ tests 60
+ℹ suites 0
+ℹ pass 60
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2332.0363

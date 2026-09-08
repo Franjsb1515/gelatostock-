@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
 shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
 shell.Environment("PROCESS")("TEMP") = root & "\work"
 shell.Environment("PROCESS")("TMP") = root & "\work"
-shell.Run Chr(34) & root & "\dist\GelatoStock-0.6.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+shell.Run Chr(34) & root & "\dist\GelatoStock-0.7.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False

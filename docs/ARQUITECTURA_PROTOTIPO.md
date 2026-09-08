@@ -55,3 +55,7 @@ core/identify.ts comparte identificación por texto/alias/NIF/teléfono. src/ocr
 ## WhatsApp experimental en 0.6
 
 Módulo independiente src/whatsapp.cjs + whatsapp-store.cjs, SQLite propia bajo data/whatsapp y permisos/mensajes por número propio. Cuenta anterior se conserva al rotar sesión LocalAuth. Chrome incluido y datos de acceso excluidos de respaldos/código. Recepción de eventos filtrada y vista actualizada cada 2 segundos. Sin envíos ni OCR de adjuntos entrantes. QR real probado sin autenticación; validar con teléfono del usuario.
+
+
+## Estado incorporado en 0.7 · 2026-09-08
+Control de entregas e IA local asistida implementados. Consultar CONTROL_DE_ENTREGAS.md e IA_LOCAL_Y_SEGURIDAD.md para el alcance vigente y los límites. La meta de automatización revisable se mantiene: quedan lectura PDF/cantidades, clasificación de adjuntos entrantes, equivalencias aprobadas y validación de producción. No elevar permisos del modelo para cubrir esos pendientes sin controles y pruebas.

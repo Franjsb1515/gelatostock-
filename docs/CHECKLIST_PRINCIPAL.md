@@ -54,3 +54,7 @@ Esta lista sirve para revisar entregas y decidir si pueden usarse en el negocio.
 ## Evidencia mínima de una versión
 
 Adjuntar versión, equipo/SO, pruebas ejecutadas y resultados; capturas de los flujos revisados; fallos conocidos; funciones simuladas; procedimiento de copia y recuperación. «El código compila» no demuestra por sí solo que el flujo de negocio funciona.
+
+
+## Estado incorporado en 0.7 · 2026-09-08
+Control de entregas e IA local asistida implementados. Consultar CONTROL_DE_ENTREGAS.md e IA_LOCAL_Y_SEGURIDAD.md para el alcance vigente y los límites. La meta de automatización revisable se mantiene: quedan lectura PDF/cantidades, clasificación de adjuntos entrantes, equivalencias aprobadas y validación de producción. No elevar permisos del modelo para cubrir esos pendientes sin controles y pruebas.

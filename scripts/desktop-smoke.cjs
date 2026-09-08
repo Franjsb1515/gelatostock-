@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const assert = require("node:assert/strict");
 (async () => {
   const root = path.resolve(__dirname, "..");
-  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v6-"));
+  const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v7-"));
   fs.mkdirSync(path.join(root, "output", "playwright"), { recursive: true });
   const { DatabaseSync } = require("node:sqlite");
   const savedStock = () => {
@@ -64,7 +64,7 @@ const assert = require("node:assert/strict");
     assert.equal(savedStock(), 4.25);
     assert.ok(requests.every((u) => new URL(u).hostname === "127.0.0.1"));
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v06-desktop.png"),
+      path: path.join(root, "output", "playwright", "v07-desktop.png"),
     });
     await window
       .getByRole("button", { name: "Cargar foto", exact: true })
@@ -83,7 +83,7 @@ const assert = require("node:assert/strict");
       "s1",
     );
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v06-ocr.png"),
+      path: path.join(root, "output", "playwright", "v07-ocr.png"),
     });
     await window.locator("input[name=documentDate]").fill("2026-09-01");
     await window
@@ -126,7 +126,7 @@ const assert = require("node:assert/strict");
       ),
     );
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v06-fotos.png"),
+      path: path.join(root, "output", "playwright", "v07-fotos.png"),
       fullPage: true,
     });
     assert.equal(savedStock(), 4.25);
@@ -167,7 +167,7 @@ const assert = require("node:assert/strict");
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     assert.equal(savedStock(), 4.25);
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v06-movimientos.png"),
+      path: path.join(root, "output", "playwright", "v07-movimientos.png"),
     });
     await window
       .getByRole("button", { name: "Ver mensajes", exact: true })
@@ -220,7 +220,7 @@ const assert = require("node:assert/strict");
       .getByRole("combobox", { name: "Mostrar", exact: true })
       .selectOption("all");
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v06-mensajes.png"),
+      path: path.join(root, "output", "playwright", "v07-mensajes.png"),
     });
     await window.getByRole("button", { name: "WhatsApp", exact: true }).click();
     await window
@@ -233,7 +233,7 @@ const assert = require("node:assert/strict");
       })
       .waitFor();
     await window.screenshot({
-      path: path.join(root, "output", "playwright", "v06-whatsapp.png"),
+      path: path.join(root, "output", "playwright", "v07-whatsapp.png"),
       fullPage: true,
     });
     if (process.env.GELATO_TEST_QR === "1") {
@@ -247,6 +247,104 @@ const assert = require("node:assert/strict");
         "PASS: QR real obtenido en ejecutable empaquetado, sin vincular cuenta ni enviar mensajes.",
       );
     }
+
+    await window.getByRole("button", { name: "Compras", exact: true }).click();
+    await window
+      .getByRole("button", { name: "Añadir producto", exact: true })
+      .click();
+    await window.locator("#modal-form select[name=product]").selectOption("p2");
+    await window.locator("#modal-form input[name=packs]").fill("2");
+    await window.getByRole("button", { name: "Guardar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    await window.getByRole("button", { name: /Revisar y autorizar/ }).click();
+    await window
+      .getByRole("button", { name: "Autorizar demostración", exact: true })
+      .click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    let card = window.locator(".delivery-card").first();
+    await card
+      .getByRole("button", { name: "Simular envío", exact: true })
+      .click();
+    await card
+      .getByRole("button", { name: "Registrar lo que llegó", exact: true })
+      .click();
+    await window.locator("#modal-form input[name=p2]").fill("4");
+    await window.getByRole("button", { name: "Guardar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.ok((await card.innerText()).includes("Recepción parcial"));
+    const cells = await card
+      .locator("tbody tr")
+      .first()
+      .locator("td")
+      .allTextContents();
+    assert.equal(cells[1], "12 L");
+    assert.equal(cells[2], "4 L");
+    assert.equal(cells[3], "8 L");
+    await window.locator(".orders-panel").screenshot({
+      path: path.join(root, "output/playwright/v07-entregas.png"),
+    });
+    await card
+      .getByRole("button", { name: "Registrar lo que llegó", exact: true })
+      .click();
+    await window.locator("#modal-form input[name=p2]").fill("8");
+    await window.getByRole("button", { name: "Guardar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.equal(await window.locator(".delivery-card").count(), 0);
+    await window.getByRole("button", { name: /Cerrados ·/ }).click();
+    await window
+      .locator(".delivery-card")
+      .getByText("Recibido", { exact: true })
+      .first()
+      .waitFor();
+    console.log(
+      "PASS: pedido 2 cajas de 6 L; recepción 4 L, pendiente 8 L; recepción final cierra el pedido.",
+    );
+    await window.getByRole("button", { name: "IA local", exact: true }).click();
+    const text =
+      "FACTURA F-123. Origen Coffee. Café 2 kg. Base 40 EUR. IVA 4 EUR. Total 44 EUR.";
+    await window.locator("#ai-text").fill(text);
+    await window
+      .getByRole("button", { name: "Analizar con IA local", exact: true })
+      .click();
+    await window.locator(".ai-result").waitFor({ timeout: 125000 });
+    assert.ok(
+      (await window.locator(".ai-result").innerText()).includes(
+        "Posible factura",
+      ),
+    );
+    assert.equal(savedStock(), 4.25);
+    await window.screenshot({
+      path: path.join(root, "output/playwright/v07-ia.png"),
+    });
+    console.log(
+      "PASS: modelo local REAL en ejecutable, factura reconocida sin modificar stock.",
+    );
+    await window
+      .locator("#ai-text")
+      .fill(
+        "LISTA DE PRECIOS. Tarifa de septiembre. Café 20 EUR/kg. Leche 1 EUR/L. Precios orientativos. No es una factura.",
+      );
+    await window
+      .getByRole("button", { name: "Analizar con IA local", exact: true })
+      .click();
+    await window.locator(".ai-result").waitFor({ timeout: 125000 });
+    assert.ok(
+      (await window.locator(".ai-result").innerText()).includes(
+        "Posible lista de precios",
+      ),
+    );
+    console.log("PASS: modelo local diferencia lista de precios de factura.");
+    await window
+      .getByRole("button", { name: "Analizar con IA local", exact: true })
+      .click();
+    await window
+      .getByRole("button", { name: "Detener lectura", exact: true })
+      .click();
+    await window
+      .getByRole("button", { name: "Analizar con IA local", exact: true })
+      .waitFor();
+    await window.getByRole("alert").filter({ hasText: "cancelada" }).waitFor();
+    console.log("PASS: cancelación desde la interfaz.");
     const runtime = await app.evaluate(({ app }) => ({
       userData: app.getPath("userData"),
       sessionData: app.getPath("sessionData"),
