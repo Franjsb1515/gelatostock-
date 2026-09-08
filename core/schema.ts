@@ -63,6 +63,14 @@ const lineSchema = z.object({
   price: cents,
   received: quantity,
 });
+// A real send: what was sent, to whom and when. Set once; sending never changes stock.
+const dispatchSchema = z.object({
+  channel: z.literal("whatsapp"),
+  to: text(30),
+  messageId: text(200),
+  at,
+  text: text(4000),
+});
 const orderSchema = z.object({
   id: idSchema,
   number: z.string().regex(/^GS-\d+$/),
@@ -71,6 +79,7 @@ const orderSchema = z.object({
   at,
   simulated: z.literal(true),
   lines: z.array(lineSchema).min(1).max(10000),
+  dispatch: dispatchSchema.optional(),
 });
 export const priorities = z.enum(["important", "normal", "low", "review"]);
 export const relevanceLevels = z.enum([
@@ -259,7 +268,11 @@ export const actionSchema = z.intersection(
     }),
     z.object({ type: z.literal("suggest") }),
     z.object({ type: z.literal("authorize") }),
-    z.object({ type: z.literal("send"), order: idSchema }),
+    z.object({
+      type: z.literal("send"),
+      order: idSchema,
+      dispatch: dispatchSchema.optional(),
+    }),
     z.object({ type: z.literal("cancel"), order: idSchema }),
     z.object({
       type: z.literal("receive"),

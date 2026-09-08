@@ -1,0 +1,708 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 18b737c..47f5700 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.9.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.9.1-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index bc49ac9..98cb002 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.9.1 — 2026-09-08 · sesión 013
++
++Envío real de pedidos por WhatsApp, autorizado por el usuario tras vincular por QR sus dos números propios. Solo pedidos pendientes, solo al número de la ficha del proveedor si está autorizado para la cuenta conectada, con vista previa del texto exacto y confirmación explícita; una vez por pedido, nunca automático. El pedido guarda destino, identificador, hora y texto; enviar no cambia stock ni da por confirmado. Los mensajes enviados aparecen en la conversación de WhatsApp. «Simular envío» se conserva para pruebas sin canal.
++
++85 pruebas aprobadas (envío con cliente simulado en conector y servidor), ejecutable 0.9.1 reconstruido y probado. Prueba con teléfono real pendiente del usuario. Informe reports/2026-09-08T18-16-51-221Z-envio-whatsapp-real.md.
++
+ ## 0.9.0 — 2026-09-08 · sesión 012
+ 
+ Producción y recetas: recetas con rendimiento e ingredientes en unidad base; registrar kilos producidos calcula por reglas el consumo estimado, que la persona corrige y aprueba antes de descontar; entrada del producto terminado; hoja diaria; aviso de mínimos. Respuestas de proveedores: reglas deterministas marcan categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación), resuelven fechas relativas y señalan lo que hay que leer; filtro «Debes leer», aviso en Resumen y respuestas vinculadas en Control de entregas. Segunda lectura opcional con el modelo local que solo anota una categoría. Base SQLite user_version 2 con tablas recipes y productions.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index aec1a6b..df2ca27 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.9.0
++# Entrada para Claude · entrega vigente 0.9.1
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+@@ -11,12 +11,15 @@ OCR español real para texto/proveedor de fotos. IA real Qwen3 0.6B Q4 para tipo
+ 
+ Control de entregas: cantidades recibidas en unidad base, solo incrementales; presentaciones del pedido son snapshots. No mezclar kg/L/ud ni sumar stock por envío. Pedidos todavía simulados.
+ 
+-WhatsApp experimental: QR real probado sin vincular cuenta. Recepción/cambio de dos números reales pendientes de prueba con el usuario. No exportar data/whatsapp/sessions ni historial privado. No auto-conectar QR por revisar la app.
++WhatsApp: el usuario vinculó por QR y cambió entre sus dos números propios (2026-09-08). Desde 0.9.1 hay envío real de pedidos con vista previa, confirmación explícita, solo a chats autorizados y una vez por pedido; el usuario autorizó probarlo con sus propios números. Nunca enviar sin su confirmación en pantalla ni en pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No auto-conectar QR por revisar la app.
+ 
+ Pruebas: npm test; npm run format:check; npm run package:win; npm run test:desktop. Esta última incluye inferencia real y tarda más que unitarias. node scripts/evaluate-ai.cjs --quick para cambios en IA (modelo real, conserva pass:false). GELATO_TEST_QR=1 solo con prueba explícita. Usa fixtures en work/, nunca borres datos reales para probar. Mac no validado. Revisar seguridad, firma de paquetes, almacenamiento y rendimiento con hardware/documentos reales antes de producción.
+ 
+ Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+ 
++## Punto de continuidad 0.9.1
++Lee reports/2026-09-08T18-16-51-221Z-envio-whatsapp-real.md. Sesión 013: envío real por WhatsApp (src/whatsapp.cjs send, tabla sent, acción send con dispatch, /api/whatsapp preview/send, botón en Control de entregas). Probado con cliente simulado; la prueba con teléfono real la hace el usuario. 85 pruebas.
++
+ ## Punto de continuidad 0.9.0
+ Lee reports/2026-09-08T16-18-04-876Z-recetas-produccion-respuestas.md. Sesión 012: recetas/producción (consumo estimado por reglas, aprobado y corregible por la persona; producto terminado; hoja diaria; SQLite user_version 2) y lectura de respuestas de proveedores por reglas en core/messages.ts con segunda lectura opcional del modelo (acción aiNote, solo anota). Precisión en respuestas: reglas afinadas con corpus de 80 (60 desarrollo + 20 reservado, 75 % en la primera pasada) son la lectura principal; los modelos locales miden 55/80 (0.6B) y 36/80 (1.7B) y son manipulables: no sustituir reglas por modelo sin cifras. Auditoría de seguridad con sonda work/attack.cjs 26/26; clave fuera de la URL; caché validada del estado. Decisiones del usuario: descuento solo tras aprobación; producto terminado sí; la IA debe entender respuestas libres, por eso reglas + modelo; QR de WhatsApp aplazado. 80 pruebas.
+ 
+diff --git a/README.md b/README.md
+index e8e729a..7f1a4af 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.9.0
++# GelatoStock · prototipo 0.9.1
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.9.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.9.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.9.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.9.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
+ 9. Crear y restaurar copias en Configuración.
+ 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
+ 
+-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no contacta a proveedores ni realiza pagos.
++Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.9.1 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+ 
+ ## Qué está pendiente
+ 
+@@ -115,13 +115,16 @@ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Cont
+ 
+ Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
+ 
+-## Auditoría y mejora continua en 0.9.0
++## Auditoría y mejora continua en 0.9.1
+ La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
+ 
+-## Chat de dudas en 0.9.0
++## Chat de dudas en 0.9.1
+ IA local incluye un chat para preguntar cómo usar la app o qué dice el texto pegado en el editor. Responde el modelo local a partir de una guía fija y del texto del editor si se marca la casilla; no consulta el inventario ni los pedidos, no ejecuta acciones y sus respuestas son orientativas. Cada respuesta puede tardar de 30 segundos a más de un minuto en este equipo. El chat se conserva solo mientras la ventana está abierta.
+ 
+-## Producción y respuestas de proveedores en 0.9.0
++## Producción y respuestas de proveedores en 0.9.1
+ Producción: crea recetas (rinde X kg, ingredientes en su unidad base) y registra los kilos producidos por día. La app propone el consumo; corrígelo y aprueba para descontar ingredientes y sumar el producto terminado. La hoja diaria muestra kilos por gelato. Guía: docs/PRODUCCION_Y_RECETAS.md.
+ 
+ Mensajes: cada respuesta de proveedor se lee con reglas (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y se marca si debes leerla; las fechas como «el lunes» se resuelven. En Resumen aparece cuántos mensajes debes leer y en Control de entregas las respuestas vinculadas a cada pedido. «Segunda lectura con IA local» pide al modelo una categoría como propuesta; no cambia pedidos ni stock.
++
++## Envío real por WhatsApp en 0.9.1
++En Compras → Control de entregas, un pedido pendiente tiene «Enviar por WhatsApp». Se muestra el texto exacto y el destinatario; al confirmar se envía una sola vez desde la cuenta vinculada por QR. Requisitos: WhatsApp conectado y el número del proveedor autorizado en WhatsApp → Autorizar chat. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a la pantalla WhatsApp y se lee por reglas. Prueba primero con un número propio.
+diff --git a/TODO.md b/TODO.md
+index 60acc5c..05b4cf7 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.1.
+ 
+ ## Entregado y comprobado
+ 
+@@ -27,7 +27,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
+ - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
+ - [x] Cancelar pedidos pendientes sin alterar stock.
+-- [x] Núcleo TypeScript estricto, validación de contratos y 82 pruebas automatizadas.
++- [x] Núcleo TypeScript estricto, validación de contratos y 85 pruebas automatizadas.
+ - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
+ - [ ] Definir autenticación y permisos si lo usa más de una persona.
+ - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
+@@ -60,8 +60,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Usuario elige prueba QR para WhatsApp normal/Business, con cambio de sesión.
+ - [x] QR experimental, cuentas separadas, permisos por cuenta e historial de cambio de número.
+ - [x] Copia de WhatsApp sin credenciales.
+-- [ ] Validar vinculación y recepción con teléfono del usuario y cambio entre dos números reales.
+-- [x] Implementar recepción experimental de WhatsApp por eventos, sin envíos; QR real verificado.
++- [x] Vinculación por QR y cambio de número validados por el usuario con dos números propios (2026-09-08).
++- [x] Envío real de pedidos por WhatsApp con vista previa, confirmación y un envío por pedido; probado con cliente simulado.
++- [ ] Probar el envío real con el teléfono del usuario (número autorizado propio) y la respuesta de vuelta en la bandeja.
++- [x] Implementar recepción experimental de WhatsApp por eventos; QR real verificado. Envío añadido en 0.9.1 con confirmación explícita.
+ - [ ] Recuperación de mensajes perdidos, notificaciones nativas y endurecimiento del canal.
+ - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
+ - [x] Reglas de relevancia por referencia exacta del mismo proveedor, independientes de prioridad; correcciones con motivo.
+diff --git a/core/domain.ts b/core/domain.ts
+index 16f75e4..07cc189 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -45,6 +45,19 @@ export function needed(s: State, p: Product): number {
+     Math.ceil(round(p.target - p.stock - pending(s, p.id)) / p.pack),
+   );
+ }
++// Exact text a real send carries. Deterministic so the person authorizes what is sent.
++export function orderMessage(s: State, orderId: string): string {
++  const o = item(s.orders, orderId);
++  const lines = o.lines.map((l) => {
++    const p = item(s.products, l.product);
++    return `- ${l.packs} × ${p.name} (${round(l.pack)} ${p.unit} por presentación, ${round(l.packs * l.pack)} ${p.unit})`;
++  });
++  return [
++    `Hola, pedido ${o.number} de ${s.business}:`,
++    ...lines,
++    "¿Nos confirmas disponibilidad y fecha de entrega? Gracias.",
++  ].join("\n");
++}
+ export function classify(
+   text: string,
+   at = now(),
+@@ -445,7 +458,11 @@ export function apply(state: State, input: unknown): State {
+       const o = item(s.orders, a.order);
+       ensure(o.status === "pending", "Este pedido ya se procesó.");
+       o.status = "sent";
+-      note = `Envío SIMULADO de ${o.number}. Ningún mensaje real enviado.`;
++      if (a.dispatch) {
++        o.dispatch = a.dispatch;
++        note = `Pedido ${o.number} ENVIADO por WhatsApp a ${a.dispatch.to}. El proveedor aún no ha confirmado; el stock no cambia hasta la recepción.`;
++      } else
++        note = `Envío SIMULADO de ${o.number}. Ningún mensaje real enviado.`;
+       break;
+     }
+     case "cancel": {
+diff --git a/core/schema.ts b/core/schema.ts
+index 6adcdff..f24ab9f 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -63,6 +63,14 @@ const lineSchema = z.object({
+   price: cents,
+   received: quantity,
+ });
++// A real send: what was sent, to whom and when. Set once; sending never changes stock.
++const dispatchSchema = z.object({
++  channel: z.literal("whatsapp"),
++  to: text(30),
++  messageId: text(200),
++  at,
++  text: text(4000),
++});
+ const orderSchema = z.object({
+   id: idSchema,
+   number: z.string().regex(/^GS-\d+$/),
+@@ -71,6 +79,7 @@ const orderSchema = z.object({
+   at,
+   simulated: z.literal(true),
+   lines: z.array(lineSchema).min(1).max(10000),
++  dispatch: dispatchSchema.optional(),
+ });
+ export const priorities = z.enum(["important", "normal", "low", "review"]);
+ export const relevanceLevels = z.enum([
+@@ -259,7 +268,11 @@ export const actionSchema = z.intersection(
+     }),
+     z.object({ type: z.literal("suggest") }),
+     z.object({ type: z.literal("authorize") }),
+-    z.object({ type: z.literal("send"), order: idSchema }),
++    z.object({
++      type: z.literal("send"),
++      order: idSchema,
++      dispatch: dispatchSchema.optional(),
++    }),
+     z.object({ type: z.literal("cancel"), order: idSchema }),
+     z.object({
+       type: z.literal("receive"),
+diff --git a/docs/WHATSAPP_PROVEEDORES.md b/docs/WHATSAPP_PROVEEDORES.md
+index c1c00c1..b13fdad 100644
+--- a/docs/WHATSAPP_PROVEEDORES.md
++++ b/docs/WHATSAPP_PROVEEDORES.md
+@@ -57,3 +57,6 @@ Primera implementación centrada en recepción. Envíos, respuestas automáticas
+ - Biblioteca alternativa, autenticación por QR: https://wwebjs.dev/guide/creating-your-bot/authentication.html
+ 
+ La página Meta específica de coexistencia devolvió 429 durante la consulta. La elegibilidad y condiciones de ese flujo requieren verificación adicional; no se garantiza que esté disponible para la cuenta del usuario. Las tarifas deben revisarse al configurar, no se fija un precio en este documento.
++
++## Envío implementado en 0.9.1
++Autorizado por el usuario el 2026-09-08 tras validar QR y cambio de número con dos números propios. Reglas: solo pedidos en estado pendiente; destinatario = WhatsApp de la ficha del proveedor, que además debe estar autorizado para la cuenta conectada; el servidor compone el texto (orderMessage) y rechaza cualquier texto distinto al de la vista previa; un envío por pedido (tabla sent del canal y campo dispatch del pedido); bloqueo de envíos concurrentes; sin reintentos automáticos: si el envío falla, el pedido sigue pendiente y se puede repetir a mano. Si el envío se realiza pero falla el registro en el inventario, la tabla sent del canal conserva la prueba y el pedido no se reenvía. Ningún mensaje se envía sin pulsar «Enviar ahora».
+diff --git a/package.json b/package.json
+index 574b14a..c29344a 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.9.0",
++  "version": "0.9.1",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/src/app.js b/src/app.js
+index 3a7ab7b..2904adc 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -255,7 +255,16 @@ function whatsapp() {
+     ) +
+     `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo se importan chats autorizados. La sesión de WhatsApp Web puede sincronizar la cuenta completa en su perfil local. Internet y app abierta necesarios; no hay envíos desde este módulo.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}</div></section>
+  <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Al cambiar de cuenta, su lista se mantiene separada. No se importa historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} ${w.account === w.activeAccount ? btn("Dejar de importar", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
+- <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos 200 mensajes recibidos de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${w.messages.map((m) => `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.interpretation ? `<div class="wa-reading">${pill(replyLabel[m.interpretation.category], m.interpretation.needsReading ? "peach" : "sage")} <small>${esc(m.interpretation.summary)}</small></div>` : ""}${m.text ? btn("Leer con IA local", "aiWhatsApp", "secondary", `data-id="${esc(m.id)}"`) : ""}${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`).join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'}</section>
++ <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos mensajes recibidos y enviados de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${
++   [...w.messages, ...(w.sent || []).map((m) => ({ ...m, outgoing: true }))]
++     .sort((a, b) => (a.at < b.at ? 1 : -1))
++     .map((m) =>
++       m.outgoing
++         ? `<article class="message-bubble outgoing"><strong>Tú → ${esc(w.allowed.find((c) => c.phone === m.recipient)?.label || m.recipient)}</strong><small> · ${esc(m.recipient)} · ${date(m.at)} ${time(m.at)}${m.order_id ? " · pedido enviado" : ""}</small><p>${esc(m.text)}</p></article>`
++         : `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.interpretation ? `<div class="wa-reading">${pill(replyLabel[m.interpretation.category], m.interpretation.needsReading ? "peach" : "sage")} <small>${esc(m.interpretation.summary)}</small></div>` : ""}${m.text ? btn("Leer con IA local", "aiWhatsApp", "secondary", `data-id="${esc(m.id)}"`) : ""}${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`,
++     )
++     .join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'
++ }</section>
+  <section class="panel settings-card"><h2>Historial de sesiones y cambios de número</h2>${btn("Crear copia de WhatsApp", "waBackup")}<p class="fineprint">Esta copia incluye conversaciones y adjuntos, sin credenciales. Es independiente de la copia del inventario.</p>${w.history.map((e) => `<p>${date(e.at)} ${time(e.at)} · ${esc(e.text)}</p>`).join("") || '<p class="muted">Todavía no se vinculó ninguna cuenta.</p>'}</section>`
+   );
+ }
+@@ -548,7 +557,7 @@ function orderTracking() {
+           })
+           .join(
+             "",
+-          )}</tbody></table></div>${orderReplies(o)}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "secondary", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
++          )}</tbody></table></div>${orderReplies(o)}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. Pendiente de confirmación del proveedor.` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "secondary", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
+       })
+       .join("") ||
+     '<div class="panel empty compact">' +
+@@ -925,6 +934,43 @@ async function action(name, el) {
+     }
+     return;
+   }
++  if (name === "orderWhatsApp") {
++    const o = state.orders.find((x) => x.id === el.dataset.order);
++    let preview;
++    try {
++      preview = await request("/api/whatsapp", {
++        type: "preview",
++        order: o.id,
++      });
++    } catch (e) {
++      toast(e.message);
++      return;
++    }
++    const blocked = !preview.connected
++      ? "WhatsApp no está conectado. Conectá por QR en la pantalla WhatsApp."
++      : !preview.authorized
++        ? "Este número no está autorizado para la cuenta conectada. Autorizalo en WhatsApp → Autorizar chat."
++        : "";
++    modal(
++      "Enviar " + o.number + " por WhatsApp",
++      "Se envía exactamente este texto, una sola vez, al número de la ficha del proveedor.",
++      `<p><strong>Para:</strong> ${esc(preview.label)} · ${esc(preview.to)}</p><label class="field">Mensaje que se enviará<textarea class="ai-editor" readonly>${esc(preview.text)}</textarea></label>${blocked ? `<p role="alert">${esc(blocked)}</p>` : '<p class="fineprint">Enviar no cambia el stock ni da por confirmado el pedido: la respuesta del proveedor llegará a la pantalla WhatsApp.</p>'}`,
++      async () => {
++        if (blocked) return false;
++        const data = await request("/api/whatsapp", {
++          type: "send",
++          order: o.id,
++          text: preview.text,
++        });
++        state = data.state;
++        render();
++        toast("Pedido enviado por WhatsApp a " + data.sent.recipient + ".");
++        return true;
++      },
++      blocked ? "Cerrar" : "Enviar ahora",
++    );
++    return;
++  }
+   if (name === "aiChatSend") {
+     if (aiBusy) return;
+     const question = $("#ai-chat-input").value.trim();
+diff --git a/src/server.cjs b/src/server.cjs
+index 855563c..d97d29d 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -4,6 +4,7 @@ const path = require("node:path");
+ const { randomBytes, timingSafeEqual } = require("node:crypto");
+ const { identifySupplier } = require("../build/identify.js");
+ const { interpretReply } = require("../build/messages.js");
++const { orderMessage } = require("../build/domain.js");
+ const { recognizeLocal } = require("./ocr.cjs");
+ const { WhatsAppConnection } = require("./whatsapp.cjs");
+ const { LocalAI } = require("./ai.cjs");
+@@ -168,6 +169,65 @@ function createApp({
+             json(200, { path: whatsapp.store.backup() });
+             return;
+           }
++          if (data.type === "preview" || data.type === "send") {
++            const state = store.load();
++            const order = state.orders.find(
++              (o) => o.id === String(data.order || ""),
++            );
++            if (!order) throw Error("Pedido inexistente.");
++            if (order.status !== "pending")
++              throw Error("Solo se envían pedidos pendientes.");
++            const supplier = state.suppliers.find(
++              (x) => x.id === order.supplier,
++            );
++            if (!supplier?.whatsapp)
++              throw Error(
++                "El proveedor no tiene WhatsApp en su ficha. Añadilo en Proveedores.",
++              );
++            const text = orderMessage(state, order.id);
++            if (data.type === "preview") {
++              json(200, {
++                text,
++                to: supplier.whatsapp,
++                label: supplier.name,
++                connected: whatsapp.status === "connected",
++                authorized:
++                  !!whatsapp.account &&
++                  !!whatsapp.store.allowed(whatsapp.account, supplier.whatsapp),
++              });
++              return;
++            }
++            // The person authorizes this exact text; anything else is refused.
++            if (data.text !== text)
++              throw Error(
++                "El texto cambió desde la vista previa. Volvé a abrir el envío.",
++              );
++            const sent = await whatsapp.send({
++              phone: supplier.whatsapp,
++              text,
++              order: order.id,
++            });
++            const next = store.dispatch({
++              type: "send",
++              order: order.id,
++              dispatch: {
++                channel: "whatsapp",
++                to: sent.recipient,
++                messageId: sent.id,
++                at: sent.at,
++                text,
++              },
++            });
++            json(200, {
++              state: next,
++              dataDir,
++              storage: "SQLite",
++              archiveWarning: store.archiveWarning,
++              version,
++              sent,
++            });
++            return;
++          }
+           if (data.type === "connect") await whatsapp.connect();
+           else if (data.type === "disconnect") await whatsapp.disconnect();
+           else if (data.type === "allow") whatsapp.allow(data);
+diff --git a/src/styles.css b/src/styles.css
+index 9c07b5d..05f5d2b 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -2003,3 +2003,8 @@ dialog::backdrop {
+   flex-wrap: wrap;
+   margin: 6px 0;
+ }
++
++.message-bubble.outgoing {
++  background: #e9f0e3;
++  border-left: 3px solid #69815b;
++}
+diff --git a/src/whatsapp-store.cjs b/src/whatsapp-store.cjs
+index 5c69dfc..d86ba14 100644
+--- a/src/whatsapp-store.cjs
++++ b/src/whatsapp-store.cjs
+@@ -20,7 +20,8 @@ class WhatsAppStore {
+  CREATE TABLE IF NOT EXISTS accounts(id TEXT PRIMARY KEY,phone TEXT NOT NULL UNIQUE);
+  CREATE TABLE IF NOT EXISTS allowed(account TEXT NOT NULL REFERENCES accounts(id),phone TEXT NOT NULL,label TEXT NOT NULL,supplier TEXT,PRIMARY KEY(account,phone));
+  CREATE TABLE IF NOT EXISTS messages(account TEXT NOT NULL REFERENCES accounts(id),id TEXT NOT NULL,sender TEXT NOT NULL,at TEXT NOT NULL,text TEXT NOT NULL,file TEXT,name TEXT,mime TEXT,PRIMARY KEY(account,id));
+- CREATE TABLE IF NOT EXISTS history(id TEXT PRIMARY KEY,at TEXT NOT NULL,text TEXT NOT NULL);`);
++ CREATE TABLE IF NOT EXISTS history(id TEXT PRIMARY KEY,at TEXT NOT NULL,text TEXT NOT NULL);
++ CREATE TABLE IF NOT EXISTS sent(account TEXT NOT NULL REFERENCES accounts(id),id TEXT NOT NULL,recipient TEXT NOT NULL,at TEXT NOT NULL,text TEXT NOT NULL,order_id TEXT,PRIMARY KEY(account,id));`);
+   }
+   get(k) {
+     return this.db.prepare("SELECT value FROM meta WHERE key=?").get(k)?.value;
+@@ -134,6 +135,16 @@ class WhatsAppStore {
+       );
+     return true;
+   }
++  recordSent(account, m) {
++    this.db
++      .prepare("INSERT INTO sent VALUES(?,?,?,?,?,?)")
++      .run(account, m.id, m.recipient, m.at, m.text, m.order || null);
++  }
++  sentFor(order) {
++    return this.db
++      .prepare("SELECT * FROM sent WHERE order_id=? ORDER BY at LIMIT 1")
++      .get(order);
++  }
+   view(account) {
+     return {
+       accounts: this.db.prepare("SELECT * FROM accounts").all(),
+@@ -148,6 +159,13 @@ class WhatsAppStore {
+             )
+             .all(account)
+         : [],
++      sent: account
++        ? this.db
++            .prepare(
++              "SELECT * FROM sent WHERE account=? ORDER BY at DESC LIMIT 200",
++            )
++            .all(account)
++        : [],
+       history: this.db
+         .prepare("SELECT * FROM history ORDER BY at DESC,rowid DESC LIMIT 100")
+         .all(),
+diff --git a/src/whatsapp.cjs b/src/whatsapp.cjs
+index a45573b..9991c7f 100644
+--- a/src/whatsapp.cjs
++++ b/src/whatsapp.cjs
+@@ -215,6 +215,46 @@ class WhatsAppConnection {
+     if (generation === this.generation && this.status === "connected")
+       this.store.insert(account, entry);
+   }
++  // Real send. Only to a chat the person authorized for the connected account,
++  // one order at a time, never automatic. The caller shows the exact text first.
++  async send({ phone, text, order }) {
++    if (!this.client || this.status !== "connected" || !this.account)
++      throw Error("Conectá WhatsApp por QR antes de enviar.");
++    const recipient = normalize(phone);
++    const permitted = this.store.allowed(this.account, recipient);
++    if (!permitted)
++      throw Error(
++        "Solo se envía a chats autorizados para esta cuenta. Autorizá el número primero.",
++      );
++    if (typeof text !== "string" || !text.trim() || text.length > 4000)
++      throw Error("El mensaje debe tener entre 1 y 4.000 caracteres.");
++    if (order && this.store.sentFor(order))
++      throw Error("Este pedido ya se envió por WhatsApp; no se reenvía.");
++    if (this.sending) throw Error("Ya hay un envío en curso.");
++    this.sending = true;
++    try {
++      const result = await this.client.sendMessage(
++        recipient.slice(1) + "@c.us",
++        text,
++      );
++      const entry = {
++        id:
++          String(result?.id?._serialized || "") ||
++          require("node:crypto").randomUUID(),
++        recipient,
++        at: new Date().toISOString(),
++        text,
++        order: order || null,
++      };
++      this.store.recordSent(this.account, entry);
++      this.store.note(
++        `Mensaje ENVIADO a ${recipient} (${permitted.label}) desde ${this.store.phone(this.account)}${order ? ", pedido " + order : ""}.`,
++      );
++      return entry;
++    } finally {
++      this.sending = false;
++    }
++  }
+   async disconnect() {
+     if (this.status === "closing")
+       throw Error("La sesión ya se está cerrando.");
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index 716df1e..759bc7e 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -572,3 +572,34 @@ test("respuestas rutinarias: el corpus de desarrollo se lee por reglas con la ca
+   );
+   assert.ok(corpus.length >= 60);
+ });
++
++test("envío real registra destino, texto y hora en el pedido sin tocar stock", () => {
++  const { orderMessage } = require("../src/domain.cjs");
++  let s = milkOrder();
++  s = apply(s, { type: "cart", product: "p2", packs: 1 });
++  s = apply(s, { type: "authorize", revision: s.revision });
++  const o = s.orders[0];
++  const text = orderMessage(s, o.id);
++  assert.match(text, /pedido GS-\d+ de Gelato & Café/);
++  assert.match(text, /1 × Leche entera \(6 L por presentación, 6 L\)/);
++  const stock = s.products.map((p) => p.stock);
++  s = apply(s, {
++    type: "send",
++    order: o.id,
++    dispatch: {
++      channel: "whatsapp",
++      to: "+34910000001",
++      messageId: "m1",
++      at: new Date().toISOString(),
++      text,
++    },
++  });
++  assert.equal(s.orders[0].status, "sent");
++  assert.equal(s.orders[0].dispatch.to, "+34910000001");
++  assert.match(s.activity[0].text, /ENVIADO por WhatsApp/);
++  assert.deepEqual(
++    s.products.map((p) => p.stock),
++    stock,
++  );
++  assert.throws(() => apply(s, { type: "send", order: o.id }));
++});
+diff --git a/tests/server.test.cjs b/tests/server.test.cjs
+index 20e8650..8b3c6dd 100644
+--- a/tests/server.test.cjs
++++ b/tests/server.test.cjs
+@@ -114,3 +114,112 @@ test("servidor SQLite: autenticación, revisión, persistencia y restauración",
+     fs.rmSync(dir, { recursive: true, force: true });
+   }
+ });
++
++test("envío real por WhatsApp desde el servidor: vista previa exacta, un envío y estado enviado", async () => {
++  const root = path.resolve(__dirname, "../work");
++  const dir = fs.mkdtempSync(path.join(root, "http-wa-"));
++  let app;
++  try {
++    app = await createApp({ dataDir: dir });
++    const origin = new URL(app.url).origin;
++    const login = await fetch(app.url, { redirect: "manual" });
++    const headers = {
++      "Content-Type": "application/json",
++      Origin: origin,
++      Cookie: login.headers.get("set-cookie").split(";")[0],
++    };
++    const post = (p, body) =>
++      fetch(origin + p, {
++        method: "POST",
++        headers,
++        body: JSON.stringify(body),
++      });
++    const state = async () =>
++      (await (await fetch(origin + "/api/state", { headers })).json()).state;
++    let s = await state();
++    await post("/api/action", {
++      type: "supplier",
++      id: "s2",
++      name: "Fresco Mercado",
++      initials: "FM",
++      category: "Lácteos",
++      delivery: "L-V",
++      color: "rose",
++      whatsapp: "+34910000001",
++      revision: s.revision,
++      operationId: "w1",
++    });
++    s = await state();
++    await post("/api/action", {
++      type: "cart",
++      product: "p2",
++      packs: 2,
++      revision: s.revision,
++      operationId: "w2",
++    });
++    s = await state();
++    await post("/api/action", {
++      type: "authorize",
++      revision: s.revision,
++      operationId: "w3",
++    });
++    s = await state();
++    const order = s.orders[0];
++    let r = await post("/api/whatsapp", { type: "preview", order: order.id });
++    const preview = await r.json();
++    assert.equal(r.status, 200);
++    assert.equal(preview.connected, false);
++    assert.match(preview.text, /Leche entera/);
++    r = await post("/api/whatsapp", {
++      type: "send",
++      order: order.id,
++      text: preview.text,
++    });
++    assert.equal(r.status, 400);
++    const account = app.whatsapp.store.bind("+34600000001");
++    app.whatsapp.account = account;
++    app.whatsapp.status = "connected";
++    const calls = [];
++    app.whatsapp.client = {
++      sendMessage: async (to, text) => (
++        calls.push([to, text]),
++        { id: { _serialized: "real-1" } }
++      ),
++    };
++    app.whatsapp.store.permit(account, "+34910000001", "Fresco");
++    r = await post("/api/whatsapp", {
++      type: "send",
++      order: order.id,
++      text: preview.text + " extra",
++    });
++    assert.equal(r.status, 400);
++    assert.equal(calls.length, 0);
++    r = await post("/api/whatsapp", {
++      type: "send",
++      order: order.id,
++      text: preview.text,
++    });
++    assert.equal(r.status, 200);
++    const sent = await r.json();
++    assert.equal(sent.sent.id, "real-1");
++    assert.deepEqual(calls, [["34910000001@c.us", preview.text]]);
++    s = await state();
++    assert.equal(s.orders[0].status, "sent");
++    assert.equal(s.orders[0].dispatch.messageId, "real-1");
++    r = await post("/api/whatsapp", {
++      type: "send",
++      order: order.id,
++      text: preview.text,
++    });
++    assert.equal(r.status, 400);
++    assert.equal(calls.length, 1);
++    const view = await (
++      await fetch(origin + "/api/whatsapp?account=" + account, { headers })
++    ).json();
++    assert.equal(view.sent.length, 1);
++    app.whatsapp.client = null;
++  } finally {
++    if (app) await new Promise((r) => app.server.close(r));
++    fs.rmSync(dir, { recursive: true, force: true });
++  }
++});
+diff --git a/tests/whatsapp.test.cjs b/tests/whatsapp.test.cjs
+index ce7776e..528f5d8 100644
+--- a/tests/whatsapp.test.cjs
++++ b/tests/whatsapp.test.cjs
+@@ -151,3 +151,47 @@ test("respaldo conserva conversaciones sin copiar credenciales", () =>
+       db.close();
+     }
+   }));
++
++test("envío real: solo conectado, solo a chats autorizados, una vez por pedido y con registro", () =>
++  fixture(async (c) => {
++    await assert.rejects(
++      c.send({ phone: "+34910000001", text: "hola" }),
++      /Conectá WhatsApp/,
++    );
++    const a = c.store.bind("+34600000001");
++    c.account = a;
++    c.status = "connected";
++    const calls = [];
++    c.client = {
++      sendMessage: async (to, text) => {
++        calls.push([to, text]);
++        return { id: { _serialized: "msg-" + calls.length } };
++      },
++    };
++    await assert.rejects(
++      c.send({ phone: "+34910000001", text: "hola" }),
++      /autorizados/,
++    );
++    c.store.permit(a, "+34910000001", "Proveedor");
++    await assert.rejects(
++      c.send({ phone: "+34910000001", text: "" }),
++      /caracteres/,
++    );
++    const sent = await c.send({
++      phone: "+34 910 000 001",
++      text: "Pedido GS-001",
++      order: "o1",
++    });
++    assert.deepEqual(calls, [["34910000001@c.us", "Pedido GS-001"]]);
++    assert.equal(sent.id, "msg-1");
++    await assert.rejects(
++      c.send({ phone: "+34910000001", text: "otra vez", order: "o1" }),
++      /ya se envió/,
++    );
++    assert.equal(calls.length, 1);
++    const view = c.store.view(a);
++    assert.equal(view.sent.length, 1);
++    assert.equal(view.sent[0].order_id, "o1");
++    assert.ok(view.history.some((h) => /ENVIADO a \+34910000001/.test(h.text)));
++    c.client = null;
++  }));

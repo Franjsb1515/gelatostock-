@@ -20,7 +20,8 @@ class WhatsAppStore {
  CREATE TABLE IF NOT EXISTS accounts(id TEXT PRIMARY KEY,phone TEXT NOT NULL UNIQUE);
  CREATE TABLE IF NOT EXISTS allowed(account TEXT NOT NULL REFERENCES accounts(id),phone TEXT NOT NULL,label TEXT NOT NULL,supplier TEXT,PRIMARY KEY(account,phone));
  CREATE TABLE IF NOT EXISTS messages(account TEXT NOT NULL REFERENCES accounts(id),id TEXT NOT NULL,sender TEXT NOT NULL,at TEXT NOT NULL,text TEXT NOT NULL,file TEXT,name TEXT,mime TEXT,PRIMARY KEY(account,id));
- CREATE TABLE IF NOT EXISTS history(id TEXT PRIMARY KEY,at TEXT NOT NULL,text TEXT NOT NULL);`);
+ CREATE TABLE IF NOT EXISTS history(id TEXT PRIMARY KEY,at TEXT NOT NULL,text TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS sent(account TEXT NOT NULL REFERENCES accounts(id),id TEXT NOT NULL,recipient TEXT NOT NULL,at TEXT NOT NULL,text TEXT NOT NULL,order_id TEXT,PRIMARY KEY(account,id));`);
   }
   get(k) {
     return this.db.prepare("SELECT value FROM meta WHERE key=?").get(k)?.value;
@@ -134,6 +135,16 @@ class WhatsAppStore {
       );
     return true;
   }
+  recordSent(account, m) {
+    this.db
+      .prepare("INSERT INTO sent VALUES(?,?,?,?,?,?)")
+      .run(account, m.id, m.recipient, m.at, m.text, m.order || null);
+  }
+  sentFor(order) {
+    return this.db
+      .prepare("SELECT * FROM sent WHERE order_id=? ORDER BY at LIMIT 1")
+      .get(order);
+  }
   view(account) {
     return {
       accounts: this.db.prepare("SELECT * FROM accounts").all(),
@@ -145,6 +156,13 @@ class WhatsAppStore {
         ? this.db
             .prepare(
               "SELECT * FROM messages WHERE account=? ORDER BY at DESC,id LIMIT 200",
+            )
+            .all(account)
+        : [],
+      sent: account
+        ? this.db
+            .prepare(
+              "SELECT * FROM sent WHERE account=? ORDER BY at DESC LIMIT 200",
             )
             .all(account)
         : [],

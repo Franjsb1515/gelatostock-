@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.1.
 
 ## Entregado y comprobado
 
@@ -27,7 +27,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 82 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 85 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
@@ -60,8 +60,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Usuario elige prueba QR para WhatsApp normal/Business, con cambio de sesión.
 - [x] QR experimental, cuentas separadas, permisos por cuenta e historial de cambio de número.
 - [x] Copia de WhatsApp sin credenciales.
-- [ ] Validar vinculación y recepción con teléfono del usuario y cambio entre dos números reales.
-- [x] Implementar recepción experimental de WhatsApp por eventos, sin envíos; QR real verificado.
+- [x] Vinculación por QR y cambio de número validados por el usuario con dos números propios (2026-09-08).
+- [x] Envío real de pedidos por WhatsApp con vista previa, confirmación y un envío por pedido; probado con cliente simulado.
+- [ ] Probar el envío real con el teléfono del usuario (número autorizado propio) y la respuesta de vuelta en la bandeja.
+- [x] Implementar recepción experimental de WhatsApp por eventos; QR real verificado. Envío añadido en 0.9.1 con confirmación explícita.
 - [ ] Recuperación de mensajes perdidos, notificaciones nativas y endurecimiento del canal.
 - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
 - [x] Reglas de relevancia por referencia exacta del mismo proveedor, independientes de prioridad; correcciones con motivo.

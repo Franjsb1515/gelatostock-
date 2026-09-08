@@ -45,6 +45,19 @@ export function needed(s: State, p: Product): number {
     Math.ceil(round(p.target - p.stock - pending(s, p.id)) / p.pack),
   );
 }
+// Exact text a real send carries. Deterministic so the person authorizes what is sent.
+export function orderMessage(s: State, orderId: string): string {
+  const o = item(s.orders, orderId);
+  const lines = o.lines.map((l) => {
+    const p = item(s.products, l.product);
+    return `- ${l.packs} × ${p.name} (${round(l.pack)} ${p.unit} por presentación, ${round(l.packs * l.pack)} ${p.unit})`;
+  });
+  return [
+    `Hola, pedido ${o.number} de ${s.business}:`,
+    ...lines,
+    "¿Nos confirmas disponibilidad y fecha de entrega? Gracias.",
+  ].join("\n");
+}
 export function classify(
   text: string,
   at = now(),
@@ -445,7 +458,11 @@ export function apply(state: State, input: unknown): State {
       const o = item(s.orders, a.order);
       ensure(o.status === "pending", "Este pedido ya se procesó.");
       o.status = "sent";
-      note = `Envío SIMULADO de ${o.number}. Ningún mensaje real enviado.`;
+      if (a.dispatch) {
+        o.dispatch = a.dispatch;
+        note = `Pedido ${o.number} ENVIADO por WhatsApp a ${a.dispatch.to}. El proveedor aún no ha confirmado; el stock no cambia hasta la recepción.`;
+      } else
+        note = `Envío SIMULADO de ${o.number}. Ningún mensaje real enviado.`;
       break;
     }
     case "cancel": {

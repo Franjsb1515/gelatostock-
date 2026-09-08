@@ -151,3 +151,47 @@ test("respaldo conserva conversaciones sin copiar credenciales", () =>
       db.close();
     }
   }));
+
+test("envío real: solo conectado, solo a chats autorizados, una vez por pedido y con registro", () =>
+  fixture(async (c) => {
+    await assert.rejects(
+      c.send({ phone: "+34910000001", text: "hola" }),
+      /Conectá WhatsApp/,
+    );
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    const calls = [];
+    c.client = {
+      sendMessage: async (to, text) => {
+        calls.push([to, text]);
+        return { id: { _serialized: "msg-" + calls.length } };
+      },
+    };
+    await assert.rejects(
+      c.send({ phone: "+34910000001", text: "hola" }),
+      /autorizados/,
+    );
+    c.store.permit(a, "+34910000001", "Proveedor");
+    await assert.rejects(
+      c.send({ phone: "+34910000001", text: "" }),
+      /caracteres/,
+    );
+    const sent = await c.send({
+      phone: "+34 910 000 001",
+      text: "Pedido GS-001",
+      order: "o1",
+    });
+    assert.deepEqual(calls, [["34910000001@c.us", "Pedido GS-001"]]);
+    assert.equal(sent.id, "msg-1");
+    await assert.rejects(
+      c.send({ phone: "+34910000001", text: "otra vez", order: "o1" }),
+      /ya se envió/,
+    );
+    assert.equal(calls.length, 1);
+    const view = c.store.view(a);
+    assert.equal(view.sent.length, 1);
+    assert.equal(view.sent[0].order_id, "o1");
+    assert.ok(view.history.some((h) => /ENVIADO a \+34910000001/.test(h.text)));
+    c.client = null;
+  }));

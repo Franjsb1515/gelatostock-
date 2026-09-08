@@ -215,6 +215,46 @@ class WhatsAppConnection {
     if (generation === this.generation && this.status === "connected")
       this.store.insert(account, entry);
   }
+  // Real send. Only to a chat the person authorized for the connected account,
+  // one order at a time, never automatic. The caller shows the exact text first.
+  async send({ phone, text, order }) {
+    if (!this.client || this.status !== "connected" || !this.account)
+      throw Error("Conectá WhatsApp por QR antes de enviar.");
+    const recipient = normalize(phone);
+    const permitted = this.store.allowed(this.account, recipient);
+    if (!permitted)
+      throw Error(
+        "Solo se envía a chats autorizados para esta cuenta. Autorizá el número primero.",
+      );
+    if (typeof text !== "string" || !text.trim() || text.length > 4000)
+      throw Error("El mensaje debe tener entre 1 y 4.000 caracteres.");
+    if (order && this.store.sentFor(order))
+      throw Error("Este pedido ya se envió por WhatsApp; no se reenvía.");
+    if (this.sending) throw Error("Ya hay un envío en curso.");
+    this.sending = true;
+    try {
+      const result = await this.client.sendMessage(
+        recipient.slice(1) + "@c.us",
+        text,
+      );
+      const entry = {
+        id:
+          String(result?.id?._serialized || "") ||
+          require("node:crypto").randomUUID(),
+        recipient,
+        at: new Date().toISOString(),
+        text,
+        order: order || null,
+      };
+      this.store.recordSent(this.account, entry);
+      this.store.note(
+        `Mensaje ENVIADO a ${recipient} (${permitted.label}) desde ${this.store.phone(this.account)}${order ? ", pedido " + order : ""}.`,
+      );
+      return entry;
+    } finally {
+      this.sending = false;
+    }
+  }
   async disconnect() {
     if (this.status === "closing")
       throw Error("La sesión ya se está cerrando.");

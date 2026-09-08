@@ -57,3 +57,6 @@ Primera implementación centrada en recepción. Envíos, respuestas automáticas
 - Biblioteca alternativa, autenticación por QR: https://wwebjs.dev/guide/creating-your-bot/authentication.html
 
 La página Meta específica de coexistencia devolvió 429 durante la consulta. La elegibilidad y condiciones de ese flujo requieren verificación adicional; no se garantiza que esté disponible para la cuenta del usuario. Las tarifas deben revisarse al configurar, no se fija un precio en este documento.
+
+## Envío implementado en 0.9.1
+Autorizado por el usuario el 2026-09-08 tras validar QR y cambio de número con dos números propios. Reglas: solo pedidos en estado pendiente; destinatario = WhatsApp de la ficha del proveedor, que además debe estar autorizado para la cuenta conectada; el servidor compone el texto (orderMessage) y rechaza cualquier texto distinto al de la vista previa; un envío por pedido (tabla sent del canal y campo dispatch del pedido); bloqueo de envíos concurrentes; sin reintentos automáticos: si el envío falla, el pedido sigue pendiente y se puede repetir a mano. Si el envío se realiza pero falla el registro en el inventario, la tabla sent del canal conserva la prueba y el pedido no se reenvía. Ningún mensaje se envía sin pulsar «Enviar ahora».

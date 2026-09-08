@@ -2003,3 +2003,8 @@ dialog::backdrop {
   flex-wrap: wrap;
   margin: 6px 0;
 }
+
+.message-bubble.outgoing {
+  background: #e9f0e3;
+  border-left: 3px solid #69815b;
+}

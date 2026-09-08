@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.9.0
+# Entrada para Claude · entrega vigente 0.9.1
 
 Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
 
@@ -11,11 +11,14 @@ OCR español real para texto/proveedor de fotos. IA real Qwen3 0.6B Q4 para tipo
 
 Control de entregas: cantidades recibidas en unidad base, solo incrementales; presentaciones del pedido son snapshots. No mezclar kg/L/ud ni sumar stock por envío. Pedidos todavía simulados.
 
-WhatsApp experimental: QR real probado sin vincular cuenta. Recepción/cambio de dos números reales pendientes de prueba con el usuario. No exportar data/whatsapp/sessions ni historial privado. No auto-conectar QR por revisar la app.
+WhatsApp: el usuario vinculó por QR y cambió entre sus dos números propios (2026-09-08). Desde 0.9.1 hay envío real de pedidos con vista previa, confirmación explícita, solo a chats autorizados y una vez por pedido; el usuario autorizó probarlo con sus propios números. Nunca enviar sin su confirmación en pantalla ni en pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No auto-conectar QR por revisar la app.
 
 Pruebas: npm test; npm run format:check; npm run package:win; npm run test:desktop. Esta última incluye inferencia real y tarda más que unitarias. node scripts/evaluate-ai.cjs --quick para cambios en IA (modelo real, conserva pass:false). GELATO_TEST_QR=1 solo con prueba explícita. Usa fixtures en work/, nunca borres datos reales para probar. Mac no validado. Revisar seguridad, firma de paquetes, almacenamiento y rendimiento con hardware/documentos reales antes de producción.
 
 Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+
+## Punto de continuidad 0.9.1
+Lee reports/2026-09-08T18-16-51-221Z-envio-whatsapp-real.md. Sesión 013: envío real por WhatsApp (src/whatsapp.cjs send, tabla sent, acción send con dispatch, /api/whatsapp preview/send, botón en Control de entregas). Probado con cliente simulado; la prueba con teléfono real la hace el usuario. 85 pruebas.
 
 ## Punto de continuidad 0.9.0
 Lee reports/2026-09-08T16-18-04-876Z-recetas-produccion-respuestas.md. Sesión 012: recetas/producción (consumo estimado por reglas, aprobado y corregible por la persona; producto terminado; hoja diaria; SQLite user_version 2) y lectura de respuestas de proveedores por reglas en core/messages.ts con segunda lectura opcional del modelo (acción aiNote, solo anota). Precisión en respuestas: reglas afinadas con corpus de 80 (60 desarrollo + 20 reservado, 75 % en la primera pasada) son la lectura principal; los modelos locales miden 55/80 (0.6B) y 36/80 (1.7B) y son manipulables: no sustituir reglas por modelo sin cifras. Auditoría de seguridad con sonda work/attack.cjs 26/26; clave fuera de la URL; caché validada del estado. Decisiones del usuario: descuento solo tras aprobación; producto terminado sí; la IA debe entender respuestas libres, por eso reglas + modelo; QR de WhatsApp aplazado. 80 pruebas.

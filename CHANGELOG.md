@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.9.1 — 2026-09-08 · sesión 013
+
+Envío real de pedidos por WhatsApp, autorizado por el usuario tras vincular por QR sus dos números propios. Solo pedidos pendientes, solo al número de la ficha del proveedor si está autorizado para la cuenta conectada, con vista previa del texto exacto y confirmación explícita; una vez por pedido, nunca automático. El pedido guarda destino, identificador, hora y texto; enviar no cambia stock ni da por confirmado. Los mensajes enviados aparecen en la conversación de WhatsApp. «Simular envío» se conserva para pruebas sin canal.
+
+85 pruebas aprobadas (envío con cliente simulado en conector y servidor), ejecutable 0.9.1 reconstruido y probado. Prueba con teléfono real pendiente del usuario. Informe reports/2026-09-08T18-16-51-221Z-envio-whatsapp-real.md.
+
 ## 0.9.0 — 2026-09-08 · sesión 012
 
 Producción y recetas: recetas con rendimiento e ingredientes en unidad base; registrar kilos producidos calcula por reglas el consumo estimado, que la persona corrige y aprueba antes de descontar; entrada del producto terminado; hoja diaria; aviso de mínimos. Respuestas de proveedores: reglas deterministas marcan categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación), resuelven fechas relativas y señalan lo que hay que leer; filtro «Debes leer», aviso en Resumen y respuestas vinculadas en Control de entregas. Segunda lectura opcional con el modelo local que solo anota una categoría. Base SQLite user_version 2 con tablas recipes y productions.

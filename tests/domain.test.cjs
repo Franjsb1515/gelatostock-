@@ -572,3 +572,34 @@ test("respuestas rutinarias: el corpus de desarrollo se lee por reglas con la ca
   );
   assert.ok(corpus.length >= 60);
 });
+
+test("envío real registra destino, texto y hora en el pedido sin tocar stock", () => {
+  const { orderMessage } = require("../src/domain.cjs");
+  let s = milkOrder();
+  s = apply(s, { type: "cart", product: "p2", packs: 1 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  const o = s.orders[0];
+  const text = orderMessage(s, o.id);
+  assert.match(text, /pedido GS-\d+ de Gelato & Café/);
+  assert.match(text, /1 × Leche entera \(6 L por presentación, 6 L\)/);
+  const stock = s.products.map((p) => p.stock);
+  s = apply(s, {
+    type: "send",
+    order: o.id,
+    dispatch: {
+      channel: "whatsapp",
+      to: "+34910000001",
+      messageId: "m1",
+      at: new Date().toISOString(),
+      text,
+    },
+  });
+  assert.equal(s.orders[0].status, "sent");
+  assert.equal(s.orders[0].dispatch.to, "+34910000001");
+  assert.match(s.activity[0].text, /ENVIADO por WhatsApp/);
+  assert.deepEqual(
+    s.products.map((p) => p.stock),
+    stock,
+  );
+  assert.throws(() => apply(s, { type: "send", order: o.id }));
+});

@@ -114,3 +114,112 @@ test("servidor SQLite: autenticación, revisión, persistencia y restauración",
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("envío real por WhatsApp desde el servidor: vista previa exacta, un envío y estado enviado", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-wa-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    const state = async () =>
+      (await (await fetch(origin + "/api/state", { headers })).json()).state;
+    let s = await state();
+    await post("/api/action", {
+      type: "supplier",
+      id: "s2",
+      name: "Fresco Mercado",
+      initials: "FM",
+      category: "Lácteos",
+      delivery: "L-V",
+      color: "rose",
+      whatsapp: "+34910000001",
+      revision: s.revision,
+      operationId: "w1",
+    });
+    s = await state();
+    await post("/api/action", {
+      type: "cart",
+      product: "p2",
+      packs: 2,
+      revision: s.revision,
+      operationId: "w2",
+    });
+    s = await state();
+    await post("/api/action", {
+      type: "authorize",
+      revision: s.revision,
+      operationId: "w3",
+    });
+    s = await state();
+    const order = s.orders[0];
+    let r = await post("/api/whatsapp", { type: "preview", order: order.id });
+    const preview = await r.json();
+    assert.equal(r.status, 200);
+    assert.equal(preview.connected, false);
+    assert.match(preview.text, /Leche entera/);
+    r = await post("/api/whatsapp", {
+      type: "send",
+      order: order.id,
+      text: preview.text,
+    });
+    assert.equal(r.status, 400);
+    const account = app.whatsapp.store.bind("+34600000001");
+    app.whatsapp.account = account;
+    app.whatsapp.status = "connected";
+    const calls = [];
+    app.whatsapp.client = {
+      sendMessage: async (to, text) => (
+        calls.push([to, text]),
+        { id: { _serialized: "real-1" } }
+      ),
+    };
+    app.whatsapp.store.permit(account, "+34910000001", "Fresco");
+    r = await post("/api/whatsapp", {
+      type: "send",
+      order: order.id,
+      text: preview.text + " extra",
+    });
+    assert.equal(r.status, 400);
+    assert.equal(calls.length, 0);
+    r = await post("/api/whatsapp", {
+      type: "send",
+      order: order.id,
+      text: preview.text,
+    });
+    assert.equal(r.status, 200);
+    const sent = await r.json();
+    assert.equal(sent.sent.id, "real-1");
+    assert.deepEqual(calls, [["34910000001@c.us", preview.text]]);
+    s = await state();
+    assert.equal(s.orders[0].status, "sent");
+    assert.equal(s.orders[0].dispatch.messageId, "real-1");
+    r = await post("/api/whatsapp", {
+      type: "send",
+      order: order.id,
+      text: preview.text,
+    });
+    assert.equal(r.status, 400);
+    assert.equal(calls.length, 1);
+    const view = await (
+      await fetch(origin + "/api/whatsapp?account=" + account, { headers })
+    ).json();
+    assert.equal(view.sent.length, 1);
+    app.whatsapp.client = null;
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

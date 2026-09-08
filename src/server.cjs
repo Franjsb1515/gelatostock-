@@ -4,6 +4,7 @@ const path = require("node:path");
 const { randomBytes, timingSafeEqual } = require("node:crypto");
 const { identifySupplier } = require("../build/identify.js");
 const { interpretReply } = require("../build/messages.js");
+const { orderMessage } = require("../build/domain.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { LocalAI } = require("./ai.cjs");
@@ -166,6 +167,65 @@ function createApp({
         if (u.pathname === "/api/whatsapp") {
           if (data.type === "backup") {
             json(200, { path: whatsapp.store.backup() });
+            return;
+          }
+          if (data.type === "preview" || data.type === "send") {
+            const state = store.load();
+            const order = state.orders.find(
+              (o) => o.id === String(data.order || ""),
+            );
+            if (!order) throw Error("Pedido inexistente.");
+            if (order.status !== "pending")
+              throw Error("Solo se envían pedidos pendientes.");
+            const supplier = state.suppliers.find(
+              (x) => x.id === order.supplier,
+            );
+            if (!supplier?.whatsapp)
+              throw Error(
+                "El proveedor no tiene WhatsApp en su ficha. Añadilo en Proveedores.",
+              );
+            const text = orderMessage(state, order.id);
+            if (data.type === "preview") {
+              json(200, {
+                text,
+                to: supplier.whatsapp,
+                label: supplier.name,
+                connected: whatsapp.status === "connected",
+                authorized:
+                  !!whatsapp.account &&
+                  !!whatsapp.store.allowed(whatsapp.account, supplier.whatsapp),
+              });
+              return;
+            }
+            // The person authorizes this exact text; anything else is refused.
+            if (data.text !== text)
+              throw Error(
+                "El texto cambió desde la vista previa. Volvé a abrir el envío.",
+              );
+            const sent = await whatsapp.send({
+              phone: supplier.whatsapp,
+              text,
+              order: order.id,
+            });
+            const next = store.dispatch({
+              type: "send",
+              order: order.id,
+              dispatch: {
+                channel: "whatsapp",
+                to: sent.recipient,
+                messageId: sent.id,
+                at: sent.at,
+                text,
+              },
+            });
+            json(200, {
+              state: next,
+              dataDir,
+              storage: "SQLite",
+              archiveWarning: store.archiveWarning,
+              version,
+              sent,
+            });
             return;
           }
           if (data.type === "connect") await whatsapp.connect();
