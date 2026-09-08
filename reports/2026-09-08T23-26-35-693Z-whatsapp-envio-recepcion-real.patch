@@ -1,0 +1,260 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index ffe3494..3f050a2 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.9.3-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.9.4-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 2469a2d..ac4890a 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.9.4 — 2026-09-08 · sesión 015
++
++WhatsApp real comprobado en ambos sentidos con los números del usuario: envío confirmado leyendo el propio chat de WhatsApp Web cuando la librería pierde la referencia (chats LID), identificadores de mensaje reconstruidos para recibir en chats LID, y cierre limpio del navegador. Un «Ok» enviado desde el teléfono quedó importado en la app.
++
++Pruebas y ejecutable 0.9.4. Informe reports/2026-09-08T23-26-35-693Z-whatsapp-envio-recepcion-real.md.
++
+ ## 0.9.3 — 2026-09-08 · sesión 014
+ 
+ El usuario conectó por QR pero ningún mensaje llegaba en ninguna dirección. Cambios: los remitentes con identificador LID de WhatsApp se resuelven a número (getContactLidAndPhone y, si falla, el contacto del mensaje); diagnóstico local del canal en data/whatsapp/diagnostico.log (motivos e identificadores, nunca texto) visible en la pantalla WhatsApp; botón «Enviar mensaje de prueba» a un chat autorizado; texto de la pantalla actualizado. Con el diagnóstico del usuario se confirmó que la recepción funcionaba (mensajes descartados por autorización de otra cuenta) y que el envío fallaba en silencio: whatsapp-web.js devuelve undefined si no existe chat para número@c.us; ahora se resuelve el identificador real (getNumberId/LID) y un envío sin identificador falla de forma visible.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 335fca3..f9250f1 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.9.3
++# Entrada para Claude · entrega vigente 0.9.4
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index 9b36a16..e05a9ec 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.9.3
++# GelatoStock · prototipo 0.9.4
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.9.3-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.9.4-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.9.3-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.9.4-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
+ 9. Crear y restaurar copias en Configuración.
+ 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
+ 
+-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.9.3 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
++Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.9.4 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+ 
+ ## Qué está pendiente
+ 
+@@ -115,19 +115,22 @@ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Cont
+ 
+ Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
+ 
+-## Auditoría y mejora continua en 0.9.3
++## Auditoría y mejora continua en 0.9.4
+ La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
+ 
+-## Chat de dudas en 0.9.3
++## Chat de dudas en 0.9.4
+ IA local incluye un chat para preguntar cómo usar la app o qué dice el texto pegado en el editor. Responde el modelo local a partir de una guía fija y del texto del editor si se marca la casilla; no consulta el inventario ni los pedidos, no ejecuta acciones y sus respuestas son orientativas. Cada respuesta puede tardar de 30 segundos a más de un minuto en este equipo. El chat se conserva solo mientras la ventana está abierta.
+ 
+-## Producción y respuestas de proveedores en 0.9.3
++## Producción y respuestas de proveedores en 0.9.4
+ Producción: crea recetas (rinde X kg, ingredientes en su unidad base) y registra los kilos producidos por día. La app propone el consumo; corrígelo y aprueba para descontar ingredientes y sumar el producto terminado. La hoja diaria muestra kilos por gelato. Guía: docs/PRODUCCION_Y_RECETAS.md.
+ 
+ Mensajes: cada respuesta de proveedor se lee con reglas (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y se marca si debes leerla; las fechas como «el lunes» se resuelven. En Resumen aparece cuántos mensajes debes leer y en Control de entregas las respuestas vinculadas a cada pedido. «Segunda lectura con IA local» pide al modelo una categoría como propuesta; no cambia pedidos ni stock.
+ 
+-## Envío real por WhatsApp en 0.9.3
++## Envío real por WhatsApp en 0.9.4
+ En Compras → Control de entregas, un pedido pendiente tiene «Enviar por WhatsApp». Se muestra el texto exacto y el destinatario; al confirmar se envía una sola vez desde la cuenta vinculada por QR. Requisitos: WhatsApp conectado y el número del proveedor autorizado en WhatsApp → Autorizar chat. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a la pantalla WhatsApp y se lee por reglas. Prueba primero con un número propio.
+ 
+-## Diagnóstico de WhatsApp en 0.9.3
++## Diagnóstico de WhatsApp en 0.9.4
+ La pantalla WhatsApp muestra «Diagnóstico del canal» con los últimos eventos técnicos (remitente resuelto, autorizado o no, enviado, ignorado y por qué), sin contenido de mensajes, y un botón «Enviar mensaje de prueba» a un chat autorizado. Si un mensaje no aparece, ese diagnóstico dice el motivo.
++
++## WhatsApp comprobado en 0.9.4
++Envío y recepción reales verificados con dos números del propietario: la app envió un mensaje desde la cuenta vinculada y recibió la respuesta. Si un envío aparece como no confirmado, el diagnóstico del canal indica el motivo.
+diff --git a/TODO.md b/TODO.md
+index 29f9980..0b01d12 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.3.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.4.
+ 
+ ## Entregado y comprobado
+ 
+@@ -62,7 +62,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Copia de WhatsApp sin credenciales.
+ - [x] Vinculación por QR y cambio de número validados por el usuario con dos números propios (2026-09-08).
+ - [x] Envío real de pedidos por WhatsApp con vista previa, confirmación y un envío por pedido; probado con cliente simulado.
+-- [ ] Probar el envío real y la recepción con el teléfono del usuario (número autorizado propio) usando «Enviar mensaje de prueba» y el diagnóstico del canal; en 0.9.1 no llegó nada en ninguna dirección.
++- [x] Envío y recepción reales comprobados con los dos números del usuario (2026-09-08 23:24–23:25): mensaje entregado y «Ok» importado.
++- [ ] Vincular automáticamente la respuesta recibida al pedido enviado y avisar en Control de entregas.
+ - [x] Implementar recepción experimental de WhatsApp por eventos; QR real verificado. Envío añadido en 0.9.1 con confirmación explícita.
+ - [ ] Recuperación de mensajes perdidos, notificaciones nativas y endurecimiento del canal.
+ - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
+diff --git a/package.json b/package.json
+index 95f43ec..a6bf428 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.9.3",
++  "version": "0.9.4",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/src/whatsapp.cjs b/src/whatsapp.cjs
+index 476fb99..ced81e4 100644
+--- a/src/whatsapp.cjs
++++ b/src/whatsapp.cjs
+@@ -203,8 +203,22 @@ class WhatsAppConnection {
+       return;
+     }
+     this.log("entrante de " + sender + " autorizado; importando");
+-    const messageId = String(msg.id?._serialized || "");
+-    if (!messageId || this.store.has(account, messageId)) return;
++    // LID chats can carry ids without _serialized: rebuild the stable key.
++    const rawId = msg.id || {};
++    const messageId = String(
++      rawId._serialized ||
++        (rawId.id
++          ? `${!!rawId.fromMe}_${rawId.remote?._serialized || rawId.remote || id}_${rawId.id}`
++          : ""),
++    );
++    if (!messageId) {
++      this.log("entrante descartado: sin identificador de mensaje");
++      return;
++    }
++    if (this.store.has(account, messageId)) {
++      this.log("entrante repetido " + messageId + ", ignorado");
++      return;
++    }
+     const entry = {
+       id: messageId,
+       sender,
+@@ -302,18 +316,43 @@ class WhatsAppConnection {
+         this.log("getNumberId falló: " + String(e?.message || e).slice(0, 120));
+       }
+       this.log("chat destino " + chatId);
+-      let result = await this.client.sendMessage(chatId, text);
+-      if (!result && chatId.endsWith("@c.us")) {
++      let result = await this.client.sendMessage(chatId, text, {
++        waitUntilMsgSent: true,
++      });
++      if (!result?.id?._serialized) {
++        // whatsapp-web.js loses the sent message key with LID chats although the
++        // message leaves (observed: ack 2 on the phone). Confirm against the chat itself.
+         try {
+-          const pairs = await this.client.getContactLidAndPhone([chatId]);
+-          const lid = String(pairs?.[0]?.lid || "");
+-          if (lid) {
+-            this.log("reintento por LID " + lid);
+-            result = await this.client.sendMessage(lid, text);
++          const found = await this.client.pupPage.evaluate(
++            async (id, body) => {
++              const chat = await window.WWebJS.getChat(id, {
++                getAsModel: false,
++              });
++              const list = chat?.msgs?.getModelsArray?.() || [];
++              for (
++                let i = list.length - 1;
++                i >= 0 && i >= list.length - 10;
++                i--
++              ) {
++                const m = list[i];
++                if (m?.id?.fromMe && m.body === body)
++                  return { id: String(m.id._serialized || m.id), ack: m.ack };
++              }
++              return null;
++            },
++            chatId,
++            text,
++          );
++          if (found?.id) {
++            this.log(
++              "envío confirmado en el chat: " + found.id + " ack " + found.ack,
++            );
++            result = { id: { _serialized: found.id } };
+           }
+         } catch (e) {
+           this.log(
+-            "resolución LID falló: " + String(e?.message || e).slice(0, 120),
++            "verificación en el chat falló: " +
++              String(e?.message || e).slice(0, 120),
+           );
+         }
+       }
+@@ -370,6 +409,9 @@ class WhatsAppConnection {
+           "session-" + this.store.session(),
+         );
+         if (actual !== expected) throw Error("Ruta de sesión inesperada.");
++        try {
++          client.pupPage?.removeAllListeners?.();
++        } catch {}
+         if (
+           client.pupBrowser &&
+           typeof client.pupBrowser.isConnected !== "function"
+@@ -423,6 +465,9 @@ class WhatsAppConnection {
+       return this.closingPromise;
+     }
+     this.closingPromise = (async () => {
++      try {
++        this.client.pupPage?.removeAllListeners?.();
++      } catch {}
+       try {
+         await (this.client.pupBrowser
+           ? this.client.pupBrowser.close()
+diff --git a/tests/whatsapp.test.cjs b/tests/whatsapp.test.cjs
+index ad5c9ba..f4ec476 100644
+--- a/tests/whatsapp.test.cjs
++++ b/tests/whatsapp.test.cjs
+@@ -271,3 +271,25 @@ test("envío real: usa el chat resuelto por WhatsApp y falla de forma visible si
+     assert.ok(c.view().diagnostics.some((l) => /NO confirmado/.test(l)));
+     c.client = null;
+   }));
++
++test("entrante con identificador sin _serialized se importa con clave reconstruida y no se duplica", () =>
++  fixture(async (c) => {
++    const a = c.store.bind("+34600000001");
++    c.account = a;
++    c.status = "connected";
++    c.readyAt = 0;
++    c.store.permit(a, "+34910000001", "Proveedor");
++    c.client = {};
++    const msg = {
++      from: "34910000001@c.us",
++      id: { fromMe: false, remote: "34910000001@c.us", id: "ABC123" },
++      timestamp: 1,
++      body: "ok",
++    };
++    await c.receive(msg, c.generation);
++    await c.receive(msg, c.generation);
++    const view = c.store.view(a);
++    assert.equal(view.messages.length, 1);
++    assert.equal(view.messages[0].id, "false_34910000001@c.us_ABC123");
++    c.client = null;
++  }));

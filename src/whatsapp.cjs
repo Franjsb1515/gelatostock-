@@ -203,8 +203,22 @@ class WhatsAppConnection {
       return;
     }
     this.log("entrante de " + sender + " autorizado; importando");
-    const messageId = String(msg.id?._serialized || "");
-    if (!messageId || this.store.has(account, messageId)) return;
+    // LID chats can carry ids without _serialized: rebuild the stable key.
+    const rawId = msg.id || {};
+    const messageId = String(
+      rawId._serialized ||
+        (rawId.id
+          ? `${!!rawId.fromMe}_${rawId.remote?._serialized || rawId.remote || id}_${rawId.id}`
+          : ""),
+    );
+    if (!messageId) {
+      this.log("entrante descartado: sin identificador de mensaje");
+      return;
+    }
+    if (this.store.has(account, messageId)) {
+      this.log("entrante repetido " + messageId + ", ignorado");
+      return;
+    }
     const entry = {
       id: messageId,
       sender,
@@ -302,18 +316,43 @@ class WhatsAppConnection {
         this.log("getNumberId falló: " + String(e?.message || e).slice(0, 120));
       }
       this.log("chat destino " + chatId);
-      let result = await this.client.sendMessage(chatId, text);
-      if (!result && chatId.endsWith("@c.us")) {
+      let result = await this.client.sendMessage(chatId, text, {
+        waitUntilMsgSent: true,
+      });
+      if (!result?.id?._serialized) {
+        // whatsapp-web.js loses the sent message key with LID chats although the
+        // message leaves (observed: ack 2 on the phone). Confirm against the chat itself.
         try {
-          const pairs = await this.client.getContactLidAndPhone([chatId]);
-          const lid = String(pairs?.[0]?.lid || "");
-          if (lid) {
-            this.log("reintento por LID " + lid);
-            result = await this.client.sendMessage(lid, text);
+          const found = await this.client.pupPage.evaluate(
+            async (id, body) => {
+              const chat = await window.WWebJS.getChat(id, {
+                getAsModel: false,
+              });
+              const list = chat?.msgs?.getModelsArray?.() || [];
+              for (
+                let i = list.length - 1;
+                i >= 0 && i >= list.length - 10;
+                i--
+              ) {
+                const m = list[i];
+                if (m?.id?.fromMe && m.body === body)
+                  return { id: String(m.id._serialized || m.id), ack: m.ack };
+              }
+              return null;
+            },
+            chatId,
+            text,
+          );
+          if (found?.id) {
+            this.log(
+              "envío confirmado en el chat: " + found.id + " ack " + found.ack,
+            );
+            result = { id: { _serialized: found.id } };
           }
         } catch (e) {
           this.log(
-            "resolución LID falló: " + String(e?.message || e).slice(0, 120),
+            "verificación en el chat falló: " +
+              String(e?.message || e).slice(0, 120),
           );
         }
       }
@@ -370,6 +409,9 @@ class WhatsAppConnection {
           "session-" + this.store.session(),
         );
         if (actual !== expected) throw Error("Ruta de sesión inesperada.");
+        try {
+          client.pupPage?.removeAllListeners?.();
+        } catch {}
         if (
           client.pupBrowser &&
           typeof client.pupBrowser.isConnected !== "function"
@@ -423,6 +465,9 @@ class WhatsAppConnection {
       return this.closingPromise;
     }
     this.closingPromise = (async () => {
+      try {
+        this.client.pupPage?.removeAllListeners?.();
+      } catch {}
       try {
         await (this.client.pupBrowser
           ? this.client.pupBrowser.close()

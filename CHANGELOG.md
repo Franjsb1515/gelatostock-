@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.9.4 — 2026-09-08 · sesión 015
+
+WhatsApp real comprobado en ambos sentidos con los números del usuario: envío confirmado leyendo el propio chat de WhatsApp Web cuando la librería pierde la referencia (chats LID), identificadores de mensaje reconstruidos para recibir en chats LID, y cierre limpio del navegador. Un «Ok» enviado desde el teléfono quedó importado en la app.
+
+Pruebas y ejecutable 0.9.4. Informe reports/2026-09-08T23-26-35-693Z-whatsapp-envio-recepcion-real.md.
+
 ## 0.9.3 — 2026-09-08 · sesión 014
 
 El usuario conectó por QR pero ningún mensaje llegaba en ninguna dirección. Cambios: los remitentes con identificador LID de WhatsApp se resuelven a número (getContactLidAndPhone y, si falla, el contacto del mensaje); diagnóstico local del canal en data/whatsapp/diagnostico.log (motivos e identificadores, nunca texto) visible en la pantalla WhatsApp; botón «Enviar mensaje de prueba» a un chat autorizado; texto de la pantalla actualizado. Con el diagnóstico del usuario se confirmó que la recepción funcionaba (mensajes descartados por autorización de otra cuenta) y que el envío fallaba en silencio: whatsapp-web.js devuelve undefined si no existe chat para número@c.us; ahora se resuelve el identificador real (getNumberId/LID) y un envío sin identificador falla de forma visible.

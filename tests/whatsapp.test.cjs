@@ -271,3 +271,25 @@ test("envío real: usa el chat resuelto por WhatsApp y falla de forma visible si
     assert.ok(c.view().diagnostics.some((l) => /NO confirmado/.test(l)));
     c.client = null;
   }));
+
+test("entrante con identificador sin _serialized se importa con clave reconstruida y no se duplica", () =>
+  fixture(async (c) => {
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    c.readyAt = 0;
+    c.store.permit(a, "+34910000001", "Proveedor");
+    c.client = {};
+    const msg = {
+      from: "34910000001@c.us",
+      id: { fromMe: false, remote: "34910000001@c.us", id: "ABC123" },
+      timestamp: 1,
+      body: "ok",
+    };
+    await c.receive(msg, c.generation);
+    await c.receive(msg, c.generation);
+    const view = c.store.view(a);
+    assert.equal(view.messages.length, 1);
+    assert.equal(view.messages[0].id, "false_34910000001@c.us_ABC123");
+    c.client = null;
+  }));

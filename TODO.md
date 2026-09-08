@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.3.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.4.
 
 ## Entregado y comprobado
 
@@ -62,7 +62,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Copia de WhatsApp sin credenciales.
 - [x] Vinculación por QR y cambio de número validados por el usuario con dos números propios (2026-09-08).
 - [x] Envío real de pedidos por WhatsApp con vista previa, confirmación y un envío por pedido; probado con cliente simulado.
-- [ ] Probar el envío real y la recepción con el teléfono del usuario (número autorizado propio) usando «Enviar mensaje de prueba» y el diagnóstico del canal; en 0.9.1 no llegó nada en ninguna dirección.
+- [x] Envío y recepción reales comprobados con los dos números del usuario (2026-09-08 23:24–23:25): mensaje entregado y «Ok» importado.
+- [ ] Vincular automáticamente la respuesta recibida al pedido enviado y avisar en Control de entregas.
 - [x] Implementar recepción experimental de WhatsApp por eventos; QR real verificado. Envío añadido en 0.9.1 con confirmación explícita.
 - [ ] Recuperación de mensajes perdidos, notificaciones nativas y endurecimiento del canal.
 - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
