@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.8.2 — 2026-09-08 · sesión 011
+
+Chat de dudas dentro de IA local: el mismo modelo Qwen3 0.6B Q4 responde en español usando una guía fija escrita a mano (src/ai-help.cjs) y, si se marca, el texto del editor. No consulta inventario ni pedidos, no ejecuta acciones; respuesta en texto plano acotado, últimos 6 mensajes, un trabajo a la vez, cancelable. Se probó reforzar los prompts para proforma/abono: empeoró (7/11 frente a 10/11 en la evaluación completa), así que se conservan los prompts de 0.8.1 y queda la evaluación de 11 casos como línea base. Versión mostrada y servida desde package.json (antes literal 0.8.0 en servidor e interfaz).
+
+72 pruebas aprobadas, ejecutable 0.8.2 reconstruido y probado con modelo real, incluido el chat. Informe reports/2026-09-08T15-51-40-496Z-chat-dudas-ia.md.
+
 ## 0.8.1 — 2026-09-08 · sesión 010
 
 Auditoría de la entrega 0.8.0: parche de commit idéntico a 452dcc4, 69/69 pruebas y formato correctos, código de IA y documentos revisados. Mejoras mínimas: la comprobación de sumas reconoce etiquetas habituales (IVA 21%, Cuota IVA, Total/Importe a pagar) sin ampliar la interpretación; el trabajador de IA bloquea además tls, http2, dgram y dns; el nombre de la evaluación sigue la versión. Prompt maestro v2 y directriz de mejora continua en CLAUDE.md, AGENTS.md y docs/PROMPT_MAESTRO_V2.md.

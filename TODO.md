@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.8.1.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.8.2.
 
 ## Entregado y comprobado
 
@@ -27,7 +27,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 70 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 72 pruebas automatizadas.
 - [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
@@ -48,6 +48,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Resultado anterior retirado al cambiar texto o modo.
 - [ ] Reducir abstenciones legítimas: proforma de prueba discrepó entre lecturas; conservar revisión hasta validar mejoras. 0.8.1 reconoce etiquetas IVA 21%/Total a pagar en la suma; falta corpus real.
 - [x] Prompt maestro v2 y directriz de mejora continua para cualquier IA que continúe.
+- [x] Chat de dudas local con guía fija y texto del editor; sin acceso a datos ni acciones.
+- [x] Línea base de clasificación con 11 casos sintéticos (10/11, sin errores aceptados); repetirla ante cualquier cambio de prompt o modelo.
+- [ ] Evaluar el chat con preguntas reales del usuario; medir respuestas incorrectas o inventadas y ajustar la guía.
+- [ ] Chat con contexto de inventario/pedidos: solo tras definir qué datos se exponen y con pruebas de fuga.
 - [ ] Sandbox real del trabajador de IA: hoy solo se desactivan módulos de red de Node, no el proceso nativo.
 - [ ] Evaluación independiente de razonamiento/precisión con corpus real autorizado; no inferir certeza de la coincidencia.
 - [ ] Memoria de equivalencias y correcciones aprobadas.

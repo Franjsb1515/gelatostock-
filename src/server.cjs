@@ -6,6 +6,7 @@ const { identifySupplier } = require("../build/identify.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { LocalAI } = require("./ai.cjs");
+const version = require("../package.json").version;
 const { Store } = require("../build/store.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
@@ -55,7 +56,7 @@ function createApp({
         dataDir,
         storage: "SQLite",
         archiveWarning: store.archiveWarning,
-        version: "0.8.0",
+        version,
       });
       return;
     }
@@ -64,6 +65,7 @@ function createApp({
       [
         "/api/ai",
         "/api/ai/cancel",
+        "/api/ai/chat",
         "/api/action",
         "/api/backup",
         "/api/restore",
@@ -105,6 +107,10 @@ function createApp({
         }
         if (u.pathname === "/api/ai") {
           json(200, await ai.analyze(data));
+          return;
+        }
+        if (u.pathname === "/api/ai/chat") {
+          json(200, await ai.chat(data));
           return;
         }
         if (u.pathname === "/api/whatsapp") {
@@ -152,7 +158,7 @@ function createApp({
           dataDir,
           storage: "SQLite",
           archiveWarning: store.archiveWarning,
-          version: "0.8.0",
+          version,
         });
       } catch (e) {
         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {

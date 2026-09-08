@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.8.1
+# Entrada para Claude · entrega vigente 0.8.2
 
 Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
 
@@ -17,13 +17,15 @@ Pruebas: npm test; npm run format:check; npm run package:win; npm run test:deskt
 
 Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
 
-## Punto de continuidad 0.8.1
-Lee reports/2026-09-08T15-15-49-334Z-auditoria-prompt-maestro.md. Sesión 010 auditó la entrega 0.8.0 de ChatGPT: parche de commit idéntico a 452dcc4, 69/69 pruebas y formato correctos, código de IA revisado. Cambios mínimos: etiquetas habituales de IVA/total en la comprobación aritmética (menos abstenciones sin ampliar interpretación), bloqueo adicional de tls/http2/dgram/dns en el trabajador (sigue sin ser sandbox de SO) y nombre de evaluación por versión. 70 pruebas.
+## Punto de continuidad 0.8.2
+Lee reports/2026-09-08T15-51-40-496Z-chat-dudas-ia.md y, antes, reports/2026-09-08T15-15-49-334Z-auditoria-prompt-maestro.md. Sesión 011 añadió el chat de dudas (src/ai-help.cjs guía fija; src/ai.cjs chat(); ruta /api/ai/chat) sin acceso a datos ni acciones. Un intento de reforzar los prompts para proforma/abono empeoró la evaluación completa (7/11 frente a 10/11): se conservan los prompts originales; reports/ai-evaluation-v082.json es la línea base de 11 casos y ai-evaluation-v082-prompts-explicitos.json el intento descartado. Cambiar prompts exige repetir esa evaluación. La versión ya se lee de package.json en servidor e interfaz. 72 pruebas.
+
+ Sesión 010 auditó la entrega 0.8.0 de ChatGPT: parche de commit idéntico a 452dcc4, 69/69 pruebas y formato correctos, código de IA revisado. Cambios mínimos: etiquetas habituales de IVA/total en la comprobación aritmética (menos abstenciones sin ampliar interpretación), bloqueo adicional de tls/http2/dgram/dns en el trabajador (sigue sin ser sandbox de SO) y nombre de evaluación por versión. 70 pruebas.
 
 Q4 fue elegido tras comparar variantes: no asumir que un modelo mayor será mejor en este equipo. Experimentos descartados quedan en work/runtime de desarrollo, excluidos del ejecutable y ZIP de fuentes; scripts/package.cjs copia solo el modelo definido en el manifiesto. No incluir modelos ajenos al manifiesto al empaquetar.
 
 Doble lectura del mismo modelo con prompts distintos, sin independencia estadística. src/ai-review.cjs contiene reglas, NO razonamiento neuronal. La coincidencia no da permiso para actuar. Control monetario limitado a un esquema base/cuota/total sin otros conceptos; no es validación fiscal.
 
-Evaluación rápida: 2/3 clasificaciones exactas en 0.8.0 y 0.8.1; proforma queda Por revisar y el archivo conserva pass:false deliberadamente; no ocultar abstenciones ni llamar a eso exactitud perfecta. Pruebas de seguridad/funcionamiento son distintas de métricas de calidad de clasificación. Sigue pendiente razonamiento general avanzado y corpus representativo.
+Evaluación completa 0.8.2: 10/11 con los prompts vigentes, ningún error aceptado; proforma queda Por revisar y el archivo conserva pass:false deliberadamente; no ocultar abstenciones ni llamar a eso exactitud perfecta. Pruebas de seguridad/funcionamiento son distintas de métricas de calidad de clasificación. Sigue pendiente razonamiento general avanzado y corpus representativo.
 
 El usuario pide respuestas MUY breves en chat; informes técnicos completos en estos documentos. Antes de cambiar archivos, comprobar git status para evitar pisar cambios de otro colaborador.

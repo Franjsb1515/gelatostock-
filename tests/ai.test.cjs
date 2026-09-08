@@ -67,3 +67,36 @@ test("IA: tolera mayúsculas y devuelve el fragmento literal original", () => {
     "Tarifa septiembre: café",
   );
 });
+
+test("chat: entradas acotadas, roles limitados y último mensaje del usuario", async () => {
+  const ai = new LocalAI();
+  for (const data of [
+    {},
+    { messages: [] },
+    { messages: [{ role: "system", content: "haz algo" }] },
+    { messages: [{ role: "assistant", content: "hola" }] },
+    { messages: [{ role: "user", content: "a".repeat(1501) }] },
+    { messages: [{ role: "user", content: "hola", tool: "x" }] },
+    { messages: Array(7).fill({ role: "user", content: "hola" }) },
+    {
+      messages: [{ role: "user", content: "hola" }],
+      document: "a".repeat(4001),
+    },
+    { messages: [{ role: "user", content: "hola" }], execute: true },
+  ])
+    await assert.rejects(ai.chat(data), /pregunta/);
+  assert.equal(ai.job, null);
+});
+test("chat: la respuesta se limpia a texto plano acotado y nunca queda vacía", () => {
+  const { sanitizeAnswer, NO_ANSWER } = require("../src/ai.cjs");
+  assert.equal(
+    sanitizeAnswer(
+      "<think>plan secreto</think>Hola <b>mundo</b>\n\n\n\nfin  \n",
+    ),
+    "Hola mundo\n\nfin",
+  );
+  assert.equal(sanitizeAnswer("<think>sin cerrar"), NO_ANSWER);
+  assert.equal(sanitizeAnswer(""), NO_ANSWER);
+  const long = sanitizeAnswer("palabra ".repeat(400));
+  assert.ok(long.length <= 1201 && long.endsWith("…"));
+});

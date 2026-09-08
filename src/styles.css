@@ -1906,3 +1906,24 @@ dialog::backdrop {
   margin-top: 18px;
   padding-top: 14px;
 }
+
+.ai-chat-log {
+  display: grid;
+  gap: 10px;
+  max-height: 360px;
+  overflow: auto;
+  padding: 4px 0;
+}
+.ai-chat-msg {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f4f1ea;
+}
+.ai-chat-msg.assistant {
+  background: #f0f4ea;
+}
+.ai-chat-msg p {
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

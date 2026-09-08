@@ -11,6 +11,25 @@ const inputSchema = z
     mode: z.enum(["standard", "careful"]).default("careful"),
   })
   .strict();
+const chatSchema = z
+  .object({
+    messages: z
+      .array(
+        z
+          .object({
+            role: z.enum(["user", "assistant"]),
+            content: z.string().trim().min(1).max(1500),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(6)
+      .refine((m) => m.length > 0 && m[m.length - 1].role === "user", {
+        message: "last message must be from the user",
+      }),
+    document: z.string().trim().max(4000).optional(),
+  })
+  .strict();
 const resultSchema = z
   .object({
     tipo: z
@@ -61,6 +80,20 @@ function parseResult(raw, original) {
     };
   }
 }
+const NO_ANSWER =
+  "No tengo una respuesta fiable para eso. Consulta la guía de la app o revisa el documento original.";
+// Plain text only: no thinking blocks, no markup, bounded length. The UI escapes it again.
+function sanitizeAnswer(raw) {
+  let s = String(raw || "")
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think>[\s\S]*$/i, "")
+    .replace(/<[^>]{0,200}>/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  if (s.length > 1200) s = s.slice(0, 1200).replace(/\s+\S*$/, "") + "…";
+  return s || NO_ANSWER;
+}
 class LocalAI {
   constructor() {
     this.job = null;
@@ -94,32 +127,26 @@ class LocalAI {
     }
     this.verified = true;
   }
-  async analyze(data) {
-    const parsed = inputSchema.safeParse(data);
-    if (!parsed.success)
-      throw Error(
-        "Introduce entre 3 y 4.000 caracteres y un modo de lectura válido.",
-      );
+  // One worker per job: receives only validated data, returns only strings.
+  async run(workerData, expectedOutputs) {
     if (this.job) throw Error("Ya hay una lectura de IA en curso.");
     const job = { cancelled: false };
     this.job = job;
-    const started = Date.now();
     try {
       await this.verify();
       if (job.cancelled) throw Error("Lectura cancelada.");
       const worker = new Worker(path.join(__dirname, "ai-worker.cjs"), {
-        workerData: parsed.data,
+        workerData,
         resourceLimits: { maxOldGenerationSizeMb: 512 },
       });
       job.worker = worker;
-      const raw = await new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         job.reject = reject;
-        const timer = setTimeout(
+        job.timer = setTimeout(
           () =>
             reject(Error("La IA superó 4 minutos. Prueba un texto más corto.")),
           240000,
         );
-        job.timer = timer;
         worker.once("message", (m) => {
           if (m.error) {
             reject(Error(m.error));
@@ -127,7 +154,7 @@ class LocalAI {
           }
           if (
             !Array.isArray(m.outputs) ||
-            m.outputs.length !== (parsed.data.mode === "careful" ? 2 : 1) ||
+            m.outputs.length !== expectedOutputs ||
             m.outputs.some((x) => typeof x !== "string" || x.length > 8000)
           ) {
             reject(Error("Respuesta interna de IA inválida."));
@@ -142,21 +169,51 @@ class LocalAI {
           reject(Error("El proceso de IA se interrumpió antes de responder.")),
         );
       });
-      return {
-        ...reviewReading(
-          parsed.data.text,
-          parseResult(raw[0], parsed.data.text),
-          raw[1] ? parseResult(raw[1], parsed.data.text) : undefined,
-          parsed.data.mode,
-        ),
-        milliseconds: Date.now() - started,
-        model: `${manifest.label} · ${manifest.dtype.toUpperCase()} · CPU local`,
-      };
     } finally {
       clearTimeout(job.timer);
       if (job.worker) await job.worker.terminate();
       if (this.job === job) this.job = null;
     }
+  }
+  get modelLabel() {
+    return `${manifest.label} · ${manifest.dtype.toUpperCase()} · CPU local`;
+  }
+  async analyze(data) {
+    const parsed = inputSchema.safeParse(data);
+    if (!parsed.success)
+      throw Error(
+        "Introduce entre 3 y 4.000 caracteres y un modo de lectura válido.",
+      );
+    const started = Date.now();
+    const raw = await this.run(
+      { kind: "classify", ...parsed.data },
+      parsed.data.mode === "careful" ? 2 : 1,
+    );
+    return {
+      ...reviewReading(
+        parsed.data.text,
+        parseResult(raw[0], parsed.data.text),
+        raw[1] ? parseResult(raw[1], parsed.data.text) : undefined,
+        parsed.data.mode,
+      ),
+      milliseconds: Date.now() - started,
+      model: this.modelLabel,
+    };
+  }
+  async chat(data) {
+    const parsed = chatSchema.safeParse(data);
+    if (!parsed.success)
+      throw Error(
+        "Escribe una pregunta de hasta 1.500 caracteres; el chat conserva como máximo los últimos 6 mensajes.",
+      );
+    const started = Date.now();
+    const raw = await this.run({ kind: "chat", ...parsed.data }, 1);
+    return {
+      answer: sanitizeAnswer(raw[0]),
+      review: true,
+      milliseconds: Date.now() - started,
+      model: this.modelLabel,
+    };
   }
   async cancel() {
     const job = this.job;
@@ -166,4 +223,4 @@ class LocalAI {
     if (job.worker) await job.worker.terminate();
   }
 }
-module.exports = { LocalAI, parseResult };
+module.exports = { LocalAI, parseResult, sanitizeAnswer, NO_ANSWER };

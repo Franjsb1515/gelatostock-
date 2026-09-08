@@ -1,6 +1,6 @@
 {
   "name": "appgelatostock",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "description": "Prototipo local de inventario y compras para gelateria",
   "main": "src/desktop.cjs",

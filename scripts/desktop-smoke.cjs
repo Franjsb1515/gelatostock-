@@ -347,6 +347,24 @@ const assert = require("node:assert/strict");
     );
     console.log("PASS: modelo local diferencia lista de precios de factura.");
     await window
+      .locator("#ai-chat-input")
+      .fill("¿Qué hace la pantalla Control de entregas?");
+    await window
+      .getByRole("button", { name: "Preguntar a la IA local", exact: true })
+      .click();
+    await window.locator(".ai-chat-answer").waitFor({ timeout: 245000 });
+    const answer = (await window.locator(".ai-chat-answer").innerText()).trim();
+    assert.ok(answer.length > 20, "respuesta del chat vacía");
+    assert.ok(!/<[a-z]+>/i.test(answer), "el chat mostró marcado");
+    assert.equal(savedStock(), 4.25);
+    await window.screenshot({
+      path: path.join(root, "output/playwright/v082-ia-chat.png"),
+    });
+    console.log(
+      "PASS: chat de dudas con modelo REAL responde texto plano sin modificar stock: " +
+        JSON.stringify(answer.slice(0, 160)),
+    );
+    await window
       .getByRole("button", { name: "Analizar con IA local", exact: true })
       .click();
     await window

@@ -55,3 +55,8 @@ El razonamiento general avanzado no está resuelto ni se garantiza cero errores.
 
 ## Ajustes 0.8.1
 La comprobación aritmética reconoce además "IVA 21%", "IVA (21 %)", "Cuota IVA 10%", "Total a pagar" e "Importe a pagar" como etiquetas. Sigue exigiendo una sola base, una sola cuota y un total con importe; "IVA: 21%" sin importe o dos cuotas siguen sin comprobarse. El trabajador bloquea también tls, http2, dgram y dns dentro de Node; la dependencia nativa de ONNX sigue fuera de ese control y no existe sandbox del sistema operativo. Evaluación rápida repetida con el mismo modelo: ver reports/ai-evaluation-v081-quick.json.
+
+## Chat de dudas 0.8.2
+Mismo modelo, mismo trabajador y mismos bloqueos. Entrada validada: 1 a 6 mensajes con rol user/assistant de hasta 1.500 caracteres, el último del usuario, documento opcional de hasta 4.000 caracteres, sin campos extra. El sistema recibe una guía fija escrita a mano (src/ai-help.cjs) y el texto del editor como contenido no fiable. No recibe inventario, pedidos, mensajes guardados ni rutas. La salida se reduce a texto plano: se eliminan bloques de razonamiento y etiquetas, se limita a 1.200 caracteres y, si queda vacía, se muestra una frase fija de no respuesta. La interfaz vuelve a escapar el texto. El historial vive solo en memoria de la ventana.
+
+Límites: un modelo de 0,6B parámetros puede responder de forma incompleta, genérica o incorrecta aunque la guía sea correcta; puede repetir instrucciones incrustadas en el texto del editor como si fueran contenido. Nada de lo que diga cambia datos. No sustituye la documentación ni la revisión humana. La calidad del chat no se ha medido con preguntas reales del usuario; la prueba de escritorio solo comprueba que responde texto plano no vacío sin tocar el stock.

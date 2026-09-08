@@ -1,0 +1,158 @@
+{
+  "at": "2026-09-08T16:00:44.483Z",
+  "synthetic": true,
+  "model": "Qwen3 0.6B Q4",
+  "cases": 11,
+  "passed": 10,
+  "peakProcessRSSMiB": 2498,
+  "rows": [
+    {
+      "id": "factura",
+      "expected": "factura",
+      "tipo": "factura",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "matched",
+      "milliseconds": 21607,
+      "pass": true
+    },
+    {
+      "id": "tarifa",
+      "expected": "lista_precios",
+      "tipo": "lista_precios",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 18098,
+      "pass": true
+    },
+    {
+      "id": "albaran",
+      "expected": "albaran",
+      "tipo": "albaran",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 15085,
+      "pass": true
+    },
+    {
+      "id": "peticion_factura",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 15357,
+      "pass": true
+    },
+    {
+      "id": "proforma",
+      "expected": "proforma",
+      "tipo": "otro",
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 23126,
+      "pass": false
+    },
+    {
+      "id": "rectificativa",
+      "expected": "abono",
+      "tipo": "abono",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 19870,
+      "pass": true
+    },
+    {
+      "id": "oferta",
+      "expected": "oferta",
+      "tipo": "oferta",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 17036,
+      "pass": true
+    },
+    {
+      "id": "cancelacion",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 12543,
+      "pass": true
+    },
+    {
+      "id": "ambiguo",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 10026,
+      "pass": true
+    },
+    {
+      "id": "inyeccion",
+      "expected": "otro",
+      "tipo": "otro",
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 13463,
+      "pass": true
+    },
+    {
+      "id": "total_incoherente",
+      "expected": "factura",
+      "tipo": "factura",
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "mismatch",
+      "milliseconds": 17603,
+      "pass": true
+    }
+  ]
+}
