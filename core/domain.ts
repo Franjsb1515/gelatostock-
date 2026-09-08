@@ -519,7 +519,7 @@ export function apply(state: State, input: unknown): State {
           return s;
         }
       }
-      s.messages.unshift({
+      const message: Message = {
         id: a.eventId || randomUUID(),
         supplier: a.supplier,
         text: a.text,
@@ -528,9 +528,33 @@ export function apply(state: State, input: unknown): State {
         at: now(),
         read: false,
         reviewed: false,
-        simulated: true,
-      });
-      note = `Mensaje de demostración recibido de ${item(s.suppliers, a.supplier).name}.`;
+        simulated: a.channel !== "whatsapp",
+        channel: a.channel,
+        ...(a.sender ? { sender: a.sender } : {}),
+      };
+      // A reply from the number an order was sent to belongs to that order, when
+      // exactly one such order is still open. Several candidates: no guessing.
+      if (!message.order && a.sender) {
+        const candidates = s.orders.filter(
+          (o) =>
+            o.supplier === a.supplier &&
+            o.dispatch?.to === a.sender &&
+            ["sent", "partial"].includes(o.status),
+        );
+        if (candidates.length === 1) {
+          const o = candidates[0]!;
+          message.order = o.id;
+          message.relevance = "relevant";
+          message.relevanceReason = `Respuesta al pedido ${o.number}, enviado por WhatsApp a este número. Verificá el contenido.`;
+          if (message.interpretation?.deliveryDate)
+            o.expected = message.interpretation.deliveryDate;
+        }
+      }
+      s.messages.unshift(message);
+      note =
+        a.channel === "whatsapp"
+          ? `Mensaje de WhatsApp recibido de ${item(s.suppliers, a.supplier).name}${message.order ? " para el pedido " + item(s.orders, message.order).number : ""}.`
+          : `Mensaje de demostración recibido de ${item(s.suppliers, a.supplier).name}.`;
       break;
     }
     case "read": {
@@ -701,7 +725,17 @@ export function apply(state: State, input: unknown): State {
         "El pedido debe pertenecer al mismo proveedor.",
       );
       m.order = o.id;
+      if (m.interpretation?.deliveryDate)
+        o.expected = m.interpretation.deliveryDate;
       note = `Mensaje vinculado a ${o.number}.`;
+      break;
+    }
+    case "photoType": {
+      const photo = item(s.photos, a.id);
+      photo.docType = a.docType;
+      note = a.docType
+        ? `Tipo de documento confirmado por la persona en la foto ${photo.name}: ${a.docType}.`
+        : `Tipo de documento retirado de la foto ${photo.name}.`;
       break;
     }
     case "organizePhoto": {

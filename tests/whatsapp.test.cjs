@@ -293,3 +293,36 @@ test("entrante con identificador sin _serialized se importa con clave reconstrui
     assert.equal(view.messages[0].id, "false_34910000001@c.us_ABC123");
     c.client = null;
   }));
+
+test("un mensaje autorizado de un proveedor entra en la bandeja principal una sola vez", () =>
+  fixture(async (c) => {
+    const dispatched = [];
+    c.mainStore = {
+      load: () => ({ suppliers: [] }),
+      dispatch: (a) => {
+        dispatched.push(a);
+        return {};
+      },
+    };
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    c.readyAt = 0;
+    c.store.permit(a, "+34910000001", "Proveedor", "sup-1");
+    c.client = {};
+    const msg = {
+      from: "34910000001@c.us",
+      id: { _serialized: "in-1" },
+      timestamp: 1,
+      body: "Llega el lunes",
+    };
+    await c.receive(msg, c.generation);
+    await c.receive(msg, c.generation);
+    assert.equal(dispatched.length, 1);
+    assert.equal(dispatched[0].type, "message");
+    assert.equal(dispatched[0].supplier, "sup-1");
+    assert.equal(dispatched[0].channel, "whatsapp");
+    assert.equal(dispatched[0].sender, "+34910000001");
+    assert.match(dispatched[0].eventId, /^wa-[a-f0-9]+$/);
+    c.client = null;
+  }));

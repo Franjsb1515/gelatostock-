@@ -223,3 +223,47 @@ test("envío real por WhatsApp desde el servidor: vista previa exacta, un envío
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("copia automática al arrancar, con retención de copias automáticas y aviso en el estado", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-bk-"));
+  let app;
+  try {
+    const backups = path.join(dir, "backups");
+    fs.mkdirSync(backups, { recursive: true });
+    for (let i = 0; i < 32; i++)
+      fs.writeFileSync(
+        path.join(
+          backups,
+          `gelatostock-${1000 + i}-00000000-0000-4000-8000-00000000000${i % 10}.json`,
+        ),
+        "{}",
+      );
+    fs.writeFileSync(path.join(backups, "manual-importante.json"), "{}");
+    app = await createApp({ dataDir: dir });
+    for (
+      let i = 0;
+      i < 50 &&
+      fs.readdirSync(backups).filter((f) => f.startsWith("gelatostock-"))
+        .length !== 30;
+      i++
+    )
+      await new Promise((r) => setTimeout(r, 100));
+    const auto = fs
+      .readdirSync(backups)
+      .filter((f) => f.startsWith("gelatostock-"));
+    assert.equal(auto.length, 30);
+    assert.ok(fs.existsSync(path.join(backups, "manual-importante.json")));
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = { Cookie: login.headers.get("set-cookie").split(";")[0] };
+    const data = await (await fetch(origin + "/api/state", { headers })).json();
+    assert.ok(data.backup.last);
+    assert.equal(data.backup.warning, "");
+    const page = await fetch(origin + "/", { headers });
+    assert.match(page.headers.get("permissions-policy") || "", /camera=\(\)/);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

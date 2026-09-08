@@ -14,7 +14,7 @@ Tauri + TypeScript + Rust + SQLite es candidato para reducir el peso de distribu
 - build/: JavaScript generado por TypeScript; no editar a mano.
 - src/domain.cjs: puente para compatibilidad de pruebas.
 - src/server.cjs: HTTP loopback autenticado; exige revisión e identificador para acciones.
-- src/desktop.cjs: ventana aislada; src/app.js y CSS/HTML: interfaz actual.
+- src/desktop.cjs: ventana aislada; src/ui/*.js y CSS/HTML: interfaz actual.
 
 TypeScript estricto cubre el núcleo, no toda la aplicación. NodeIntegration desactivado, contextIsolation y sandbox activos. Cookie HttpOnly/SameSite, validación de origen para escrituras y recursos del renderer locales. No hay secretos de proveedores en esta versión.
 
@@ -59,3 +59,6 @@ Módulo independiente src/whatsapp.cjs + whatsapp-store.cjs, SQLite propia bajo 
 
 ## Estado incorporado en 0.7 · 2026-09-08
 Control de entregas e IA local asistida implementados. Consultar CONTROL_DE_ENTREGAS.md e IA_LOCAL_Y_SEGURIDAD.md para el alcance vigente y los límites. La meta de automatización revisable se mantiene: quedan lectura PDF/cantidades, clasificación de adjuntos entrantes, equivalencias aprobadas y validación de producción. No elevar permisos del modelo para cubrir esos pendientes sin controles y pruebas.
+
+## Interfaz por módulos (0.10.0)
+src/ui/core.js (estado, utilidades, peticiones, render), whatsapp.js (canal), views.js (pantallas), forms.js (campos y modales), actions.js y actions-extended.js (acciones por data-action), events.js (escuchadores y arranque). Son scripts clásicos con ámbito global compartido, cargados en ese orden desde index.html y servidos solo desde la lista fija del servidor. No hay empaquetador; la CSP exige 'self'.

@@ -15,6 +15,36 @@ function createApp({
   port = 0,
 } = {}) {
   const store = new Store(dataDir);
+  // Daily automatic copy (data + photos) with a bounded history of automatic files only.
+  const backupDir = path.join(dataDir, "backups");
+  const backupInfo = { last: null, warning: "" };
+  const autoBackup = () => {
+    try {
+      fs.mkdirSync(backupDir, { recursive: true });
+      const own = () =>
+        fs
+          .readdirSync(backupDir)
+          .filter((f) => /^gelatostock-\d+-[0-9a-f-]{36}\.json$/.test(f))
+          .sort((a, b) => Number(a.split("-")[1]) - Number(b.split("-")[1]));
+      const files = own();
+      const last = files.length
+        ? Number(files[files.length - 1].split("-")[1])
+        : 0;
+      if (Date.now() - last > 24 * 3600 * 1000) {
+        store.backup();
+        for (const f of own().slice(0, -30))
+          fs.unlinkSync(path.join(backupDir, f));
+        backupInfo.last = new Date().toISOString();
+      } else backupInfo.last = new Date(last).toISOString();
+      backupInfo.warning = "";
+    } catch (e) {
+      backupInfo.warning =
+        "No se pudo crear la copia automática: " + String(e.message || e);
+    }
+  };
+  setImmediate(autoBackup);
+  const backupTimer = setInterval(autoBackup, 6 * 3600 * 1000);
+  backupTimer.unref();
   const ai = new LocalAI();
   const whatsapp = new WhatsAppConnection(dataDir, store);
   const token = randomBytes(32).toString("hex");
@@ -83,6 +113,7 @@ function createApp({
         storage: "SQLite",
         archiveWarning: store.archiveWarning,
         version,
+        backup: backupInfo,
       });
       return;
     }
@@ -256,7 +287,9 @@ function createApp({
           return;
         }
         if (u.pathname === "/api/backup") {
-          json(200, { path: store.backup() });
+          const created = store.backup();
+          backupInfo.last = new Date().toISOString();
+          json(200, { path: created });
           return;
         }
         if (u.pathname === "/api/restore") {
@@ -304,7 +337,13 @@ function createApp({
     }
     const assets = {
       "/": "index.html",
-      "/app.js": "app.js",
+      "/ui/core.js": "ui/core.js",
+      "/ui/whatsapp.js": "ui/whatsapp.js",
+      "/ui/views.js": "ui/views.js",
+      "/ui/forms.js": "ui/forms.js",
+      "/ui/actions.js": "ui/actions.js",
+      "/ui/events.js": "ui/events.js",
+      "/ui/actions-extended.js": "ui/actions-extended.js",
       "/styles.css": "styles.css",
     };
     if (req.method !== "GET" || !assets[u.pathname]) {
@@ -317,6 +356,11 @@ function createApp({
     );
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=()",
+    );
     res.setHeader(
       "Content-Type",
       u.pathname.endsWith(".js")
@@ -333,6 +377,7 @@ function createApp({
       reject(error);
     });
     server.once("close", () => {
+      clearInterval(backupTimer);
       ai.cancel().catch(() => {});
       store.close();
       whatsapp.close().catch(() => {});

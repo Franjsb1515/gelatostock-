@@ -244,6 +244,7 @@ export function seed(): State {
           "Mensaje de ejemplo: revisá su relación con un pedido.",
         at: new Date().toISOString(),
         simulated: true,
+        channel: "demo",
       },
     ],
     activity: [

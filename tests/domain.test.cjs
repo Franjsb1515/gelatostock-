@@ -603,3 +603,62 @@ test("envío real registra destino, texto y hora en el pedido sin tocar stock", 
   );
   assert.throws(() => apply(s, { type: "send", order: o.id }));
 });
+
+test("una respuesta de WhatsApp al número del pedido enviado se vincula sola y fija la entrega prevista", () => {
+  let s = apply(seed(), { type: "cart", product: "p2", packs: 1 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  const o = s.orders[0];
+  s = apply(s, {
+    type: "send",
+    order: o.id,
+    dispatch: {
+      channel: "whatsapp",
+      to: "+34910000001",
+      messageId: "m1",
+      at: new Date().toISOString(),
+      text: "Pedido",
+    },
+  });
+  s = apply(s, {
+    type: "message",
+    supplier: o.supplier,
+    text: "Ok, te llega el lunes",
+    eventId: "wa-1",
+    channel: "whatsapp",
+    sender: "+34910000001",
+  });
+  const m = s.messages[0];
+  assert.equal(m.channel, "whatsapp");
+  assert.equal(m.simulated, false);
+  assert.equal(m.order, o.id);
+  assert.equal(m.relevance, "relevant");
+  assert.ok(s.orders[0].expected);
+  assert.match(s.activity[0].text, /WhatsApp/);
+  // another number, or a second open order to the same number: no automatic link
+  const other = apply(s, {
+    type: "message",
+    supplier: o.supplier,
+    text: "Hola",
+    channel: "whatsapp",
+    sender: "+34999999999",
+  });
+  assert.equal(other.messages[0].order, undefined);
+  assert.equal(
+    apply(seed(), { type: "message", supplier: "s1", text: "hola" }).messages[0]
+      .simulated,
+    true,
+  );
+});
+
+test("el tipo de documento de una foto lo confirma la persona y se puede retirar", () => {
+  const png =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==";
+  let s = apply(seed(), { type: "photo", name: "f.png", data: png });
+  const id = s.photos[0].id;
+  s = apply(s, { type: "photoType", id, docType: "factura" });
+  assert.equal(s.photos[0].docType, "factura");
+  assert.match(s.activity[0].text, /confirmado por la persona/);
+  assert.throws(() => apply(s, { type: "photoType", id, docType: "comprar" }));
+  s = apply(s, { type: "photoType", id });
+  assert.equal(s.photos[0].docType, undefined);
+});

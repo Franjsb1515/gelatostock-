@@ -80,6 +80,7 @@ const orderSchema = z.object({
   simulated: z.literal(true),
   lines: z.array(lineSchema).min(1).max(10000),
   dispatch: dispatchSchema.optional(),
+  expected: documentDate.optional(),
 });
 export const priorities = z.enum(["important", "normal", "low", "review"]);
 export const relevanceLevels = z.enum([
@@ -102,7 +103,9 @@ const messageSchema = z.object({
   read: z.boolean(),
   reviewed: z.boolean().default(false),
   at,
-  simulated: z.literal(true),
+  simulated: z.boolean().default(true),
+  channel: z.enum(["demo", "whatsapp"]).default("demo"),
+  sender: z.string().max(30).optional(),
   order: idSchema.optional(),
   interpretation: z
     .object({
@@ -147,6 +150,16 @@ const productionSchema = z.object({
   output: z.object({ product: idSchema, quantity }).optional(),
   note: z.string().max(500).default(""),
 });
+export const documentTypes = z.enum([
+  "factura",
+  "proforma",
+  "abono",
+  "albaran",
+  "lista_precios",
+  "oferta",
+  "mensaje",
+  "otro",
+]);
 const photoSchema = z
   .object({
     id: idSchema,
@@ -154,6 +167,7 @@ const photoSchema = z
     ocrText: z.string().max(20000).optional(),
     supplier: idSchema.optional(),
     documentDate: documentDate.optional(),
+    docType: documentTypes.optional(),
     note: z.string().max(500),
     at,
     data: z
@@ -284,6 +298,8 @@ export const actionSchema = z.intersection(
       supplier: idSchema,
       text: text(5000),
       eventId: idSchema.optional(),
+      channel: z.enum(["demo", "whatsapp"]).default("demo"),
+      sender: z.string().max(30).optional(),
     }),
     z.object({ type: z.literal("read"), id: idSchema }),
     z.object({ type: z.literal("review"), id: idSchema }),
@@ -326,6 +342,11 @@ export const actionSchema = z.intersection(
       note: z.string().max(500).default(""),
     }),
     z.object({ type: z.literal("discardProduction"), id: idSchema }),
+    z.object({
+      type: z.literal("photoType"),
+      id: idSchema,
+      docType: documentTypes.optional(),
+    }),
     z.object({
       type: z.literal("organizePhoto"),
       id: idSchema,

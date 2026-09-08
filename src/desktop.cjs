@@ -10,6 +10,19 @@ app.setPath("userData", path.join(data, "runtime"));
 app.setPath("sessionData", path.join(data, "runtime"));
 app.setPath("logs", path.join(data, "runtime", "logs"));
 app.setPath("crashDumps", path.join(data, "runtime", "crashes"));
+// Unexpected failures are written locally instead of closing the app or showing raw traces.
+const errorLog = path.join(data, "runtime", "logs", "errores.log");
+const logError = (kind, e) => {
+  try {
+    fs.mkdirSync(path.dirname(errorLog), { recursive: true });
+    fs.appendFileSync(
+      errorLog,
+      `${new Date().toISOString()} ${kind}: ${String((e && (e.stack || e.message)) || e).slice(0, 2000)}\n`,
+    );
+  } catch {}
+};
+process.on("unhandledRejection", (e) => logError("rechazo no controlado", e));
+process.on("uncaughtException", (e) => logError("excepción no controlada", e));
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
@@ -49,6 +62,9 @@ if (!app.requestSingleInstanceLock()) {
           nodeIntegration: false,
           contextIsolation: true,
           sandbox: true,
+          webSecurity: true,
+          allowRunningInsecureContent: false,
+          spellcheck: false,
         },
       });
       win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
@@ -58,6 +74,8 @@ if (!app.requestSingleInstanceLock()) {
       win.webContents.session.setPermissionRequestHandler((_w, _p, cb) =>
         cb(false),
       );
+      win.webContents.session.setPermissionCheckHandler(() => false);
+      win.webContents.on("will-attach-webview", (e) => e.preventDefault());
       const connectWhatsApp = process.argv.includes("--connect-whatsapp");
       await win.loadURL(backend.url + (connectWhatsApp ? "#whatsapp" : ""));
       if (connectWhatsApp) await backend.whatsapp.connect();

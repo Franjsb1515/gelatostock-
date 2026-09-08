@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.10.0 — 2026-09-09 · sesión 016
+
+Sesión autónoma de mejora general pedida por el usuario. Bandeja unificada: los mensajes de WhatsApp de proveedores autorizados entran en Mensajes con lectura por reglas, se vinculan solos al pedido enviado a ese número cuando no hay duda y fijan la entrega prevista del pedido (visible en Control de entregas y en Resumen). Copia automática diaria con retención de 30 copias automáticas e indicador en Configuración. Endurecimiento: Permissions-Policy y Referrer-Policy, permisos de Electron denegados también en comprobación, sin webview, errores no controlados a data/runtime/logs/errores.log. Tipo de documento confirmado por la persona guardado en la foto. Interfaz dividida en módulos src/ui/*.js por responsabilidad.
+
+92 pruebas, ejecutable 0.10.0. Informe con valoración por puntos: reports/2026-09-08T23-40-16-197Z-mejora-general-0100.md.
+
 ## 0.9.4 — 2026-09-08 · sesión 015
 
 WhatsApp real comprobado en ambos sentidos con los números del usuario: envío confirmado leyendo el propio chat de WhatsApp Web cuando la librería pierde la referencia (chats LID), identificadores de mensaje reconstruidos para recibir en chats LID, y cierre limpio del navegador. Un «Ok» enviado desde el teléfono quedó importado en la app.

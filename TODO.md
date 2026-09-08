@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.9.4.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.0.
 
 ## Entregado y comprobado
 
@@ -27,8 +27,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 86 pruebas automatizadas.
-- [ ] Ampliar validación de copias y pruebas de interrupción eléctrica/disco lleno.
+- [x] Núcleo TypeScript estricto, validación de contratos y 92 pruebas automatizadas.
+- [ ] Pruebas de interrupción eléctrica/disco lleno (la copia automática diaria ya existe).
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
 - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
@@ -63,7 +63,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Vinculación por QR y cambio de número validados por el usuario con dos números propios (2026-09-08).
 - [x] Envío real de pedidos por WhatsApp con vista previa, confirmación y un envío por pedido; probado con cliente simulado.
 - [x] Envío y recepción reales comprobados con los dos números del usuario (2026-09-08 23:24–23:25): mensaje entregado y «Ok» importado.
-- [ ] Vincular automáticamente la respuesta recibida al pedido enviado y avisar en Control de entregas.
+- [x] Respuestas de WhatsApp en la bandeja principal, vinculadas al pedido enviado a ese número (si es único) y entrega prevista en el pedido.
+- [x] Copia automática diaria con retención; errores no controlados registrados en archivo.
+- [x] Tipo de documento confirmado por la persona en cada foto (memoria de decisiones).
+- [ ] Memoria de equivalencias por proveedor (código de albarán → producto) consultada al leer documentos.
 - [x] Implementar recepción experimental de WhatsApp por eventos; QR real verificado. Envío añadido en 0.9.1 con confirmación explícita.
 - [ ] Recuperación de mensajes perdidos, notificaciones nativas y endurecimiento del canal.
 - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.

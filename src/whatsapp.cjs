@@ -168,6 +168,30 @@ class WhatsAppConnection {
       this.client = null;
     }
   }
+  // Authorized supplier messages also enter the main inbox (rules, priorities, order link).
+  importToInbox(supplier, sender, entry) {
+    if (typeof this.mainStore?.dispatch !== "function") return;
+    try {
+      const text = (
+        entry.text || (entry.file ? "[Adjunto: " + entry.name + "]" : "")
+      ).slice(0, 5000);
+      if (!text.trim()) return;
+      this.mainStore.dispatch({
+        type: "message",
+        supplier,
+        text,
+        eventId: "wa-" + hash(entry.id).slice(0, 40),
+        channel: "whatsapp",
+        sender,
+      });
+      this.log("mensaje de " + sender + " añadido a la bandeja de proveedores");
+    } catch (e) {
+      this.log(
+        "no se pudo añadir a la bandeja: " +
+          String(e?.message || e).slice(0, 120),
+      );
+    }
+  }
   async receive(msg, generation) {
     const account = this.account;
     if (!account || generation !== this.generation) return;
@@ -284,7 +308,8 @@ class WhatsAppConnection {
           "\n[Adjunto no archivado: tipo no admitido, demasiado grande o no disponible.]";
     }
     if (generation === this.generation && this.status === "connected")
-      this.store.insert(account, entry);
+      if (this.store.insert(account, entry) && permitted.supplier)
+        this.importToInbox(permitted.supplier, sender, entry);
   }
   // Real send. Only to a chat the person authorized for the connected account,
   // one order at a time, never automatic. The caller shows the exact text first.
