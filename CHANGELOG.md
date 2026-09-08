@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.9.3 — 2026-09-08 · sesión 014
+
+El usuario conectó por QR pero ningún mensaje llegaba en ninguna dirección. Cambios: los remitentes con identificador LID de WhatsApp se resuelven a número (getContactLidAndPhone y, si falla, el contacto del mensaje); diagnóstico local del canal en data/whatsapp/diagnostico.log (motivos e identificadores, nunca texto) visible en la pantalla WhatsApp; botón «Enviar mensaje de prueba» a un chat autorizado; texto de la pantalla actualizado. Con el diagnóstico del usuario se confirmó que la recepción funcionaba (mensajes descartados por autorización de otra cuenta) y que el envío fallaba en silencio: whatsapp-web.js devuelve undefined si no existe chat para número@c.us; ahora se resuelve el identificador real (getNumberId/LID) y un envío sin identificador falla de forma visible.
+
+86 pruebas, ejecutable 0.9.3. Pendiente: prueba real del usuario con el diagnóstico a la vista. Informe reports/2026-09-08T18-40-07-473Z-diagnostico-whatsapp.md.
+
 ## 0.9.1 — 2026-09-08 · sesión 013
 
 Envío real de pedidos por WhatsApp, autorizado por el usuario tras vincular por QR sus dos números propios. Solo pedidos pendientes, solo al número de la ficha del proveedor si está autorizado para la cuenta conectada, con vista previa del texto exacto y confirmación explícita; una vez por pedido, nunca automático. El pedido guarda destino, identificador, hora y texto; enviar no cambia stock ni da por confirmado. Los mensajes enviados aparecen en la conversación de WhatsApp. «Simular envío» se conserva para pruebas sin canal.

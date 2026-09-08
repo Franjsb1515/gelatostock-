@@ -253,8 +253,9 @@ function whatsapp() {
       "WhatsApp de proveedores",
       "WhatsApp normal o Business · conexión experimental por QR",
     ) +
-    `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo se importan chats autorizados. La sesión de WhatsApp Web puede sincronizar la cuenta completa en su perfil local. Internet y app abierta necesarios; no hay envíos desde este módulo.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}</div></section>
- <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Al cambiar de cuenta, su lista se mantiene separada. No se importa historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} ${w.account === w.activeAccount ? btn("Dejar de importar", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
+    `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo se importan chats autorizados. La sesión de WhatsApp Web puede sincronizar la cuenta completa en su perfil local. Internet y app abierta necesarios. Solo se envía lo que confirmes en pantalla.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}</div></section>
+ <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Al cambiar de cuenta, su lista se mantiene separada. No se importa historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") + (w.allowed.length ? btn("Enviar mensaje de prueba", "waSendText", "secondary") : "") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} ${w.account === w.activeAccount ? btn("Dejar de importar", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
+ <section class="panel settings-card"><h2>Diagnóstico del canal</h2><p class="fineprint">Últimos eventos técnicos del conector (sin contenido de mensajes). Útil para revisar por qué un mensaje no se importa.</p>${(w.diagnostics || []).length ? `<pre class="diag">${esc((w.diagnostics || []).join("\n"))}</pre>` : '<p class="muted">Sin eventos todavía.</p>'}</section>
  <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos mensajes recibidos y enviados de esta cuenta. Los adjuntos se archivan en la carpeta indicada.</p>${
    [...w.messages, ...(w.sent || []).map((m) => ({ ...m, outgoing: true }))]
      .sort((a, b) => (a.at < b.at ? 1 : -1))
@@ -282,6 +283,30 @@ async function whatsappAction(name, el) {
     } catch (e) {
       toast(e.message);
     }
+    return;
+  }
+  if (name === "waSendText") {
+    modal(
+      "Enviar un mensaje de prueba",
+      "Se envía exactamente este texto al chat autorizado que elijas, desde la cuenta conectada.",
+      select(
+        "Destinatario autorizado",
+        "phone",
+        waState.allowed.map((c) => [c.phone, c.label + " · " + c.phone]),
+      ) +
+        `<label class="field">Texto<textarea name="text" maxlength="4000" required>Prueba desde GelatoStock. Responde a este mensaje para comprobar la recepción.</textarea></label>`,
+      async (f) => {
+        waState = await request("/api/whatsapp", {
+          type: "sendText",
+          phone: f.get("phone"),
+          text: f.get("text"),
+        });
+        render();
+        toast("Mensaje enviado. Si no llega, revisa el diagnóstico del canal.");
+        return true;
+      },
+      "Enviar ahora",
+    );
     return;
   }
   if (name === "waAllow") {

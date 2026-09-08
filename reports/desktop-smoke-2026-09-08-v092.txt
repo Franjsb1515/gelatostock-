@@ -1,0 +1,16 @@
+
+> appgelatostock@0.9.2 test:desktop
+> node scripts/desktop-smoke.cjs
+
+PASS: pedido 2 cajas de 6 L; recepción 4 L, pendiente 8 L; recepción final cierra el pedido.
+PASS: producción de 4 kg: consumo estimado (2 L leche) corregido a 1,5 L y aprobado; terminado +4 kg; nada cambió antes de aprobar.
+PASS: respuesta de proveedor leída por reglas: falta de producto, fecha resuelta y marcada para leer.
+PASS: modelo local REAL en ejecutable, factura reconocida sin modificar stock.
+locator.waitFor: Timeout 245000ms exceeded.
+Call log:
+[2m  - waiting for locator('.ai-result') to be visible[22m
+
+    at D:\APPGELATOSTOCK\scripts\desktop-smoke.cjs:407:40 {
+  log: [ "  - waiting for locator('.ai-result') to be visible" ],
+  name: 'TimeoutError'
+}

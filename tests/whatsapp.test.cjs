@@ -195,3 +195,79 @@ test("envío real: solo conectado, solo a chats autorizados, una vez por pedido 
     assert.ok(view.history.some((h) => /ENVIADO a \+34910000001/.test(h.text)));
     c.client = null;
   }));
+
+test("diagnóstico local registra motivos sin contenido y resuelve remitentes por LID", () =>
+  fixture(async (c, dir) => {
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    c.readyAt = 0;
+    c.store.permit(a, "+34910000001", "Proveedor");
+    c.client = {
+      getContactLidAndPhone: async () => [{ pn: "34910000001@c.us" }],
+    };
+    await c.receive(
+      {
+        from: "1234567890@lid",
+        id: { _serialized: "lid-1" },
+        timestamp: 1,
+        body: "Texto secreto",
+      },
+      c.generation,
+    );
+    assert.equal(c.store.view(a).messages.length, 1);
+    c.client = { getContactLidAndPhone: async () => [] };
+    await c.receive(
+      {
+        from: "999@lid",
+        id: { _serialized: "lid-2" },
+        timestamp: 1,
+        body: "otro",
+        getContact: async () => ({ number: "34999999999" }),
+      },
+      c.generation,
+    );
+    assert.equal(c.store.view(a).messages.length, 1);
+    const log = fs.readFileSync(
+      path.join(dir, "whatsapp", "diagnostico.log"),
+      "utf8",
+    );
+    assert.match(log, /resuelto a 34910000001@c.us/);
+    assert.match(log, /no autorizado/);
+    assert.ok(!log.includes("Texto secreto"));
+    assert.ok(c.view().diagnostics.length >= 2);
+    c.client = null;
+  }));
+
+test("envío real: usa el chat resuelto por WhatsApp y falla de forma visible si no existe chat", () =>
+  fixture(async (c) => {
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    c.store.permit(a, "+34910000001", "Proveedor");
+    const calls = [];
+    c.client = {
+      getNumberId: async () => ({ _serialized: "123456789012345@lid" }),
+      sendMessage: async (to, text) => {
+        calls.push(to);
+        return to.endsWith("@lid")
+          ? { id: { _serialized: "ok-1" } }
+          : undefined;
+      },
+    };
+    const sent = await c.send({ phone: "+34910000001", text: "hola" });
+    assert.equal(sent.id, "ok-1");
+    assert.deepEqual(calls, ["123456789012345@lid"]);
+    c.client = {
+      getNumberId: async () => null,
+      getContactLidAndPhone: async () => [],
+      sendMessage: async () => undefined,
+    };
+    await assert.rejects(
+      c.send({ phone: "+34910000001", text: "hola" }),
+      /no confirmó el envío/,
+    );
+    assert.equal(c.store.view(a).sent.length, 1);
+    assert.ok(c.view().diagnostics.some((l) => /NO confirmado/.test(l)));
+    c.client = null;
+  }));

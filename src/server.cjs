@@ -228,6 +228,14 @@ function createApp({
             });
             return;
           }
+          if (data.type === "sendText") {
+            const sent = await whatsapp.send({
+              phone: String(data.phone || ""),
+              text: String(data.text || ""),
+            });
+            json(200, { ...annotate(whatsapp.view()), sent });
+            return;
+          }
           if (data.type === "connect") await whatsapp.connect();
           else if (data.type === "disconnect") await whatsapp.disconnect();
           else if (data.type === "allow") whatsapp.allow(data);

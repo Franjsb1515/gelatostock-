@@ -4,6 +4,8 @@ const { WhatsAppStore, normalize, hash } = require("./whatsapp-store.cjs");
 class WhatsAppConnection {
   constructor(dataDir, mainStore) {
     this.store = new WhatsAppStore(dataDir);
+    // Local diagnostics for the person testing the channel: ids and reasons, never message text.
+    this.logFile = path.join(this.store.dir, "diagnostico.log");
     this.mainStore = mainStore;
     this.status = "disconnected";
     this.generation = 0;
@@ -13,8 +15,30 @@ class WhatsAppConnection {
     this.account = null;
     this.chain = Promise.resolve();
   }
+  log(text) {
+    try {
+      if (fs.existsSync(this.logFile) && fs.statSync(this.logFile).size > 1e6)
+        fs.renameSync(this.logFile, this.logFile + ".anterior");
+      fs.appendFileSync(
+        this.logFile,
+        new Date().toISOString() + " " + text.slice(0, 400) + "\n",
+      );
+    } catch {}
+  }
+  diagnostics() {
+    try {
+      return fs
+        .readFileSync(this.logFile, "utf8")
+        .trim()
+        .split("\n")
+        .slice(-12);
+    } catch {
+      return [];
+    }
+  }
   view(selected) {
     return {
+      diagnostics: this.diagnostics(),
       ...this.store.view(selected || this.account || this.store.get("active")),
       status: this.status,
       qr: this.qr,
@@ -69,6 +93,7 @@ class WhatsAppConnection {
         }
       });
       client.on("ready", () => {
+        this.log("ready: cuenta " + (client.info?.wid?.user || "?"));
         if (generation !== this.generation) return;
         try {
           const number = client.info?.wid?.user;
@@ -100,16 +125,26 @@ class WhatsAppConnection {
         }
       });
       client.on("message", (msg) => {
-        if (
-          generation !== this.generation ||
-          this.status !== "connected" ||
-          msg.fromMe ||
-          !msg.from ||
-          msg.from.endsWith("@g.us") ||
-          msg.from === "status@broadcast" ||
-          Number(msg.timestamp) < this.readyAt
-        )
+        const skip =
+          generation !== this.generation
+            ? "sesión anterior"
+            : this.status !== "connected"
+              ? "estado " + this.status
+              : msg.fromMe
+                ? "propio"
+                : !msg.from
+                  ? "sin remitente"
+                  : msg.from.endsWith("@g.us")
+                    ? "grupo"
+                    : msg.from === "status@broadcast"
+                      ? "estado de WhatsApp"
+                      : Number(msg.timestamp) < this.readyAt
+                        ? "anterior a la conexión"
+                        : "";
+        if (skip) {
+          this.log("entrante ignorado (" + skip + "): " + String(msg.from));
           return;
+        }
         this.chain = this.chain
           .then(() => this.receive(msg, generation))
           .catch(() => {
@@ -136,16 +171,38 @@ class WhatsAppConnection {
   async receive(msg, generation) {
     const account = this.account;
     if (!account || generation !== this.generation) return;
-    let id = msg.from;
-    if (id.endsWith("@lid")) {
-      const pairs = await this.client.getContactLidAndPhone([id]);
-      id = pairs?.[0]?.pn || "";
+    let id = String(msg.from || "");
+    if (!/^\d{8,15}@c\.us$/.test(id)) {
+      // Newer WhatsApp identifies contacts by LID: resolve it to the phone number.
+      let resolved = "";
+      try {
+        const pairs = await this.client.getContactLidAndPhone([id]);
+        resolved = String(pairs?.[0]?.pn || "");
+      } catch {}
+      if (!/^\d{8,15}@c\.us$/.test(resolved)) {
+        try {
+          const contact = await msg.getContact();
+          if (/^\d{8,15}$/.test(String(contact?.number || "")))
+            resolved = contact.number + "@c.us";
+        } catch {}
+      }
+      this.log("remitente " + id + " resuelto a " + (resolved || "nada"));
+      id = resolved;
     }
-    if (!/^\d{8,15}@c.us$/.test(id)) return;
+    if (!/^\d{8,15}@c\.us$/.test(id)) {
+      this.log(
+        "entrante descartado: remitente no resoluble " + String(msg.from),
+      );
+      return;
+    }
     const sender = normalize("+" + id.split("@")[0]);
     if (generation !== this.generation) return;
     const permitted = this.store.allowed(account, sender);
-    if (!permitted) return;
+    if (!permitted) {
+      this.log("entrante de " + sender + " no autorizado para esta cuenta");
+      return;
+    }
+    this.log("entrante de " + sender + " autorizado; importando");
     const messageId = String(msg.id?._serialized || "");
     if (!messageId || this.store.has(account, messageId)) return;
     const entry = {
@@ -233,14 +290,47 @@ class WhatsAppConnection {
     if (this.sending) throw Error("Ya hay un envío en curso.");
     this.sending = true;
     try {
-      const result = await this.client.sendMessage(
-        recipient.slice(1) + "@c.us",
-        text,
-      );
+      this.log("enviando a " + recipient + (order ? " pedido " + order : ""));
+      // WhatsApp now keys chats by LID: resolve the real chat id before sending.
+      // sendMessage returns undefined when no chat exists for the id.
+      const digits = recipient.slice(1);
+      let chatId = digits + "@c.us";
+      try {
+        const wid = await this.client.getNumberId(digits);
+        if (wid?._serialized) chatId = String(wid._serialized);
+      } catch (e) {
+        this.log("getNumberId falló: " + String(e?.message || e).slice(0, 120));
+      }
+      this.log("chat destino " + chatId);
+      let result = await this.client.sendMessage(chatId, text);
+      if (!result && chatId.endsWith("@c.us")) {
+        try {
+          const pairs = await this.client.getContactLidAndPhone([chatId]);
+          const lid = String(pairs?.[0]?.lid || "");
+          if (lid) {
+            this.log("reintento por LID " + lid);
+            result = await this.client.sendMessage(lid, text);
+          }
+        } catch (e) {
+          this.log(
+            "resolución LID falló: " + String(e?.message || e).slice(0, 120),
+          );
+        }
+      }
+      const messageId = String(result?.id?._serialized || "");
+      if (!messageId) {
+        this.log(
+          "envío NO confirmado a " + recipient + ": sin chat para ese número",
+        );
+        throw Error(
+          "WhatsApp no confirmó el envío: esta cuenta no encuentra un chat con " +
+            recipient +
+            ". Abrí una conversación con ese número desde el teléfono y volvé a intentarlo.",
+        );
+      }
+      this.log("enviado a " + recipient + " id " + messageId);
       const entry = {
-        id:
-          String(result?.id?._serialized || "") ||
-          require("node:crypto").randomUUID(),
+        id: messageId,
         recipient,
         at: new Date().toISOString(),
         text,

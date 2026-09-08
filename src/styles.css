@@ -2008,3 +2008,14 @@ dialog::backdrop {
   background: #e9f0e3;
   border-left: 3px solid #69815b;
 }
+
+.diag {
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #f4f1ea;
+  padding: 10px 12px;
+  border-radius: 10px;
+  max-height: 220px;
+  overflow: auto;
+}
