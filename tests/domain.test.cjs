@@ -662,3 +662,52 @@ test("el tipo de documento de una foto lo confirma la persona y se puede retirar
   s = apply(s, { type: "photoType", id });
   assert.equal(s.photos[0].docType, undefined);
 });
+
+test("ventas y mermas del día crean salidas trazables de producto terminado y avisan de mínimos", () => {
+  const before = seed().products.find((p) => p.id === "p4").stock;
+  let s = apply(seed(), {
+    type: "dailySales",
+    date: "2026-09-08",
+    lines: [
+      { product: "p4", sold: 1.5, waste: 0.25 },
+      { product: "p5", sold: 0, waste: 0 },
+    ],
+  });
+  assert.equal(s.products.find((p) => p.id === "p4").stock, before - 1.75);
+  assert.equal(
+    s.movements.filter((m) => /del día 2026-09-08/.test(m.reason)).length,
+    2,
+  );
+  assert.equal(s.movements.find((m) => m.kind === "waste").delta, -0.25);
+  assert.match(s.activity[0].text, /Ventas y mermas/);
+  assert.throws(
+    () =>
+      apply(seed(), {
+        type: "dailySales",
+        date: "2026-09-08",
+        lines: [{ product: "p4", sold: 0, waste: 0 }],
+      }),
+    /al menos/,
+  );
+  assert.throws(
+    () =>
+      apply(seed(), {
+        type: "dailySales",
+        date: "2026-09-08",
+        lines: [{ product: "p4", sold: 999, waste: 0 }],
+      }),
+    /negativo/,
+  );
+  assert.throws(
+    () =>
+      apply(seed(), {
+        type: "dailySales",
+        date: "2026-09-08",
+        lines: [
+          { product: "p4", sold: 1, waste: 0 },
+          { product: "p4", sold: 1, waste: 0 },
+        ],
+      }),
+    /repetidos/,
+  );
+});

@@ -2019,3 +2019,7 @@ dialog::backdrop {
   max-height: 220px;
   overflow: auto;
 }
+
+.field.short {
+  max-width: 220px;
+}

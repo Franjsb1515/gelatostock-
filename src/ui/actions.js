@@ -257,6 +257,32 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "dailySales") {
+    const panel = el.closest("[data-sales]");
+    const lines = [...panel.querySelectorAll("[data-sold]")]
+      .map((i) => ({
+        product: i.dataset.sold,
+        sold: Number(i.value) || 0,
+        waste:
+          Number(
+            panel.querySelector(`[data-waste="${i.dataset.sold}"]`)?.value,
+          ) || 0,
+      }))
+      .filter((l) => l.sold || l.waste);
+    if (!lines.length) {
+      toast("Indicá al menos una cantidad vendida o de merma.");
+      return;
+    }
+    await mutate(
+      {
+        type: "dailySales",
+        date: panel.querySelector("[data-sales-date]").value,
+        lines,
+      },
+      "Ventas y mermas registradas.",
+    );
+    return;
+  }
   if (name === "discardProduction") {
     await mutate(
       { type: "discardProduction", id: el.dataset.id },

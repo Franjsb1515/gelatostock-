@@ -710,6 +710,36 @@ export function apply(state: State, input: unknown): State {
           : "");
       break;
     }
+    case "dailySales": {
+      ensure(
+        new Set(a.lines.map((l) => l.product)).size === a.lines.length,
+        "Productos repetidos.",
+      );
+      const done: string[] = [];
+      for (const l of a.lines) {
+        const p = item(s.products, l.product);
+        if (l.sold) move(s, p.id, -l.sold, "exit", `Venta del día ${a.date}`);
+        if (l.waste)
+          move(s, p.id, -l.waste, "waste", `Merma del día ${a.date}`);
+        if (l.sold || l.waste)
+          done.push(
+            `${p.name}: ${l.sold ? "vendido " + l.sold + " " + p.unit : ""}${l.sold && l.waste ? ", " : ""}${l.waste ? "merma " + l.waste + " " + p.unit : ""}`,
+          );
+      }
+      ensure(
+        done.length > 0,
+        "Indicá al menos una cantidad vendida o de merma.",
+      );
+      const short = s.products.filter(
+        (x) => a.lines.some((l) => l.product === x.id) && x.stock < x.min,
+      );
+      note =
+        `Ventas y mermas del ${a.date}: ${done.join("; ")}.` +
+        (short.length
+          ? ` Por debajo del mínimo: ${short.map((x) => x.name).join(", ")}.`
+          : "");
+      break;
+    }
     case "discardProduction": {
       const p = item(s.productions, a.id);
       ensure(p.status === "proposed", "Esta producción ya se resolvió.");

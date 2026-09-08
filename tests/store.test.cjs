@@ -404,3 +404,40 @@ test("recetas y producciones persisten en SQLite y sobreviven al reinicio", () =
       2,
     );
   }));
+
+test("corte brusco del proceso a mitad de escrituras deja la base íntegra y consistente", () =>
+  fixture((dir) => {
+    const child = spawnSync(
+      process.execPath,
+      [
+        "-e",
+        `
+        const { Store } = require(process.argv[1]);
+        const s = new Store(process.argv[2]);
+        let rev = s.load().revision;
+        setTimeout(() => process.kill(process.pid, "SIGKILL"), 250);
+        for (let i = 0; ; i++) {
+          const st = s.dispatch({ type: "count", product: "p" + (1 + (i % 10)), value: i % 7, revision: rev, operationId: "k" + i });
+          rev = st.revision;
+        }
+        `,
+        path.resolve(__dirname, "../build/store.js"),
+        dir,
+      ],
+      { encoding: "utf8", timeout: 20000 },
+    );
+    assert.notEqual(child.status, 0);
+    const store = new Store(dir);
+    try {
+      assert.equal(
+        store.db.prepare("PRAGMA quick_check").get().quick_check,
+        "ok",
+      );
+      const s = store.load();
+      assert.ok(Number.isInteger(s.revision) && s.revision > 0);
+      assert.equal(s.processed.length, s.revision);
+      for (const p of s.products) assert.ok(p.stock >= 0);
+    } finally {
+      store.close();
+    }
+  }));

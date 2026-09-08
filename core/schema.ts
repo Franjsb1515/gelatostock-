@@ -343,6 +343,14 @@ export const actionSchema = z.intersection(
     }),
     z.object({ type: z.literal("discardProduction"), id: idSchema }),
     z.object({
+      type: z.literal("dailySales"),
+      date: documentDate,
+      lines: z
+        .array(z.object({ product: idSchema, sold: quantity, waste: quantity }))
+        .min(1)
+        .max(500),
+    }),
+    z.object({
       type: z.literal("photoType"),
       id: idSchema,
       docType: documentTypes.optional(),

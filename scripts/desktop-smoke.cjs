@@ -338,6 +338,18 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: producción de 4 kg: consumo estimado (2 L leche) corregido a 1,5 L y aprobado; terminado +4 kg; nada cambió antes de aprobar.",
     );
+    const chocolateAfter = savedStock("p4");
+    await window.locator('[data-sold="p4"]').fill("1");
+    await window.locator('[data-waste="p4"]').fill("0.5");
+    await window
+      .getByRole("button", { name: "Registrar ventas y mermas", exact: true })
+      .click();
+    for (let i = 0; i < 50 && savedStock("p4") !== chocolateAfter - 1.5; i++)
+      await new Promise((r) => setTimeout(r, 200));
+    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
+    console.log(
+      "PASS: ventas y mermas del día descuentan producto terminado (1 kg vendido, 0,5 kg merma).",
+    );
     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
     await window
       .getByRole("button", { name: "Simular mensaje", exact: true })

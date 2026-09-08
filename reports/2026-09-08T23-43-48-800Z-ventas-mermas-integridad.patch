@@ -1,0 +1,424 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index beb8a73..692e282 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.10.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.10.1-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 76b7dcc..b045378 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.10.1 — 2026-09-09 · sesión 017
++
++Ventas y mermas del día de producto terminado desde Producción (salidas y mermas trazables, aviso de mínimos). Etiquetas de producción y terminado en el historial. Prueba de integridad: un proceso matado a mitad de escrituras deja SQLite íntegra y consistente (quick_check, revisión y operaciones alineadas).
++
++94 pruebas, ejecutable 0.10.1. Informe reports/2026-09-08T23-43-48-800Z-ventas-mermas-integridad.md.
++
+ ## 0.10.0 — 2026-09-09 · sesión 016
+ 
+ Sesión autónoma de mejora general pedida por el usuario. Bandeja unificada: los mensajes de WhatsApp de proveedores autorizados entran en Mensajes con lectura por reglas, se vinculan solos al pedido enviado a ese número cuando no hay duda y fijan la entrega prevista del pedido (visible en Control de entregas y en Resumen). Copia automática diaria con retención de 30 copias automáticas e indicador en Configuración. Endurecimiento: Permissions-Policy y Referrer-Policy, permisos de Electron denegados también en comprobación, sin webview, errores no controlados a data/runtime/logs/errores.log. Tipo de documento confirmado por la persona guardado en la foto. Interfaz dividida en módulos src/ui/*.js por responsabilidad.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 048eaff..51c644d 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.10.0
++# Entrada para Claude · entrega vigente 0.10.1
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index 88757a0..13ed18a 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.10.0
++# GelatoStock · prototipo 0.10.1
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.10.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.10.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.10.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.10.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
+ 9. Crear y restaurar copias en Configuración.
+ 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
+ 
+-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.10.0 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
++Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.10.1 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+ 
+ ## Qué está pendiente
+ 
+@@ -115,25 +115,28 @@ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Cont
+ 
+ Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
+ 
+-## Auditoría y mejora continua en 0.10.0
++## Auditoría y mejora continua en 0.10.1
+ La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
+ 
+-## Chat de dudas en 0.10.0
++## Chat de dudas en 0.10.1
+ IA local incluye un chat para preguntar cómo usar la app o qué dice el texto pegado en el editor. Responde el modelo local a partir de una guía fija y del texto del editor si se marca la casilla; no consulta el inventario ni los pedidos, no ejecuta acciones y sus respuestas son orientativas. Cada respuesta puede tardar de 30 segundos a más de un minuto en este equipo. El chat se conserva solo mientras la ventana está abierta.
+ 
+-## Producción y respuestas de proveedores en 0.10.0
++## Producción y respuestas de proveedores en 0.10.1
+ Producción: crea recetas (rinde X kg, ingredientes en su unidad base) y registra los kilos producidos por día. La app propone el consumo; corrígelo y aprueba para descontar ingredientes y sumar el producto terminado. La hoja diaria muestra kilos por gelato. Guía: docs/PRODUCCION_Y_RECETAS.md.
+ 
+ Mensajes: cada respuesta de proveedor se lee con reglas (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y se marca si debes leerla; las fechas como «el lunes» se resuelven. En Resumen aparece cuántos mensajes debes leer y en Control de entregas las respuestas vinculadas a cada pedido. «Segunda lectura con IA local» pide al modelo una categoría como propuesta; no cambia pedidos ni stock.
+ 
+-## Envío real por WhatsApp en 0.10.0
++## Envío real por WhatsApp en 0.10.1
+ En Compras → Control de entregas, un pedido pendiente tiene «Enviar por WhatsApp». Se muestra el texto exacto y el destinatario; al confirmar se envía una sola vez desde la cuenta vinculada por QR. Requisitos: WhatsApp conectado y el número del proveedor autorizado en WhatsApp → Autorizar chat. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a la pantalla WhatsApp y se lee por reglas. Prueba primero con un número propio.
+ 
+-## Diagnóstico de WhatsApp en 0.10.0
++## Diagnóstico de WhatsApp en 0.10.1
+ La pantalla WhatsApp muestra «Diagnóstico del canal» con los últimos eventos técnicos (remitente resuelto, autorizado o no, enviado, ignorado y por qué), sin contenido de mensajes, y un botón «Enviar mensaje de prueba» a un chat autorizado. Si un mensaje no aparece, ese diagnóstico dice el motivo.
+ 
+-## WhatsApp comprobado en 0.10.0
++## WhatsApp comprobado en 0.10.1
+ Envío y recepción reales verificados con dos números del propietario: la app envió un mensaje desde la cuenta vinculada y recibió la respuesta. Si un envío aparece como no confirmado, el diagnóstico del canal indica el motivo.
+ 
+-## Mejora general en 0.10.0
++## Mejora general en 0.10.1
+ Los mensajes de WhatsApp de proveedores autorizados aparecen también en Mensajes, con su lectura por reglas; si responden al pedido que les enviaste y es el único en curso, quedan vinculados y el pedido muestra la entrega prevista. La app hace una copia automática diaria (30 últimas en data/backups) y lo indica en Configuración. Puedes confirmar el tipo de documento de una foto desde IA local. El código de la interfaz está en src/ui/*.js.
++
++## Ventas y mermas en 0.10.1
++En Producción, la tabla «Ventas y mermas del día» registra kilos vendidos o desechados de cada producto terminado; cada cantidad crea una salida o merma en el historial, reversible como cualquier movimiento.
+diff --git a/TODO.md b/TODO.md
+index c594e7f..06b467c 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.1.
+ 
+ ## Entregado y comprobado
+ 
+@@ -27,8 +27,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
+ - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
+ - [x] Cancelar pedidos pendientes sin alterar stock.
+-- [x] Núcleo TypeScript estricto, validación de contratos y 92 pruebas automatizadas.
+-- [ ] Pruebas de interrupción eléctrica/disco lleno (la copia automática diaria ya existe).
++- [x] Núcleo TypeScript estricto, validación de contratos y 94 pruebas automatizadas.
++- [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
++- [ ] Prueba de disco lleno y validación del corte en el equipo real.
+ - [ ] Definir autenticación y permisos si lo usa más de una persona.
+ - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
+ - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
+@@ -76,7 +77,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [ ] Notificaciones nativas configurables: hoy los avisos están dentro de la app.
+ - [ ] Integración comprobada con Makro España u otro proveedor real.
+ - [x] Recetas y producción con consumo estimado aprobado por la persona, producto terminado y hoja diaria (docs/PRODUCCION_Y_RECETAS.md).
+-- [ ] Ventas, lotes y vencimientos; mermas y rendimientos por receta.
++- [x] Ventas y mermas diarias de producto terminado (Producción → Ventas y mermas del día).
++- [ ] Lotes y vencimientos; rendimientos por receta.
+ - [x] Lectura por reglas de respuestas de proveedores (categoría, fecha resuelta, qué leer) y segunda lectura opcional con IA que solo anota.
+ - [ ] Lectura automática de respuestas de WhatsApp importadas y aviso al recibirlas; hoy las reglas se aplican a los mensajes de la bandeja.
+ - [ ] Validar categorías y fechas con respuestas reales de proveedores (corpus sintético de 80 mensajes ya en pruebas; estimación de generalización 75 % con el resto marcado para leer); ampliar horas y tramos.
+diff --git a/core/domain.ts b/core/domain.ts
+index d3a7508..2a99ef7 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -710,6 +710,36 @@ export function apply(state: State, input: unknown): State {
+           : "");
+       break;
+     }
++    case "dailySales": {
++      ensure(
++        new Set(a.lines.map((l) => l.product)).size === a.lines.length,
++        "Productos repetidos.",
++      );
++      const done: string[] = [];
++      for (const l of a.lines) {
++        const p = item(s.products, l.product);
++        if (l.sold) move(s, p.id, -l.sold, "exit", `Venta del día ${a.date}`);
++        if (l.waste)
++          move(s, p.id, -l.waste, "waste", `Merma del día ${a.date}`);
++        if (l.sold || l.waste)
++          done.push(
++            `${p.name}: ${l.sold ? "vendido " + l.sold + " " + p.unit : ""}${l.sold && l.waste ? ", " : ""}${l.waste ? "merma " + l.waste + " " + p.unit : ""}`,
++          );
++      }
++      ensure(
++        done.length > 0,
++        "Indicá al menos una cantidad vendida o de merma.",
++      );
++      const short = s.products.filter(
++        (x) => a.lines.some((l) => l.product === x.id) && x.stock < x.min,
++      );
++      note =
++        `Ventas y mermas del ${a.date}: ${done.join("; ")}.` +
++        (short.length
++          ? ` Por debajo del mínimo: ${short.map((x) => x.name).join(", ")}.`
++          : "");
++      break;
++    }
+     case "discardProduction": {
+       const p = item(s.productions, a.id);
+       ensure(p.status === "proposed", "Esta producción ya se resolvió.");
+diff --git a/core/schema.ts b/core/schema.ts
+index b076e52..28fb975 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -342,6 +342,14 @@ export const actionSchema = z.intersection(
+       note: z.string().max(500).default(""),
+     }),
+     z.object({ type: z.literal("discardProduction"), id: idSchema }),
++    z.object({
++      type: z.literal("dailySales"),
++      date: documentDate,
++      lines: z
++        .array(z.object({ product: idSchema, sold: quantity, waste: quantity }))
++        .min(1)
++        .max(500),
++    }),
+     z.object({
+       type: z.literal("photoType"),
+       id: idSchema,
+diff --git a/package.json b/package.json
+index 4c0bd60..fe75592 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.10.0",
++  "version": "0.10.1",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 396ee54..32adea4 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -338,6 +338,18 @@ const assert = require("node:assert/strict");
+     console.log(
+       "PASS: producción de 4 kg: consumo estimado (2 L leche) corregido a 1,5 L y aprobado; terminado +4 kg; nada cambió antes de aprobar.",
+     );
++    const chocolateAfter = savedStock("p4");
++    await window.locator('[data-sold="p4"]').fill("1");
++    await window.locator('[data-waste="p4"]').fill("0.5");
++    await window
++      .getByRole("button", { name: "Registrar ventas y mermas", exact: true })
++      .click();
++    for (let i = 0; i < 50 && savedStock("p4") !== chocolateAfter - 1.5; i++)
++      await new Promise((r) => setTimeout(r, 200));
++    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
++    console.log(
++      "PASS: ventas y mermas del día descuentan producto terminado (1 kg vendido, 0,5 kg merma).",
++    );
+     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
+     await window
+       .getByRole("button", { name: "Simular mensaje", exact: true })
+diff --git a/src/styles.css b/src/styles.css
+index d8e2be4..37546d5 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -2019,3 +2019,7 @@ dialog::backdrop {
+   max-height: 220px;
+   overflow: auto;
+ }
++
++.field.short {
++  max-width: 220px;
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index f945319..3ba6ab2 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -257,6 +257,32 @@ async function action(name, el) {
+     );
+     return;
+   }
++  if (name === "dailySales") {
++    const panel = el.closest("[data-sales]");
++    const lines = [...panel.querySelectorAll("[data-sold]")]
++      .map((i) => ({
++        product: i.dataset.sold,
++        sold: Number(i.value) || 0,
++        waste:
++          Number(
++            panel.querySelector(`[data-waste="${i.dataset.sold}"]`)?.value,
++          ) || 0,
++      }))
++      .filter((l) => l.sold || l.waste);
++    if (!lines.length) {
++      toast("Indicá al menos una cantidad vendida o de merma.");
++      return;
++    }
++    await mutate(
++      {
++        type: "dailySales",
++        date: panel.querySelector("[data-sales-date]").value,
++        lines,
++      },
++      "Ventas y mermas registradas.",
++    );
++    return;
++  }
+   if (name === "discardProduction") {
+     await mutate(
+       { type: "discardProduction", id: el.dataset.id },
+diff --git a/src/ui/views.js b/src/ui/views.js
+index 0774ed3..8bb265b 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -174,9 +174,26 @@ function production() {
+         )
+         .join("") ||
+       '<div class="empty compact">Sin recetas. Crea la primera con «Nueva receta».</div>'
+-    }</div></section>`
++    }</div></section>${salesSection()}`
+   );
+ }
++function salesSection() {
++  const finished = state.products.filter(
++    (p) =>
++      p.unit === "kg" &&
++      (state.recipes.some((r) => r.product === p.id) ||
++        ["Gelatería", "Postres"].includes(p.category)),
++  );
++  const today = new Date().toISOString().slice(0, 10);
++  return `<section class="panel" data-sales><div class="panel-heading"><div><h2>Ventas y mermas del día</h2><p>Kilos vendidos o desechados de producto terminado. Cada cantidad crea una salida o una merma trazable y reversible.</p></div></div><label class="field short">Día<input type="date" class="inline-input" data-sales-date value="${today}" max="${today}"></label><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto terminado</th><th>Stock</th><th>Vendido (kg)</th><th>Merma (kg)</th></tr></thead><tbody>${finished
++    .map(
++      (p) =>
++        `<tr><td><strong>${esc(p.name)}</strong></td><td>${num(p.stock)} kg</td><td><input type="number" class="inline-input" data-sold="${esc(p.id)}" min="0" max="1000000" step="0.001" placeholder="0" aria-label="Vendido de ${esc(p.name)}"></td><td><input type="number" class="inline-input" data-waste="${esc(p.id)}" min="0" max="1000000" step="0.001" placeholder="0" aria-label="Merma de ${esc(p.name)}"></td></tr>`,
++    )
++    .join(
++      "",
++    )}</tbody></table></div>${finished.length ? `<div class="row-actions">${btn(icon("check") + " Registrar ventas y mermas", "dailySales", "primary")}</div>` : '<p class="muted">No hay productos terminados en kg.</p>'}</section>`;
++}
+ function ingredientRow(productId = "", qty = "") {
+   return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+ }
+@@ -326,6 +343,8 @@ function activity() {
+     waste: "Merma",
+     receipt: "Recepción",
+     reversal: "Corrección",
++    production: "Producción",
++    output: "Terminado",
+   };
+   const ledger = state.movements || [];
+   return (
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index f85bcbf..704ef33 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -662,3 +662,52 @@ test("el tipo de documento de una foto lo confirma la persona y se puede retirar
+   s = apply(s, { type: "photoType", id });
+   assert.equal(s.photos[0].docType, undefined);
+ });
++
++test("ventas y mermas del día crean salidas trazables de producto terminado y avisan de mínimos", () => {
++  const before = seed().products.find((p) => p.id === "p4").stock;
++  let s = apply(seed(), {
++    type: "dailySales",
++    date: "2026-09-08",
++    lines: [
++      { product: "p4", sold: 1.5, waste: 0.25 },
++      { product: "p5", sold: 0, waste: 0 },
++    ],
++  });
++  assert.equal(s.products.find((p) => p.id === "p4").stock, before - 1.75);
++  assert.equal(
++    s.movements.filter((m) => /del día 2026-09-08/.test(m.reason)).length,
++    2,
++  );
++  assert.equal(s.movements.find((m) => m.kind === "waste").delta, -0.25);
++  assert.match(s.activity[0].text, /Ventas y mermas/);
++  assert.throws(
++    () =>
++      apply(seed(), {
++        type: "dailySales",
++        date: "2026-09-08",
++        lines: [{ product: "p4", sold: 0, waste: 0 }],
++      }),
++    /al menos/,
++  );
++  assert.throws(
++    () =>
++      apply(seed(), {
++        type: "dailySales",
++        date: "2026-09-08",
++        lines: [{ product: "p4", sold: 999, waste: 0 }],
++      }),
++    /negativo/,
++  );
++  assert.throws(
++    () =>
++      apply(seed(), {
++        type: "dailySales",
++        date: "2026-09-08",
++        lines: [
++          { product: "p4", sold: 1, waste: 0 },
++          { product: "p4", sold: 1, waste: 0 },
++        ],
++      }),
++    /repetidos/,
++  );
++});
+diff --git a/tests/store.test.cjs b/tests/store.test.cjs
+index f77a73c..b8d6843 100644
+--- a/tests/store.test.cjs
++++ b/tests/store.test.cjs
+@@ -404,3 +404,40 @@ test("recetas y producciones persisten en SQLite y sobreviven al reinicio", () =
+       2,
+     );
+   }));
++
++test("corte brusco del proceso a mitad de escrituras deja la base íntegra y consistente", () =>
++  fixture((dir) => {
++    const child = spawnSync(
++      process.execPath,
++      [
++        "-e",
++        `
++        const { Store } = require(process.argv[1]);
++        const s = new Store(process.argv[2]);
++        let rev = s.load().revision;
++        setTimeout(() => process.kill(process.pid, "SIGKILL"), 250);
++        for (let i = 0; ; i++) {
++          const st = s.dispatch({ type: "count", product: "p" + (1 + (i % 10)), value: i % 7, revision: rev, operationId: "k" + i });
++          rev = st.revision;
++        }
++        `,
++        path.resolve(__dirname, "../build/store.js"),
++        dir,
++      ],
++      { encoding: "utf8", timeout: 20000 },
++    );
++    assert.notEqual(child.status, 0);
++    const store = new Store(dir);
++    try {
++      assert.equal(
++        store.db.prepare("PRAGMA quick_check").get().quick_check,
++        "ok",
++      );
++      const s = store.load();
++      assert.ok(Number.isInteger(s.revision) && s.revision > 0);
++      assert.equal(s.processed.length, s.revision);
++      for (const p of s.products) assert.ok(p.stock >= 0);
++    } finally {
++      store.close();
++    }
++  }));

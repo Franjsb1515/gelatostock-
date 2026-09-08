@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.1.
 
 ## Entregado y comprobado
 
@@ -27,8 +27,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 92 pruebas automatizadas.
-- [ ] Pruebas de interrupción eléctrica/disco lleno (la copia automática diaria ya existe).
+- [x] Núcleo TypeScript estricto, validación de contratos y 94 pruebas automatizadas.
+- [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
+- [ ] Prueba de disco lleno y validación del corte en el equipo real.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
 - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
@@ -76,7 +77,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Notificaciones nativas configurables: hoy los avisos están dentro de la app.
 - [ ] Integración comprobada con Makro España u otro proveedor real.
 - [x] Recetas y producción con consumo estimado aprobado por la persona, producto terminado y hoja diaria (docs/PRODUCCION_Y_RECETAS.md).
-- [ ] Ventas, lotes y vencimientos; mermas y rendimientos por receta.
+- [x] Ventas y mermas diarias de producto terminado (Producción → Ventas y mermas del día).
+- [ ] Lotes y vencimientos; rendimientos por receta.
 - [x] Lectura por reglas de respuestas de proveedores (categoría, fecha resuelta, qué leer) y segunda lectura opcional con IA que solo anota.
 - [ ] Lectura automática de respuestas de WhatsApp importadas y aviso al recibirlas; hoy las reglas se aplican a los mensajes de la bandeja.
 - [ ] Validar categorías y fechas con respuestas reales de proveedores (corpus sintético de 80 mensajes ya en pruebas; estimación de generalización 75 % con el resto marcado para leer); ampliar horas y tramos.

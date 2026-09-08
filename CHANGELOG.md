@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.10.1 — 2026-09-09 · sesión 017
+
+Ventas y mermas del día de producto terminado desde Producción (salidas y mermas trazables, aviso de mínimos). Etiquetas de producción y terminado en el historial. Prueba de integridad: un proceso matado a mitad de escrituras deja SQLite íntegra y consistente (quick_check, revisión y operaciones alineadas).
+
+94 pruebas, ejecutable 0.10.1. Informe reports/2026-09-08T23-43-48-800Z-ventas-mermas-integridad.md.
+
 ## 0.10.0 — 2026-09-09 · sesión 016
 
 Sesión autónoma de mejora general pedida por el usuario. Bandeja unificada: los mensajes de WhatsApp de proveedores autorizados entran en Mensajes con lectura por reglas, se vinculan solos al pedido enviado a ese número cuando no hay duda y fijan la entrega prevista del pedido (visible en Control de entregas y en Resumen). Copia automática diaria con retención de 30 copias automáticas e indicador en Configuración. Endurecimiento: Permissions-Policy y Referrer-Policy, permisos de Electron denegados también en comprobación, sin webview, errores no controlados a data/runtime/logs/errores.log. Tipo de documento confirmado por la persona guardado en la foto. Interfaz dividida en módulos src/ui/*.js por responsabilidad.
