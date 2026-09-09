@@ -711,3 +711,26 @@ test("ventas y mermas del día crean salidas trazables de producto terminado y a
     /repetidos/,
   );
 });
+
+test("limpieza de actividad conserva las entradas recientes y nunca toca movimientos", () => {
+  let s = seed();
+  for (let i = 0; i < 60; i++)
+    s = apply(s, { type: "count", product: "p1", value: i % 5 });
+  const old = "2000-01-01T00:00:00.000Z";
+  s.activity = s.activity.map((a, i) => (i >= 55 ? { ...a, at: old } : a));
+  const movements = s.movements.length;
+  const purged = apply(s, {
+    type: "purge",
+    before: "2020-01-01T00:00:00.000Z",
+    keep: 50,
+  });
+  assert.equal(purged.activity.filter((a) => a.at === old).length, 0);
+  assert.equal(purged.movements.length, movements);
+  assert.match(purged.activity[0].text, /Limpieza: eliminadas 6 entradas/);
+  const keepAll = apply(s, {
+    type: "purge",
+    before: "2020-01-01T00:00:00.000Z",
+    keep: 100,
+  });
+  assert.equal(keepAll.activity.filter((a) => a.at === old).length, 6);
+});

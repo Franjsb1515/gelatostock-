@@ -346,3 +346,80 @@ test("exportación CSV de inventario y movimientos con BOM y punto y coma", asyn
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("recetario con contraseña: oculta recetas, bloquea acciones, desbloquea y limpieza configurable", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-lock-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    const state = async () =>
+      await (await fetch(origin + "/api/state", { headers })).json();
+    let d = await state();
+    assert.equal(d.lock.enabled, false);
+    assert.ok(d.state.recipes[0].ingredients.length > 0);
+    let r = await post("/api/lock", { type: "set", password: "corta" });
+    assert.equal(r.status, 400);
+    r = await post("/api/lock", { type: "set", password: "helado-secreto" });
+    assert.equal(r.status, 200);
+    d = await r.json();
+    assert.deepEqual(d.lock, { enabled: true, unlocked: true });
+    r = await post("/api/lock", { type: "lock" });
+    d = await r.json();
+    assert.equal(d.lock.unlocked, false);
+    assert.equal(d.state.recipes[0].ingredients.length, 0);
+    assert.equal(d.state.recipes[0].locked, true);
+    r = await post("/api/action", {
+      type: "produce",
+      recipe: "r1",
+      quantity: 1,
+      date: "2026-09-09",
+      revision: d.state.revision,
+      operationId: "lk1",
+    });
+    assert.equal(r.status, 400);
+    assert.match((await r.json()).error, /protegidas/);
+    r = await post("/api/lock", { type: "unlock", password: "mala" });
+    assert.equal(r.status, 400);
+    r = await post("/api/lock", { type: "unlock", password: "helado-secreto" });
+    assert.equal(r.status, 200);
+    d = await r.json();
+    assert.equal(d.lock.unlocked, true);
+    assert.ok(d.state.recipes[0].ingredients.length > 0);
+    r = await post("/api/action", {
+      type: "produce",
+      recipe: "r1",
+      quantity: 1,
+      date: "2026-09-09",
+      revision: d.state.revision,
+      operationId: "lk2",
+    });
+    assert.equal(r.status, 200);
+    r = await post("/api/lock", { type: "remove", password: "helado-secreto" });
+    assert.equal((await r.json()).lock.enabled, false);
+    r = await post("/api/maintenance", { type: "retention", days: 5 });
+    assert.equal(r.status, 400);
+    r = await post("/api/maintenance", { type: "retention", days: 7 });
+    assert.equal((await r.json()).retentionDays, 7);
+    r = await post("/api/maintenance", { type: "purge" });
+    d = await r.json();
+    assert.equal(r.status, 200);
+    assert.equal(d.purge.activity, 0);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

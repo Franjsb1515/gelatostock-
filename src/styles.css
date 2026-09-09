@@ -2031,3 +2031,7 @@ dialog::backdrop {
 .steps li {
   margin-bottom: 6px;
 }
+
+.lock-panel {
+  max-width: 480px;
+}

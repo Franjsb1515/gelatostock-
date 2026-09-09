@@ -618,6 +618,16 @@ export function apply(state: State, input: unknown): State {
       note = `Receta guardada: ${fields.name} (rinde ${fields.yield} kg).`;
       break;
     }
+    case "purge": {
+      // Activity notes older than the date are dropped, keeping the newest entries.
+      // Stock movements are never purged: they are the audit trail.
+      const total = s.activity.length;
+      const kept = s.activity.filter((x, i) => i < a.keep || x.at >= a.before);
+      const removed = total - kept.length;
+      s.activity = kept;
+      note = `Limpieza: eliminadas ${removed} entradas de actividad anteriores al ${a.before.slice(0, 10)}. Los movimientos de stock se conservan.`;
+      break;
+    }
     case "deleteRecipe": {
       const r = item(s.recipes, a.id);
       ensure(

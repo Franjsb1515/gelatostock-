@@ -619,6 +619,120 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "unlockRecipes") {
+    try {
+      const data = await request("/api/lock", {
+        type: "unlock",
+        password: $("#lock-password")?.value || "",
+      });
+      state = data.state;
+      lockInfo = data.lock;
+      render();
+      toast("Recetario desbloqueado durante 30 minutos.");
+    } catch (e) {
+      toast(e.message);
+    }
+    return;
+  }
+  if (name === "lockNow") {
+    const data = await request("/api/lock", { type: "lock" });
+    state = data.state;
+    lockInfo = data.lock;
+    render();
+    return;
+  }
+  if (name === "lockSet" || name === "lockChange") {
+    const change = name === "lockChange";
+    modal(
+      change
+        ? "Cambiar la contraseña del recetario"
+        : "Poner contraseña al recetario",
+      "Mínimo 6 caracteres. Guárdala: no hay recuperación automática.",
+      (change
+        ? field(
+            "Contraseña actual",
+            "current",
+            "",
+            "password",
+            'required maxlength="100"',
+          )
+        : "") +
+        field(
+          "Nueva contraseña",
+          "password",
+          "",
+          "password",
+          'required minlength="6" maxlength="100"',
+        ) +
+        field(
+          "Repetir contraseña",
+          "again",
+          "",
+          "password",
+          'required minlength="6" maxlength="100"',
+        ),
+      async (f) => {
+        if (f.get("password") !== f.get("again"))
+          throw Error("Las contraseñas no coinciden.");
+        const data = await request("/api/lock", {
+          type: "set",
+          password: f.get("password"),
+          ...(change ? { current: f.get("current") } : {}),
+        });
+        state = data.state;
+        lockInfo = data.lock;
+        render();
+        toast("Contraseña del recetario guardada.");
+        return true;
+      },
+    );
+    return;
+  }
+  if (name === "lockRemove") {
+    modal(
+      "Quitar la contraseña del recetario",
+      "Las recetas volverán a verse sin contraseña.",
+      field(
+        "Contraseña actual",
+        "password",
+        "",
+        "password",
+        'required maxlength="100"',
+      ),
+      async (f) => {
+        const data = await request("/api/lock", {
+          type: "remove",
+          password: f.get("password"),
+        });
+        state = data.state;
+        lockInfo = data.lock;
+        render();
+        return true;
+      },
+      "Quitar",
+    );
+    return;
+  }
+  if (name === "purgeNow") {
+    modal(
+      "Limpiar ahora",
+      `Se borrarán la actividad y las conversaciones de WhatsApp anteriores a ${retentionDays} días. Los movimientos de stock se conservan.`,
+      "<p>Existe una copia automática diaria en data/backups.</p>",
+      async () => {
+        const data = await request("/api/maintenance", { type: "purge" });
+        state = data.state;
+        toast(
+          data.purge?.skipped
+            ? "No hay limpieza configurada."
+            : `Limpieza hecha: ${data.purge.activity} entradas de actividad, ${data.purge.messages} mensajes de WhatsApp.`,
+        );
+        render();
+        return true;
+      },
+      "Borrar",
+    );
+    return;
+  }
   if (name === "exportCsv") {
     try {
       const r = await request("/api/export", {});

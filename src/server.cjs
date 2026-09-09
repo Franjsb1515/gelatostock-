@@ -1,7 +1,7 @@
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
-const { randomBytes, timingSafeEqual } = require("node:crypto");
+const { randomBytes, timingSafeEqual, scryptSync } = require("node:crypto");
 const { identifySupplier } = require("../build/identify.js");
 const { interpretReply } = require("../build/messages.js");
 const { orderMessage } = require("../build/domain.js");
@@ -45,6 +45,79 @@ function createApp({
   setImmediate(autoBackup);
   const backupTimer = setInterval(autoBackup, 6 * 3600 * 1000);
   backupTimer.unref();
+  // Recipe lock: a local password hides recipes and blocks recipe/production actions
+  // until unlocked (30 min). It protects the screen, not the disk.
+  const lock = { unlockedUntil: 0, failures: 0 };
+  const lockEnabled = () => !!store.setting("recipes_lock");
+  const unlocked = () => !lockEnabled() || Date.now() < lock.unlockedUntil;
+  const hashPassword = (password, salt = randomBytes(16).toString("hex")) =>
+    "scrypt$" + salt + "$" + scryptSync(password, salt, 32).toString("hex");
+  const checkPassword = (password) => {
+    const stored = store.setting("recipes_lock") || "";
+    const [, salt, hex] = stored.split("$");
+    if (!salt || !hex) return false;
+    const candidate = scryptSync(password, salt, 32);
+    return timingSafeEqual(candidate, Buffer.from(hex, "hex"));
+  };
+  const validPassword = (p) =>
+    typeof p === "string" && p.length >= 6 && p.length <= 100;
+  const lockInfo = () => ({ enabled: lockEnabled(), unlocked: unlocked() });
+  const redact = (state) =>
+    unlocked()
+      ? state
+      : {
+          ...state,
+          recipes: state.recipes.map((r) => ({
+            ...r,
+            ingredients: [],
+            note: "",
+            locked: true,
+          })),
+          productions: state.productions.map((p) => ({ ...p, lines: [] })),
+        };
+  const lockedActions = new Set([
+    "recipe",
+    "deleteRecipe",
+    "produce",
+    "applyProduction",
+    "discardProduction",
+  ]);
+  // Weekly (or N days) cleanup of activity notes and WhatsApp conversations; movements stay.
+  const retentionDays = () => Number(store.setting("retention_days") || 0);
+  const purgeNow = () => {
+    const days = retentionDays();
+    if (!(days > 0)) return { skipped: true };
+    const before = new Date(Date.now() - days * 86400000).toISOString();
+    const s = store.load();
+    const removable = Math.min(
+      s.activity.filter((a) => a.at < before).length,
+      Math.max(0, s.activity.length - 50),
+    );
+    if (removable > 0) store.dispatch({ type: "purge", before, keep: 50 });
+    const channel = whatsapp.store.purge(before);
+    return { activity: removable, ...channel, before };
+  };
+  const autoPurge = () => {
+    try {
+      purgeNow();
+    } catch (e) {
+      whatsapp.log("limpieza automática falló: " + String(e?.message || e));
+    }
+  };
+  setTimeout(autoPurge, 5000).unref();
+  const purgeTimer = setInterval(autoPurge, 6 * 3600 * 1000);
+  purgeTimer.unref();
+  const envelope = (state, extra = {}) => ({
+    state: redact(state),
+    dataDir,
+    storage: "SQLite",
+    archiveWarning: store.archiveWarning,
+    version,
+    backup: backupInfo,
+    lock: lockInfo(),
+    retentionDays: retentionDays(),
+    ...extra,
+  });
   const ai = new LocalAI();
   const whatsapp = new WhatsAppConnection(dataDir, store);
   const token = randomBytes(32).toString("hex");
@@ -107,14 +180,7 @@ function createApp({
       return;
     }
     if (u.pathname === "/api/state" && req.method === "GET") {
-      json(200, {
-        state: store.load(),
-        dataDir,
-        storage: "SQLite",
-        archiveWarning: store.archiveWarning,
-        version,
-        backup: backupInfo,
-      });
+      json(200, envelope(store.load()));
       return;
     }
     if (
@@ -127,6 +193,8 @@ function createApp({
         "/api/action",
         "/api/backup",
         "/api/export",
+        "/api/lock",
+        "/api/maintenance",
         "/api/restore",
         "/api/identify",
         "/api/whatsapp",
@@ -186,14 +254,7 @@ function createApp({
             status: reading.status,
             model: reading.model,
           });
-          json(200, {
-            state,
-            dataDir,
-            storage: "SQLite",
-            archiveWarning: store.archiveWarning,
-            version,
-            reading,
-          });
+          json(200, envelope(state, { reading }));
           return;
         }
         if (u.pathname === "/api/whatsapp") {
@@ -250,14 +311,7 @@ function createApp({
                 text,
               },
             });
-            json(200, {
-              state: next,
-              dataDir,
-              storage: "SQLite",
-              archiveWarning: store.archiveWarning,
-              version,
-              sent,
-            });
+            json(200, envelope(next, { sent }));
             return;
           }
           if (data.type === "recover") {
@@ -296,6 +350,52 @@ function createApp({
             detection: identifySupplier(store.load(), { text: result.text }),
           });
           return;
+        }
+        if (u.pathname === "/api/lock") {
+          if (data.type === "set") {
+            if (lockEnabled() && !checkPassword(String(data.current || "")))
+              throw Error("La contraseña actual no es correcta.");
+            if (!validPassword(data.password))
+              throw Error("La contraseña debe tener entre 6 y 100 caracteres.");
+            store.setSetting("recipes_lock", hashPassword(data.password));
+            lock.unlockedUntil = Date.now() + 30 * 60000;
+          } else if (data.type === "unlock") {
+            if (!lockEnabled())
+              throw Error("El recetario no tiene contraseña.");
+            await new Promise((r) =>
+              setTimeout(r, Math.min(5000, 300 * lock.failures)),
+            );
+            if (!checkPassword(String(data.password || ""))) {
+              lock.failures++;
+              throw Error("Contraseña incorrecta.");
+            }
+            lock.failures = 0;
+            lock.unlockedUntil = Date.now() + 30 * 60000;
+          } else if (data.type === "lock") lock.unlockedUntil = 0;
+          else if (data.type === "remove") {
+            if (!checkPassword(String(data.password || "")))
+              throw Error("Contraseña incorrecta.");
+            store.setSetting("recipes_lock", undefined);
+            lock.unlockedUntil = 0;
+          } else throw Error("Acción de bloqueo desconocida.");
+          json(200, envelope(store.load()));
+          return;
+        }
+        if (u.pathname === "/api/maintenance") {
+          if (data.type === "retention") {
+            const days = Number(data.days);
+            if (![0, 7, 14, 30, 90].includes(days))
+              throw Error("Elegí 0 (sin limpieza), 7, 14, 30 o 90 días.");
+            store.setSetting("retention_days", String(days));
+            json(200, envelope(store.load()));
+            return;
+          }
+          if (data.type === "purge") {
+            const result = purgeNow();
+            json(200, envelope(store.load(), { purge: result }));
+            return;
+          }
+          throw Error("Acción de mantenimiento desconocida.");
         }
         if (u.pathname === "/api/export") {
           // CSV (semicolon, UTF-8 with BOM) of products and movements for a spreadsheet.
@@ -387,15 +487,13 @@ function createApp({
             typeof data.operationId !== "string"
           )
             throw Error("Falta la versión o el identificador de la operación.");
+          if (lockedActions.has(String(data.type)) && !unlocked())
+            throw Error(
+              "Recetas protegidas: desbloqueá el recetario con la contraseña.",
+            );
           store.dispatch(data);
         }
-        json(200, {
-          state: store.load(),
-          dataDir,
-          storage: "SQLite",
-          archiveWarning: store.archiveWarning,
-          version,
-        });
+        json(200, envelope(store.load()));
       } catch (e) {
         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
           error: e.message,
@@ -463,6 +561,7 @@ function createApp({
     });
     server.once("close", () => {
       clearInterval(backupTimer);
+      clearInterval(purgeTimer);
       ai.cancel().catch(() => {});
       store.close();
       whatsapp.close().catch(() => {});

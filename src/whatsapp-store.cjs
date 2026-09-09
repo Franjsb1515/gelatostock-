@@ -171,6 +171,37 @@ class WhatsAppStore {
         .all(),
     };
   }
+  purge(before) {
+    const old = this.db
+      .prepare("SELECT file FROM messages WHERE at<? AND file IS NOT NULL")
+      .all(before);
+    for (const r of old) {
+      const rel = String(r.file);
+      if (!/^files[\\/]/.test(rel)) continue;
+      const target = path.resolve(this.dir, rel);
+      if (target.startsWith(path.resolve(this.dir, "files") + path.sep))
+        try {
+          fs.unlinkSync(target);
+        } catch {}
+    }
+    const messages = this.db
+      .prepare("DELETE FROM messages WHERE at<?")
+      .run(before).changes;
+    const sent = this.db
+      .prepare("DELETE FROM sent WHERE at<?")
+      .run(before).changes;
+    const history = this.db
+      .prepare("DELETE FROM history WHERE at<?")
+      .run(before).changes;
+    this.note(
+      `Limpieza: eliminados ${messages} mensajes, ${sent} envíos y ${history} notas anteriores al ${before.slice(0, 10)}.`,
+    );
+    return {
+      messages: Number(messages),
+      sent: Number(sent),
+      history: Number(history),
+    };
+  }
   backup() {
     const dest = path.join(
       this.dir,

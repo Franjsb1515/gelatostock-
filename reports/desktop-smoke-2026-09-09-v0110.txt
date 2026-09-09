@@ -1,0 +1,15 @@
+
+> appgelatostock@0.11.0 test:desktop
+> node scripts/desktop-smoke.cjs
+
+PASS: pedido 2 cajas de 6 L; recepción 4 L, pendiente 8 L; recepción final cierra el pedido.
+PASS: producción de 4 kg: consumo estimado (2 L leche) corregido a 1,5 L y aprobado; terminado +4 kg; nada cambió antes de aprobar.
+PASS: ventas y mermas del día descuentan producto terminado (1 kg vendido, 0,5 kg merma).
+PASS: respuesta de proveedor leída por reglas: falta de producto, fecha resuelta y marcada para leer.
+PASS: modelo local REAL en ejecutable, factura reconocida sin modificar stock.
+PASS: modelo local diferencia lista de precios de factura.
+PASS: chat de dudas con modelo REAL responde texto plano sin modificar stock: "La pantalla Control de entregas muestra por producto lo pedido, lo recibido y lo que falta recibir."
+PASS: segunda lectura de respuesta de proveedor con modelo REAL anotada sin cambiar stock: ", Qwen3 0.6B · Q4 · CPU local): Sin interpretar · las lecturas discrepan: revisa tú · 07:42"
+PASS: cancelación desde la interfaz.
+PASS: OCR local automático de proveedor y propuesta en mensaje; búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.
+{"userData":"D:\\APPGELATOSTOCK\\work\\desktop-v8-y5pEm4\\runtime","sessionData":"D:\\APPGELATOSTOCK\\work\\desktop-v8-y5pEm4\\runtime"}

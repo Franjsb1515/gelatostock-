@@ -68,6 +68,7 @@ export class Store {
    CREATE TABLE IF NOT EXISTS movements(id TEXT PRIMARY KEY,product TEXT NOT NULL REFERENCES products(id),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS photos(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY,fingerprint TEXT,position INTEGER NOT NULL);
+   CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
    CREATE TABLE IF NOT EXISTS recipes(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS productions(id TEXT PRIMARY KEY,recipe TEXT NOT NULL REFERENCES recipes(id),status TEXT NOT NULL CHECK(status IN ('proposed','applied','discarded')),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE INDEX IF NOT EXISTS order_lines_product ON order_lines(product);
@@ -518,6 +519,23 @@ export class Store {
       if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
       throw error;
     }
+  }
+  // Local preferences outside the exported state (never part of backups).
+  setting(key: string): string | undefined {
+    const row = this.db
+      .prepare("SELECT value FROM settings WHERE key=?")
+      .get(key);
+    return row ? String(row.value) : undefined;
+  }
+  setSetting(key: string, value: string | undefined): void {
+    if (value === undefined)
+      this.db.prepare("DELETE FROM settings WHERE key=?").run(key);
+    else
+      this.db
+        .prepare(
+          "INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        )
+        .run(key, value);
   }
   backup(): string {
     const folder = path.join(this.dataDir, "backups");

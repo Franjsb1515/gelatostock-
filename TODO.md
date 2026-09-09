@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.3.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.11.0.
 
 ## Entregado y comprobado
 
@@ -13,7 +13,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Persistencia local y copias/restauración validadas por pruebas.
 - [x] Archivo manual de imágenes con proveedor, fecha y reclasificación.
 - [x] Carpetas automáticas y fichas/datos por proveedor; recuperación de archivo derivado.
-- [ ] Abrir carpetas desde la app, importar otros tipos de documento y definir limpieza de copias históricas.
+- [ ] Abrir carpetas desde la app e importar otros tipos de documento.
+- [x] Limpieza periódica configurable de actividad y conversaciones; retención de copias automáticas.
+- [x] Recetario protegido con contraseña local (pantalla y acciones; no cifra el disco).
 - [x] Historial de actividad separado de los informes de desarrollo.
 - [x] Pruebas de dominio y servidor; prueba del ejecutable con reinicio.
 - [x] Revisión visual de resumen, compras y mensajes.
@@ -27,10 +29,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 99 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 102 pruebas automatizadas.
 - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
 - [ ] Prueba de disco lleno y validación del corte en el equipo real.
-- [ ] Definir autenticación y permisos si lo usa más de una persona.
+- [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
 - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
 - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
 - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.

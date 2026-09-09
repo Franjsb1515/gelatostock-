@@ -116,6 +116,14 @@ function orderReplies(o) {
     .join("")}</div>`;
 }
 function production() {
+  if (lockInfo?.enabled && !lockInfo.unlocked)
+    return (
+      header(
+        "Recetario protegido",
+        "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
+      ) +
+      `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, se puede quitar con la app cerrada borrando la clave recipes_lock de la tabla settings de gelatostock.sqlite.</p></section>`
+    );
   const proposed = proposedProductions();
   const applied = state.productions.filter((p) => p.status === "applied");
   const byDate = {};
@@ -391,6 +399,19 @@ function settings() {
             `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}${ph.docType ? " · " + esc(aiTypes[ph.docType] || ph.docType).replace("Posible ", "") : ""}</small>${esc(ph.name)}<small>${esc(ph.note)}</small>${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}${ph.ocrText ? btn("Revisar texto con IA", "aiPhoto", "secondary", `data-id="${ph.id}"`) : ""}</figcaption></figure>`,
         )
         .join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'
-    }</div></section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+    }</div></section><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Recetario protegido</h2>${lockInfo?.enabled ? `<p>Las recetas piden contraseña. Estado: <strong>${lockInfo.unlocked ? "desbloqueado (30 min)" : "bloqueado"}</strong>.</p><div class="setting-actions">${btn("Bloquear ahora", "lockNow", "secondary")}${btn("Cambiar contraseña", "lockChange", "secondary")}${btn("Quitar contraseña", "lockRemove", "secondary")}</div>` : `<p>Sin contraseña: cualquiera con la app abierta ve las recetas.</p>${btn("Poner contraseña", "lockSet", "primary")}`}<p class="fineprint">Protege la pantalla y bloquea crear, editar o producir con recetas. No cifra el disco.</p></section><section class="panel settings-card"><h2>Limpieza periódica</h2><p>Borra la actividad y las conversaciones de WhatsApp más antiguas que el plazo elegido (se conservan las 50 entradas más recientes). Los movimientos de stock y las copias no se tocan.</p><label class="field">Conservar<select id="retention-days">${[
+      [0, "Sin limpieza automática"],
+      [7, "7 días (semanal)"],
+      [14, "14 días"],
+      [30, "30 días"],
+      [90, "90 días"],
+    ]
+      .map(
+        ([v, l]) =>
+          `<option value="${v}" ${retentionDays === v ? "selected" : ""}>${l}</option>`,
+      )
+      .join(
+        "",
+      )}</select></label><div class="setting-actions">${btn("Limpiar ahora", "purgeNow", "secondary", retentionDays ? "" : "disabled")}</div><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
   );
 }

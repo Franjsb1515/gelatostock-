@@ -1,0 +1,933 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 07f5b92..3ac3304 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.10.3-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.11.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 0caa94c..bae0982 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.11.0 — 2026-09-09 · sesión 020
++
++Recetario con contraseña: las recetas y la producción se ocultan y bloquean hasta desbloquear (30 minutos); contraseña local con scrypt, cambio y retirada con contraseña, retardo creciente ante fallos. Limpieza periódica configurable (7, 14, 30 o 90 días): borra actividad antigua (conserva las 50 entradas más recientes) y conversaciones, envíos, notas y adjuntos de WhatsApp anteriores al plazo; los movimientos de stock y las copias no se tocan; se ejecuta al abrir y cada seis horas o a mano.
++
++102 pruebas, ejecutable 0.11.0. Informe reports/2026-09-09T10-42-22-808Z-recetario-contrasena-limpieza.md.
++
+ ## 0.10.3 — 2026-09-09 · sesión 019
+ 
+ WhatsApp: al conectar se revisa el historial reciente de cada chat autorizado e importa lo que faltaba (texto), también a mano con «Recuperar mensajes recientes»; reconexión automática con esperas crecientes si la sesión se cae y «Conectar al abrir» está activo (nunca tras un cierre de sesión). Exportar CSV (inventario y movimientos, punto y coma, BOM) desde Configuración.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 8567b97..84a6e5a 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.10.3
++# Entrada para Claude · entrega vigente 0.11.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index ce60ddb..74eb87b 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.10.3
++# GelatoStock · prototipo 0.11.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.10.3-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.11.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.10.3-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.11.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
+ 9. Crear y restaurar copias en Configuración.
+ 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
+ 
+-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.10.3 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
++Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.11.0 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+ 
+ ## Qué está pendiente
+ 
+@@ -115,34 +115,37 @@ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Cont
+ 
+ Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
+ 
+-## Auditoría y mejora continua en 0.10.3
++## Auditoría y mejora continua en 0.11.0
+ La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
+ 
+-## Chat de dudas en 0.10.3
++## Chat de dudas en 0.11.0
+ IA local incluye un chat para preguntar cómo usar la app o qué dice el texto pegado en el editor. Responde el modelo local a partir de una guía fija y del texto del editor si se marca la casilla; no consulta el inventario ni los pedidos, no ejecuta acciones y sus respuestas son orientativas. Cada respuesta puede tardar de 30 segundos a más de un minuto en este equipo. El chat se conserva solo mientras la ventana está abierta.
+ 
+-## Producción y respuestas de proveedores en 0.10.3
++## Producción y respuestas de proveedores en 0.11.0
+ Producción: crea recetas (rinde X kg, ingredientes en su unidad base) y registra los kilos producidos por día. La app propone el consumo; corrígelo y aprueba para descontar ingredientes y sumar el producto terminado. La hoja diaria muestra kilos por gelato. Guía: docs/PRODUCCION_Y_RECETAS.md.
+ 
+ Mensajes: cada respuesta de proveedor se lee con reglas (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y se marca si debes leerla; las fechas como «el lunes» se resuelven. En Resumen aparece cuántos mensajes debes leer y en Control de entregas las respuestas vinculadas a cada pedido. «Segunda lectura con IA local» pide al modelo una categoría como propuesta; no cambia pedidos ni stock.
+ 
+-## Envío real por WhatsApp en 0.10.3
++## Envío real por WhatsApp en 0.11.0
+ En Compras → Control de entregas, un pedido pendiente tiene «Enviar por WhatsApp». Se muestra el texto exacto y el destinatario; al confirmar se envía una sola vez desde la cuenta vinculada por QR. Requisitos: WhatsApp conectado y el número del proveedor autorizado en WhatsApp → Autorizar chat. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a la pantalla WhatsApp y se lee por reglas. Prueba primero con un número propio.
+ 
+-## Diagnóstico de WhatsApp en 0.10.3
++## Diagnóstico de WhatsApp en 0.11.0
+ La pantalla WhatsApp muestra «Diagnóstico del canal» con los últimos eventos técnicos (remitente resuelto, autorizado o no, enviado, ignorado y por qué), sin contenido de mensajes, y un botón «Enviar mensaje de prueba» a un chat autorizado. Si un mensaje no aparece, ese diagnóstico dice el motivo.
+ 
+-## WhatsApp comprobado en 0.10.3
++## WhatsApp comprobado en 0.11.0
+ Envío y recepción reales verificados con dos números del propietario: la app envió un mensaje desde la cuenta vinculada y recibió la respuesta. Si un envío aparece como no confirmado, el diagnóstico del canal indica el motivo.
+ 
+-## Mejora general en 0.10.3
++## Mejora general en 0.11.0
+ Los mensajes de WhatsApp de proveedores autorizados aparecen también en Mensajes, con su lectura por reglas; si responden al pedido que les enviaste y es el único en curso, quedan vinculados y el pedido muestra la entrega prevista. La app hace una copia automática diaria (30 últimas en data/backups) y lo indica en Configuración. Puedes confirmar el tipo de documento de una foto desde IA local. El código de la interfaz está en src/ui/*.js.
+ 
+-## Ventas y mermas en 0.10.3
++## Ventas y mermas en 0.11.0
+ En Producción, la tabla «Ventas y mermas del día» registra kilos vendidos o desechados de cada producto terminado; cada cantidad crea una salida o merma en el historial, reversible como cualquier movimiento.
+ 
+-## Conexión automática y avisos en 0.10.3
++## Conexión automática y avisos en 0.11.0
+ En WhatsApp, «Conectar al abrir: sí» hace que la app reconecte sola al arrancar con la sesión guardada; cuando un proveedor autorizado escribe, Windows muestra una notificación y al pulsarla vuelve a la app. Configuración incluye «Primeros pasos».
+ 
+-## Historial, reconexión y CSV en 0.10.3
++## Historial, reconexión y CSV en 0.11.0
+ Al conectar WhatsApp, la app revisa los últimos mensajes de cada chat autorizado e importa los que llegaron con la app cerrada (texto). Si la sesión se cae y «Conectar al abrir» está activo, reintenta sola. Configuración → «Exportar CSV» crea inventario y movimientos en data/exportaciones para hoja de cálculo o gestoría.
++
++## Recetario protegido y limpieza en 0.11.0
++Configuración → «Recetario protegido»: pon una contraseña y la pantalla Producción pedirá desbloqueo (30 minutos); sin ella no se pueden crear recetas ni producir. Protege la pantalla dentro de la app, no cifra el disco; los movimientos de stock siguen visibles en Actividad. Configuración → «Limpieza periódica»: elige 7, 14, 30 o 90 días para borrar actividad y conversaciones antiguas (se conservan las 50 entradas recientes, los movimientos y las copias). Si olvidas la contraseña: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.
+diff --git a/TODO.md b/TODO.md
+index 227d5fc..5d55f60 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.3.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.11.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -13,7 +13,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Persistencia local y copias/restauración validadas por pruebas.
+ - [x] Archivo manual de imágenes con proveedor, fecha y reclasificación.
+ - [x] Carpetas automáticas y fichas/datos por proveedor; recuperación de archivo derivado.
+-- [ ] Abrir carpetas desde la app, importar otros tipos de documento y definir limpieza de copias históricas.
++- [ ] Abrir carpetas desde la app e importar otros tipos de documento.
++- [x] Limpieza periódica configurable de actividad y conversaciones; retención de copias automáticas.
++- [x] Recetario protegido con contraseña local (pantalla y acciones; no cifra el disco).
+ - [x] Historial de actividad separado de los informes de desarrollo.
+ - [x] Pruebas de dominio y servidor; prueba del ejecutable con reinicio.
+ - [x] Revisión visual de resumen, compras y mensajes.
+@@ -27,10 +29,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
+ - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
+ - [x] Cancelar pedidos pendientes sin alterar stock.
+-- [x] Núcleo TypeScript estricto, validación de contratos y 99 pruebas automatizadas.
++- [x] Núcleo TypeScript estricto, validación de contratos y 102 pruebas automatizadas.
+ - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
+ - [ ] Prueba de disco lleno y validación del corte en el equipo real.
+-- [ ] Definir autenticación y permisos si lo usa más de una persona.
++- [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
+ - [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
+ - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
+ - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
+diff --git a/core/domain.ts b/core/domain.ts
+index 2a99ef7..5b62aaa 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -618,6 +618,16 @@ export function apply(state: State, input: unknown): State {
+       note = `Receta guardada: ${fields.name} (rinde ${fields.yield} kg).`;
+       break;
+     }
++    case "purge": {
++      // Activity notes older than the date are dropped, keeping the newest entries.
++      // Stock movements are never purged: they are the audit trail.
++      const total = s.activity.length;
++      const kept = s.activity.filter((x, i) => i < a.keep || x.at >= a.before);
++      const removed = total - kept.length;
++      s.activity = kept;
++      note = `Limpieza: eliminadas ${removed} entradas de actividad anteriores al ${a.before.slice(0, 10)}. Los movimientos de stock se conservan.`;
++      break;
++    }
+     case "deleteRecipe": {
+       const r = item(s.recipes, a.id);
+       ensure(
+diff --git a/core/schema.ts b/core/schema.ts
+index 28fb975..296410c 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -328,6 +328,11 @@ export const actionSchema = z.intersection(
+       ...recipeFields,
+     }),
+     z.object({ type: z.literal("deleteRecipe"), id: idSchema }),
++    z.object({
++      type: z.literal("purge"),
++      before: at,
++      keep: z.number().int().min(0).max(100000).default(50),
++    }),
+     z.object({
+       type: z.literal("produce"),
+       recipe: idSchema,
+diff --git a/core/store.ts b/core/store.ts
+index b9dfad4..bfcc7a6 100644
+--- a/core/store.ts
++++ b/core/store.ts
+@@ -68,6 +68,7 @@ export class Store {
+    CREATE TABLE IF NOT EXISTS movements(id TEXT PRIMARY KEY,product TEXT NOT NULL REFERENCES products(id),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS photos(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY,fingerprint TEXT,position INTEGER NOT NULL);
++   CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS recipes(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS productions(id TEXT PRIMARY KEY,recipe TEXT NOT NULL REFERENCES recipes(id),status TEXT NOT NULL CHECK(status IN ('proposed','applied','discarded')),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+    CREATE INDEX IF NOT EXISTS order_lines_product ON order_lines(product);
+@@ -519,6 +520,23 @@ export class Store {
+       throw error;
+     }
+   }
++  // Local preferences outside the exported state (never part of backups).
++  setting(key: string): string | undefined {
++    const row = this.db
++      .prepare("SELECT value FROM settings WHERE key=?")
++      .get(key);
++    return row ? String(row.value) : undefined;
++  }
++  setSetting(key: string, value: string | undefined): void {
++    if (value === undefined)
++      this.db.prepare("DELETE FROM settings WHERE key=?").run(key);
++    else
++      this.db
++        .prepare(
++          "INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
++        )
++        .run(key, value);
++  }
+   backup(): string {
+     const folder = path.join(this.dataDir, "backups");
+     fs.mkdirSync(folder, { recursive: true });
+diff --git a/docs/IA_LOCAL_Y_SEGURIDAD.md b/docs/IA_LOCAL_Y_SEGURIDAD.md
+index fae7365..551f633 100644
+--- a/docs/IA_LOCAL_Y_SEGURIDAD.md
++++ b/docs/IA_LOCAL_Y_SEGURIDAD.md
+@@ -71,3 +71,6 @@ La lectura fiable es la de reglas. Se afinó con 60 respuestas típicas y se com
+ 
+ ## Auditoría 0.9.0
+ Sonda local work/attack.cjs (26 comprobaciones de autenticación, origen, tamaños, rutas, revisiones, CORS y CSP): 26/26. Cambios: la clave inicial ya no permanece en la URL (cookie + redirección), comparación de clave en tiempo constante, nosniff en JSON. Persistencia: copia validada en memoria con comprobación de revisión; el resto de conexiones sigue detectando conflictos. Los mensajes importados de WhatsApp se muestran con la lectura por reglas; la IA local sigue siendo opcional y solo anota.
++
++## Recetario protegido (0.11.0)
++Contraseña local guardada como scrypt con sal en la tabla settings (no viaja en copias ni exportaciones). Desbloqueo válido 30 minutos en memoria del proceso; retardo creciente (hasta 5 s) ante intentos fallidos. Mientras está bloqueado, el servidor devuelve las recetas sin ingredientes ni notas y las producciones sin líneas, y rechaza crear, editar, producir, aprobar o descartar. Límite claro: protege la pantalla frente a otra persona con la app abierta; quien tenga acceso al disco puede leer la base SQLite (no hay cifrado) y los movimientos de producción en Actividad revelan consumos. Restablecer: con la app cerrada, borrar recipes_lock de settings.
+diff --git a/package.json b/package.json
+index 393481c..d0c0074 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.10.3",
++  "version": "0.11.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/src/server.cjs b/src/server.cjs
+index 134c0b9..df823f7 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -1,7 +1,7 @@
+ const http = require("node:http");
+ const fs = require("node:fs");
+ const path = require("node:path");
+-const { randomBytes, timingSafeEqual } = require("node:crypto");
++const { randomBytes, timingSafeEqual, scryptSync } = require("node:crypto");
+ const { identifySupplier } = require("../build/identify.js");
+ const { interpretReply } = require("../build/messages.js");
+ const { orderMessage } = require("../build/domain.js");
+@@ -45,6 +45,79 @@ function createApp({
+   setImmediate(autoBackup);
+   const backupTimer = setInterval(autoBackup, 6 * 3600 * 1000);
+   backupTimer.unref();
++  // Recipe lock: a local password hides recipes and blocks recipe/production actions
++  // until unlocked (30 min). It protects the screen, not the disk.
++  const lock = { unlockedUntil: 0, failures: 0 };
++  const lockEnabled = () => !!store.setting("recipes_lock");
++  const unlocked = () => !lockEnabled() || Date.now() < lock.unlockedUntil;
++  const hashPassword = (password, salt = randomBytes(16).toString("hex")) =>
++    "scrypt$" + salt + "$" + scryptSync(password, salt, 32).toString("hex");
++  const checkPassword = (password) => {
++    const stored = store.setting("recipes_lock") || "";
++    const [, salt, hex] = stored.split("$");
++    if (!salt || !hex) return false;
++    const candidate = scryptSync(password, salt, 32);
++    return timingSafeEqual(candidate, Buffer.from(hex, "hex"));
++  };
++  const validPassword = (p) =>
++    typeof p === "string" && p.length >= 6 && p.length <= 100;
++  const lockInfo = () => ({ enabled: lockEnabled(), unlocked: unlocked() });
++  const redact = (state) =>
++    unlocked()
++      ? state
++      : {
++          ...state,
++          recipes: state.recipes.map((r) => ({
++            ...r,
++            ingredients: [],
++            note: "",
++            locked: true,
++          })),
++          productions: state.productions.map((p) => ({ ...p, lines: [] })),
++        };
++  const lockedActions = new Set([
++    "recipe",
++    "deleteRecipe",
++    "produce",
++    "applyProduction",
++    "discardProduction",
++  ]);
++  // Weekly (or N days) cleanup of activity notes and WhatsApp conversations; movements stay.
++  const retentionDays = () => Number(store.setting("retention_days") || 0);
++  const purgeNow = () => {
++    const days = retentionDays();
++    if (!(days > 0)) return { skipped: true };
++    const before = new Date(Date.now() - days * 86400000).toISOString();
++    const s = store.load();
++    const removable = Math.min(
++      s.activity.filter((a) => a.at < before).length,
++      Math.max(0, s.activity.length - 50),
++    );
++    if (removable > 0) store.dispatch({ type: "purge", before, keep: 50 });
++    const channel = whatsapp.store.purge(before);
++    return { activity: removable, ...channel, before };
++  };
++  const autoPurge = () => {
++    try {
++      purgeNow();
++    } catch (e) {
++      whatsapp.log("limpieza automática falló: " + String(e?.message || e));
++    }
++  };
++  setTimeout(autoPurge, 5000).unref();
++  const purgeTimer = setInterval(autoPurge, 6 * 3600 * 1000);
++  purgeTimer.unref();
++  const envelope = (state, extra = {}) => ({
++    state: redact(state),
++    dataDir,
++    storage: "SQLite",
++    archiveWarning: store.archiveWarning,
++    version,
++    backup: backupInfo,
++    lock: lockInfo(),
++    retentionDays: retentionDays(),
++    ...extra,
++  });
+   const ai = new LocalAI();
+   const whatsapp = new WhatsAppConnection(dataDir, store);
+   const token = randomBytes(32).toString("hex");
+@@ -107,14 +180,7 @@ function createApp({
+       return;
+     }
+     if (u.pathname === "/api/state" && req.method === "GET") {
+-      json(200, {
+-        state: store.load(),
+-        dataDir,
+-        storage: "SQLite",
+-        archiveWarning: store.archiveWarning,
+-        version,
+-        backup: backupInfo,
+-      });
++      json(200, envelope(store.load()));
+       return;
+     }
+     if (
+@@ -127,6 +193,8 @@ function createApp({
+         "/api/action",
+         "/api/backup",
+         "/api/export",
++        "/api/lock",
++        "/api/maintenance",
+         "/api/restore",
+         "/api/identify",
+         "/api/whatsapp",
+@@ -186,14 +254,7 @@ function createApp({
+             status: reading.status,
+             model: reading.model,
+           });
+-          json(200, {
+-            state,
+-            dataDir,
+-            storage: "SQLite",
+-            archiveWarning: store.archiveWarning,
+-            version,
+-            reading,
+-          });
++          json(200, envelope(state, { reading }));
+           return;
+         }
+         if (u.pathname === "/api/whatsapp") {
+@@ -250,14 +311,7 @@ function createApp({
+                 text,
+               },
+             });
+-            json(200, {
+-              state: next,
+-              dataDir,
+-              storage: "SQLite",
+-              archiveWarning: store.archiveWarning,
+-              version,
+-              sent,
+-            });
++            json(200, envelope(next, { sent }));
+             return;
+           }
+           if (data.type === "recover") {
+@@ -297,6 +351,52 @@ function createApp({
+           });
+           return;
+         }
++        if (u.pathname === "/api/lock") {
++          if (data.type === "set") {
++            if (lockEnabled() && !checkPassword(String(data.current || "")))
++              throw Error("La contraseña actual no es correcta.");
++            if (!validPassword(data.password))
++              throw Error("La contraseña debe tener entre 6 y 100 caracteres.");
++            store.setSetting("recipes_lock", hashPassword(data.password));
++            lock.unlockedUntil = Date.now() + 30 * 60000;
++          } else if (data.type === "unlock") {
++            if (!lockEnabled())
++              throw Error("El recetario no tiene contraseña.");
++            await new Promise((r) =>
++              setTimeout(r, Math.min(5000, 300 * lock.failures)),
++            );
++            if (!checkPassword(String(data.password || ""))) {
++              lock.failures++;
++              throw Error("Contraseña incorrecta.");
++            }
++            lock.failures = 0;
++            lock.unlockedUntil = Date.now() + 30 * 60000;
++          } else if (data.type === "lock") lock.unlockedUntil = 0;
++          else if (data.type === "remove") {
++            if (!checkPassword(String(data.password || "")))
++              throw Error("Contraseña incorrecta.");
++            store.setSetting("recipes_lock", undefined);
++            lock.unlockedUntil = 0;
++          } else throw Error("Acción de bloqueo desconocida.");
++          json(200, envelope(store.load()));
++          return;
++        }
++        if (u.pathname === "/api/maintenance") {
++          if (data.type === "retention") {
++            const days = Number(data.days);
++            if (![0, 7, 14, 30, 90].includes(days))
++              throw Error("Elegí 0 (sin limpieza), 7, 14, 30 o 90 días.");
++            store.setSetting("retention_days", String(days));
++            json(200, envelope(store.load()));
++            return;
++          }
++          if (data.type === "purge") {
++            const result = purgeNow();
++            json(200, envelope(store.load(), { purge: result }));
++            return;
++          }
++          throw Error("Acción de mantenimiento desconocida.");
++        }
+         if (u.pathname === "/api/export") {
+           // CSV (semicolon, UTF-8 with BOM) of products and movements for a spreadsheet.
+           const s = store.load();
+@@ -387,15 +487,13 @@ function createApp({
+             typeof data.operationId !== "string"
+           )
+             throw Error("Falta la versión o el identificador de la operación.");
++          if (lockedActions.has(String(data.type)) && !unlocked())
++            throw Error(
++              "Recetas protegidas: desbloqueá el recetario con la contraseña.",
++            );
+           store.dispatch(data);
+         }
+-        json(200, {
+-          state: store.load(),
+-          dataDir,
+-          storage: "SQLite",
+-          archiveWarning: store.archiveWarning,
+-          version,
+-        });
++        json(200, envelope(store.load()));
+       } catch (e) {
+         json(/cambiaron|ya corresponde/.test(e.message) ? 409 : 400, {
+           error: e.message,
+@@ -463,6 +561,7 @@ function createApp({
+     });
+     server.once("close", () => {
+       clearInterval(backupTimer);
++      clearInterval(purgeTimer);
+       ai.cancel().catch(() => {});
+       store.close();
+       whatsapp.close().catch(() => {});
+diff --git a/src/styles.css b/src/styles.css
+index 4ccd97d..8a3d1eb 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -2031,3 +2031,7 @@ dialog::backdrop {
+ .steps li {
+   margin-bottom: 6px;
+ }
++
++.lock-panel {
++  max-width: 480px;
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index c8ac2ad..68d0962 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -619,6 +619,120 @@ async function action(name, el) {
+     );
+     return;
+   }
++  if (name === "unlockRecipes") {
++    try {
++      const data = await request("/api/lock", {
++        type: "unlock",
++        password: $("#lock-password")?.value || "",
++      });
++      state = data.state;
++      lockInfo = data.lock;
++      render();
++      toast("Recetario desbloqueado durante 30 minutos.");
++    } catch (e) {
++      toast(e.message);
++    }
++    return;
++  }
++  if (name === "lockNow") {
++    const data = await request("/api/lock", { type: "lock" });
++    state = data.state;
++    lockInfo = data.lock;
++    render();
++    return;
++  }
++  if (name === "lockSet" || name === "lockChange") {
++    const change = name === "lockChange";
++    modal(
++      change
++        ? "Cambiar la contraseña del recetario"
++        : "Poner contraseña al recetario",
++      "Mínimo 6 caracteres. Guárdala: no hay recuperación automática.",
++      (change
++        ? field(
++            "Contraseña actual",
++            "current",
++            "",
++            "password",
++            'required maxlength="100"',
++          )
++        : "") +
++        field(
++          "Nueva contraseña",
++          "password",
++          "",
++          "password",
++          'required minlength="6" maxlength="100"',
++        ) +
++        field(
++          "Repetir contraseña",
++          "again",
++          "",
++          "password",
++          'required minlength="6" maxlength="100"',
++        ),
++      async (f) => {
++        if (f.get("password") !== f.get("again"))
++          throw Error("Las contraseñas no coinciden.");
++        const data = await request("/api/lock", {
++          type: "set",
++          password: f.get("password"),
++          ...(change ? { current: f.get("current") } : {}),
++        });
++        state = data.state;
++        lockInfo = data.lock;
++        render();
++        toast("Contraseña del recetario guardada.");
++        return true;
++      },
++    );
++    return;
++  }
++  if (name === "lockRemove") {
++    modal(
++      "Quitar la contraseña del recetario",
++      "Las recetas volverán a verse sin contraseña.",
++      field(
++        "Contraseña actual",
++        "password",
++        "",
++        "password",
++        'required maxlength="100"',
++      ),
++      async (f) => {
++        const data = await request("/api/lock", {
++          type: "remove",
++          password: f.get("password"),
++        });
++        state = data.state;
++        lockInfo = data.lock;
++        render();
++        return true;
++      },
++      "Quitar",
++    );
++    return;
++  }
++  if (name === "purgeNow") {
++    modal(
++      "Limpiar ahora",
++      `Se borrarán la actividad y las conversaciones de WhatsApp anteriores a ${retentionDays} días. Los movimientos de stock se conservan.`,
++      "<p>Existe una copia automática diaria en data/backups.</p>",
++      async () => {
++        const data = await request("/api/maintenance", { type: "purge" });
++        state = data.state;
++        toast(
++          data.purge?.skipped
++            ? "No hay limpieza configurada."
++            : `Limpieza hecha: ${data.purge.activity} entradas de actividad, ${data.purge.messages} mensajes de WhatsApp.`,
++        );
++        render();
++        return true;
++      },
++      "Borrar",
++    );
++    return;
++  }
+   if (name === "exportCsv") {
+     try {
+       const r = await request("/api/export", {});
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 67cb1cf..764fe17 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -4,7 +4,9 @@ let waState = null,
+   waAccount = "",
+   waBusy = false;
+ let appVersion = "",
+-  backupInfo = null;
++  backupInfo = null,
++  lockInfo = null,
++  retentionDays = 0;
+ let state,
+   dataDir,
+   archiveWarning,
+@@ -158,6 +160,8 @@ async function mutate(a, msg) {
+     state = data.state;
+     appVersion = data.version || appVersion;
+     if (data.backup) backupInfo = data.backup;
++    if (data.lock) lockInfo = data.lock;
++    if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
+     dataDir = data.dataDir;
+     archiveWarning = data.archiveWarning;
+     render();
+@@ -179,6 +183,14 @@ async function mutate(a, msg) {
+     busy = false;
+   }
+ }
++async function reloadState() {
++  const data = await request("/api/state");
++  state = data.state;
++  if (data.backup) backupInfo = data.backup;
++  if (data.lock) lockInfo = data.lock;
++  if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
++  render();
++}
+ function nav(to) {
+   page = to;
+   query = "";
+diff --git a/src/ui/events.js b/src/ui/events.js
+index e33e12b..3d5bceb 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -49,6 +49,24 @@ document.addEventListener("change", async (e) => {
+     render();
+     return;
+   }
++  if (e.target.id === "retention-days") {
++    try {
++      const data = await request("/api/maintenance", {
++        type: "retention",
++        days: Number(e.target.value),
++      });
++      retentionDays = data.retentionDays;
++      render();
++      toast(
++        retentionDays
++          ? "Limpieza automática cada " + retentionDays + " días."
++          : "Limpieza automática desactivada.",
++      );
++    } catch (err) {
++      toast(err.message);
++    }
++    return;
++  }
+   if (e.target.id === "wa-account") {
+     waAccount = e.target.value;
+     waState = null;
+diff --git a/src/ui/views.js b/src/ui/views.js
+index 9d1a936..dbd3f92 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -116,6 +116,14 @@ function orderReplies(o) {
+     .join("")}</div>`;
+ }
+ function production() {
++  if (lockInfo?.enabled && !lockInfo.unlocked)
++    return (
++      header(
++        "Recetario protegido",
++        "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
++      ) +
++      `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, se puede quitar con la app cerrada borrando la clave recipes_lock de la tabla settings de gelatostock.sqlite.</p></section>`
++    );
+   const proposed = proposedProductions();
+   const applied = state.productions.filter((p) => p.status === "applied");
+   const byDate = {};
+@@ -391,6 +399,19 @@ function settings() {
+             `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}${ph.docType ? " · " + esc(aiTypes[ph.docType] || ph.docType).replace("Posible ", "") : ""}</small>${esc(ph.name)}<small>${esc(ph.note)}</small>${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}${ph.ocrText ? btn("Revisar texto con IA", "aiPhoto", "secondary", `data-id="${ph.id}"`) : ""}</figcaption></figure>`,
+         )
+         .join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'
+-    }</div></section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
++    }</div></section><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Recetario protegido</h2>${lockInfo?.enabled ? `<p>Las recetas piden contraseña. Estado: <strong>${lockInfo.unlocked ? "desbloqueado (30 min)" : "bloqueado"}</strong>.</p><div class="setting-actions">${btn("Bloquear ahora", "lockNow", "secondary")}${btn("Cambiar contraseña", "lockChange", "secondary")}${btn("Quitar contraseña", "lockRemove", "secondary")}</div>` : `<p>Sin contraseña: cualquiera con la app abierta ve las recetas.</p>${btn("Poner contraseña", "lockSet", "primary")}`}<p class="fineprint">Protege la pantalla y bloquea crear, editar o producir con recetas. No cifra el disco.</p></section><section class="panel settings-card"><h2>Limpieza periódica</h2><p>Borra la actividad y las conversaciones de WhatsApp más antiguas que el plazo elegido (se conservan las 50 entradas más recientes). Los movimientos de stock y las copias no se tocan.</p><label class="field">Conservar<select id="retention-days">${[
++      [0, "Sin limpieza automática"],
++      [7, "7 días (semanal)"],
++      [14, "14 días"],
++      [30, "30 días"],
++      [90, "90 días"],
++    ]
++      .map(
++        ([v, l]) =>
++          `<option value="${v}" ${retentionDays === v ? "selected" : ""}>${l}</option>`,
++      )
++      .join(
++        "",
++      )}</select></label><div class="setting-actions">${btn("Limpiar ahora", "purgeNow", "secondary", retentionDays ? "" : "disabled")}</div><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+   );
+ }
+diff --git a/src/whatsapp-store.cjs b/src/whatsapp-store.cjs
+index d86ba14..7fe28f6 100644
+--- a/src/whatsapp-store.cjs
++++ b/src/whatsapp-store.cjs
+@@ -171,6 +171,37 @@ class WhatsAppStore {
+         .all(),
+     };
+   }
++  purge(before) {
++    const old = this.db
++      .prepare("SELECT file FROM messages WHERE at<? AND file IS NOT NULL")
++      .all(before);
++    for (const r of old) {
++      const rel = String(r.file);
++      if (!/^files[\\/]/.test(rel)) continue;
++      const target = path.resolve(this.dir, rel);
++      if (target.startsWith(path.resolve(this.dir, "files") + path.sep))
++        try {
++          fs.unlinkSync(target);
++        } catch {}
++    }
++    const messages = this.db
++      .prepare("DELETE FROM messages WHERE at<?")
++      .run(before).changes;
++    const sent = this.db
++      .prepare("DELETE FROM sent WHERE at<?")
++      .run(before).changes;
++    const history = this.db
++      .prepare("DELETE FROM history WHERE at<?")
++      .run(before).changes;
++    this.note(
++      `Limpieza: eliminados ${messages} mensajes, ${sent} envíos y ${history} notas anteriores al ${before.slice(0, 10)}.`,
++    );
++    return {
++      messages: Number(messages),
++      sent: Number(sent),
++      history: Number(history),
++    };
++  }
+   backup() {
+     const dest = path.join(
+       this.dir,
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index 704ef33..cb6215f 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -711,3 +711,26 @@ test("ventas y mermas del día crean salidas trazables de producto terminado y a
+     /repetidos/,
+   );
+ });
++
++test("limpieza de actividad conserva las entradas recientes y nunca toca movimientos", () => {
++  let s = seed();
++  for (let i = 0; i < 60; i++)
++    s = apply(s, { type: "count", product: "p1", value: i % 5 });
++  const old = "2000-01-01T00:00:00.000Z";
++  s.activity = s.activity.map((a, i) => (i >= 55 ? { ...a, at: old } : a));
++  const movements = s.movements.length;
++  const purged = apply(s, {
++    type: "purge",
++    before: "2020-01-01T00:00:00.000Z",
++    keep: 50,
++  });
++  assert.equal(purged.activity.filter((a) => a.at === old).length, 0);
++  assert.equal(purged.movements.length, movements);
++  assert.match(purged.activity[0].text, /Limpieza: eliminadas 6 entradas/);
++  const keepAll = apply(s, {
++    type: "purge",
++    before: "2020-01-01T00:00:00.000Z",
++    keep: 100,
++  });
++  assert.equal(keepAll.activity.filter((a) => a.at === old).length, 6);
++});
+diff --git a/tests/server.test.cjs b/tests/server.test.cjs
+index c37fb57..c75edcf 100644
+--- a/tests/server.test.cjs
++++ b/tests/server.test.cjs
+@@ -346,3 +346,80 @@ test("exportación CSV de inventario y movimientos con BOM y punto y coma", asyn
+     fs.rmSync(dir, { recursive: true, force: true });
+   }
+ });
++
++test("recetario con contraseña: oculta recetas, bloquea acciones, desbloquea y limpieza configurable", async () => {
++  const root = path.resolve(__dirname, "../work");
++  const dir = fs.mkdtempSync(path.join(root, "http-lock-"));
++  let app;
++  try {
++    app = await createApp({ dataDir: dir });
++    const origin = new URL(app.url).origin;
++    const login = await fetch(app.url, { redirect: "manual" });
++    const headers = {
++      "Content-Type": "application/json",
++      Origin: origin,
++      Cookie: login.headers.get("set-cookie").split(";")[0],
++    };
++    const post = (p, body) =>
++      fetch(origin + p, {
++        method: "POST",
++        headers,
++        body: JSON.stringify(body),
++      });
++    const state = async () =>
++      await (await fetch(origin + "/api/state", { headers })).json();
++    let d = await state();
++    assert.equal(d.lock.enabled, false);
++    assert.ok(d.state.recipes[0].ingredients.length > 0);
++    let r = await post("/api/lock", { type: "set", password: "corta" });
++    assert.equal(r.status, 400);
++    r = await post("/api/lock", { type: "set", password: "helado-secreto" });
++    assert.equal(r.status, 200);
++    d = await r.json();
++    assert.deepEqual(d.lock, { enabled: true, unlocked: true });
++    r = await post("/api/lock", { type: "lock" });
++    d = await r.json();
++    assert.equal(d.lock.unlocked, false);
++    assert.equal(d.state.recipes[0].ingredients.length, 0);
++    assert.equal(d.state.recipes[0].locked, true);
++    r = await post("/api/action", {
++      type: "produce",
++      recipe: "r1",
++      quantity: 1,
++      date: "2026-09-09",
++      revision: d.state.revision,
++      operationId: "lk1",
++    });
++    assert.equal(r.status, 400);
++    assert.match((await r.json()).error, /protegidas/);
++    r = await post("/api/lock", { type: "unlock", password: "mala" });
++    assert.equal(r.status, 400);
++    r = await post("/api/lock", { type: "unlock", password: "helado-secreto" });
++    assert.equal(r.status, 200);
++    d = await r.json();
++    assert.equal(d.lock.unlocked, true);
++    assert.ok(d.state.recipes[0].ingredients.length > 0);
++    r = await post("/api/action", {
++      type: "produce",
++      recipe: "r1",
++      quantity: 1,
++      date: "2026-09-09",
++      revision: d.state.revision,
++      operationId: "lk2",
++    });
++    assert.equal(r.status, 200);
++    r = await post("/api/lock", { type: "remove", password: "helado-secreto" });
++    assert.equal((await r.json()).lock.enabled, false);
++    r = await post("/api/maintenance", { type: "retention", days: 5 });
++    assert.equal(r.status, 400);
++    r = await post("/api/maintenance", { type: "retention", days: 7 });
++    assert.equal((await r.json()).retentionDays, 7);
++    r = await post("/api/maintenance", { type: "purge" });
++    d = await r.json();
++    assert.equal(r.status, 200);
++    assert.equal(d.purge.activity, 0);
++  } finally {
++    if (app) await new Promise((r) => app.server.close(r));
++    fs.rmSync(dir, { recursive: true, force: true });
++  }
++});
+diff --git a/tests/whatsapp.test.cjs b/tests/whatsapp.test.cjs
+index d22beba..83682b5 100644
+--- a/tests/whatsapp.test.cjs
++++ b/tests/whatsapp.test.cjs
+@@ -408,3 +408,46 @@ test("reconexión automática se programa solo con la preferencia activa y sin c
+     c.scheduleReconnect();
+     assert.ok(c.diagnostics().some((l) => /se detienen/.test(l)));
+   }));
++
++test("limpieza del canal borra mensajes, envíos, notas y adjuntos antiguos y conserva lo reciente", () =>
++  fixture(async (c, dir) => {
++    const a = c.store.bind("+34600000001");
++    c.store.permit(a, "+34910000001", "Proveedor");
++    const files = path.join(dir, "whatsapp", "files");
++    fs.mkdirSync(files, { recursive: true });
++    fs.writeFileSync(path.join(files, "viejo.pdf"), "x");
++    c.store.insert(a, {
++      id: "v1",
++      sender: "+34910000001",
++      at: "2020-01-01T00:00:00.000Z",
++      text: "viejo",
++      file: "files/viejo.pdf",
++      name: "viejo.pdf",
++      mime: "application/pdf",
++    });
++    c.store.insert(a, {
++      id: "n1",
++      sender: "+34910000001",
++      at: new Date().toISOString(),
++      text: "nuevo",
++    });
++    c.store.recordSent(a, {
++      id: "s1",
++      recipient: "+34910000001",
++      at: "2020-01-01T00:00:00.000Z",
++      text: "antiguo",
++      order: null,
++    });
++    const r = c.store.purge("2025-01-01T00:00:00.000Z");
++    assert.deepEqual([r.messages, r.sent], [1, 1]);
++    assert.ok(!fs.existsSync(path.join(files, "viejo.pdf")));
++    const view = c.store.view(a);
++    assert.deepEqual(
++      view.messages.map((m) => m.text),
++      ["nuevo"],
++    );
++    assert.equal(view.sent.length, 0);
++    assert.ok(
++      view.history.some((h) => /Limpieza: eliminados 1 mensajes/.test(h.text)),
++    );
++  }));

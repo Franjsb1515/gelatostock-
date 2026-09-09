@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.11.0 — 2026-09-09 · sesión 020
+
+Recetario con contraseña: las recetas y la producción se ocultan y bloquean hasta desbloquear (30 minutos); contraseña local con scrypt, cambio y retirada con contraseña, retardo creciente ante fallos. Limpieza periódica configurable (7, 14, 30 o 90 días): borra actividad antigua (conserva las 50 entradas más recientes) y conversaciones, envíos, notas y adjuntos de WhatsApp anteriores al plazo; los movimientos de stock y las copias no se tocan; se ejecuta al abrir y cada seis horas o a mano.
+
+102 pruebas, ejecutable 0.11.0. Informe reports/2026-09-09T10-42-22-808Z-recetario-contrasena-limpieza.md.
+
 ## 0.10.3 — 2026-09-09 · sesión 019
 
 WhatsApp: al conectar se revisa el historial reciente de cada chat autorizado e importa lo que faltaba (texto), también a mano con «Recuperar mensajes recientes»; reconexión automática con esperas crecientes si la sesión se cae y «Conectar al abrir» está activo (nunca tras un cierre de sesión). Exportar CSV (inventario y movimientos, punto y coma, BOM) desde Configuración.

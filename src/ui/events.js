@@ -49,6 +49,24 @@ document.addEventListener("change", async (e) => {
     render();
     return;
   }
+  if (e.target.id === "retention-days") {
+    try {
+      const data = await request("/api/maintenance", {
+        type: "retention",
+        days: Number(e.target.value),
+      });
+      retentionDays = data.retentionDays;
+      render();
+      toast(
+        retentionDays
+          ? "Limpieza automática cada " + retentionDays + " días."
+          : "Limpieza automática desactivada.",
+      );
+    } catch (err) {
+      toast(err.message);
+    }
+    return;
+  }
   if (e.target.id === "wa-account") {
     waAccount = e.target.value;
     waState = null;

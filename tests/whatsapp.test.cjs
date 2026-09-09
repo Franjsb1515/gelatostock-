@@ -408,3 +408,46 @@ test("reconexión automática se programa solo con la preferencia activa y sin c
     c.scheduleReconnect();
     assert.ok(c.diagnostics().some((l) => /se detienen/.test(l)));
   }));
+
+test("limpieza del canal borra mensajes, envíos, notas y adjuntos antiguos y conserva lo reciente", () =>
+  fixture(async (c, dir) => {
+    const a = c.store.bind("+34600000001");
+    c.store.permit(a, "+34910000001", "Proveedor");
+    const files = path.join(dir, "whatsapp", "files");
+    fs.mkdirSync(files, { recursive: true });
+    fs.writeFileSync(path.join(files, "viejo.pdf"), "x");
+    c.store.insert(a, {
+      id: "v1",
+      sender: "+34910000001",
+      at: "2020-01-01T00:00:00.000Z",
+      text: "viejo",
+      file: "files/viejo.pdf",
+      name: "viejo.pdf",
+      mime: "application/pdf",
+    });
+    c.store.insert(a, {
+      id: "n1",
+      sender: "+34910000001",
+      at: new Date().toISOString(),
+      text: "nuevo",
+    });
+    c.store.recordSent(a, {
+      id: "s1",
+      recipient: "+34910000001",
+      at: "2020-01-01T00:00:00.000Z",
+      text: "antiguo",
+      order: null,
+    });
+    const r = c.store.purge("2025-01-01T00:00:00.000Z");
+    assert.deepEqual([r.messages, r.sent], [1, 1]);
+    assert.ok(!fs.existsSync(path.join(files, "viejo.pdf")));
+    const view = c.store.view(a);
+    assert.deepEqual(
+      view.messages.map((m) => m.text),
+      ["nuevo"],
+    );
+    assert.equal(view.sent.length, 0);
+    assert.ok(
+      view.history.some((h) => /Limpieza: eliminados 1 mensajes/.test(h.text)),
+    );
+  }));

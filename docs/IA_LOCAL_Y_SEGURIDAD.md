@@ -71,3 +71,6 @@ La lectura fiable es la de reglas. Se afinó con 60 respuestas típicas y se com
 
 ## Auditoría 0.9.0
 Sonda local work/attack.cjs (26 comprobaciones de autenticación, origen, tamaños, rutas, revisiones, CORS y CSP): 26/26. Cambios: la clave inicial ya no permanece en la URL (cookie + redirección), comparación de clave en tiempo constante, nosniff en JSON. Persistencia: copia validada en memoria con comprobación de revisión; el resto de conexiones sigue detectando conflictos. Los mensajes importados de WhatsApp se muestran con la lectura por reglas; la IA local sigue siendo opcional y solo anota.
+
+## Recetario protegido (0.11.0)
+Contraseña local guardada como scrypt con sal en la tabla settings (no viaja en copias ni exportaciones). Desbloqueo válido 30 minutos en memoria del proceso; retardo creciente (hasta 5 s) ante intentos fallidos. Mientras está bloqueado, el servidor devuelve las recetas sin ingredientes ni notas y las producciones sin líneas, y rechaza crear, editar, producir, aprobar o descartar. Límite claro: protege la pantalla frente a otra persona con la app abierta; quien tenga acceso al disco puede leer la base SQLite (no hay cifrado) y los movimientos de producción en Actividad revelan consumos. Restablecer: con la app cerrada, borrar recipes_lock de settings.

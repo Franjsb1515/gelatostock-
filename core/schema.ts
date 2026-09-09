@@ -329,6 +329,11 @@ export const actionSchema = z.intersection(
     }),
     z.object({ type: z.literal("deleteRecipe"), id: idSchema }),
     z.object({
+      type: z.literal("purge"),
+      before: at,
+      keep: z.number().int().min(0).max(100000).default(50),
+    }),
+    z.object({
       type: z.literal("produce"),
       recipe: idSchema,
       quantity: quantity.refine((n) => n > 0),

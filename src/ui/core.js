@@ -4,7 +4,9 @@ let waState = null,
   waAccount = "",
   waBusy = false;
 let appVersion = "",
-  backupInfo = null;
+  backupInfo = null,
+  lockInfo = null,
+  retentionDays = 0;
 let state,
   dataDir,
   archiveWarning,
@@ -158,6 +160,8 @@ async function mutate(a, msg) {
     state = data.state;
     appVersion = data.version || appVersion;
     if (data.backup) backupInfo = data.backup;
+    if (data.lock) lockInfo = data.lock;
+    if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
     dataDir = data.dataDir;
     archiveWarning = data.archiveWarning;
     render();
@@ -178,6 +182,14 @@ async function mutate(a, msg) {
   } finally {
     busy = false;
   }
+}
+async function reloadState() {
+  const data = await request("/api/state");
+  state = data.state;
+  if (data.backup) backupInfo = data.backup;
+  if (data.lock) lockInfo = data.lock;
+  if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
+  render();
 }
 function nav(to) {
   page = to;
