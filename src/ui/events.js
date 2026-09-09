@@ -49,6 +49,12 @@ document.addEventListener("change", async (e) => {
     render();
     return;
   }
+  if (e.target.id === "doc-supplier" || e.target.id === "doc-filter") {
+    if (e.target.id === "doc-supplier") docSupplier = e.target.value;
+    else docFilter = e.target.value;
+    render();
+    return;
+  }
   if (e.target.id === "retention-days") {
     try {
       const data = await request("/api/maintenance", {

@@ -1,0 +1,1170 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 184f61b..0842282 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.13.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.14.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index bb54d9a..f8e374f 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.14.0 — 2026-09-09 · sesión 023
++
++Documentos por proveedor: pantalla nueva con facturas, albaranes, recibos y pedidos (fotos y PDF hasta 10 MB), filtros por proveedor, sin pedido, con propuesta y PDF. Propuestas por reglas de proveedor, tipo y pedido (número de pedido en el texto; único pedido del proveedor en 60 días; importe del documento frente al estimado del pedido ±5 %) que la persona acepta con un clic; vínculo manual a cualquier pedido del proveedor y desvinculación. Los adjuntos de WhatsApp de proveedores autorizados se archivan solos con OCR local si son imágenes. Control de entregas muestra los documentos de cada pedido.
++
++110 pruebas, ejecutable 0.14.0. Informe reports/2026-09-09T11-37-27-079Z-documentos-por-proveedor.md.
++
+ ## 0.13.0 — 2026-09-09 · sesión 022
+ 
+ Identidad visual para la propuesta a Artello (Palma de Mallorca): paleta propia inspirada en su sabor «Mediterraneo» (pistacho, rosa, azafrán) sobre crema de casco antiguo y acero; tipografía serif en títulos; pantalla de inicio «arte + gelato» con el nombre y el lugar del negocio; nombre y lugar editables en Configuración y presentes en barra lateral, migas, pie, pedidos y exportaciones. No se usa el logotipo ni activos de la marca real: la marca visual es original.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index d815245..b35722e 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.13.0
++# Entrada para Claude · entrega vigente 0.14.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index 390f592..4829aa5 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.13.0
++# GelatoStock · prototipo 0.14.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.13.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.14.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.13.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.14.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
+ 9. Crear y restaurar copias en Configuración.
+ 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
+ 
+-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.13.0 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
++Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.14.0 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+ 
+ ## Qué está pendiente
+ 
+@@ -115,43 +115,46 @@ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Cont
+ 
+ Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
+ 
+-## Auditoría y mejora continua en 0.13.0
++## Auditoría y mejora continua en 0.14.0
+ La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
+ 
+-## Chat de dudas en 0.13.0
++## Chat de dudas en 0.14.0
+ IA local incluye un chat para preguntar cómo usar la app o qué dice el texto pegado en el editor. Responde el modelo local a partir de una guía fija y del texto del editor si se marca la casilla; no consulta el inventario ni los pedidos, no ejecuta acciones y sus respuestas son orientativas. Cada respuesta puede tardar de 30 segundos a más de un minuto en este equipo. El chat se conserva solo mientras la ventana está abierta.
+ 
+-## Producción y respuestas de proveedores en 0.13.0
++## Producción y respuestas de proveedores en 0.14.0
+ Producción: crea recetas (rinde X kg, ingredientes en su unidad base) y registra los kilos producidos por día. La app propone el consumo; corrígelo y aprueba para descontar ingredientes y sumar el producto terminado. La hoja diaria muestra kilos por gelato. Guía: docs/PRODUCCION_Y_RECETAS.md.
+ 
+ Mensajes: cada respuesta de proveedor se lee con reglas (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y se marca si debes leerla; las fechas como «el lunes» se resuelven. En Resumen aparece cuántos mensajes debes leer y en Control de entregas las respuestas vinculadas a cada pedido. «Segunda lectura con IA local» pide al modelo una categoría como propuesta; no cambia pedidos ni stock.
+ 
+-## Envío real por WhatsApp en 0.13.0
++## Envío real por WhatsApp en 0.14.0
+ En Compras → Control de entregas, un pedido pendiente tiene «Enviar por WhatsApp». Se muestra el texto exacto y el destinatario; al confirmar se envía una sola vez desde la cuenta vinculada por QR. Requisitos: WhatsApp conectado y el número del proveedor autorizado en WhatsApp → Autorizar chat. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a la pantalla WhatsApp y se lee por reglas. Prueba primero con un número propio.
+ 
+-## Diagnóstico de WhatsApp en 0.13.0
++## Diagnóstico de WhatsApp en 0.14.0
+ La pantalla WhatsApp muestra «Diagnóstico del canal» con los últimos eventos técnicos (remitente resuelto, autorizado o no, enviado, ignorado y por qué), sin contenido de mensajes, y un botón «Enviar mensaje de prueba» a un chat autorizado. Si un mensaje no aparece, ese diagnóstico dice el motivo.
+ 
+-## WhatsApp comprobado en 0.13.0
++## WhatsApp comprobado en 0.14.0
+ Envío y recepción reales verificados con dos números del propietario: la app envió un mensaje desde la cuenta vinculada y recibió la respuesta. Si un envío aparece como no confirmado, el diagnóstico del canal indica el motivo.
+ 
+-## Mejora general en 0.13.0
++## Mejora general en 0.14.0
+ Los mensajes de WhatsApp de proveedores autorizados aparecen también en Mensajes, con su lectura por reglas; si responden al pedido que les enviaste y es el único en curso, quedan vinculados y el pedido muestra la entrega prevista. La app hace una copia automática diaria (30 últimas en data/backups) y lo indica en Configuración. Puedes confirmar el tipo de documento de una foto desde IA local. El código de la interfaz está en src/ui/*.js.
+ 
+-## Ventas y mermas en 0.13.0
++## Ventas y mermas en 0.14.0
+ En Producción, la tabla «Ventas y mermas del día» registra kilos vendidos o desechados de cada producto terminado; cada cantidad crea una salida o merma en el historial, reversible como cualquier movimiento.
+ 
+-## Conexión automática y avisos en 0.13.0
++## Conexión automática y avisos en 0.14.0
+ En WhatsApp, «Conectar al abrir: sí» hace que la app reconecte sola al arrancar con la sesión guardada; cuando un proveedor autorizado escribe, Windows muestra una notificación y al pulsarla vuelve a la app. Configuración incluye «Primeros pasos».
+ 
+-## Historial, reconexión y CSV en 0.13.0
++## Historial, reconexión y CSV en 0.14.0
+ Al conectar WhatsApp, la app revisa los últimos mensajes de cada chat autorizado e importa los que llegaron con la app cerrada (texto). Si la sesión se cae y «Conectar al abrir» está activo, reintenta sola. Configuración → «Exportar CSV» crea inventario y movimientos en data/exportaciones para hoja de cálculo o gestoría.
+ 
+-## Recetario protegido y limpieza en 0.13.0
++## Recetario protegido y limpieza en 0.14.0
+ Configuración → «Recetario protegido»: pon una contraseña y la pantalla Producción pedirá desbloqueo (30 minutos); sin ella no se pueden crear recetas ni producir. Protege la pantalla dentro de la app, no cifra el disco; los movimientos de stock siguen visibles en Actividad. Configuración → «Limpieza periódica»: elige 7, 14, 30 o 90 días para borrar actividad y conversaciones antiguas (se conservan las 50 entradas recientes, los movimientos y las copias). Si olvidas la contraseña: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.
+ 
+-## Aprendizaje por correcciones en 0.13.0
++## Aprendizaje por correcciones en 0.14.0
+ En un mensaje, «Corregir lectura» te deja elegir qué quiso decir el proveedor (falta de producto, cancelación, cierre o vacaciones, pago, cambio, pregunta, documento, entrega, confirmación). La app lo recuerda y lo aplica a mensajes iguales o casi iguales; lo aprendido se ve y se olvida en Configuración. No es entrenamiento del modelo: son tus decisiones. Las reglas también entienden ahora horas, fechas con mes, abreviaturas y faltas de ortografía habituales.
+ 
+-## Identidad visual en 0.13.0
++## Identidad visual en 0.14.0
+ La app se presenta como propuesta para Artello (Palma de Mallorca) con una identidad propia: paleta «Mediterraneo» (pistacho, rosa y azafrán) sobre crema y acero, títulos en serif y una pantalla de inicio «arte + gelato». El nombre y el lugar se editan en Configuración → Identidad del negocio. No se incluyen logotipos ni materiales de la marca real.
++
++## Documentos por proveedor en 0.14.0
++La pantalla Documentos reúne facturas, albaranes, recibos y pedidos (fotos o PDF) por proveedor. Para cada documento la app propone, por reglas, el proveedor, el tipo y el pedido al que pertenece (número de pedido en el texto, único pedido reciente del proveedor o importe coincidente); tú aceptas con un clic o vinculas a mano. Los adjuntos que envían por WhatsApp los proveedores autorizados entran solos. En Control de entregas se ven los documentos de cada pedido.
+diff --git a/TODO.md b/TODO.md
+index 49127b9..3e0b087 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.13.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.14.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -13,7 +13,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Persistencia local y copias/restauración validadas por pruebas.
+ - [x] Archivo manual de imágenes con proveedor, fecha y reclasificación.
+ - [x] Carpetas automáticas y fichas/datos por proveedor; recuperación de archivo derivado.
+-- [ ] Abrir carpetas desde la app e importar otros tipos de documento.
++- [ ] Abrir la carpeta del proveedor desde la app (hoy se muestra la ruta).
+ - [x] Limpieza periódica configurable de actividad y conversaciones; retención de copias automáticas.
+ - [x] Recetario protegido con contraseña local (pantalla y acciones; no cifra el disco).
+ - [x] Historial de actividad separado de los informes de desarrollo.
+@@ -29,7 +29,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
+ - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
+ - [x] Cancelar pedidos pendientes sin alterar stock.
+-- [x] Núcleo TypeScript estricto, validación de contratos y 106 pruebas automatizadas.
++- [x] Núcleo TypeScript estricto, validación de contratos y 110 pruebas automatizadas.
+ - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
+ - [ ] Prueba de disco lleno y validación del corte en el equipo real.
+ - [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
+@@ -42,7 +42,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ 
+ - [x] OCR local español en fotos para proponer proveedor y conservar texto.
+ - [x] Identificación común por nombre/alias, NIF y teléfono; propuesta en mensaje de prueba.
+-- [ ] Lectura de PDF, cantidades y fecha del documento con revisión de extracción.
++- [x] Archivo de documentos por proveedor (fotos y PDF) con propuesta de proveedor, tipo y pedido, y vínculo confirmado por la persona.
++- [ ] Leer el texto de los PDF (hoy solo se archivan) y extraer cantidades y fecha del documento con revisión.
+ - [ ] Evaluar OCR con facturas reales autorizadas y hardware Mac.
+ - [x] Modelo Qwen3 0.6B Q4 incluido y gestionado dentro de la app Windows; lecturas revisables.
+ - [ ] Medir consumo y calidad en 8 GB/Mac real y con documentos autorizados representativos.
+diff --git a/core/domain.ts b/core/domain.ts
+index ef5c7a6..65424be 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -13,6 +13,8 @@ import {
+   type Message,
+ } from "./schema";
+ export { seed } from "./seed";
++export { suggestDocument, guessDocType, documentTotalCents } from "./documents";
++import { suggestDocument } from "./documents";
+ export {
+   interpretReply,
+   resolveDate,
+@@ -274,11 +276,19 @@ export function validate(input: unknown): State {
+         (!p.output || products.has(p.output.product)),
+       "Producción con datos inexistentes.",
+     );
+-  for (const photo of s.photos)
++  for (const photo of s.photos) {
+     ensure(
+       !photo.supplier || suppliers.has(photo.supplier),
+       "Proveedor de foto inexistente.",
+     );
++    if (photo.order) {
++      const o = s.orders.find((x) => x.id === photo.order);
++      ensure(
++        !!o && (!photo.supplier || o.supplier === photo.supplier),
++        "Documento vinculado a un pedido inexistente o de otro proveedor.",
++      );
++    }
++  }
+   const reversed = new Set<string>();
+   for (const m of s.movements) {
+     ensure(
+@@ -316,6 +326,11 @@ export function validate(input: unknown): State {
+   }
+   return s;
+ }
++// Keep a proposal only while it still adds something the person has not decided.
++function refreshSuggestion(s: State, photo: State["photos"][number]): void {
++  const sug = suggestDocument(s, photo);
++  photo.suggestion = sug.supplier || sug.order || sug.docType ? sug : undefined;
++}
+ function move(
+   s: State,
+   product: string,
+@@ -822,6 +837,7 @@ export function apply(state: State, input: unknown): State {
+     case "photoType": {
+       const photo = item(s.photos, a.id);
+       photo.docType = a.docType;
++      refreshSuggestion(s, photo);
+       note = a.docType
+         ? `Tipo de documento confirmado por la persona en la foto ${photo.name}: ${a.docType}.`
+         : `Tipo de documento retirado de la foto ${photo.name}.`;
+@@ -830,14 +846,72 @@ export function apply(state: State, input: unknown): State {
+     case "organizePhoto": {
+       const photo = item(s.photos, a.id);
+       if (a.supplier) item(s.suppliers, a.supplier);
++      if (photo.order && a.supplier !== item(s.orders, photo.order).supplier)
++        photo.order = undefined;
+       photo.supplier = a.supplier;
+       photo.documentDate = a.documentDate;
+-      note = "Clasificación de foto actualizada; se conserva el original.";
++      refreshSuggestion(s, photo);
++      note =
++        "Clasificación del documento actualizada; se conserva el original.";
++      break;
++    }
++    case "linkDocument": {
++      const photo = item(s.photos, a.id);
++      if (a.order) {
++        const o = item(s.orders, a.order);
++        ensure(
++          !photo.supplier || photo.supplier === o.supplier,
++          "El pedido pertenece a otro proveedor.",
++        );
++        photo.supplier = o.supplier;
++        photo.order = o.id;
++        note = `Documento ${photo.name} vinculado al pedido ${o.number}.`;
++      } else {
++        photo.order = undefined;
++        note = `Documento ${photo.name} desvinculado de su pedido.`;
++      }
++      refreshSuggestion(s, photo);
++      break;
++    }
++    case "applySuggestion": {
++      const photo = item(s.photos, a.id);
++      const sug = photo.suggestion;
++      ensure(!!sug, "Este documento no tiene propuesta pendiente.");
++      const applied: string[] = [];
++      if (sug.supplier) {
++        item(s.suppliers, sug.supplier);
++        photo.supplier = sug.supplier;
++        applied.push("proveedor");
++      }
++      if (sug.order) {
++        const o = item(s.orders, sug.order);
++        ensure(
++          !photo.supplier || photo.supplier === o.supplier,
++          "El pedido propuesto pertenece a otro proveedor.",
++        );
++        photo.supplier = o.supplier;
++        photo.order = o.id;
++        applied.push("pedido " + o.number);
++      }
++      if (sug.docType) {
++        photo.docType = sug.docType;
++        applied.push("tipo " + sug.docType);
++      }
++      ensure(applied.length > 0, "La propuesta no contiene cambios.");
++      refreshSuggestion(s, photo);
++      note = `Propuesta aceptada por la persona para ${photo.name}: ${applied.join(", ")}.`;
+       break;
+     }
+     case "photo": {
+       if (a.supplier) item(s.suppliers, a.supplier);
+-      s.photos.unshift({
++      if (a.order) {
++        const o = item(s.orders, a.order);
++        ensure(
++          !a.supplier || a.supplier === o.supplier,
++          "El pedido pertenece a otro proveedor.",
++        );
++      }
++      const doc = {
+         id: randomUUID(),
+         name: a.name,
+         ocrText: a.ocrText,
+@@ -846,8 +920,15 @@ export function apply(state: State, input: unknown): State {
+         data: a.data,
+         note: a.note,
+         at: now(),
+-      });
+-      note = "Foto guardada como adjunto local. Sin reconocimiento automático.";
++        order: a.order,
++        source: a.source,
++      };
++      s.photos.unshift(doc);
++      refreshSuggestion(s, doc);
++      note =
++        a.source === "whatsapp"
++          ? `Documento recibido por WhatsApp archivado: ${a.name}.`
++          : "Documento guardado como adjunto local; propuestas por reglas, sin acciones automáticas.";
+       break;
+     }
+   }
+diff --git a/core/schema.ts b/core/schema.ts
+index 91b0ae5..11ab8f7 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -170,18 +170,32 @@ const photoSchema = z
+     supplier: idSchema.optional(),
+     documentDate: documentDate.optional(),
+     docType: documentTypes.optional(),
++    order: idSchema.optional(),
++    source: z.enum(["photo", "whatsapp"]).default("photo"),
++    suggestion: z
++      .object({
++        supplier: idSchema.optional(),
++        order: idSchema.optional(),
++        docType: documentTypes.optional(),
++        reason: text(300),
++      })
++      .optional(),
+     note: z.string().max(500),
+     at,
+     data: z
+       .string()
+-      .max(8_000_000)
+-      .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/)
++      .max(14_000_000)
++      .regex(
++        /^data:(?:image\/(?:png|jpeg|webp)|application\/pdf);base64,[A-Za-z0-9+/=]+$/,
++      )
+       .optional(),
+     file: z
+       .string()
+       .regex(/^[a-f0-9]{64}$/)
+       .optional(),
+-    mime: z.enum(["image/png", "image/jpeg", "image/webp"]).optional(),
++    mime: z
++      .enum(["image/png", "image/jpeg", "image/webp", "application/pdf"])
++      .optional(),
+   })
+   .refine((p) => !!p.data || !!p.file, "Falta el archivo adjunto.");
+ export const movementSchema = z.object({
+@@ -400,9 +414,17 @@ export const actionSchema = z.intersection(
+       supplier: idSchema.optional(),
+       documentDate: documentDate.optional(),
+       name: text(200),
+-      data: z.string().max(8_000_000),
++      data: z.string().max(14_000_000),
+       note: z.string().max(500).default(""),
++      order: idSchema.optional(),
++      source: z.enum(["photo", "whatsapp"]).default("photo"),
++    }),
++    z.object({
++      type: z.literal("linkDocument"),
++      id: idSchema,
++      order: idSchema.optional(),
+     }),
++    z.object({ type: z.literal("applySuggestion"), id: idSchema }),
+   ]),
+ );
+ export type Action = z.infer<typeof actionSchema>;
+diff --git a/core/store.ts b/core/store.ts
+index d790d56..951616d 100644
+--- a/core/store.ts
++++ b/core/store.ts
+@@ -190,7 +190,9 @@ export class Store {
+             ? "jpg"
+             : p.mime === "image/png"
+               ? "png"
+-              : "webp";
++              : p.mime === "application/pdf"
++                ? "pdf"
++                : "webp";
+         const dest = path.join(dir, digest(p.id) + "." + extension);
+         if (!fs.existsSync(dest)) {
+           const bytes = fs.readFileSync(path.join(this.attachments, p.file));
+@@ -275,15 +277,27 @@ export class Store {
+   private storePhoto(photo: Photo): Photo {
+     if (photo.data) {
+       const match =
+-        /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(
++        /^data:(image\/(?:png|jpeg|webp)|application\/pdf);base64,([A-Za-z0-9+/=]+)$/.exec(
+           photo.data,
+         );
+-      ensure(match?.[1] && match[2], "Foto inválida.");
++      ensure(match?.[1] && match[2], "Documento inválido.");
+       const bytes = Buffer.from(match[2], "base64");
++      const isPdf = match[1] === "application/pdf";
+       ensure(
+-        bytes.length > 0 && bytes.length <= 5_000_000,
+-        "La foto supera 5 MB.",
++        bytes.length > 0 && bytes.length <= (isPdf ? 10_000_000 : 5_000_000),
++        isPdf ? "El PDF supera 10 MB." : "La foto supera 5 MB.",
+       );
++      if (isPdf) {
++        ensure(
++          bytes.subarray(0, 5).toString() === "%PDF-",
++          "El contenido no corresponde a un PDF.",
++        );
++        const file = digest(bytes);
++        const dest = path.join(this.attachments, file);
++        if (!fs.existsSync(dest)) this.atomicWrite(dest, bytes);
++        const { data, ...rest } = photo;
++        return { ...rest, file, mime: "application/pdf" };
++      }
+       const png = bytes
+         .subarray(0, 8)
+         .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+diff --git a/package.json b/package.json
+index aa1fa1b..582ac64 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.13.0",
++  "version": "0.14.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 32adea4..d838fc3 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -41,6 +41,21 @@ const assert = require("node:assert/strict");
+       env,
+     });
+     const window = await app.firstWindow();
++    const pageErrors = [];
++    window.on("pageerror", (e) => pageErrors.push(String(e).slice(0, 300)));
++    window.on("console", (m) => {
++      if (m.type() === "error")
++        pageErrors.push("console: " + m.text().slice(0, 300));
++    });
++    process.on("exit", () => {
++      if (pageErrors.length)
++        console.log("ERRORES DE PÁGINA:\n" + pageErrors.join("\n"));
++      try {
++        const ia = path.join(dir, "runtime", "logs", "ia.log");
++        if (fs.existsSync(ia))
++          console.log("REGISTRO IA:\n" + fs.readFileSync(ia, "utf8").trim());
++      } catch {}
++    });
+     await window
+       .getByRole("heading", { name: "Un buen día empieza en orden." })
+       .waitFor();
+@@ -94,7 +109,10 @@ const assert = require("node:assert/strict");
+       .getByRole("button", { name: "Configuración", exact: true })
+       .click();
+     await window
+-      .getByRole("heading", { name: "Archivo de fotos", exact: true })
++      .getByRole("heading", {
++        name: "Archivo de fotos y documentos",
++        exact: true,
++      })
+       .waitFor();
+     assert.ok((await window.locator(".photo-grid img").count()) > 0);
+     await window
+@@ -130,6 +148,23 @@ const assert = require("node:assert/strict");
+       fullPage: true,
+     });
+     assert.equal(savedStock(), 4.25);
++    await window
++      .getByRole("button", { name: "Documentos", exact: true })
++      .click();
++    await window
++      .getByRole("heading", { name: "Documentos por proveedor" })
++      .waitFor();
++    assert.ok((await window.locator(".doc-card").count()) >= 1);
++    await window.locator("#doc-supplier").selectOption("s2");
++    assert.ok((await window.locator(".doc-card").count()) >= 1);
++    assert.ok(
++      (await window
++        .getByRole("button", { name: "Vincular pedido", exact: true })
++        .count()) >= 1,
++    );
++    console.log(
++      "PASS: pantalla Documentos por proveedor con filtros y vínculo a pedido disponible.",
++    );
+     await window
+       .getByRole("button", { name: "Inventario", exact: true })
+       .click();
+@@ -383,7 +418,20 @@ const assert = require("node:assert/strict");
+     await window
+       .getByRole("button", { name: "Analizar con IA local", exact: true })
+       .click();
+-    await window.locator(".ai-result").waitFor({ timeout: 245000 });
++    try {
++      await window.locator(".ai-result").waitFor({ timeout: 245000 });
++    } catch (e) {
++      await window.screenshot({
++        path: path.join(root, "output/playwright/fail-ai.png"),
++      });
++      console.log(
++        "ESTADO IA AL FALLAR: " +
++          JSON.stringify(
++            (await window.locator("main").innerText()).slice(0, 700),
++          ),
++      );
++      throw e;
++    }
+     assert.ok(
+       (await window.locator(".ai-result").innerText()).includes(
+         "Posible factura",
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index 59b124e..767f89f 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -10,4 +10,5 @@ IA local: un modelo pequeño incluido en el equipo (Qwen3 0.6B) propone el tipo
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+ Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+ Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock.
++Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic.
+ Unidades: gramos, kilos, mililitros, litros y unidades; las presentaciones (cajas, botellas) se convierten a la unidad base al recibir.`;
+diff --git a/src/server.cjs b/src/server.cjs
+index df823f7..740145f 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -119,7 +119,18 @@ function createApp({
+     ...extra,
+   });
+   const ai = new LocalAI();
++  const aiLog = (line) => {
++    try {
++      const dir = path.join(dataDir, "runtime", "logs");
++      fs.mkdirSync(dir, { recursive: true });
++      fs.appendFileSync(
++        path.join(dir, "ia.log"),
++        new Date().toISOString() + " " + line + "\n",
++      );
++    } catch {}
++  };
+   const whatsapp = new WhatsAppConnection(dataDir, store);
++  whatsapp.ocr = (data) => recognizeLocal(data);
+   const token = randomBytes(32).toString("hex");
+   const sameToken = (value) =>
+     typeof value === "string" &&
+@@ -233,7 +244,20 @@ function createApp({
+           return;
+         }
+         if (u.pathname === "/api/ai") {
+-          json(200, await ai.analyze(data));
++          // Local timing log (no text) to diagnose slow readings on this machine.
++          const startedAt = Date.now();
++          try {
++            const result = await ai.analyze(data);
++            aiLog(
++              `analisis modo=${String(data.mode || "careful")} chars=${String(data.text || "").length} ms=${Date.now() - startedAt} tipo=${result.tipo}`,
++            );
++            json(200, result);
++          } catch (e) {
++            aiLog(
++              `analisis ERROR ms=${Date.now() - startedAt} ${String(e.message || e).slice(0, 120)}`,
++            );
++            throw e;
++          }
+           return;
+         }
+         if (u.pathname === "/api/ai/chat") {
+@@ -509,6 +533,7 @@ function createApp({
+         const { bytes, mime } = store.photo(u.pathname.split("/").pop());
+         res.writeHead(200, {
+           "Content-Type": mime,
++          "Content-Disposition": "inline",
+           "X-Content-Type-Options": "nosniff",
+           "Cache-Control": "private, max-age=3600",
+         });
+diff --git a/src/styles.css b/src/styles.css
+index f8f0c96..348c726 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -2140,3 +2140,55 @@ dialog::backdrop {
+     animation: none;
+   }
+ }
++
++.doc-grid {
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
++  gap: 14px;
++  padding: 0 20px 20px;
++}
++.doc-card {
++  display: flex;
++  gap: 12px;
++  border: 1px solid #ebe4d8;
++  border-radius: 14px;
++  padding: 12px;
++  background: #fffdf9;
++}
++.doc-thumb {
++  width: 84px;
++  height: 84px;
++  flex: none;
++  border-radius: 10px;
++  overflow: hidden;
++  background: #f5f0e6;
++  display: grid;
++  place-items: center;
++}
++.doc-thumb img {
++  width: 100%;
++  height: 100%;
++  object-fit: cover;
++}
++.doc-pdf {
++  font-weight: 700;
++  color: #c85c73;
++  letter-spacing: 1px;
++}
++.doc-body {
++  min-width: 0;
++  display: grid;
++  gap: 6px;
++  align-content: start;
++}
++.doc-tags {
++  display: flex;
++  gap: 6px;
++  flex-wrap: wrap;
++}
++.doc-suggestion {
++  background: #eef3e6;
++  border-radius: 10px;
++  padding: 8px 10px;
++  font-size: 12px;
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index 91653eb..1d43303 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -765,6 +765,66 @@ async function action(name, el) {
+     );
+     return;
+   }
++  if (name === "openDocuments") {
++    nav("documents");
++    return;
++  }
++  if (name === "applySuggestion") {
++    await mutate(
++      { type: "applySuggestion", id: el.dataset.id },
++      "Propuesta aceptada.",
++    );
++    return;
++  }
++  if (name === "unlinkDocument") {
++    await mutate(
++      { type: "linkDocument", id: el.dataset.id },
++      "Documento desvinculado.",
++    );
++    return;
++  }
++  if (name === "linkDocument") {
++    const ph = state.photos.find((p) => p.id === el.dataset.id);
++    const orders = state.orders.filter(
++      (o) =>
++        (!ph.supplier || o.supplier === ph.supplier) &&
++        o.status !== "cancelled",
++    );
++    if (!orders.length) {
++      toast("No hay pedidos de ese proveedor a los que vincular.");
++      return;
++    }
++    modal(
++      "Vincular a un pedido",
++      "Elige el pedido al que pertenece este documento.",
++      select(
++        "Pedido",
++        "order",
++        orders.map((o) => [
++          o.id,
++          `${o.number} · ${supplier(o.supplier).name} · ${date(o.at)} · ${statusLabel[o.status]}`,
++        ]),
++        ph.suggestion?.order || ph.order || orders[0].id,
++      ),
++      async (f) =>
++        mutate(
++          { type: "linkDocument", id: ph.id, order: f.get("order") },
++          "Documento vinculado.",
++        ),
++    );
++    return;
++  }
++  if (name === "documentPath") {
++    const ph = state.photos.find((p) => p.id === el.dataset.id);
++    modal(
++      "Dónde está el archivo",
++      "Copia derivada dentro de la carpeta del proveedor; el original vive en attachments.",
++      `<code class="path">${esc(dataDir)} / proveedores / ${esc(ph.supplier ? "proveedor-…" : "sin-proveedor")} / fotos / ${esc(ph.documentDate || ph.at.slice(0, 10))}</code><p class="fineprint">${esc(ph.name)} · ${esc(ph.mime || "")}</p>`,
++      async () => true,
++      "Listo",
++    );
++    return;
++  }
+   if (name === "businessEditor") {
+     modal(
+       "Identidad del negocio",
+diff --git a/src/ui/core.js b/src/ui/core.js
+index b83a111..5ec28a3 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -28,7 +28,9 @@ let aiDraft = "",
+   aiChatUseDoc = true,
+   aiChatError = "",
+   aiSourcePhoto = "",
+-  aiReplyBusy = "";
++  aiReplyBusy = "",
++  docSupplier = "all",
++  docFilter = "all";
+ const $ = (s) => document.querySelector(s);
+ const esc = (v) =>
+   String(v ?? "").replace(
+@@ -235,6 +237,7 @@ function render() {
+     whatsapp,
+     ai: aiPage,
+     production,
++    documents,
+   };
+   dismissSplash();
+   $("#app").innerHTML =
+@@ -246,6 +249,7 @@ function render() {
+       ["messages", "message", "Mensajes"],
+       ["whatsapp", "message", "WhatsApp"],
+       ["suppliers", "store", "Proveedores"],
++      ["documents", "photo", "Documentos"],
+       ["activity", "clock", "Actividad"],
+       ["ai", "leaf", "IA local"],
+     ]
+@@ -255,7 +259,7 @@ function render() {
+       )
+       .join(
+         "",
+-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>GelatoStock · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local", production: "Producción" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
++      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>GelatoStock · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local", production: "Producción", documents: "Documentos" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
+ }
+ async function refreshWhatsApp() {
+   if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)
+diff --git a/src/ui/events.js b/src/ui/events.js
+index 3d5bceb..fc7add8 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -49,6 +49,12 @@ document.addEventListener("change", async (e) => {
+     render();
+     return;
+   }
++  if (e.target.id === "doc-supplier" || e.target.id === "doc-filter") {
++    if (e.target.id === "doc-supplier") docSupplier = e.target.value;
++    else docFilter = e.target.value;
++    render();
++    return;
++  }
+   if (e.target.id === "retention-days") {
+     try {
+       const data = await request("/api/maintenance", {
+diff --git a/src/ui/forms.js b/src/ui/forms.js
+index 7a1d3f3..b90c22f 100644
+--- a/src/ui/forms.js
++++ b/src/ui/forms.js
+@@ -111,18 +111,21 @@ function photo() {
+   let serial = 0,
+     manual = false;
+   modal(
+-    "Cargar una foto",
+-    "Lectura local del texto para proponer un proveedor. Las cantidades no cambian.",
++    "Añadir un documento",
++    "Foto o PDF. En fotos se lee el texto localmente para proponer proveedor, tipo y pedido. Las cantidades no cambian.",
+     '<p class="detection-status" role="status">Al elegir una foto se buscará su proveedor entre tus fichas.</p>' +
+       photoFields() +
+-      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto de tu equipo</strong><span>JPG, PNG o WebP · hasta 5 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Podés elegirlo manualmente si la lectura falla.</p>`,
++      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Podés elegirlo manualmente si la lectura falla.</p>`,
+     async (f) => {
+       const file = f.get("photo");
++      const pdf = file.type === "application/pdf";
+       if (
+-        !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
+-        file.size > 5000000
++        !["image/png", "image/jpeg", "image/webp", "application/pdf"].includes(
++          file.type,
++        ) ||
++        file.size > (pdf ? 10000000 : 5000000)
+       )
+-        throw Error("Usá JPG, PNG o WebP de hasta 5 MB.");
++        throw Error("Usá JPG, PNG o WebP de hasta 5 MB, o PDF de hasta 10 MB.");
+       return mutate(
+         {
+           type: "photo",
+@@ -156,6 +159,14 @@ function photo() {
+       form.querySelector(".detection-status").textContent =
+         "Leyendo la foto en este equipo…";
+       try {
++        if (file.type === "application/pdf") {
++          if (file.size > 10000000) throw Error("El PDF supera 10 MB.");
++          form.querySelector("#photo-preview").innerHTML =
++            '<p class="muted">PDF listo para guardar. El texto de un PDF no se lee todavía; puedes elegir proveedor y pedido a mano.</p>';
++          form.querySelector(".detection-status").textContent =
++            "PDF seleccionado.";
++          return;
++        }
+         if (
+           !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
+           file.size > 5000000
+diff --git a/src/ui/views.js b/src/ui/views.js
+index cfe31e6..58a4b71 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -118,6 +118,73 @@ function orderReplies(o) {
+     )
+     .join("")}</div>`;
+ }
++const docTypeLabel = (t) =>
++  t ? (aiTypes[t] || t).replace("Posible ", "") : "Sin tipo";
++function documentCard(ph) {
++  const order = ph.order && state.orders.find((o) => o.id === ph.order);
++  const sug = ph.suggestion;
++  const sugText = sug
++    ? [
++        sug.supplier
++          ? "proveedor " + esc(supplier(sug.supplier)?.name || "")
++          : "",
++        sug.order
++          ? "pedido " +
++            esc(state.orders.find((o) => o.id === sug.order)?.number || "")
++          : "",
++        sug.docType ? "tipo " + esc(docTypeLabel(sug.docType)) : "",
++      ]
++        .filter(Boolean)
++        .join(" · ")
++    : "";
++  const isPdf = ph.mime === "application/pdf";
++  return `<article class="doc-card"><div class="doc-thumb">${isPdf ? `<span class="doc-pdf">PDF</span>` : `<img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}">`}</div><div class="doc-body"><strong>${esc(ph.name)}</strong><small>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")} · ${esc(ph.documentDate || ph.at.slice(0, 10))} · ${ph.source === "whatsapp" ? "WhatsApp" : "Foto"}</small><div class="doc-tags">${pill(docTypeLabel(ph.docType), ph.docType ? "sage" : "neutral")}${order ? pill(order.number, "lavender") : pill("Sin pedido", "neutral")}</div>${sug && sugText ? `<div class="doc-suggestion"><strong>Propuesta por reglas:</strong> ${sugText}. <span class="muted">${esc(sug.reason)}</span> ${btn("Aceptar", "applySuggestion", "primary", `data-id="${esc(ph.id)}"`)}</div>` : sug ? `<div class="muted">${esc(sug.reason)}</div>` : ""}<div class="row-actions">${btn("Organizar", "organizePhoto", "secondary", `data-id="${esc(ph.id)}"`)}${btn(order ? "Cambiar pedido" : "Vincular pedido", "linkDocument", "secondary", `data-id="${esc(ph.id)}"`)}${order ? btn("Desvincular", "unlinkDocument", "secondary", `data-id="${esc(ph.id)}"`) : ""}${ph.ocrText ? btn("Revisar texto con IA", "aiPhoto", "secondary", `data-id="${esc(ph.id)}"`) : ""}${btn("Dónde está", "documentPath", "secondary", `data-id="${esc(ph.id)}"`)}</div></div></article>`;
++}
++function documents() {
++  const list = state.photos.filter(
++    (p) =>
++      (docSupplier === "all" ||
++        p.supplier === docSupplier ||
++        (docSupplier === "none" && !p.supplier)) &&
++      (docFilter === "all" ||
++        (docFilter === "unlinked" && !p.order) ||
++        (docFilter === "suggested" && p.suggestion) ||
++        (docFilter === "pdf" && p.mime === "application/pdf")),
++  );
++  const groups = new Map();
++  for (const p of list) {
++    const key = p.supplier || "none";
++    if (!groups.has(key)) groups.set(key, []);
++    groups.get(key).push(p);
++  }
++  return (
++    header(
++      "Documentos por proveedor",
++      "Facturas, albaranes, recibos y pedidos, archivados y vinculados al pedido al que pertenecen.",
++      btn(icon("photo") + " Añadir documento", "photo", "primary"),
++    ) +
++    `<div class="notice subtle">${icon("shield")}<div><strong>Las propuestas las hacen reglas, no la IA</strong><span>Número de pedido en el texto, proveedor y fecha, e importe frente al pedido. Nada se vincula sin tu confirmación. Los adjuntos de WhatsApp de proveedores autorizados llegan aquí solos.</span></div></div><div class="message-filters"><label class="field">Proveedor<select id="doc-supplier"><option value="all">Todos</option><option value="none" ${docSupplier === "none" ? "selected" : ""}>Sin proveedor</option>${state.suppliers.map((s) => `<option value="${s.id}" ${docSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="doc-filter">${[
++      ["all", "Todos"],
++      ["unlinked", "Sin pedido"],
++      ["suggested", "Con propuesta"],
++      ["pdf", "PDF"],
++    ]
++      .map(
++        ([v, l]) =>
++          `<option value="${v}" ${docFilter === v ? "selected" : ""}>${l}</option>`,
++      )
++      .join("")}</select></label></div>${
++      list.length
++        ? [...groups.entries()]
++            .map(
++              ([key, docs]) =>
++                `<section class="panel"><div class="panel-heading"><div><h2>${esc(key === "none" ? "Sin proveedor" : supplier(key).name)}</h2><p>${docs.length} documento${docs.length === 1 ? "" : "s"}</p></div></div><div class="doc-grid">${docs.map(documentCard).join("")}</div></section>`,
++            )
++            .join("")
++        : '<div class="panel empty compact">No hay documentos con estos filtros. Añade una foto o un PDF, o autoriza chats de WhatsApp para recibirlos solos.</div>'
++    }`
++  );
++}
+ function production() {
+   if (lockInfo?.enabled && !lockInfo.unlocked)
+     return (
+@@ -250,9 +317,12 @@ function orderTracking() {
+               Math.round((l.packs * l.pack - l.received) * 1000) / 1000;
+             return `<tr><td><strong>${esc(p.name)}</strong><small>${l.packs} × ${num(l.pack)} ${esc(p.unit)} por presentación</small></td><td>${num(l.packs * l.pack)} ${esc(p.unit)}</td><td>${num(l.received)} ${esc(p.unit)}</td><td><strong>${num(rem)} ${esc(p.unit)}</strong></td></tr>`;
+           })
+-          .join(
+-            "",
+-          )}</tbody></table></div>${orderReplies(o)}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. Pendiente de confirmación del proveedor.` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "secondary", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
++          .join("")}</tbody></table></div>${orderReplies(o)}${(() => {
++          const docs = state.photos.filter((p) => p.order === o.id);
++          return docs.length
++            ? `<div class="order-replies"><strong>Documentos vinculados</strong>${docs.map((d) => `<p>${pill(docTypeLabel(d.docType), "sage")} ${esc(d.name)} · ${esc(d.documentDate || d.at.slice(0, 10))}</p>`).join("")}</div>`
++            : "";
++        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. Pendiente de confirmación del proveedor.` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "secondary", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
+       })
+       .join("") ||
+     '<div class="panel empty compact">' +
+@@ -390,7 +460,7 @@ function settings() {
+       "Un espacio que funciona a tu manera.",
+       "Datos locales, copias de seguridad y un camino claro para crecer.",
+     ) +
+-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Exportar CSV", "exportCsv", "secondary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p><p class="fineprint">Copia automática diaria en la carpeta backups (se conservan las 30 últimas automáticas). ${backupInfo?.last ? "Última: " + date(backupInfo.last) + " " + time(backupInfo.last) + "." : "Todavía no se ha creado."}${backupInfo?.warning ? " " + esc(backupInfo.warning) : ""}</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Modelo local incluido", "sage")}<p>El modelo local propone el tipo de documento y contrasta la clasificación con el texto original. El OCR español sigue leyendo las fotos dentro del equipo.</p>${btn("Abrir IA local", "aiOpen", "primary")}<ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Lecturas revisables; sin acciones automáticas</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos</h2><p>Fotos ordenadas por proveedor y fecha del documento. Las anteriores quedan sin proveedor hasta clasificarlas.</p>${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
++    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Exportar CSV", "exportCsv", "secondary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p><p class="fineprint">Copia automática diaria en la carpeta backups (se conservan las 30 últimas automáticas). ${backupInfo?.last ? "Última: " + date(backupInfo.last) + " " + time(backupInfo.last) + "." : "Todavía no se ha creado."}${backupInfo?.warning ? " " + esc(backupInfo.warning) : ""}</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Modelo local incluido", "sage")}<p>El modelo local propone el tipo de documento y contrasta la clasificación con el texto original. El OCR español sigue leyendo las fotos dentro del equipo.</p>${btn("Abrir IA local", "aiOpen", "primary")}<ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Lecturas revisables; sin acciones automáticas</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos y documentos</h2><p>Fotos y PDF ordenados por proveedor y fecha del documento. La pantalla Documentos permite vincularlos a pedidos y aceptar propuestas.</p>${btn("Abrir Documentos", "openDocuments", "secondary")}${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
+       [...state.photos]
+         .sort(
+           (a, b) =>
+diff --git a/src/whatsapp.cjs b/src/whatsapp.cjs
+index b9954c4..553e58d 100644
+--- a/src/whatsapp.cjs
++++ b/src/whatsapp.cjs
+@@ -316,6 +316,42 @@ class WhatsAppConnection {
+     );
+     return imported;
+   }
++  // Attachments from a supplier go to the document archive with a rule-based proposal.
++  async importDocument(supplier, sender, entry, bytes, mime) {
++    if (typeof this.mainStore?.dispatch !== "function") return;
++    try {
++      let ocrText;
++      if (mime !== "application/pdf" && typeof this.ocr === "function") {
++        try {
++          const read = await this.ocr(
++            "data:" + mime + ";base64," + bytes.toString("base64"),
++          );
++          ocrText = String(read?.text || "").slice(0, 20000) || undefined;
++        } catch (e) {
++          this.log(
++            "OCR del adjunto no disponible: " +
++              String(e?.message || e).slice(0, 80),
++          );
++        }
++      }
++      this.mainStore.dispatch({
++        type: "photo",
++        name: entry.name,
++        data: "data:" + mime + ";base64," + bytes.toString("base64"),
++        note: "Adjunto de WhatsApp de " + sender,
++        supplier,
++        documentDate: entry.at.slice(0, 10),
++        source: "whatsapp",
++        ...(ocrText ? { ocrText } : {}),
++      });
++      this.log("adjunto de " + sender + " archivado en Documentos");
++    } catch (e) {
++      this.log(
++        "no se pudo archivar el adjunto: " +
++          String(e?.message || e).slice(0, 120),
++      );
++    }
++  }
+   async receive(msg, generation) {
+     const account = this.account;
+     if (!account || generation !== this.generation) return;
+@@ -425,6 +461,14 @@ class WhatsAppConnection {
+             name: String(media.filename || "Adjunto." + ext).slice(0, 200),
+             mime: media.mimetype,
+           });
++          if (permitted.supplier)
++            this.importDocument(
++              permitted.supplier,
++              sender,
++              entry,
++              bytes,
++              media.mimetype,
++            );
+         }
+       }
+       if (!entry.file)
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index fcebe7a..4cbcade 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -827,3 +827,85 @@ test("la identidad del negocio se edita y aparece en el texto de los pedidos", (
+   assert.match(orderMessage(s, s.orders[0].id), /de Heladería Prueba/);
+   assert.throws(() => apply(s, { type: "business", name: "", place: "" }));
+ });
++
++test("documentos: propuesta por número de pedido, por único pedido o por importe; vínculo confirmado por la persona", () => {
++  const png =
++    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==";
++  let s = milkOrder();
++  const order = s.orders[0];
++  s = apply(s, {
++    type: "photo",
++    name: "f1.png",
++    data: png,
++    ocrText: "FACTURA F-9\nPedido " + order.number + "\nTotal: 999,00 EUR",
++  });
++  let doc = s.photos[0];
++  assert.equal(doc.suggestion.order, order.id);
++  assert.equal(doc.suggestion.supplier, order.supplier);
++  assert.equal(doc.suggestion.docType, "factura");
++  s = apply(s, { type: "applySuggestion", id: doc.id });
++  doc = s.photos[0];
++  assert.equal(doc.order, order.id);
++  assert.equal(doc.docType, "factura");
++  assert.equal(doc.suggestion, undefined);
++  s = apply(s, {
++    type: "photo",
++    name: "f2.png",
++    data: png,
++    supplier: order.supplier,
++    documentDate: new Date().toISOString().slice(0, 10),
++  });
++  assert.equal(s.photos[0].suggestion.order, order.id);
++  assert.match(s.photos[0].suggestion.reason, /Único pedido/);
++  const total = (order.lines.reduce((n, l) => n + l.packs * l.price, 0) / 100)
++    .toFixed(2)
++    .replace(".", ",");
++  s = apply(s, { type: "cart", product: "p2", packs: 3 });
++  s = apply(s, { type: "authorize", revision: s.revision });
++  s = apply(s, { type: "send", order: s.orders[0].id });
++  s = apply(s, {
++    type: "photo",
++    name: "f3.png",
++    data: png,
++    supplier: order.supplier,
++    ocrText: "FACTURA\nTotal: " + total + " EUR",
++  });
++  assert.equal(s.photos[0].suggestion.order, order.id);
++  assert.match(s.photos[0].suggestion.reason, /importe/);
++  assert.throws(() =>
++    apply(s, {
++      type: "linkDocument",
++      id: s.photos[0].id,
++      order:
++        apply(seed(), { type: "cart", product: "p1", packs: 1 }).orders[0]
++          ?.id || "nope",
++    }),
++  );
++  const other = s.orders.find((o) => o.supplier !== order.supplier);
++  if (other)
++    assert.throws(
++      () =>
++        apply(s, { type: "linkDocument", id: s.photos[0].id, order: other.id }),
++      /otro proveedor/,
++    );
++  s = apply(s, { type: "linkDocument", id: s.photos[0].id, order: order.id });
++  assert.equal(s.photos[0].order, order.id);
++  s = apply(s, { type: "linkDocument", id: s.photos[0].id });
++  assert.equal(s.photos[0].order, undefined);
++});
++test("un PDF se guarda como documento y se acepta como origen WhatsApp", () => {
++  const pdf =
++    "data:application/pdf;base64," +
++    Buffer.from("%PDF-1.4\n%fake\n").toString("base64");
++  const s = apply(seed(), {
++    type: "photo",
++    name: "albaran.pdf",
++    data: pdf,
++    supplier: "s2",
++    source: "whatsapp",
++    documentDate: "2026-09-09",
++  });
++  assert.equal(s.photos[0].source, "whatsapp");
++  assert.equal(s.photos[0].name, "albaran.pdf");
++  assert.match(s.activity[0].text, /WhatsApp/);
++});
+diff --git a/tests/store.test.cjs b/tests/store.test.cjs
+index 5f73ac7..7570d7d 100644
+--- a/tests/store.test.cjs
++++ b/tests/store.test.cjs
+@@ -465,3 +465,45 @@ test("las frases aprendidas persisten y la base pasa a versión 3 sin perder dat
+       3,
+     );
+   }));
++
++test("un PDF se almacena por huella, se sirve con su tipo y se archiva por proveedor", () =>
++  fixture((dir, open) => {
++    const store = open();
++    const pdf =
++      "data:application/pdf;base64," +
++      Buffer.from("%PDF-1.4\n%prueba\n").toString("base64");
++    const s = store.dispatch({
++      type: "photo",
++      name: "factura.pdf",
++      data: pdf,
++      supplier: "s2",
++      documentDate: "2026-09-09",
++    });
++    const doc = s.photos[0];
++    assert.equal(doc.mime, "application/pdf");
++    const served = store.photo(doc.id);
++    assert.equal(served.mime, "application/pdf");
++    assert.ok(served.bytes.subarray(0, 5).toString() === "%PDF-");
++    const archive = JSON.parse(
++      fs.readFileSync(path.join(dir, "proveedores", "indice.json"), "utf8"),
++    );
++    const folder = path.join(
++      dir,
++      "proveedores",
++      archive.find((x) => x.id === "s2").carpeta,
++      "fotos",
++      "2026-09-09",
++    );
++    assert.ok(fs.readdirSync(folder).some((f) => f.endsWith(".pdf")));
++    assert.throws(
++      () =>
++        store.dispatch({
++          type: "photo",
++          name: "x.pdf",
++          data:
++            "data:application/pdf;base64," +
++            Buffer.from("no es pdf").toString("base64"),
++        }),
++      /PDF/,
++    );
++  }));
+diff --git a/tests/whatsapp.test.cjs b/tests/whatsapp.test.cjs
+index 83682b5..d78f978 100644
+--- a/tests/whatsapp.test.cjs
++++ b/tests/whatsapp.test.cjs
+@@ -451,3 +451,46 @@ test("limpieza del canal borra mensajes, envíos, notas y adjuntos antiguos y co
+       view.history.some((h) => /Limpieza: eliminados 1 mensajes/.test(h.text)),
+     );
+   }));
++
++test("un adjunto de proveedor autorizado se archiva en Documentos con texto OCR si está disponible", () =>
++  fixture(async (c) => {
++    const dispatched = [];
++    c.mainStore = {
++      load: () => ({ suppliers: [] }),
++      dispatch: (a) => (dispatched.push(a), {}),
++    };
++    c.ocr = async () => ({ text: "FACTURA F-1 Pedido GS-001" });
++    const a = c.store.bind("+34600000001");
++    c.account = a;
++    c.status = "connected";
++    c.readyAt = 0;
++    c.store.permit(a, "+34910000001", "Proveedor", "sup-1");
++    const png = Buffer.from(
++      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==",
++      "base64",
++    );
++    c.client = {};
++    await c.receive(
++      {
++        from: "34910000001@c.us",
++        id: { _serialized: "media-1" },
++        timestamp: 1,
++        body: "",
++        hasMedia: true,
++        _data: { size: png.length },
++        downloadMedia: async () => ({
++          mimetype: "image/png",
++          data: png.toString("base64"),
++          filename: "factura.png",
++        }),
++      },
++      c.generation,
++    );
++    const doc = dispatched.find((d) => d.type === "photo");
++    assert.ok(doc);
++    assert.equal(doc.supplier, "sup-1");
++    assert.equal(doc.source, "whatsapp");
++    assert.equal(doc.name, "factura.png");
++    assert.match(doc.ocrText, /GS-001/);
++    c.client = null;
++  }));

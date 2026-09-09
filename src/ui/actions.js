@@ -765,6 +765,66 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "openDocuments") {
+    nav("documents");
+    return;
+  }
+  if (name === "applySuggestion") {
+    await mutate(
+      { type: "applySuggestion", id: el.dataset.id },
+      "Propuesta aceptada.",
+    );
+    return;
+  }
+  if (name === "unlinkDocument") {
+    await mutate(
+      { type: "linkDocument", id: el.dataset.id },
+      "Documento desvinculado.",
+    );
+    return;
+  }
+  if (name === "linkDocument") {
+    const ph = state.photos.find((p) => p.id === el.dataset.id);
+    const orders = state.orders.filter(
+      (o) =>
+        (!ph.supplier || o.supplier === ph.supplier) &&
+        o.status !== "cancelled",
+    );
+    if (!orders.length) {
+      toast("No hay pedidos de ese proveedor a los que vincular.");
+      return;
+    }
+    modal(
+      "Vincular a un pedido",
+      "Elige el pedido al que pertenece este documento.",
+      select(
+        "Pedido",
+        "order",
+        orders.map((o) => [
+          o.id,
+          `${o.number} · ${supplier(o.supplier).name} · ${date(o.at)} · ${statusLabel[o.status]}`,
+        ]),
+        ph.suggestion?.order || ph.order || orders[0].id,
+      ),
+      async (f) =>
+        mutate(
+          { type: "linkDocument", id: ph.id, order: f.get("order") },
+          "Documento vinculado.",
+        ),
+    );
+    return;
+  }
+  if (name === "documentPath") {
+    const ph = state.photos.find((p) => p.id === el.dataset.id);
+    modal(
+      "Dónde está el archivo",
+      "Copia derivada dentro de la carpeta del proveedor; el original vive en attachments.",
+      `<code class="path">${esc(dataDir)} / proveedores / ${esc(ph.supplier ? "proveedor-…" : "sin-proveedor")} / fotos / ${esc(ph.documentDate || ph.at.slice(0, 10))}</code><p class="fineprint">${esc(ph.name)} · ${esc(ph.mime || "")}</p>`,
+      async () => true,
+      "Listo",
+    );
+    return;
+  }
   if (name === "businessEditor") {
     modal(
       "Identidad del negocio",

@@ -41,6 +41,21 @@ const assert = require("node:assert/strict");
       env,
     });
     const window = await app.firstWindow();
+    const pageErrors = [];
+    window.on("pageerror", (e) => pageErrors.push(String(e).slice(0, 300)));
+    window.on("console", (m) => {
+      if (m.type() === "error")
+        pageErrors.push("console: " + m.text().slice(0, 300));
+    });
+    process.on("exit", () => {
+      if (pageErrors.length)
+        console.log("ERRORES DE PÁGINA:\n" + pageErrors.join("\n"));
+      try {
+        const ia = path.join(dir, "runtime", "logs", "ia.log");
+        if (fs.existsSync(ia))
+          console.log("REGISTRO IA:\n" + fs.readFileSync(ia, "utf8").trim());
+      } catch {}
+    });
     await window
       .getByRole("heading", { name: "Un buen día empieza en orden." })
       .waitFor();
@@ -94,7 +109,10 @@ const assert = require("node:assert/strict");
       .getByRole("button", { name: "Configuración", exact: true })
       .click();
     await window
-      .getByRole("heading", { name: "Archivo de fotos", exact: true })
+      .getByRole("heading", {
+        name: "Archivo de fotos y documentos",
+        exact: true,
+      })
       .waitFor();
     assert.ok((await window.locator(".photo-grid img").count()) > 0);
     await window
@@ -130,6 +148,23 @@ const assert = require("node:assert/strict");
       fullPage: true,
     });
     assert.equal(savedStock(), 4.25);
+    await window
+      .getByRole("button", { name: "Documentos", exact: true })
+      .click();
+    await window
+      .getByRole("heading", { name: "Documentos por proveedor" })
+      .waitFor();
+    assert.ok((await window.locator(".doc-card").count()) >= 1);
+    await window.locator("#doc-supplier").selectOption("s2");
+    assert.ok((await window.locator(".doc-card").count()) >= 1);
+    assert.ok(
+      (await window
+        .getByRole("button", { name: "Vincular pedido", exact: true })
+        .count()) >= 1,
+    );
+    console.log(
+      "PASS: pantalla Documentos por proveedor con filtros y vínculo a pedido disponible.",
+    );
     await window
       .getByRole("button", { name: "Inventario", exact: true })
       .click();
@@ -383,7 +418,20 @@ const assert = require("node:assert/strict");
     await window
       .getByRole("button", { name: "Analizar con IA local", exact: true })
       .click();
-    await window.locator(".ai-result").waitFor({ timeout: 245000 });
+    try {
+      await window.locator(".ai-result").waitFor({ timeout: 245000 });
+    } catch (e) {
+      await window.screenshot({
+        path: path.join(root, "output/playwright/fail-ai.png"),
+      });
+      console.log(
+        "ESTADO IA AL FALLAR: " +
+          JSON.stringify(
+            (await window.locator("main").innerText()).slice(0, 700),
+          ),
+      );
+      throw e;
+    }
     assert.ok(
       (await window.locator(".ai-result").innerText()).includes(
         "Posible factura",

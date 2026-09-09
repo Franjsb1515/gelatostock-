@@ -13,6 +13,8 @@ import {
   type Message,
 } from "./schema";
 export { seed } from "./seed";
+export { suggestDocument, guessDocType, documentTotalCents } from "./documents";
+import { suggestDocument } from "./documents";
 export {
   interpretReply,
   resolveDate,
@@ -274,11 +276,19 @@ export function validate(input: unknown): State {
         (!p.output || products.has(p.output.product)),
       "Producción con datos inexistentes.",
     );
-  for (const photo of s.photos)
+  for (const photo of s.photos) {
     ensure(
       !photo.supplier || suppliers.has(photo.supplier),
       "Proveedor de foto inexistente.",
     );
+    if (photo.order) {
+      const o = s.orders.find((x) => x.id === photo.order);
+      ensure(
+        !!o && (!photo.supplier || o.supplier === photo.supplier),
+        "Documento vinculado a un pedido inexistente o de otro proveedor.",
+      );
+    }
+  }
   const reversed = new Set<string>();
   for (const m of s.movements) {
     ensure(
@@ -315,6 +325,11 @@ export function validate(input: unknown): State {
     }
   }
   return s;
+}
+// Keep a proposal only while it still adds something the person has not decided.
+function refreshSuggestion(s: State, photo: State["photos"][number]): void {
+  const sug = suggestDocument(s, photo);
+  photo.suggestion = sug.supplier || sug.order || sug.docType ? sug : undefined;
 }
 function move(
   s: State,
@@ -822,6 +837,7 @@ export function apply(state: State, input: unknown): State {
     case "photoType": {
       const photo = item(s.photos, a.id);
       photo.docType = a.docType;
+      refreshSuggestion(s, photo);
       note = a.docType
         ? `Tipo de documento confirmado por la persona en la foto ${photo.name}: ${a.docType}.`
         : `Tipo de documento retirado de la foto ${photo.name}.`;
@@ -830,14 +846,72 @@ export function apply(state: State, input: unknown): State {
     case "organizePhoto": {
       const photo = item(s.photos, a.id);
       if (a.supplier) item(s.suppliers, a.supplier);
+      if (photo.order && a.supplier !== item(s.orders, photo.order).supplier)
+        photo.order = undefined;
       photo.supplier = a.supplier;
       photo.documentDate = a.documentDate;
-      note = "Clasificación de foto actualizada; se conserva el original.";
+      refreshSuggestion(s, photo);
+      note =
+        "Clasificación del documento actualizada; se conserva el original.";
+      break;
+    }
+    case "linkDocument": {
+      const photo = item(s.photos, a.id);
+      if (a.order) {
+        const o = item(s.orders, a.order);
+        ensure(
+          !photo.supplier || photo.supplier === o.supplier,
+          "El pedido pertenece a otro proveedor.",
+        );
+        photo.supplier = o.supplier;
+        photo.order = o.id;
+        note = `Documento ${photo.name} vinculado al pedido ${o.number}.`;
+      } else {
+        photo.order = undefined;
+        note = `Documento ${photo.name} desvinculado de su pedido.`;
+      }
+      refreshSuggestion(s, photo);
+      break;
+    }
+    case "applySuggestion": {
+      const photo = item(s.photos, a.id);
+      const sug = photo.suggestion;
+      ensure(!!sug, "Este documento no tiene propuesta pendiente.");
+      const applied: string[] = [];
+      if (sug.supplier) {
+        item(s.suppliers, sug.supplier);
+        photo.supplier = sug.supplier;
+        applied.push("proveedor");
+      }
+      if (sug.order) {
+        const o = item(s.orders, sug.order);
+        ensure(
+          !photo.supplier || photo.supplier === o.supplier,
+          "El pedido propuesto pertenece a otro proveedor.",
+        );
+        photo.supplier = o.supplier;
+        photo.order = o.id;
+        applied.push("pedido " + o.number);
+      }
+      if (sug.docType) {
+        photo.docType = sug.docType;
+        applied.push("tipo " + sug.docType);
+      }
+      ensure(applied.length > 0, "La propuesta no contiene cambios.");
+      refreshSuggestion(s, photo);
+      note = `Propuesta aceptada por la persona para ${photo.name}: ${applied.join(", ")}.`;
       break;
     }
     case "photo": {
       if (a.supplier) item(s.suppliers, a.supplier);
-      s.photos.unshift({
+      if (a.order) {
+        const o = item(s.orders, a.order);
+        ensure(
+          !a.supplier || a.supplier === o.supplier,
+          "El pedido pertenece a otro proveedor.",
+        );
+      }
+      const doc = {
         id: randomUUID(),
         name: a.name,
         ocrText: a.ocrText,
@@ -846,8 +920,15 @@ export function apply(state: State, input: unknown): State {
         data: a.data,
         note: a.note,
         at: now(),
-      });
-      note = "Foto guardada como adjunto local. Sin reconocimiento automático.";
+        order: a.order,
+        source: a.source,
+      };
+      s.photos.unshift(doc);
+      refreshSuggestion(s, doc);
+      note =
+        a.source === "whatsapp"
+          ? `Documento recibido por WhatsApp archivado: ${a.name}.`
+          : "Documento guardado como adjunto local; propuestas por reglas, sin acciones automáticas.";
       break;
     }
   }

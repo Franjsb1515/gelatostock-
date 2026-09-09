@@ -316,6 +316,42 @@ class WhatsAppConnection {
     );
     return imported;
   }
+  // Attachments from a supplier go to the document archive with a rule-based proposal.
+  async importDocument(supplier, sender, entry, bytes, mime) {
+    if (typeof this.mainStore?.dispatch !== "function") return;
+    try {
+      let ocrText;
+      if (mime !== "application/pdf" && typeof this.ocr === "function") {
+        try {
+          const read = await this.ocr(
+            "data:" + mime + ";base64," + bytes.toString("base64"),
+          );
+          ocrText = String(read?.text || "").slice(0, 20000) || undefined;
+        } catch (e) {
+          this.log(
+            "OCR del adjunto no disponible: " +
+              String(e?.message || e).slice(0, 80),
+          );
+        }
+      }
+      this.mainStore.dispatch({
+        type: "photo",
+        name: entry.name,
+        data: "data:" + mime + ";base64," + bytes.toString("base64"),
+        note: "Adjunto de WhatsApp de " + sender,
+        supplier,
+        documentDate: entry.at.slice(0, 10),
+        source: "whatsapp",
+        ...(ocrText ? { ocrText } : {}),
+      });
+      this.log("adjunto de " + sender + " archivado en Documentos");
+    } catch (e) {
+      this.log(
+        "no se pudo archivar el adjunto: " +
+          String(e?.message || e).slice(0, 120),
+      );
+    }
+  }
   async receive(msg, generation) {
     const account = this.account;
     if (!account || generation !== this.generation) return;
@@ -425,6 +461,14 @@ class WhatsAppConnection {
             name: String(media.filename || "Adjunto." + ext).slice(0, 200),
             mime: media.mimetype,
           });
+          if (permitted.supplier)
+            this.importDocument(
+              permitted.supplier,
+              sender,
+              entry,
+              bytes,
+              media.mimetype,
+            );
         }
       }
       if (!entry.file)

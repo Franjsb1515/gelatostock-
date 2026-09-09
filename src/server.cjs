@@ -119,7 +119,18 @@ function createApp({
     ...extra,
   });
   const ai = new LocalAI();
+  const aiLog = (line) => {
+    try {
+      const dir = path.join(dataDir, "runtime", "logs");
+      fs.mkdirSync(dir, { recursive: true });
+      fs.appendFileSync(
+        path.join(dir, "ia.log"),
+        new Date().toISOString() + " " + line + "\n",
+      );
+    } catch {}
+  };
   const whatsapp = new WhatsAppConnection(dataDir, store);
+  whatsapp.ocr = (data) => recognizeLocal(data);
   const token = randomBytes(32).toString("hex");
   const sameToken = (value) =>
     typeof value === "string" &&
@@ -233,7 +244,20 @@ function createApp({
           return;
         }
         if (u.pathname === "/api/ai") {
-          json(200, await ai.analyze(data));
+          // Local timing log (no text) to diagnose slow readings on this machine.
+          const startedAt = Date.now();
+          try {
+            const result = await ai.analyze(data);
+            aiLog(
+              `analisis modo=${String(data.mode || "careful")} chars=${String(data.text || "").length} ms=${Date.now() - startedAt} tipo=${result.tipo}`,
+            );
+            json(200, result);
+          } catch (e) {
+            aiLog(
+              `analisis ERROR ms=${Date.now() - startedAt} ${String(e.message || e).slice(0, 120)}`,
+            );
+            throw e;
+          }
           return;
         }
         if (u.pathname === "/api/ai/chat") {
@@ -509,6 +533,7 @@ function createApp({
         const { bytes, mime } = store.photo(u.pathname.split("/").pop());
         res.writeHead(200, {
           "Content-Type": mime,
+          "Content-Disposition": "inline",
           "X-Content-Type-Options": "nosniff",
           "Cache-Control": "private, max-age=3600",
         });

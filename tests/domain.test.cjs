@@ -827,3 +827,85 @@ test("la identidad del negocio se edita y aparece en el texto de los pedidos", (
   assert.match(orderMessage(s, s.orders[0].id), /de Heladería Prueba/);
   assert.throws(() => apply(s, { type: "business", name: "", place: "" }));
 });
+
+test("documentos: propuesta por número de pedido, por único pedido o por importe; vínculo confirmado por la persona", () => {
+  const png =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==";
+  let s = milkOrder();
+  const order = s.orders[0];
+  s = apply(s, {
+    type: "photo",
+    name: "f1.png",
+    data: png,
+    ocrText: "FACTURA F-9\nPedido " + order.number + "\nTotal: 999,00 EUR",
+  });
+  let doc = s.photos[0];
+  assert.equal(doc.suggestion.order, order.id);
+  assert.equal(doc.suggestion.supplier, order.supplier);
+  assert.equal(doc.suggestion.docType, "factura");
+  s = apply(s, { type: "applySuggestion", id: doc.id });
+  doc = s.photos[0];
+  assert.equal(doc.order, order.id);
+  assert.equal(doc.docType, "factura");
+  assert.equal(doc.suggestion, undefined);
+  s = apply(s, {
+    type: "photo",
+    name: "f2.png",
+    data: png,
+    supplier: order.supplier,
+    documentDate: new Date().toISOString().slice(0, 10),
+  });
+  assert.equal(s.photos[0].suggestion.order, order.id);
+  assert.match(s.photos[0].suggestion.reason, /Único pedido/);
+  const total = (order.lines.reduce((n, l) => n + l.packs * l.price, 0) / 100)
+    .toFixed(2)
+    .replace(".", ",");
+  s = apply(s, { type: "cart", product: "p2", packs: 3 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  s = apply(s, { type: "send", order: s.orders[0].id });
+  s = apply(s, {
+    type: "photo",
+    name: "f3.png",
+    data: png,
+    supplier: order.supplier,
+    ocrText: "FACTURA\nTotal: " + total + " EUR",
+  });
+  assert.equal(s.photos[0].suggestion.order, order.id);
+  assert.match(s.photos[0].suggestion.reason, /importe/);
+  assert.throws(() =>
+    apply(s, {
+      type: "linkDocument",
+      id: s.photos[0].id,
+      order:
+        apply(seed(), { type: "cart", product: "p1", packs: 1 }).orders[0]
+          ?.id || "nope",
+    }),
+  );
+  const other = s.orders.find((o) => o.supplier !== order.supplier);
+  if (other)
+    assert.throws(
+      () =>
+        apply(s, { type: "linkDocument", id: s.photos[0].id, order: other.id }),
+      /otro proveedor/,
+    );
+  s = apply(s, { type: "linkDocument", id: s.photos[0].id, order: order.id });
+  assert.equal(s.photos[0].order, order.id);
+  s = apply(s, { type: "linkDocument", id: s.photos[0].id });
+  assert.equal(s.photos[0].order, undefined);
+});
+test("un PDF se guarda como documento y se acepta como origen WhatsApp", () => {
+  const pdf =
+    "data:application/pdf;base64," +
+    Buffer.from("%PDF-1.4\n%fake\n").toString("base64");
+  const s = apply(seed(), {
+    type: "photo",
+    name: "albaran.pdf",
+    data: pdf,
+    supplier: "s2",
+    source: "whatsapp",
+    documentDate: "2026-09-09",
+  });
+  assert.equal(s.photos[0].source, "whatsapp");
+  assert.equal(s.photos[0].name, "albaran.pdf");
+  assert.match(s.activity[0].text, /WhatsApp/);
+});

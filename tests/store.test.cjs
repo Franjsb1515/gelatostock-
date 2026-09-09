@@ -465,3 +465,45 @@ test("las frases aprendidas persisten y la base pasa a versión 3 sin perder dat
       3,
     );
   }));
+
+test("un PDF se almacena por huella, se sirve con su tipo y se archiva por proveedor", () =>
+  fixture((dir, open) => {
+    const store = open();
+    const pdf =
+      "data:application/pdf;base64," +
+      Buffer.from("%PDF-1.4\n%prueba\n").toString("base64");
+    const s = store.dispatch({
+      type: "photo",
+      name: "factura.pdf",
+      data: pdf,
+      supplier: "s2",
+      documentDate: "2026-09-09",
+    });
+    const doc = s.photos[0];
+    assert.equal(doc.mime, "application/pdf");
+    const served = store.photo(doc.id);
+    assert.equal(served.mime, "application/pdf");
+    assert.ok(served.bytes.subarray(0, 5).toString() === "%PDF-");
+    const archive = JSON.parse(
+      fs.readFileSync(path.join(dir, "proveedores", "indice.json"), "utf8"),
+    );
+    const folder = path.join(
+      dir,
+      "proveedores",
+      archive.find((x) => x.id === "s2").carpeta,
+      "fotos",
+      "2026-09-09",
+    );
+    assert.ok(fs.readdirSync(folder).some((f) => f.endsWith(".pdf")));
+    assert.throws(
+      () =>
+        store.dispatch({
+          type: "photo",
+          name: "x.pdf",
+          data:
+            "data:application/pdf;base64," +
+            Buffer.from("no es pdf").toString("base64"),
+        }),
+      /PDF/,
+    );
+  }));

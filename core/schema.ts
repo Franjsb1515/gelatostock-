@@ -170,18 +170,32 @@ const photoSchema = z
     supplier: idSchema.optional(),
     documentDate: documentDate.optional(),
     docType: documentTypes.optional(),
+    order: idSchema.optional(),
+    source: z.enum(["photo", "whatsapp"]).default("photo"),
+    suggestion: z
+      .object({
+        supplier: idSchema.optional(),
+        order: idSchema.optional(),
+        docType: documentTypes.optional(),
+        reason: text(300),
+      })
+      .optional(),
     note: z.string().max(500),
     at,
     data: z
       .string()
-      .max(8_000_000)
-      .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/)
+      .max(14_000_000)
+      .regex(
+        /^data:(?:image\/(?:png|jpeg|webp)|application\/pdf);base64,[A-Za-z0-9+/=]+$/,
+      )
       .optional(),
     file: z
       .string()
       .regex(/^[a-f0-9]{64}$/)
       .optional(),
-    mime: z.enum(["image/png", "image/jpeg", "image/webp"]).optional(),
+    mime: z
+      .enum(["image/png", "image/jpeg", "image/webp", "application/pdf"])
+      .optional(),
   })
   .refine((p) => !!p.data || !!p.file, "Falta el archivo adjunto.");
 export const movementSchema = z.object({
@@ -400,9 +414,17 @@ export const actionSchema = z.intersection(
       supplier: idSchema.optional(),
       documentDate: documentDate.optional(),
       name: text(200),
-      data: z.string().max(8_000_000),
+      data: z.string().max(14_000_000),
       note: z.string().max(500).default(""),
+      order: idSchema.optional(),
+      source: z.enum(["photo", "whatsapp"]).default("photo"),
     }),
+    z.object({
+      type: z.literal("linkDocument"),
+      id: idSchema,
+      order: idSchema.optional(),
+    }),
+    z.object({ type: z.literal("applySuggestion"), id: idSchema }),
   ]),
 );
 export type Action = z.infer<typeof actionSchema>;

@@ -111,18 +111,21 @@ function photo() {
   let serial = 0,
     manual = false;
   modal(
-    "Cargar una foto",
-    "Lectura local del texto para proponer un proveedor. Las cantidades no cambian.",
+    "Añadir un documento",
+    "Foto o PDF. En fotos se lee el texto localmente para proponer proveedor, tipo y pedido. Las cantidades no cambian.",
     '<p class="detection-status" role="status">Al elegir una foto se buscará su proveedor entre tus fichas.</p>' +
       photoFields() +
-      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto de tu equipo</strong><span>JPG, PNG o WebP · hasta 5 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Podés elegirlo manualmente si la lectura falla.</p>`,
+      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Podés elegirlo manualmente si la lectura falla.</p>`,
     async (f) => {
       const file = f.get("photo");
+      const pdf = file.type === "application/pdf";
       if (
-        !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
-        file.size > 5000000
+        !["image/png", "image/jpeg", "image/webp", "application/pdf"].includes(
+          file.type,
+        ) ||
+        file.size > (pdf ? 10000000 : 5000000)
       )
-        throw Error("Usá JPG, PNG o WebP de hasta 5 MB.");
+        throw Error("Usá JPG, PNG o WebP de hasta 5 MB, o PDF de hasta 10 MB.");
       return mutate(
         {
           type: "photo",
@@ -156,6 +159,14 @@ function photo() {
       form.querySelector(".detection-status").textContent =
         "Leyendo la foto en este equipo…";
       try {
+        if (file.type === "application/pdf") {
+          if (file.size > 10000000) throw Error("El PDF supera 10 MB.");
+          form.querySelector("#photo-preview").innerHTML =
+            '<p class="muted">PDF listo para guardar. El texto de un PDF no se lee todavía; puedes elegir proveedor y pedido a mano.</p>';
+          form.querySelector(".detection-status").textContent =
+            "PDF seleccionado.";
+          return;
+        }
         if (
           !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
           file.size > 5000000

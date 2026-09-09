@@ -28,7 +28,9 @@ let aiDraft = "",
   aiChatUseDoc = true,
   aiChatError = "",
   aiSourcePhoto = "",
-  aiReplyBusy = "";
+  aiReplyBusy = "",
+  docSupplier = "all",
+  docFilter = "all";
 const $ = (s) => document.querySelector(s);
 const esc = (v) =>
   String(v ?? "").replace(
@@ -235,6 +237,7 @@ function render() {
     whatsapp,
     ai: aiPage,
     production,
+    documents,
   };
   dismissSplash();
   $("#app").innerHTML =
@@ -246,6 +249,7 @@ function render() {
       ["messages", "message", "Mensajes"],
       ["whatsapp", "message", "WhatsApp"],
       ["suppliers", "store", "Proveedores"],
+      ["documents", "photo", "Documentos"],
       ["activity", "clock", "Actividad"],
       ["ai", "leaf", "IA local"],
     ]
@@ -255,7 +259,7 @@ function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>GelatoStock · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local", production: "Producción" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>GelatoStock · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local", production: "Producción", documents: "Documentos" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
 }
 async function refreshWhatsApp() {
   if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)

@@ -451,3 +451,46 @@ test("limpieza del canal borra mensajes, envíos, notas y adjuntos antiguos y co
       view.history.some((h) => /Limpieza: eliminados 1 mensajes/.test(h.text)),
     );
   }));
+
+test("un adjunto de proveedor autorizado se archiva en Documentos con texto OCR si está disponible", () =>
+  fixture(async (c) => {
+    const dispatched = [];
+    c.mainStore = {
+      load: () => ({ suppliers: [] }),
+      dispatch: (a) => (dispatched.push(a), {}),
+    };
+    c.ocr = async () => ({ text: "FACTURA F-1 Pedido GS-001" });
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    c.readyAt = 0;
+    c.store.permit(a, "+34910000001", "Proveedor", "sup-1");
+    const png = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==",
+      "base64",
+    );
+    c.client = {};
+    await c.receive(
+      {
+        from: "34910000001@c.us",
+        id: { _serialized: "media-1" },
+        timestamp: 1,
+        body: "",
+        hasMedia: true,
+        _data: { size: png.length },
+        downloadMedia: async () => ({
+          mimetype: "image/png",
+          data: png.toString("base64"),
+          filename: "factura.png",
+        }),
+      },
+      c.generation,
+    );
+    const doc = dispatched.find((d) => d.type === "photo");
+    assert.ok(doc);
+    assert.equal(doc.supplier, "sup-1");
+    assert.equal(doc.source, "whatsapp");
+    assert.equal(doc.name, "factura.png");
+    assert.match(doc.ocrText, /GS-001/);
+    c.client = null;
+  }));

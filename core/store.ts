@@ -190,7 +190,9 @@ export class Store {
             ? "jpg"
             : p.mime === "image/png"
               ? "png"
-              : "webp";
+              : p.mime === "application/pdf"
+                ? "pdf"
+                : "webp";
         const dest = path.join(dir, digest(p.id) + "." + extension);
         if (!fs.existsSync(dest)) {
           const bytes = fs.readFileSync(path.join(this.attachments, p.file));
@@ -275,15 +277,27 @@ export class Store {
   private storePhoto(photo: Photo): Photo {
     if (photo.data) {
       const match =
-        /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(
+        /^data:(image\/(?:png|jpeg|webp)|application\/pdf);base64,([A-Za-z0-9+/=]+)$/.exec(
           photo.data,
         );
-      ensure(match?.[1] && match[2], "Foto inválida.");
+      ensure(match?.[1] && match[2], "Documento inválido.");
       const bytes = Buffer.from(match[2], "base64");
+      const isPdf = match[1] === "application/pdf";
       ensure(
-        bytes.length > 0 && bytes.length <= 5_000_000,
-        "La foto supera 5 MB.",
+        bytes.length > 0 && bytes.length <= (isPdf ? 10_000_000 : 5_000_000),
+        isPdf ? "El PDF supera 10 MB." : "La foto supera 5 MB.",
       );
+      if (isPdf) {
+        ensure(
+          bytes.subarray(0, 5).toString() === "%PDF-",
+          "El contenido no corresponde a un PDF.",
+        );
+        const file = digest(bytes);
+        const dest = path.join(this.attachments, file);
+        if (!fs.existsSync(dest)) this.atomicWrite(dest, bytes);
+        const { data, ...rest } = photo;
+        return { ...rest, file, mime: "application/pdf" };
+      }
       const png = bytes
         .subarray(0, 8)
         .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));

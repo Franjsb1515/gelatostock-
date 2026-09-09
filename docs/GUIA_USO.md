@@ -1,0 +1,69 @@
+# Guía de uso de GelatoStock (Artello)
+
+Esta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.
+
+## Ideas clave
+- Todo funciona sin internet, salvo WhatsApp.
+- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.
+- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.
+- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.
+
+## Resumen
+Lo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.
+
+## Inventario
+Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).
+- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.
+- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.
+- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.
+
+## Producción
+- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera.
+- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.
+- Hoja diaria: kilos producidos por día y gelato.
+- Ventas y mermas del día: kilos vendidos o desechados de producto terminado.
+- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).
+
+## Compras
+- Carrito por proveedor: revisa cantidades y presentaciones; «Autorizar» crea los pedidos.
+- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.
+- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.
+- Simular envío: para practicar sin canal real.
+- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.
+
+## Mensajes
+Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración.
+- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.
+- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».
+- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.
+- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.
+- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.
+
+## WhatsApp
+- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.
+- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.
+- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).
+- Windows avisa con una notificación cuando escribe un proveedor autorizado.
+
+## Documentos
+Facturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.
+
+## Proveedores
+Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).
+
+## Actividad
+Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.
+
+## IA local
+- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.
+- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.
+- Confirmar el tipo en la foto: guarda tu decisión en el documento.
+
+## Configuración
+Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.
+
+## Si algo falla
+- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.
+- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».
+- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.
+- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.

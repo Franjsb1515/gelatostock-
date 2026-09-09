@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.13.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.14.0.
 
 ## Entregado y comprobado
 
@@ -13,7 +13,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Persistencia local y copias/restauración validadas por pruebas.
 - [x] Archivo manual de imágenes con proveedor, fecha y reclasificación.
 - [x] Carpetas automáticas y fichas/datos por proveedor; recuperación de archivo derivado.
-- [ ] Abrir carpetas desde la app e importar otros tipos de documento.
+- [ ] Abrir la carpeta del proveedor desde la app (hoy se muestra la ruta).
 - [x] Limpieza periódica configurable de actividad y conversaciones; retención de copias automáticas.
 - [x] Recetario protegido con contraseña local (pantalla y acciones; no cifra el disco).
 - [x] Historial de actividad separado de los informes de desarrollo.
@@ -29,7 +29,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 106 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 110 pruebas automatizadas.
 - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
 - [ ] Prueba de disco lleno y validación del corte en el equipo real.
 - [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
@@ -42,7 +42,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 
 - [x] OCR local español en fotos para proponer proveedor y conservar texto.
 - [x] Identificación común por nombre/alias, NIF y teléfono; propuesta en mensaje de prueba.
-- [ ] Lectura de PDF, cantidades y fecha del documento con revisión de extracción.
+- [x] Archivo de documentos por proveedor (fotos y PDF) con propuesta de proveedor, tipo y pedido, y vínculo confirmado por la persona.
+- [ ] Leer el texto de los PDF (hoy solo se archivan) y extraer cantidades y fecha del documento con revisión.
 - [ ] Evaluar OCR con facturas reales autorizadas y hardware Mac.
 - [x] Modelo Qwen3 0.6B Q4 incluido y gestionado dentro de la app Windows; lecturas revisables.
 - [ ] Medir consumo y calidad en 8 GB/Mac real y con documentos autorizados representativos.
