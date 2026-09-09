@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.12.0 — 2026-09-09 · sesión 021
+
+La app aprende de tus correcciones: «Corregir lectura» en un mensaje guarda tu categoría y la aplica a mensajes iguales o casi iguales (frase normalizada, coincidencia exacta o muy alta), con listado y olvido en Configuración; no entrena ningún modelo. Reglas ampliadas con tres categorías nuevas (cierre o vacaciones, pago o factura pendiente, documento enviado) y muchos escenarios más: horas («antes de las 12», «a primera hora»), fechas con mes («3 de octubre»), abreviaturas («mñn»), faltas de ortografía («kedan»), promociones sin lectura obligatoria, peticiones («devuélveme», «necesito el CIF»), abonos y reclamaciones. Corpus nuevo de 40 escenarios: 21/40 antes, 40/40 después; corpus anterior 80/80. Base SQLite versión 3 (tabla learned).
+
+105 pruebas, ejecutable 0.12.0. Informe reports/2026-09-09T11-07-12-248Z-aprendizaje-y-reglas-ampliadas.md.
+
 ## 0.11.0 — 2026-09-09 · sesión 020
 
 Recetario con contraseña: las recetas y la producción se ocultan y bloquean hasta desbloquear (30 minutos); contraseña local con scrypt, cambio y retirada con contraseña, retardo creciente ante fallos. Limpieza periódica configurable (7, 14, 30 o 90 días): borra actividad antigua (conserva las 50 entradas más recientes) y conversaciones, envíos, notas y adjuntos de WhatsApp anteriores al plazo; los movimientos de stock y las copias no se tocan; se ejecuta al abrir y cada seis horas o a mano.

@@ -453,7 +453,8 @@
     "expected": "delivery_date",
     "accept": [
       "delivery_date",
-      "confirmation"
+      "confirmation",
+      "document"
     ],
     "holdout": true
   },

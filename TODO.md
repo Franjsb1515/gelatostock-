@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.11.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.12.0.
 
 ## Entregado y comprobado
 
@@ -29,7 +29,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 102 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 105 pruebas automatizadas.
 - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
 - [ ] Prueba de disco lleno y validación del corte en el equipo real.
 - [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
@@ -58,7 +58,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Chat con contexto de inventario/pedidos: solo tras definir qué datos se exponen y con pruebas de fuga.
 - [ ] Sandbox real del trabajador de IA: hoy solo se desactivan módulos de red de Node, no el proceso nativo.
 - [ ] Evaluación independiente de razonamiento/precisión con corpus real autorizado; no inferir certeza de la coincidencia.
-- [ ] Memoria de equivalencias y correcciones aprobadas.
+- [x] Correcciones aprobadas de lecturas de mensajes, recordadas y aplicadas a mensajes casi iguales (Configuración → Lo que la app ha aprendido).
+- [ ] Memoria de equivalencias de productos por proveedor (códigos de albarán → producto).
 - [x] Diseño de WhatsApp con chats autorizados: docs/WHATSAPP_PROVEEDORES.md.
 - [x] Usuario elige prueba QR para WhatsApp normal/Business, con cambio de sesión.
 - [x] QR experimental, cuentas separadas, permisos por cuenta e historial de cambio de número.
@@ -85,7 +86,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Lotes y vencimientos; rendimientos por receta.
 - [x] Lectura por reglas de respuestas de proveedores (categoría, fecha resuelta, qué leer) y segunda lectura opcional con IA que solo anota.
 - [ ] Lectura automática de respuestas de WhatsApp importadas y aviso al recibirlas; hoy las reglas se aplican a los mensajes de la bandeja.
-- [ ] Validar categorías y fechas con respuestas reales de proveedores (corpus sintético de 80 mensajes ya en pruebas; estimación de generalización 75 % con el resto marcado para leer); ampliar horas y tramos.
+- [ ] Validar categorías y fechas con respuestas reales de proveedores (corpus sintético de 120 mensajes en pruebas, 10 categorías; estimación de generalización en escenarios nuevos ~50 % antes de afinar, con el resto marcado para leer).
 - [ ] Sincronización entre lugares con resolución de conflictos y único envío por pedido.
 
 ## Límites conocidos

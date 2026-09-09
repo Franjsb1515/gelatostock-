@@ -290,6 +290,38 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "correctReading") {
+    const m = state.messages.find((x) => x.id === el.dataset.id);
+    modal(
+      "Corregir la lectura del mensaje",
+      "Elige lo que el proveedor quiso decir. La app lo recordará para mensajes iguales o casi iguales.",
+      select(
+        "Lectura correcta",
+        "category",
+        Object.entries(replyLabel),
+        m.interpretation?.category || "other",
+      ) +
+        `<label class="check"><input type="checkbox" name="remember" checked> Recordar esta frase para el futuro</label>`,
+      async (f) =>
+        mutate(
+          {
+            type: "correctReading",
+            id: m.id,
+            category: f.get("category"),
+            remember: f.get("remember") === "on",
+          },
+          "Lectura corregida.",
+        ),
+    );
+    return;
+  }
+  if (name === "forgetLearned") {
+    await mutate(
+      { type: "forgetLearned", id: el.dataset.id },
+      "Frase olvidada.",
+    );
+    return;
+  }
   if (name === "aiReadReply") {
     if (aiBusy || aiReplyBusy) return;
     aiReplyBusy = el.dataset.id;

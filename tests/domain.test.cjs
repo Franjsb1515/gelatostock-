@@ -734,3 +734,81 @@ test("limpieza de actividad conserva las entradas recientes y nunca toca movimie
   });
   assert.equal(keepAll.activity.filter((a) => a.at === old).length, 6);
 });
+
+test("escenarios ampliados: cierre, pago, documento, tipografía y horas se leen por reglas", () => {
+  const corpus = require("./fixtures/ai-replies-corpus-2.json");
+  const failures = corpus.filter((x) => {
+    const r = interpretReply(x.text, "2026-09-09T10:00:00.000Z");
+    return !(x.accept || [x.expected]).includes(r.category);
+  });
+  assert.deepEqual(
+    failures.map((x) => x.id),
+    [],
+  );
+  assert.equal(
+    resolveDate("te lo dejo el 3 de octubre", "2026-09-09T10:00:00Z").date,
+    "2026-10-03",
+  );
+  assert.equal(
+    resolveDate("mñn te llega", "2026-09-09T10:00:00Z").date,
+    "2026-09-10",
+  );
+  assert.equal(
+    resolveDate("antes de las 12", "2026-09-09T10:00:00Z").hint,
+    "antes de las 12",
+  );
+  const promo = interpretReply(
+    "Oferta: 2x1 en tarrinas hasta el domingo",
+    "2026-09-09T10:00:00Z",
+  );
+  assert.equal(promo.category, "other");
+  assert.equal(promo.needsReading, false);
+});
+test("corregir una lectura la recuerda y se aplica a mensajes iguales o casi iguales", () => {
+  let s = apply(seed(), {
+    type: "message",
+    supplier: "s2",
+    text: "Estamos de balance, no servimos hasta el lunes",
+  });
+  const id = s.messages[0].id;
+  s = apply(s, { type: "correctReading", id, category: "closed" });
+  assert.equal(s.messages[0].interpretation.category, "closed");
+  assert.equal(s.messages[0].interpretation.corrected, true);
+  assert.equal(s.learned.length, 1);
+  assert.match(s.activity[0].text, /Lectura corregida/);
+  s = apply(s, {
+    type: "message",
+    supplier: "s2",
+    text: "Estamos de balance, no servimos hasta el LUNES!!",
+  });
+  assert.equal(s.messages[0].interpretation.category, "closed");
+  assert.equal(s.messages[0].interpretation.learned, true);
+  assert.match(s.messages[0].interpretation.summary, /Aprendido/);
+  s = apply(s, {
+    type: "message",
+    supplier: "s2",
+    text: "Mañana os llega todo",
+  });
+  assert.equal(s.messages[0].interpretation.category, "delivery_date");
+  s = apply(s, { type: "forgetLearned", id: s.learned[0].id });
+  assert.equal(s.learned.length, 0);
+  s = apply(s, {
+    type: "message",
+    supplier: "s2",
+    text: "Estamos de balance, no servimos hasta el lunes",
+  });
+  assert.notEqual(s.messages[0].interpretation.learned, true);
+  const noRemember = apply(seed(), {
+    type: "message",
+    supplier: "s2",
+    text: "Vale",
+  });
+  const done = apply(noRemember, {
+    type: "correctReading",
+    id: noRemember.messages[0].id,
+    category: "question",
+    remember: false,
+  });
+  assert.equal(done.learned.length, 0);
+  assert.equal(done.messages[0].interpretation.needsReading, true);
+});

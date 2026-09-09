@@ -269,5 +269,6 @@ export function seed(): State {
       },
     ],
     productions: [],
+    learned: [],
   };
 }

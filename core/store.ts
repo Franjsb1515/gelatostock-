@@ -25,6 +25,7 @@ const entityTables = [
   "photos",
   "recipes",
   "productions",
+  "learned",
 ] as const;
 type Table = (typeof entityTables)[number];
 export class Store {
@@ -53,7 +54,7 @@ export class Store {
         this.db.prepare("PRAGMA user_version").get()?.user_version,
       );
       ensure(
-        version <= 2,
+        version <= 3,
         "La base de datos pertenece a una versión más nueva.",
       );
       this.db
@@ -69,11 +70,12 @@ export class Store {
    CREATE TABLE IF NOT EXISTS photos(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY,fingerprint TEXT,position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+   CREATE TABLE IF NOT EXISTS learned(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS recipes(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS productions(id TEXT PRIMARY KEY,recipe TEXT NOT NULL REFERENCES recipes(id),status TEXT NOT NULL CHECK(status IN ('proposed','applied','discarded')),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE INDEX IF NOT EXISTS order_lines_product ON order_lines(product);
    CREATE INDEX IF NOT EXISTS movements_product ON movements(product);
-   PRAGMA user_version=2;`);
+   PRAGMA user_version=3;`);
       ensure(
         this.db.prepare("PRAGMA quick_check").get()?.quick_check === "ok",
         "La base no pasó la comprobación de integridad.",
@@ -263,6 +265,7 @@ export class Store {
       photos: this.jsonRows("photos"),
       recipes: this.jsonRows("recipes"),
       productions: this.jsonRows("productions"),
+      learned: this.jsonRows("learned"),
       processed: this.db
         .prepare("SELECT id FROM operations ORDER BY position")
         .all()
@@ -378,6 +381,7 @@ export class Store {
         recipe: s.productions[i]!.recipe,
         status: s.productions[i]!.status,
       })),
+      learned: basic(s.learned),
     };
     try {
       // Remove child rows before parent rows. Tables are a fixed internal allowlist.
@@ -424,6 +428,7 @@ export class Store {
       photos,
       recipes,
       productions,
+      learned,
       processed,
       ...meta
     } = s;

@@ -115,6 +115,8 @@ const messageSchema = z.object({
       deliveryHint: text(100).optional(),
       missing: text(120).optional(),
       summary: text(300),
+      learned: z.boolean().optional(),
+      corrected: z.boolean().optional(),
     })
     .optional(),
   aiReading: z
@@ -229,6 +231,18 @@ export const stateSchema = z.object({
   movements: z.array(movementSchema).default([]),
   recipes: z.array(recipeSchema).max(10000).default([]),
   productions: z.array(productionSchema).max(100000).default([]),
+  learned: z
+    .array(
+      z.object({
+        id: idSchema,
+        pattern: text(300),
+        category: z.enum(replyCategories),
+        example: text(300),
+        at,
+      }),
+    )
+    .max(5000)
+    .default([]),
 });
 export type State = z.infer<typeof stateSchema>;
 export type Product = z.infer<typeof productSchema>;
@@ -236,6 +250,7 @@ export type Movement = z.infer<typeof movementSchema>;
 export type Photo = State["photos"][number];
 export type Message = State["messages"][number];
 export type Recipe = State["recipes"][number];
+export type Learned = State["learned"][number];
 export type Production = State["productions"][number];
 const productInput = z.object({ type: z.literal("product"), ...productFields });
 export const actionSchema = z.intersection(
@@ -315,6 +330,13 @@ export const actionSchema = z.intersection(
       reason: text(500),
     }),
     z.object({ type: z.literal("link"), id: idSchema, order: idSchema }),
+    z.object({
+      type: z.literal("correctReading"),
+      id: idSchema,
+      category: z.enum(replyCategories),
+      remember: z.boolean().default(true),
+    }),
+    z.object({ type: z.literal("forgetLearned"), id: idSchema }),
     z.object({
       type: z.literal("aiNote"),
       id: idSchema,

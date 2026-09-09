@@ -1,0 +1,238 @@
+[
+  {
+    "id": "d01",
+    "text": "Buenos días, os lo llevamos mañana a primera hora",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d02",
+    "text": "Antes de las 12 lo tienes ahí",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d03",
+    "text": "El lunes que viene os llega, esta semana imposible",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d04",
+    "text": "Te lo dejo el 3 de octubre",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d05",
+    "text": "Esta tarde pasa el repartidor",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d06",
+    "text": "mñn te llega",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d07",
+    "text": "Estamos de vacaciones hasta el 20, no servimos",
+    "expected": "closed"
+  },
+  {
+    "id": "d08",
+    "text": "El viernes es festivo, cerramos",
+    "expected": "closed"
+  },
+  {
+    "id": "d09",
+    "text": "Cerrado por inventario el jueves",
+    "expected": "closed"
+  },
+  {
+    "id": "d10",
+    "text": "Te adjunto la factura de este mes",
+    "expected": "document"
+  },
+  {
+    "id": "d11",
+    "text": "Aquí va el albarán firmado",
+    "expected": "document"
+  },
+  {
+    "id": "d12",
+    "text": "Te paso el catálogo nuevo",
+    "expected": "document"
+  },
+  {
+    "id": "d13",
+    "text": "Tienes pendiente la factura 231, ¿me puedes hacer la transferencia?",
+    "expected": "payment"
+  },
+  {
+    "id": "d14",
+    "text": "Recordatorio: el pago de septiembre vence el día 30",
+    "expected": "payment"
+  },
+  {
+    "id": "d15",
+    "text": "Hemos recibido tu transferencia, gracias",
+    "expected": "payment",
+    "accept": [
+      "payment",
+      "confirmation"
+    ]
+  },
+  {
+    "id": "d16",
+    "text": "No nos kedan conos, lo siento",
+    "expected": "out_of_stock"
+  },
+  {
+    "id": "d17",
+    "text": "Última cubeta de pistacho que me queda, ¿te la reservo?",
+    "expected": "question",
+    "accept": [
+      "question",
+      "change"
+    ]
+  },
+  {
+    "id": "d18",
+    "text": "Stock limitado de nata esta semana, pide pronto",
+    "expected": "change",
+    "accept": [
+      "change",
+      "out_of_stock"
+    ]
+  },
+  {
+    "id": "d19",
+    "text": "Se ha retrasado el proveedor, no tengo vasos hasta el lunes",
+    "expected": "out_of_stock"
+  },
+  {
+    "id": "d20",
+    "text": "Recibido tu pedido 👍 sale hoy",
+    "expected": "confirmation",
+    "accept": [
+      "confirmation",
+      "delivery_date"
+    ]
+  },
+  {
+    "id": "d21",
+    "text": "Buenos días",
+    "expected": "other"
+  },
+  {
+    "id": "d22",
+    "text": "Gracias!!",
+    "expected": "other",
+    "accept": [
+      "other",
+      "confirmation"
+    ]
+  },
+  {
+    "id": "d23",
+    "text": "¿Habéis recibido el pedido de ayer? No me consta la entrega",
+    "expected": "question"
+  },
+  {
+    "id": "d24",
+    "text": "Pásate a recoger cuando quieras, está listo",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d25",
+    "text": "Ya está en el camión",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d26",
+    "text": "Devuélveme las cubetas vacías cuando puedas",
+    "expected": "question"
+  },
+  {
+    "id": "d27",
+    "text": "Tenemos muestras nuevas de sabores, ¿te interesan?",
+    "expected": "question"
+  },
+  {
+    "id": "d28",
+    "text": "Oferta: 2x1 en tarrinas hasta el domingo",
+    "expected": "other"
+  },
+  {
+    "id": "d29",
+    "text": "Mañana no hay reparto, os lo llevamos el jueves",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d30",
+    "text": "Lo dejo en la puerta si no hay nadie",
+    "expected": "delivery_date"
+  },
+  {
+    "id": "d31",
+    "text": "El albarán tiene un error, te mando otro",
+    "expected": "document",
+    "accept": [
+      "document",
+      "change"
+    ]
+  },
+  {
+    "id": "d32",
+    "text": "Subida de tarifa a partir del 1 de octubre, te paso la lista",
+    "expected": "change"
+  },
+  {
+    "id": "d33",
+    "text": "Sin problema, lo cambio por la de 300 ml",
+    "expected": "change",
+    "accept": [
+      "change",
+      "confirmation"
+    ]
+  },
+  {
+    "id": "d34",
+    "text": "Anulamos las 2 cajas de leche, el resto va",
+    "expected": "cancellation"
+  },
+  {
+    "id": "d35",
+    "text": "Vale lo dejamos para la semana que viene",
+    "expected": "delivery_date",
+    "accept": [
+      "delivery_date",
+      "confirmation"
+    ]
+  },
+  {
+    "id": "d36",
+    "text": "¿Puedes pagar en efectivo al repartidor?",
+    "expected": "payment",
+    "accept": [
+      "payment",
+      "question"
+    ]
+  },
+  {
+    "id": "d37",
+    "text": "Factura y albarán en el mismo correo",
+    "expected": "document"
+  },
+  {
+    "id": "d38",
+    "text": "Reclamación registrada, te abonamos las 2 tarrinas rotas",
+    "expected": "change"
+  },
+  {
+    "id": "d39",
+    "text": "Necesito el CIF para la factura",
+    "expected": "question"
+  },
+  {
+    "id": "d40",
+    "text": "No llegamos hoy, perdona, mañana seguro",
+    "expected": "delivery_date"
+  }
+]

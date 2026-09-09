@@ -1,5 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { interpretReply, labels as replyLabels } from "./messages";
+import {
+  interpretReply,
+  labels as replyLabels,
+  normalizePhrase,
+} from "./messages";
 import {
   stateSchema,
   parseAction,
@@ -14,6 +18,7 @@ export {
   resolveDate,
   replyCategories,
   labels as replyLabels,
+  normalizePhrase,
 } from "./messages";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
 export function ensure(value: unknown, message: string): asserts value {
@@ -61,38 +66,39 @@ export function orderMessage(s: State, orderId: string): string {
 export function classify(
   text: string,
   at = now(),
+  learned: State["learned"] = [],
 ): Pick<Message, "kind" | "priority" | "reason" | "interpretation"> {
   const base = classifyLegacy(text.toLowerCase());
-  const interpretation =
-    base.kind === "promotion"
-      ? {
-          category: "other" as const,
-          needsReading: false,
-          summary:
-            "Promoción informativa; no requiere respuesta ni cambia pedidos.",
-        }
-      : interpretReply(text, at);
+  const read = interpretReply(text, at, learned);
+  const promo = base.kind === "promotion" && !read.learned;
+  const interpretation = promo
+    ? {
+        category: "other" as const,
+        needsReading: false,
+        summary:
+          "Promoción informativa; no requiere respuesta ni cambia pedidos.",
+      }
+    : read;
   const byCategory: Partial<
     Record<typeof interpretation.category, Pick<Message, "kind" | "priority">>
   > = {
     out_of_stock: { kind: "change", priority: "important" },
     cancellation: { kind: "change", priority: "important" },
+    closed: { kind: "change", priority: "important" },
+    payment: { kind: "unknown", priority: "important" },
+    document: { kind: "unknown", priority: "normal" },
     change: { kind: "change", priority: "important" },
     question: { kind: "unknown", priority: "important" },
     delivery_date: { kind: "delivery", priority: "important" },
     confirmation: { kind: "confirmation", priority: "normal" },
   };
-  const mapped =
-    base.kind === "promotion"
-      ? base
-      : byCategory[interpretation.category] || base;
+  const mapped = promo ? base : byCategory[interpretation.category] || base;
   return {
     kind: mapped.kind,
     priority: mapped.priority,
-    reason:
-      base.kind === "promotion"
-        ? base.reason
-        : replyLabels[interpretation.category] + ". " + interpretation.summary,
+    reason: promo
+      ? base.reason
+      : replyLabels[interpretation.category] + ". " + interpretation.summary,
     interpretation,
   };
 }
@@ -244,7 +250,8 @@ export function validate(input: unknown): State {
     );
   ensure(
     unique(s.recipes.map((r) => r.id)) &&
-      unique(s.productions.map((p) => p.id)),
+      unique(s.productions.map((p) => p.id)) &&
+      unique(s.learned.map((l) => l.id)),
     "Identificadores repetidos.",
   );
   for (const r of s.recipes) {
@@ -523,7 +530,7 @@ export function apply(state: State, input: unknown): State {
         id: a.eventId || randomUUID(),
         supplier: a.supplier,
         text: a.text,
-        ...classify(a.text),
+        ...classify(a.text, now(), s.learned),
         ...assessRelevance(s, a.supplier, a.text),
         at: now(),
         read: false,
@@ -581,6 +588,42 @@ export function apply(state: State, input: unknown): State {
       m.relevance = a.relevance;
       m.relevanceReason = a.reason;
       note = `Relevancia del mensaje ${m.id}: ${previous} → ${a.relevance}. Motivo: ${a.reason}`;
+      break;
+    }
+    case "correctReading": {
+      const m = item(s.messages, a.id);
+      const previous = m.interpretation?.category || "other";
+      const quietCategory = ["confirmation", "delivery_date"].includes(
+        a.category,
+      );
+      m.interpretation = {
+        ...(m.interpretation || { summary: "" }),
+        category: a.category,
+        needsReading: !quietCategory,
+        summary: `Corregido por la persona: ${replyLabels[a.category]}.`,
+        corrected: true,
+        learned: false,
+      };
+      if (quietCategory && m.priority === "review") m.priority = "normal";
+      const pattern = normalizePhrase(m.text);
+      if (a.remember && pattern.length >= 3) {
+        s.learned = s.learned.filter((l) => l.pattern !== pattern);
+        s.learned.unshift({
+          id: randomUUID(),
+          pattern,
+          category: a.category,
+          example: m.text.slice(0, 300),
+          at: now(),
+        });
+        s.learned = s.learned.slice(0, 5000);
+      }
+      note = `Lectura corregida por la persona: ${replyLabels[previous]} → ${replyLabels[a.category]}${a.remember ? ". Se recordará para mensajes iguales o casi iguales." : "."}`;
+      break;
+    }
+    case "forgetLearned": {
+      const l = item(s.learned, a.id);
+      s.learned = s.learned.filter((x) => x.id !== l.id);
+      note = `Frase olvidada: «${l.example.slice(0, 80)}».`;
       break;
     }
     case "aiNote": {

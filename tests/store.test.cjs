@@ -401,7 +401,7 @@ test("recetas y producciones persisten en SQLite y sobreviven al reinicio", () =
     assert.equal(again.movements.filter((m) => m.production).length, 2);
     assert.equal(
       Number(store.db.prepare("PRAGMA user_version").get().user_version),
-      2,
+      3,
     );
   }));
 
@@ -440,4 +440,28 @@ test("corte brusco del proceso a mitad de escrituras deja la base íntegra y con
     } finally {
       store.close();
     }
+  }));
+
+test("las frases aprendidas persisten y la base pasa a versión 3 sin perder datos", () =>
+  fixture((dir, open) => {
+    let store = open();
+    let s = store.dispatch({
+      type: "message",
+      supplier: "s2",
+      text: "Cerramos por reforma",
+    });
+    s = store.dispatch({
+      type: "correctReading",
+      id: s.messages[0].id,
+      category: "closed",
+    });
+    store.close();
+    store = open();
+    const again = store.load();
+    assert.equal(again.learned.length, 1);
+    assert.equal(again.learned[0].category, "closed");
+    assert.equal(
+      Number(store.db.prepare("PRAGMA user_version").get().user_version),
+      3,
+    );
   }));
