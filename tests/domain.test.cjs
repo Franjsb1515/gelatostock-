@@ -909,3 +909,26 @@ test("un PDF se guarda como documento y se acepta como origen WhatsApp", () => {
   assert.equal(s.photos[0].name, "albaran.pdf");
   assert.match(s.activity[0].text, /WhatsApp/);
 });
+
+test("decidir sobre un mensaje lo cierra con la decisión anotada, sin tocar pedidos ni stock", () => {
+  let s = apply(seed(), {
+    type: "message",
+    supplier: "s2",
+    text: "No tenemos nata hasta el lunes",
+  });
+  const before = JSON.stringify([s.products, s.orders]);
+  s = apply(s, {
+    type: "decide",
+    id: s.messages[0].id,
+    decision: "La compro en Makro esta tarde",
+  });
+  assert.equal(s.messages[0].reviewed, true);
+  assert.equal(s.messages[0].read, true);
+  assert.equal(s.messages[0].decision, "La compro en Makro esta tarde");
+  assert.ok(s.messages[0].decidedAt);
+  assert.match(s.activity[0].text, /Decisión sobre un mensaje/);
+  assert.equal(JSON.stringify([s.products, s.orders]), before);
+  assert.throws(() =>
+    apply(s, { type: "decide", id: s.messages[0].id, decision: "" }),
+  );
+});

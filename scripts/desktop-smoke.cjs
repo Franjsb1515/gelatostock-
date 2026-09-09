@@ -226,6 +226,7 @@ const assert = require("node:assert/strict");
     await window
       .getByRole("heading", { name: "Información general", exact: true })
       .waitFor();
+    await window.locator(".more-actions summary").click();
     await window
       .getByRole("button", { name: "Corregir relevancia", exact: true })
       .click();
@@ -495,6 +496,7 @@ const assert = require("node:assert/strict");
       .fill("");
     await window.locator("#message-filter").selectOption("toread");
     await window.locator(".reply-reading").first().waitFor();
+    await window.locator(".more-actions summary").click();
     await window
       .getByRole("button", {
         name: "Segunda lectura con IA local",

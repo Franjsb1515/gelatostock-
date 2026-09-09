@@ -635,6 +635,15 @@ export function apply(state: State, input: unknown): State {
       note = `Lectura corregida por la persona: ${replyLabels[previous]} → ${replyLabels[a.category]}${a.remember ? ". Se recordará para mensajes iguales o casi iguales." : "."}`;
       break;
     }
+    case "decide": {
+      const m = item(s.messages, a.id);
+      m.decision = a.decision;
+      m.decidedAt = now();
+      m.read = true;
+      m.reviewed = true;
+      note = `Decisión sobre un mensaje de ${item(s.suppliers, m.supplier).name}: ${a.decision}`;
+      break;
+    }
     case "forgetLearned": {
       const l = item(s.learned, a.id);
       s.learned = s.learned.filter((x) => x.id !== l.id);

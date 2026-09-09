@@ -1,0 +1,792 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 27c38cc..7e6b16c 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.14.1-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.15.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index c183c6e..d609c44 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Registro de parches y sesiones
+ 
++## 0.15.0 — 2026-09-09 · sesión 025
++
++Mensajes rehecha: «Qué hacer ahora» arriba (mensajes que exigen lectura, con atajo al filtro «Debes leer»), conversaciones agrupadas por proveedor con contador de sin leer, detalle con bloque «Responder y decidir»: respuestas rápidas por WhatsApp según la lectura (texto visible y editable antes de enviar, una sola vez, solo con canal conectado y remitente real; ruta /api/whatsapp reply que reutiliza whatsapp.send) y «Decidir y cerrar», que anota la decisión del día (acción decide: texto, fecha, marca revisado; no toca pedidos ni stock). Las acciones secundarias (segunda lectura, prioridad, relevancia, corregir lectura) quedan plegadas en «Más opciones». Aviso explícito en el detalle, en el diálogo de corrección, en la guía y en el chat: lo aprendido cambia cómo se lee un mensaje, nunca lo que se decide.
++
++Pantalla «Guía»: docs/GUIA_USO.md se compila a src/ui/guide.js en npm run build (scripts/build-guide.cjs) y se muestra con índice por sección; el chat de dudas (src/ai-help.cjs) describe las mismas funciones. Diálogo de corrección de lectura reescrito con el aviso. Prueba de escritorio adaptada al bloque plegado.
++
++112 pruebas, ejecutable 0.15.0. Informe reports/2026-09-09T21-28-12-338Z-mensajes-guia-decisiones.md.
++
+ ## 0.14.1 — 2026-09-09 · sesión 024
+ 
+ Sistema de diseño completo, ejecutado por un agente de diseño (Fable 5.1) con el encargo docs/PROMPT_DISENO.md: tokens en :root (paleta Mediterraneo con variantes AA, escala 12/13/14/15/18/22/32, interlineados, ritmo de 8 px, anchos de lectura, radios, sombras, alturas de control), componentes con estados, acento por pantalla, navegación de 38 px, diálogos con pie fijo, tablas legibles y estados vacíos con guía. Corregidos los solapamientos de las tarjetas de Documentos y 1.165 hallazgos de la auditoría DOM (textos < 11 px, contraste, cortes, alturas) hasta 0 en 73 vistas y 4 tamaños. Documentado en docs/DISENO_SISTEMA.md; capturas antes/después en output/design y muestras en reports/design.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 25bb703..1bfa47a 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.14.1
++# Entrada para Claude · entrega vigente 0.15.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index c48c07d..978cae2 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.14.1
++# GelatoStock · prototipo 0.15.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.14.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.15.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.14.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.15.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
+ 9. Crear y restaurar copias en Configuración.
+ 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
+ 
+-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.14.1 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
++Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.9.1 puede enviar un pedido por WhatsApp (y desde 0.15.0 responder a un mensaje) solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+ 
+ ## Qué está pendiente
+ 
+@@ -161,3 +161,6 @@ La pantalla Documentos reúne facturas, albaranes, recibos y pedidos (fotos o PD
+ 
+ ## Sistema de diseño en 0.14.1
+ Toda la interfaz sigue un sistema documentado en docs/DISENO_SISTEMA.md: paleta Mediterraneo con contraste AA, una sola escala de texto, ritmo de 8 px, componentes con estados y acento por pantalla. Se revisaron las once pantallas y los diálogos a cuatro tamaños sin solapamientos ni textos cortados.
++
++## Mensajes, decisiones y guía en 0.15.0
++La pantalla Mensajes muestra arriba «Qué hacer ahora», agrupa las conversaciones por proveedor y en cada mensaje ofrece respuestas rápidas por WhatsApp (texto visible y editable, un envío) y «Decidir y cerrar» para anotar la decisión del día. La app aprende a leer mensajes parecidos cuando corriges una lectura; nunca aprende decisiones. La pantalla «Guía» reproduce docs/GUIA_USO.md dentro de la app.
+diff --git a/TODO.md b/TODO.md
+index 7fde0dd..c3cc3b4 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.14.1.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.15.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -36,7 +36,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Identidad visual propia para la propuesta (paleta Mediterraneo, inicio arte + gelato, nombre y lugar editables).
+ - [x] Sistema de diseño con auditoría automática de contraste, tamaños, cortes y foco por teclado (work/design-capture.cjs, docs/DISENO_SISTEMA.md).
+ - [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia).
+-- [ ] Mensajes: conversación por proveedor, respuestas rápidas por WhatsApp y «qué hacer ahora»; pantalla «Guía» dentro de la app (docs/GUIA_USO.md ya escrita).
++- [x] Mensajes: conversación por proveedor, respuestas rápidas por WhatsApp, «qué hacer ahora» y «Decidir y cerrar» (0.15.0).
++- [x] Pantalla «Guía» dentro de la app generada desde docs/GUIA_USO.md (0.15.0).
++- [ ] Probar la respuesta rápida con los números propios del usuario (el envío está cubierto con cliente simulado; el flujo real de pedidos ya se probó en 0.9.3).
++- [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
+ - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
+ - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
+ 
+diff --git a/core/domain.ts b/core/domain.ts
+index 65424be..2c87ba1 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -635,6 +635,15 @@ export function apply(state: State, input: unknown): State {
+       note = `Lectura corregida por la persona: ${replyLabels[previous]} → ${replyLabels[a.category]}${a.remember ? ". Se recordará para mensajes iguales o casi iguales." : "."}`;
+       break;
+     }
++    case "decide": {
++      const m = item(s.messages, a.id);
++      m.decision = a.decision;
++      m.decidedAt = now();
++      m.read = true;
++      m.reviewed = true;
++      note = `Decisión sobre un mensaje de ${item(s.suppliers, m.supplier).name}: ${a.decision}`;
++      break;
++    }
+     case "forgetLearned": {
+       const l = item(s.learned, a.id);
+       s.learned = s.learned.filter((x) => x.id !== l.id);
+diff --git a/core/schema.ts b/core/schema.ts
+index 11ab8f7..c139e4e 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -107,6 +107,8 @@ const messageSchema = z.object({
+   channel: z.enum(["demo", "whatsapp"]).default("demo"),
+   sender: z.string().max(30).optional(),
+   order: idSchema.optional(),
++  decision: text(300).optional(),
++  decidedAt: at.optional(),
+   interpretation: z
+     .object({
+       category: z.enum(replyCategories),
+@@ -352,6 +354,7 @@ export const actionSchema = z.intersection(
+       remember: z.boolean().default(true),
+     }),
+     z.object({ type: z.literal("forgetLearned"), id: idSchema }),
++    z.object({ type: z.literal("decide"), id: idSchema, decision: text(300) }),
+     z.object({
+       type: z.literal("aiNote"),
+       id: idSchema,
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 37c9e49..f8db747 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -32,7 +32,10 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación
+ - Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.
+ 
+ ## Mensajes
+-Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración.
++Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.
++- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.
++- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, hay respuestas rápidas según la lectura (por ejemplo «De acuerdo con la fecha» o «Lo compramos por otro lado»). El texto se muestra antes de enviarlo, se puede editar y se envía una sola vez.
++- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.
+ - Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.
+ - Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».
+ - Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.
+@@ -59,6 +62,9 @@ Historial de movimientos con motivo y corrección: revertir crea una compensaci
+ - Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.
+ - Confirmar el tipo en la foto: guarda tu decisión en el documento.
+ 
++## Guía
++Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.
++
+ ## Configuración
+ Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.
+ 
+diff --git a/docs/WHATSAPP_PROVEEDORES.md b/docs/WHATSAPP_PROVEEDORES.md
+index b13fdad..1e54afb 100644
+--- a/docs/WHATSAPP_PROVEEDORES.md
++++ b/docs/WHATSAPP_PROVEEDORES.md
+@@ -60,3 +60,6 @@ La página Meta específica de coexistencia devolvió 429 durante la consulta. L
+ 
+ ## Envío implementado en 0.9.1
+ Autorizado por el usuario el 2026-09-08 tras validar QR y cambio de número con dos números propios. Reglas: solo pedidos en estado pendiente; destinatario = WhatsApp de la ficha del proveedor, que además debe estar autorizado para la cuenta conectada; el servidor compone el texto (orderMessage) y rechaza cualquier texto distinto al de la vista previa; un envío por pedido (tabla sent del canal y campo dispatch del pedido); bloqueo de envíos concurrentes; sin reintentos automáticos: si el envío falla, el pedido sigue pendiente y se puede repetir a mano. Si el envío se realiza pero falla el registro en el inventario, la tabla sent del canal conserva la prueba y el pedido no se reenvía. Ningún mensaje se envía sin pulsar «Enviar ahora».
++
++## Respuestas desde Mensajes (0.15.0)
++Un mensaje recibido por WhatsApp de un chat autorizado puede responderse desde su detalle en Mensajes. La app propone textos cortos según la lectura por reglas (fecha aceptada, «mándanos lo que tengas», «lo compramos por otro lado», sí/no a una pregunta, «te llamo»); el texto se muestra en un diálogo, se puede editar y se envía una sola vez con la misma ruta y comprobación en la página que los pedidos (whatsapp.send). Al enviar, el mensaje queda cerrado con la decisión «Respondido por WhatsApp: …». Sin canal conectado, sin remitente real o para mensajes de demostración no hay botón de respuesta.
+diff --git a/package.json b/package.json
+index f5c0966..546ef78 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.14.1",
++  "version": "0.15.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+@@ -12,7 +12,7 @@
+     "test:desktop": "node scripts/desktop-smoke.cjs",
+     "session:new": "node scripts/new-session.cjs",
+     "format:check": "prettier --check \"core/**/*.ts\" \"src/**/*.{js,cjs,css,html}\" \"tests/*.cjs\" \"scripts/*.cjs\"",
+-    "build": "tsc -p tsconfig.json",
++    "build": "tsc -p tsconfig.json && node scripts/build-guide.cjs",
+     "typecheck": "tsc -p tsconfig.json --noEmit",
+     "prestart": "npm run build",
+     "predev": "npm run build"
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index d838fc3..6e4770c 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -226,6 +226,7 @@ const assert = require("node:assert/strict");
+     await window
+       .getByRole("heading", { name: "Información general", exact: true })
+       .waitFor();
++    await window.locator(".more-actions summary").click();
+     await window
+       .getByRole("button", { name: "Corregir relevancia", exact: true })
+       .click();
+@@ -495,6 +496,7 @@ const assert = require("node:assert/strict");
+       .fill("");
+     await window.locator("#message-filter").selectOption("toread");
+     await window.locator(".reply-reading").first().waitFor();
++    await window.locator(".more-actions summary").click();
+     await window
+       .getByRole("button", {
+         name: "Segunda lectura con IA local",
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index 767f89f..f46facc 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -1,7 +1,7 @@
+ // Fixed, human-written guide used as the only knowledge source for the local Q&A chat.
+ // It describes what the application does today. It is not generated by the model.
+ module.exports = `GelatoStock es una aplicación local de escritorio para una gelatería con café y postres. Funciona sin internet y guarda los datos en el equipo (SQLite y fotos).
+-Pantallas: Resumen (estado general), Inventario (productos, conteo, mínimos, entradas, salidas y mermas con motivo, corrección con movimiento compensatorio), Compras (carrito por proveedor, propuesta de reposición, pedidos simulados y Control de entregas), Mensajes (bandeja de demostración con prioridad, relevancia y vínculo a pedidos), WhatsApp (conector experimental por QR, solo recepción de contactos autorizados), Proveedores (fichas con NIF, teléfono y alias), Actividad (historial de movimientos), Configuración (copias de seguridad, restauración, archivo de fotos por proveedor y fecha, OCR) e IA local.
++Pantallas: Resumen (estado general), Inventario (productos, conteo, mínimos, entradas, salidas y mermas con motivo, corrección con movimiento compensatorio), Compras (carrito por proveedor, propuesta de reposición, pedidos simulados y Control de entregas), Mensajes (bandeja real y de demostración por conversación de proveedor, con prioridad, relevancia, vínculo a pedidos, respuestas rápidas y decisiones), WhatsApp (conector por QR: recibe de contactos autorizados y envía pedidos y respuestas solo con confirmación en pantalla), Guía (esta misma guía dentro de la app), Proveedores (fichas con NIF, teléfono y alias), Actividad (historial de movimientos), Configuración (copias de seguridad, restauración, archivo de fotos por proveedor y fecha, OCR) e IA local.
+ Control de entregas: muestra por producto lo pedido, lo recibido y lo que falta recibir. Registrar lo que llegó suma solo esa entrega al inventario, en la unidad base del producto. Un pedido con entregas parciales sigue En curso hasta completarse.
+ Compras: los pedidos son simulados; la app no envía pedidos reales ni realiza pagos. Cancelar un pedido pendiente no cambia el stock.
+ Copias: Configuración permite crear una copia con datos y fotos y restaurarla; al restaurar se conserva una copia previa automática.
+@@ -9,6 +9,6 @@ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español
+ IA local: un modelo pequeño incluido en el equipo (Qwen3 0.6B) propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+ Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+-Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock.
++Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se puede responder por WhatsApp con respuestas rápidas editables (se envía una sola vez, tras confirmar el texto) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic.
+ Unidades: gramos, kilos, mililitros, litros y unidades; las presentaciones (cajas, botellas) se convierten a la unidad base al recibir.`;
+diff --git a/src/index.html b/src/index.html
+index 90cc23c..c329929 100644
+--- a/src/index.html
++++ b/src/index.html
+@@ -22,6 +22,7 @@
+     <div id="app"><p class="boot">Preparando tu espacio…</p></div>
+     <dialog id="modal"></dialog>
+     <div id="toast" role="status" aria-live="polite"></div>
++    <script src="/ui/guide.js" defer></script>
+     <script src="/ui/core.js" defer></script>
+     <script src="/ui/whatsapp.js" defer></script>
+     <script src="/ui/views.js" defer></script>
+diff --git a/src/server.cjs b/src/server.cjs
+index 740145f..e25daa8 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -348,6 +348,26 @@ function createApp({
+             json(200, annotate(whatsapp.view()));
+             return;
+           }
++          if (data.type === "reply") {
++            // Reply to a supplier message from the inbox; the person wrote or edited the text.
++            const message = store
++              .load()
++              .messages.find((m) => m.id === String(data.id || ""));
++            if (!message) throw Error("Mensaje inexistente.");
++            if (message.channel !== "whatsapp" || !message.sender)
++              throw Error(
++                "Este mensaje no llegó por WhatsApp: no se puede responder desde aquí.",
++              );
++            const text = String(data.text || "").trim();
++            const sent = await whatsapp.send({ phone: message.sender, text });
++            const next = store.dispatch({
++              type: "decide",
++              id: message.id,
++              decision: ("Respondido por WhatsApp: " + text).slice(0, 300),
++            });
++            json(200, envelope(next, { sent }));
++            return;
++          }
+           if (data.type === "sendText") {
+             const sent = await whatsapp.send({
+               phone: String(data.phone || ""),
+@@ -551,6 +571,7 @@ function createApp({
+       "/ui/forms.js": "ui/forms.js",
+       "/ui/actions.js": "ui/actions.js",
+       "/ui/events.js": "ui/events.js",
++      "/ui/guide.js": "ui/guide.js",
+       "/ui/actions-extended.js": "ui/actions-extended.js",
+       "/styles.css": "styles.css",
+     };
+diff --git a/src/styles.css b/src/styles.css
+index 5ddc40d..efdf966 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -2958,3 +2958,120 @@ dialog::backdrop {
+     animation: none;
+   }
+ }
++
++/* Mensajes: qué hacer ahora, conversaciones por proveedor, decisiones */
++.todo-panel {
++  margin-bottom: var(--s-4, 16px);
++}
++.todo-row {
++  display: flex;
++  gap: 12px;
++  align-items: center;
++  width: 100%;
++  text-align: left;
++  padding: 12px 24px;
++  border: 0;
++  border-top: 1px solid var(--border, #ebe4d8);
++  background: transparent;
++  color: inherit;
++}
++.todo-row:hover {
++  background: var(--accent-soft, #fbe7ec);
++}
++.todo-row p {
++  font-size: 13px;
++  color: var(--ink-muted, #5a6670);
++  margin-top: 2px;
++}
++.todo-row .text-link {
++  margin-left: auto;
++  white-space: nowrap;
++}
++.conversation-group-title {
++  display: flex;
++  justify-content: space-between;
++  align-items: baseline;
++  gap: 8px;
++  padding: 12px 16px 6px;
++  font-size: 13px;
++}
++.conversation-group-title small {
++  color: var(--ink-muted, #5a6670);
++}
++.decision-box {
++  margin-top: 14px;
++  padding: 12px 14px;
++  border-radius: 12px;
++  background: var(--pistacho-claro, #e6eedc);
++}
++.decision-box p {
++  margin-top: 4px;
++}
++.decide-block {
++  margin-top: 16px;
++  padding-top: 12px;
++  border-top: 1px solid var(--border, #ebe4d8);
++}
++.quick-replies {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 8px;
++  margin: 8px 0 12px;
++}
++.more-actions {
++  margin-top: 12px;
++}
++.more-actions summary {
++  cursor: pointer;
++  font-size: 13px;
++  color: var(--ink-muted, #5a6670);
++  margin-bottom: 8px;
++}
++.guide-layout {
++  display: grid;
++  grid-template-columns: 240px minmax(0, 1fr);
++  gap: 16px;
++  align-items: start;
++}
++.guide-index {
++  position: sticky;
++  top: 16px;
++}
++.guide-index ul {
++  list-style: none;
++  margin: 0;
++  padding: 0 16px 16px;
++}
++.guide-index li {
++  padding: 4px 0;
++  font-size: 13px;
++}
++.guide-index a:hover {
++  color: var(--pistacho, #35604a);
++}
++.guide-body {
++  padding: 8px 28px 28px;
++  max-width: 76ch;
++}
++.guide-body h2 {
++  margin-top: 24px;
++  padding-top: 20px;
++  border-top: 1px solid var(--border, #ebe4d8);
++}
++.guide-body p,
++.guide-body li {
++  font-size: 14px;
++  line-height: 1.6;
++  margin-top: 8px;
++}
++.guide-body ul {
++  padding-left: 20px;
++}
++@media (max-width: 1100px) {
++  .guide-layout {
++    grid-template-columns: 1fr;
++  }
++  .guide-index {
++    position: static;
++  }
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index 1d43303..068b6f3 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -294,7 +294,7 @@ async function action(name, el) {
+     const m = state.messages.find((x) => x.id === el.dataset.id);
+     modal(
+       "Corregir la lectura del mensaje",
+-      "Elige lo que el proveedor quiso decir. La app lo recordará para mensajes iguales o casi iguales.",
++      "Elige lo que el proveedor quiso decir. La app lo recordará para mensajes iguales o casi iguales. Esto solo cambia cómo se lee el mensaje: lo que decidas hacer se elige cada vez.",
+       select(
+         "Lectura correcta",
+         "category",
+@@ -561,6 +561,49 @@ async function action(name, el) {
+     form.querySelector("textarea[name=text]").addEventListener("input", detect);
+     return;
+   }
++  if (name === "messagesToRead") {
++    messageFilter = "toread";
++    render();
++    return;
++  }
++  if (name === "decideMessage") {
++    const m = state.messages.find((x) => x.id === el.dataset.id);
++    modal(
++      "Decidir y cerrar",
++      "Anota qué haces con este mensaje. Es tu decisión de hoy; la app no la aplicará sola a otros mensajes.",
++      `<label class="field">Decisión<textarea name="decision" maxlength="300" required placeholder="Ejemplo: esperamos al lunes · lo compro en Makro · aceptamos la sustitución">${esc(m.decision || "")}</textarea></label>`,
++      async (f) =>
++        mutate(
++          { type: "decide", id: m.id, decision: f.get("decision").trim() },
++          "Decisión anotada y mensaje cerrado.",
++        ),
++      "Guardar decisión",
++    );
++    return;
++  }
++  if (name === "replyMessage") {
++    const m = state.messages.find((x) => x.id === el.dataset.id);
++    modal(
++      "Responder por WhatsApp",
++      "Se envía exactamente este texto a " +
++        (m.sender || "") +
++        " desde tu cuenta conectada, una sola vez.",
++      `<label class="field">Respuesta<textarea name="text" maxlength="4000" required>${esc(el.dataset.text || "")}</textarea></label>`,
++      async (f) => {
++        const data = await request("/api/whatsapp", {
++          type: "reply",
++          id: m.id,
++          text: f.get("text"),
++        });
++        state = data.state;
++        render();
++        toast("Respuesta enviada y decisión anotada.");
++        return true;
++      },
++      "Enviar respuesta",
++    );
++    return;
++  }
+   if (name === "review") {
+     await mutate({ type: "review", id: el.dataset.id }, "Mensaje revisado.");
+     return;
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 4b37ce2..471c409 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -211,6 +211,7 @@ const pageLabel = {
+   ai: "IA local",
+   production: "Producción",
+   documents: "Documentos",
++  guide: "Guía",
+ };
+ function header(title, description, actions = "") {
+   // Rótulo por pantalla: el acento de color lo pone main.page-… en styles.css.
+@@ -256,6 +257,7 @@ function render() {
+     ai: aiPage,
+     production,
+     documents,
++    guide: guidePage,
+   };
+   dismissSplash();
+   $("#app").innerHTML =
+@@ -270,6 +272,7 @@ function render() {
+       ["documents", "photo", "Documentos"],
+       ["activity", "clock", "Actividad"],
+       ["ai", "leaf", "IA local"],
++      ["guide", "shield", "Guía"],
+     ]
+       .map(
+         ([id, i, label]) =>
+diff --git a/src/ui/views.js b/src/ui/views.js
+index f48edcc..d7fef51 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -358,6 +358,95 @@ function orders() {
+     }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${money(total)}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${money(total)}</strong></div><p>Los precios son ficticios. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div>${orderTracking()}`
+   );
+ }
++// Minimal, safe Markdown for the guide: headings, paragraphs, lists. Everything escaped.
++function guideHtml(md) {
++  const lines = md.split(/\r?\n/);
++  let html = "",
++    list = false;
++  const close = () => {
++    if (list) html += "</ul>";
++    list = false;
++  };
++  for (const raw of lines) {
++    const line = raw.trim();
++    if (!line) {
++      close();
++      continue;
++    }
++    if (line.startsWith("# ")) {
++      close();
++      continue;
++    }
++    if (line.startsWith("## ")) {
++      close();
++      html += `<h2 id="guia-${esc(
++        line
++          .slice(3)
++          .toLowerCase()
++          .replace(/[^a-z0-9]+/g, "-"),
++      )}">${esc(line.slice(3))}</h2>`;
++      continue;
++    }
++    if (line.startsWith("- ")) {
++      if (!list) html += "<ul>";
++      list = true;
++      html += `<li>${esc(line.slice(2))}</li>`;
++      continue;
++    }
++    close();
++    html += `<p>${esc(line)}</p>`;
++  }
++  close();
++  return html;
++}
++function guidePage() {
++  const sections = (typeof GUIDE_MD === "string" ? GUIDE_MD : "")
++    .split(/\r?\n/)
++    .filter((l) => l.startsWith("## "))
++    .map((l) => l.slice(3));
++  return (
++    header(
++      "Guía de uso",
++      "Cómo funciona cada pantalla, qué cambia el stock y qué es solo una propuesta. El chat de IA local responde con esta misma guía.",
++      btn("Abrir chat de dudas", "aiOpen", "primary"),
++    ) +
++    `<div class="guide-layout"><nav class="guide-index panel"><div class="panel-heading"><h2>Índice</h2></div><ul>${sections.map((s) => `<li><a href="#guia-${esc(s.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}">${esc(s)}</a></li>`).join("")}</ul></nav><article class="guide-body panel">${typeof GUIDE_MD === "string" ? guideHtml(GUIDE_MD) : "<p>La guía no está disponible en este paquete.</p>"}</article></div>`
++  );
++}
++const quickReplies = (m) => {
++  const i = m.interpretation || {};
++  const when = i.deliveryDate
++    ? date(i.deliveryDate + "T12:00:00Z")
++    : i.deliveryHint || "";
++  const options = [];
++  if (i.category === "delivery_date" || i.category === "confirmation")
++    options.push(["Vale, gracias", "Vale, gracias. Quedamos así."]);
++  if (i.category === "delivery_date" && when)
++    options.push([
++      "De acuerdo con la fecha",
++      `De acuerdo, esperamos la entrega ${when}. Gracias.`,
++    ]);
++  if (i.category === "out_of_stock" || i.category === "change")
++    options.push(
++      [
++        "Mándanos lo que tengas",
++        "Mándanos lo que tengas disponible y avísanos del resto. Gracias.",
++      ],
++      [
++        "Lo compramos por otro lado",
++        "Gracias, esta vez lo resolvemos por otro lado. Deja fuera lo que falte.",
++      ],
++    );
++  if (i.category === "question")
++    options.push(
++      ["Sí, confirmado", "Sí, confirmado. Gracias."],
++      ["No, mejor no", "No, mejor no. Gracias por preguntar."],
++    );
++  if (i.category === "cancellation")
++    options.push(["Entendido", "Entendido, gracias por avisar."]);
++  options.push(["Te llamo", "Te llamo en un momento para concretarlo."]);
++  return options.slice(0, 4);
++};
+ function messages() {
+   const fold = (v) =>
+     v
+@@ -382,20 +471,41 @@ function messages() {
+       ),
+   );
+   const m = list.find((x) => x.id === selectedMessage) || list[0];
++  // Conversations: one group per supplier, newest activity first.
++  const groups = [];
++  for (const x of list) {
++    let g = groups.find((y) => y.supplier === x.supplier);
++    if (!g) {
++      g = { supplier: x.supplier, items: [], unread: 0 };
++      groups.push(g);
++    }
++    g.items.push(x);
++    if (!x.read) g.unread++;
++  }
++  const pending = state.messages.filter(
++    (x) => x.interpretation?.needsReading && !x.reviewed,
++  );
++  const todo = pending.slice(0, 3);
++  const order = m?.order && state.orders.find((o) => o.id === m.order);
++  const canReply =
++    m &&
++    m.channel === "whatsapp" &&
++    !!m.sender &&
++    waState?.status === "connected";
+   return (
+     header(
+       "Mensajes que se convierten en acciones.",
+-      "Las novedades relevantes de tus proveedores, sin perder el original.",
++      "Cada respuesta de tus proveedores, leída y ordenada por conversación. Tú decides qué hacer con cada una.",
+       btn(icon("plus") + " Simular mensaje", "message", "primary"),
+     ) +
+-    `<div class="notice subtle">${icon("message")}<div><strong>Bandeja de proveedores</strong><span>Mensajes de WhatsApp de proveedores autorizados y mensajes de demostración, leídos por reglas. Las respuestas al pedido enviado se vinculan solas cuando no hay duda.</span></div></div><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
++    `<section class="panel todo-panel"><div class="panel-heading"><div><h2>Qué hacer ahora</h2><p>${pending.length ? `${pending.length} mensaje${pending.length === 1 ? "" : "s"} que debes leer y decidir.` : "Nada pendiente de leer. Las confirmaciones y fechas quedan anotadas solas."}</p></div>${pending.length ? btn("Ver todos", "messagesToRead", "secondary") : ""}</div>${todo.map((x) => `<button class="todo-row" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><strong>${esc(supplier(x.supplier).name)} · ${esc(replyLabel[x.interpretation.category])}</strong><p>${esc(x.interpretation.summary)}</p></div><span class="text-link">Abrir ${icon("arrow")}</span></button>`).join("")}</section><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
+       {
+         all: "Todos los mensajes",
++        toread: "Debes leer",
+         unread: "Sin leer",
+-        pending: "Sin revisar",
++        pending: "Sin decidir",
+         important: "Importantes pendientes",
+         relevant: "Relacionados con pedidos",
+-        toread: "Debes leer",
+       },
+     )
+       .map(
+@@ -404,7 +514,26 @@ function messages() {
+       )
+       .join(
+         "",
+-      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Bandeja de proveedores <span>${list.length} de ${state.messages.length}</span></div>${list.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(supplier(x.supplier).name)}</strong><small>${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? "Revisado" : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div><div class="message-detail">${m ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? "Revisado" : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div><div class="interpretation"><div class="message-label">${icon("leaf")} LECTURA ASISTIDA POR REGLAS</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p>${replyBlock(m)}<div class="muted">${m.order ? "Vinculado a " + esc(state.orders.find((o) => o.id === m.order)?.number) : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : icon("check") + " Marcar revisado", "review", "primary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div><p class="fineprint">Revisar un mensaje no acepta sobrecostes ni sustituciones. La conexión real se añadirá en una siguiente etapa.</p></div>` : '<div class="empty"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div></section>`
++      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Conversaciones <span>${list.length} de ${state.messages.length}</span></div>${groups.map((g) => `<div class="conversation-group"><div class="conversation-group-title"><strong>${esc(supplier(g.supplier).name)}</strong><small>${g.items.length} mensaje${g.items.length === 1 ? "" : "s"}${g.unread ? " · " + g.unread + " sin leer" : ""}</small></div>${g.items.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(x.interpretation ? replyLabel[x.interpretation.category] : priorityLabel[x.priority])}</strong><small>${date(x.at)} ${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? (x.decision ? "Decidido" : "Revisado") : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div>`).join("") || '<div class="empty compact"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div><div class="message-detail">${
++      m
++        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}<div class="interpretation"><div class="message-label">${icon("leaf")} PRIORIDAD Y PEDIDO</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p><div class="muted">${order ? "Vinculado a " + esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
++            canReply
++              ? `<div class="quick-replies">${quickReplies(m)
++                  .map(([label, text]) =>
++                    btn(
++                      label,
++                      "replyMessage",
++                      "secondary",
++                      `data-id="${esc(m.id)}" data-text="${esc(text)}"`,
++                    ),
++                  )
++                  .join(
++                    "",
++                  )}${btn("Escribir respuesta", "replyMessage", "secondary", `data-id="${esc(m.id)}" data-text=""`)}</div>`
++              : `<p class="muted">${m.channel === "whatsapp" ? "Conecta WhatsApp para responder desde aquí." : "Los mensajes de demostración no se responden; decide y cierra."}</p>`
++          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">Lo que la app aprende es cómo leer un mensaje. Lo que decides (esperar, aceptar, comprar en otro sitio) se elige cada vez y queda anotado aquí, sin cambiar pedidos ni stock.</p></div>`
++        : '<div class="empty"><h3>Elige una conversación.</h3><p>Aquí verás el mensaje, su lectura por reglas y las opciones para responder y decidir.</p></div>'
++    }</div></section>`
+   );
+ }
+ function suppliers() {
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index 4cbcade..d69fd17 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -909,3 +909,26 @@ test("un PDF se guarda como documento y se acepta como origen WhatsApp", () => {
+   assert.equal(s.photos[0].name, "albaran.pdf");
+   assert.match(s.activity[0].text, /WhatsApp/);
+ });
++
++test("decidir sobre un mensaje lo cierra con la decisión anotada, sin tocar pedidos ni stock", () => {
++  let s = apply(seed(), {
++    type: "message",
++    supplier: "s2",
++    text: "No tenemos nata hasta el lunes",
++  });
++  const before = JSON.stringify([s.products, s.orders]);
++  s = apply(s, {
++    type: "decide",
++    id: s.messages[0].id,
++    decision: "La compro en Makro esta tarde",
++  });
++  assert.equal(s.messages[0].reviewed, true);
++  assert.equal(s.messages[0].read, true);
++  assert.equal(s.messages[0].decision, "La compro en Makro esta tarde");
++  assert.ok(s.messages[0].decidedAt);
++  assert.match(s.activity[0].text, /Decisión sobre un mensaje/);
++  assert.equal(JSON.stringify([s.products, s.orders]), before);
++  assert.throws(() =>
++    apply(s, { type: "decide", id: s.messages[0].id, decision: "" }),
++  );
++});
+diff --git a/tests/server.test.cjs b/tests/server.test.cjs
+index c75edcf..bd62a0d 100644
+--- a/tests/server.test.cjs
++++ b/tests/server.test.cjs
+@@ -423,3 +423,75 @@ test("recetario con contraseña: oculta recetas, bloquea acciones, desbloquea y
+     fs.rmSync(dir, { recursive: true, force: true });
+   }
+ });
++
++test("responder a un mensaje de WhatsApp desde la bandeja envía el texto y anota la decisión", async () => {
++  const root = path.resolve(__dirname, "../work");
++  const dir = fs.mkdtempSync(path.join(root, "http-reply-"));
++  let app;
++  try {
++    app = await createApp({ dataDir: dir });
++    const origin = new URL(app.url).origin;
++    const login = await fetch(app.url, { redirect: "manual" });
++    const headers = {
++      "Content-Type": "application/json",
++      Origin: origin,
++      Cookie: login.headers.get("set-cookie").split(";")[0],
++    };
++    const post = (p, body) =>
++      fetch(origin + p, {
++        method: "POST",
++        headers,
++        body: JSON.stringify(body),
++      });
++    const state = async () =>
++      (await (await fetch(origin + "/api/state", { headers })).json()).state;
++    let s = await state();
++    await post("/api/action", {
++      type: "message",
++      supplier: "s2",
++      text: "Llega el lunes",
++      channel: "whatsapp",
++      sender: "+34910000001",
++      revision: s.revision,
++      operationId: "r1",
++    });
++    s = await state();
++    const demo = s.messages.find((m) => m.channel !== "whatsapp");
++    let r = await post("/api/whatsapp", {
++      type: "reply",
++      id: demo.id,
++      text: "hola",
++    });
++    assert.equal(r.status, 400);
++    const account = app.whatsapp.store.bind("+34600000001");
++    app.whatsapp.account = account;
++    app.whatsapp.status = "connected";
++    const calls = [];
++    app.whatsapp.client = {
++      sendMessage: async (to, text) => (
++        calls.push([to, text]),
++        { id: { _serialized: "reply-1" } }
++      ),
++    };
++    app.whatsapp.store.permit(account, "+34910000001", "Fresco");
++    const target = s.messages.find((m) => m.channel === "whatsapp");
++    r = await post("/api/whatsapp", {
++      type: "reply",
++      id: target.id,
++      text: "De acuerdo, esperamos el lunes.",
++    });
++    assert.equal(r.status, 200);
++    const data = await r.json();
++    assert.equal(data.sent.id, "reply-1");
++    assert.deepEqual(calls, [
++      ["34910000001@c.us", "De acuerdo, esperamos el lunes."],
++    ]);
++    const after = data.state.messages.find((m) => m.id === target.id);
++    assert.equal(after.reviewed, true);
++    assert.match(after.decision, /Respondido por WhatsApp/);
++    app.whatsapp.client = null;
++  } finally {
++    if (app) await new Promise((r) => app.server.close(r));
++    fs.rmSync(dir, { recursive: true, force: true });
++  }
++});

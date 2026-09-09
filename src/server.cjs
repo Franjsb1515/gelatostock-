@@ -348,6 +348,26 @@ function createApp({
             json(200, annotate(whatsapp.view()));
             return;
           }
+          if (data.type === "reply") {
+            // Reply to a supplier message from the inbox; the person wrote or edited the text.
+            const message = store
+              .load()
+              .messages.find((m) => m.id === String(data.id || ""));
+            if (!message) throw Error("Mensaje inexistente.");
+            if (message.channel !== "whatsapp" || !message.sender)
+              throw Error(
+                "Este mensaje no llegó por WhatsApp: no se puede responder desde aquí.",
+              );
+            const text = String(data.text || "").trim();
+            const sent = await whatsapp.send({ phone: message.sender, text });
+            const next = store.dispatch({
+              type: "decide",
+              id: message.id,
+              decision: ("Respondido por WhatsApp: " + text).slice(0, 300),
+            });
+            json(200, envelope(next, { sent }));
+            return;
+          }
           if (data.type === "sendText") {
             const sent = await whatsapp.send({
               phone: String(data.phone || ""),
@@ -551,6 +571,7 @@ function createApp({
       "/ui/forms.js": "ui/forms.js",
       "/ui/actions.js": "ui/actions.js",
       "/ui/events.js": "ui/events.js",
+      "/ui/guide.js": "ui/guide.js",
       "/ui/actions-extended.js": "ui/actions-extended.js",
       "/styles.css": "styles.css",
     };

@@ -1,6 +1,6 @@
 {
   "name": "appgelatostock",
-  "version": "0.14.1",
+  "version": "0.15.0",
   "private": true,
   "description": "Prototipo local de inventario y compras para gelateria",
   "main": "src/desktop.cjs",
@@ -12,7 +12,7 @@
     "test:desktop": "node scripts/desktop-smoke.cjs",
     "session:new": "node scripts/new-session.cjs",
     "format:check": "prettier --check \"core/**/*.ts\" \"src/**/*.{js,cjs,css,html}\" \"tests/*.cjs\" \"scripts/*.cjs\"",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/build-guide.cjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prestart": "npm run build",
     "predev": "npm run build"

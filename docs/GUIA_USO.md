@@ -32,7 +32,10 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación 
 - Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.
 
 ## Mensajes
-Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración.
+Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.
+- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.
+- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, hay respuestas rápidas según la lectura (por ejemplo «De acuerdo con la fecha» o «Lo compramos por otro lado»). El texto se muestra antes de enviarlo, se puede editar y se envía una sola vez.
+- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.
 - Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.
 - Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».
 - Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.
@@ -58,6 +61,9 @@ Historial de movimientos con motivo y corrección: revertir crea una compensaci�
 - Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.
 - Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.
 - Confirmar el tipo en la foto: guarda tu decisión en el documento.
+
+## Guía
+Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.
 
 ## Configuración
 Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.

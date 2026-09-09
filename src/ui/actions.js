@@ -294,7 +294,7 @@ async function action(name, el) {
     const m = state.messages.find((x) => x.id === el.dataset.id);
     modal(
       "Corregir la lectura del mensaje",
-      "Elige lo que el proveedor quiso decir. La app lo recordará para mensajes iguales o casi iguales.",
+      "Elige lo que el proveedor quiso decir. La app lo recordará para mensajes iguales o casi iguales. Esto solo cambia cómo se lee el mensaje: lo que decidas hacer se elige cada vez.",
       select(
         "Lectura correcta",
         "category",
@@ -559,6 +559,49 @@ async function action(name, el) {
     };
     form.querySelector("input[name=sender]").addEventListener("input", detect);
     form.querySelector("textarea[name=text]").addEventListener("input", detect);
+    return;
+  }
+  if (name === "messagesToRead") {
+    messageFilter = "toread";
+    render();
+    return;
+  }
+  if (name === "decideMessage") {
+    const m = state.messages.find((x) => x.id === el.dataset.id);
+    modal(
+      "Decidir y cerrar",
+      "Anota qué haces con este mensaje. Es tu decisión de hoy; la app no la aplicará sola a otros mensajes.",
+      `<label class="field">Decisión<textarea name="decision" maxlength="300" required placeholder="Ejemplo: esperamos al lunes · lo compro en Makro · aceptamos la sustitución">${esc(m.decision || "")}</textarea></label>`,
+      async (f) =>
+        mutate(
+          { type: "decide", id: m.id, decision: f.get("decision").trim() },
+          "Decisión anotada y mensaje cerrado.",
+        ),
+      "Guardar decisión",
+    );
+    return;
+  }
+  if (name === "replyMessage") {
+    const m = state.messages.find((x) => x.id === el.dataset.id);
+    modal(
+      "Responder por WhatsApp",
+      "Se envía exactamente este texto a " +
+        (m.sender || "") +
+        " desde tu cuenta conectada, una sola vez.",
+      `<label class="field">Respuesta<textarea name="text" maxlength="4000" required>${esc(el.dataset.text || "")}</textarea></label>`,
+      async (f) => {
+        const data = await request("/api/whatsapp", {
+          type: "reply",
+          id: m.id,
+          text: f.get("text"),
+        });
+        state = data.state;
+        render();
+        toast("Respuesta enviada y decisión anotada.");
+        return true;
+      },
+      "Enviar respuesta",
+    );
     return;
   }
   if (name === "review") {

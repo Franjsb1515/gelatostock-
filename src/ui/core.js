@@ -211,6 +211,7 @@ const pageLabel = {
   ai: "IA local",
   production: "Producción",
   documents: "Documentos",
+  guide: "Guía",
 };
 function header(title, description, actions = "") {
   // Rótulo por pantalla: el acento de color lo pone main.page-… en styles.css.
@@ -256,6 +257,7 @@ function render() {
     ai: aiPage,
     production,
     documents,
+    guide: guidePage,
   };
   dismissSplash();
   $("#app").innerHTML =
@@ -270,6 +272,7 @@ function render() {
       ["documents", "photo", "Documentos"],
       ["activity", "clock", "Actividad"],
       ["ai", "leaf", "IA local"],
+      ["guide", "shield", "Guía"],
     ]
       .map(
         ([id, i, label]) =>

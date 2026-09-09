@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.14.1.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.15.0.
 
 ## Entregado y comprobado
 
@@ -36,7 +36,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Identidad visual propia para la propuesta (paleta Mediterraneo, inicio arte + gelato, nombre y lugar editables).
 - [x] Sistema de diseño con auditoría automática de contraste, tamaños, cortes y foco por teclado (work/design-capture.cjs, docs/DISENO_SISTEMA.md).
 - [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia).
-- [ ] Mensajes: conversación por proveedor, respuestas rápidas por WhatsApp y «qué hacer ahora»; pantalla «Guía» dentro de la app (docs/GUIA_USO.md ya escrita).
+- [x] Mensajes: conversación por proveedor, respuestas rápidas por WhatsApp, «qué hacer ahora» y «Decidir y cerrar» (0.15.0).
+- [x] Pantalla «Guía» dentro de la app generada desde docs/GUIA_USO.md (0.15.0).
+- [ ] Probar la respuesta rápida con los números propios del usuario (el envío está cubierto con cliente simulado; el flujo real de pedidos ya se probó en 0.9.3).
+- [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
 - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
 - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
 

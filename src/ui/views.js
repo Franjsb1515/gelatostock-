@@ -358,6 +358,95 @@ function orders() {
     }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${money(total)}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${money(total)}</strong></div><p>Los precios son ficticios. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div>${orderTracking()}`
   );
 }
+// Minimal, safe Markdown for the guide: headings, paragraphs, lists. Everything escaped.
+function guideHtml(md) {
+  const lines = md.split(/\r?\n/);
+  let html = "",
+    list = false;
+  const close = () => {
+    if (list) html += "</ul>";
+    list = false;
+  };
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) {
+      close();
+      continue;
+    }
+    if (line.startsWith("# ")) {
+      close();
+      continue;
+    }
+    if (line.startsWith("## ")) {
+      close();
+      html += `<h2 id="guia-${esc(
+        line
+          .slice(3)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-"),
+      )}">${esc(line.slice(3))}</h2>`;
+      continue;
+    }
+    if (line.startsWith("- ")) {
+      if (!list) html += "<ul>";
+      list = true;
+      html += `<li>${esc(line.slice(2))}</li>`;
+      continue;
+    }
+    close();
+    html += `<p>${esc(line)}</p>`;
+  }
+  close();
+  return html;
+}
+function guidePage() {
+  const sections = (typeof GUIDE_MD === "string" ? GUIDE_MD : "")
+    .split(/\r?\n/)
+    .filter((l) => l.startsWith("## "))
+    .map((l) => l.slice(3));
+  return (
+    header(
+      "Guía de uso",
+      "Cómo funciona cada pantalla, qué cambia el stock y qué es solo una propuesta. El chat de IA local responde con esta misma guía.",
+      btn("Abrir chat de dudas", "aiOpen", "primary"),
+    ) +
+    `<div class="guide-layout"><nav class="guide-index panel"><div class="panel-heading"><h2>Índice</h2></div><ul>${sections.map((s) => `<li><a href="#guia-${esc(s.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}">${esc(s)}</a></li>`).join("")}</ul></nav><article class="guide-body panel">${typeof GUIDE_MD === "string" ? guideHtml(GUIDE_MD) : "<p>La guía no está disponible en este paquete.</p>"}</article></div>`
+  );
+}
+const quickReplies = (m) => {
+  const i = m.interpretation || {};
+  const when = i.deliveryDate
+    ? date(i.deliveryDate + "T12:00:00Z")
+    : i.deliveryHint || "";
+  const options = [];
+  if (i.category === "delivery_date" || i.category === "confirmation")
+    options.push(["Vale, gracias", "Vale, gracias. Quedamos así."]);
+  if (i.category === "delivery_date" && when)
+    options.push([
+      "De acuerdo con la fecha",
+      `De acuerdo, esperamos la entrega ${when}. Gracias.`,
+    ]);
+  if (i.category === "out_of_stock" || i.category === "change")
+    options.push(
+      [
+        "Mándanos lo que tengas",
+        "Mándanos lo que tengas disponible y avísanos del resto. Gracias.",
+      ],
+      [
+        "Lo compramos por otro lado",
+        "Gracias, esta vez lo resolvemos por otro lado. Deja fuera lo que falte.",
+      ],
+    );
+  if (i.category === "question")
+    options.push(
+      ["Sí, confirmado", "Sí, confirmado. Gracias."],
+      ["No, mejor no", "No, mejor no. Gracias por preguntar."],
+    );
+  if (i.category === "cancellation")
+    options.push(["Entendido", "Entendido, gracias por avisar."]);
+  options.push(["Te llamo", "Te llamo en un momento para concretarlo."]);
+  return options.slice(0, 4);
+};
 function messages() {
   const fold = (v) =>
     v
@@ -382,20 +471,41 @@ function messages() {
       ),
   );
   const m = list.find((x) => x.id === selectedMessage) || list[0];
+  // Conversations: one group per supplier, newest activity first.
+  const groups = [];
+  for (const x of list) {
+    let g = groups.find((y) => y.supplier === x.supplier);
+    if (!g) {
+      g = { supplier: x.supplier, items: [], unread: 0 };
+      groups.push(g);
+    }
+    g.items.push(x);
+    if (!x.read) g.unread++;
+  }
+  const pending = state.messages.filter(
+    (x) => x.interpretation?.needsReading && !x.reviewed,
+  );
+  const todo = pending.slice(0, 3);
+  const order = m?.order && state.orders.find((o) => o.id === m.order);
+  const canReply =
+    m &&
+    m.channel === "whatsapp" &&
+    !!m.sender &&
+    waState?.status === "connected";
   return (
     header(
       "Mensajes que se convierten en acciones.",
-      "Las novedades relevantes de tus proveedores, sin perder el original.",
+      "Cada respuesta de tus proveedores, leída y ordenada por conversación. Tú decides qué hacer con cada una.",
       btn(icon("plus") + " Simular mensaje", "message", "primary"),
     ) +
-    `<div class="notice subtle">${icon("message")}<div><strong>Bandeja de proveedores</strong><span>Mensajes de WhatsApp de proveedores autorizados y mensajes de demostración, leídos por reglas. Las respuestas al pedido enviado se vinculan solas cuando no hay duda.</span></div></div><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
+    `<section class="panel todo-panel"><div class="panel-heading"><div><h2>Qué hacer ahora</h2><p>${pending.length ? `${pending.length} mensaje${pending.length === 1 ? "" : "s"} que debes leer y decidir.` : "Nada pendiente de leer. Las confirmaciones y fechas quedan anotadas solas."}</p></div>${pending.length ? btn("Ver todos", "messagesToRead", "secondary") : ""}</div>${todo.map((x) => `<button class="todo-row" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><strong>${esc(supplier(x.supplier).name)} · ${esc(replyLabel[x.interpretation.category])}</strong><p>${esc(x.interpretation.summary)}</p></div><span class="text-link">Abrir ${icon("arrow")}</span></button>`).join("")}</section><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
       {
         all: "Todos los mensajes",
+        toread: "Debes leer",
         unread: "Sin leer",
-        pending: "Sin revisar",
+        pending: "Sin decidir",
         important: "Importantes pendientes",
         relevant: "Relacionados con pedidos",
-        toread: "Debes leer",
       },
     )
       .map(
@@ -404,7 +514,26 @@ function messages() {
       )
       .join(
         "",
-      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Bandeja de proveedores <span>${list.length} de ${state.messages.length}</span></div>${list.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(supplier(x.supplier).name)}</strong><small>${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? "Revisado" : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div><div class="message-detail">${m ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? "Revisado" : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div><div class="interpretation"><div class="message-label">${icon("leaf")} LECTURA ASISTIDA POR REGLAS</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p>${replyBlock(m)}<div class="muted">${m.order ? "Vinculado a " + esc(state.orders.find((o) => o.id === m.order)?.number) : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : icon("check") + " Marcar revisado", "review", "primary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div><p class="fineprint">Revisar un mensaje no acepta sobrecostes ni sustituciones. La conexión real se añadirá en una siguiente etapa.</p></div>` : '<div class="empty"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div></section>`
+      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Conversaciones <span>${list.length} de ${state.messages.length}</span></div>${groups.map((g) => `<div class="conversation-group"><div class="conversation-group-title"><strong>${esc(supplier(g.supplier).name)}</strong><small>${g.items.length} mensaje${g.items.length === 1 ? "" : "s"}${g.unread ? " · " + g.unread + " sin leer" : ""}</small></div>${g.items.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(x.interpretation ? replyLabel[x.interpretation.category] : priorityLabel[x.priority])}</strong><small>${date(x.at)} ${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? (x.decision ? "Decidido" : "Revisado") : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div>`).join("") || '<div class="empty compact"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div><div class="message-detail">${
+      m
+        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}<div class="interpretation"><div class="message-label">${icon("leaf")} PRIORIDAD Y PEDIDO</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p><div class="muted">${order ? "Vinculado a " + esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
+            canReply
+              ? `<div class="quick-replies">${quickReplies(m)
+                  .map(([label, text]) =>
+                    btn(
+                      label,
+                      "replyMessage",
+                      "secondary",
+                      `data-id="${esc(m.id)}" data-text="${esc(text)}"`,
+                    ),
+                  )
+                  .join(
+                    "",
+                  )}${btn("Escribir respuesta", "replyMessage", "secondary", `data-id="${esc(m.id)}" data-text=""`)}</div>`
+              : `<p class="muted">${m.channel === "whatsapp" ? "Conecta WhatsApp para responder desde aquí." : "Los mensajes de demostración no se responden; decide y cierra."}</p>`
+          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">Lo que la app aprende es cómo leer un mensaje. Lo que decides (esperar, aceptar, comprar en otro sitio) se elige cada vez y queda anotado aquí, sin cambiar pedidos ni stock.</p></div>`
+        : '<div class="empty"><h3>Elige una conversación.</h3><p>Aquí verás el mensaje, su lectura por reglas y las opciones para responder y decidir.</p></div>'
+    }</div></section>`
   );
 }
 function suppliers() {

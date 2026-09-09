@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.15.0 — 2026-09-09 · sesión 025
+
+Mensajes rehecha: «Qué hacer ahora» arriba (mensajes que exigen lectura, con atajo al filtro «Debes leer»), conversaciones agrupadas por proveedor con contador de sin leer, detalle con bloque «Responder y decidir»: respuestas rápidas por WhatsApp según la lectura (texto visible y editable antes de enviar, una sola vez, solo con canal conectado y remitente real; ruta /api/whatsapp reply que reutiliza whatsapp.send) y «Decidir y cerrar», que anota la decisión del día (acción decide: texto, fecha, marca revisado; no toca pedidos ni stock). Las acciones secundarias (segunda lectura, prioridad, relevancia, corregir lectura) quedan plegadas en «Más opciones». Aviso explícito en el detalle, en el diálogo de corrección, en la guía y en el chat: lo aprendido cambia cómo se lee un mensaje, nunca lo que se decide.
+
+Pantalla «Guía»: docs/GUIA_USO.md se compila a src/ui/guide.js en npm run build (scripts/build-guide.cjs) y se muestra con índice por sección; el chat de dudas (src/ai-help.cjs) describe las mismas funciones. Diálogo de corrección de lectura reescrito con el aviso. Prueba de escritorio adaptada al bloque plegado.
+
+112 pruebas, ejecutable 0.15.0. Informe reports/2026-09-09T21-28-12-338Z-mensajes-guia-decisiones.md.
+
 ## 0.14.1 — 2026-09-09 · sesión 024
 
 Sistema de diseño completo, ejecutado por un agente de diseño (Fable 5.1) con el encargo docs/PROMPT_DISENO.md: tokens en :root (paleta Mediterraneo con variantes AA, escala 12/13/14/15/18/22/32, interlineados, ritmo de 8 px, anchos de lectura, radios, sombras, alturas de control), componentes con estados, acento por pantalla, navegación de 38 px, diálogos con pie fijo, tablas legibles y estados vacíos con guía. Corregidos los solapamientos de las tarjetas de Documentos y 1.165 hallazgos de la auditoría DOM (textos < 11 px, contraste, cortes, alturas) hasta 0 en 73 vistas y 4 tamaños. Documentado en docs/DISENO_SISTEMA.md; capturas antes/después en output/design y muestras en reports/design.

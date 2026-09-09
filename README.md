@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.14.1
+# GelatoStock · prototipo 0.15.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.14.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.15.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.14.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.15.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
 9. Crear y restaurar copias en Configuración.
 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
 
-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.14.1 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.9.1 puede enviar un pedido por WhatsApp (y desde 0.15.0 responder a un mensaje) solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
 
 ## Qué está pendiente
 
@@ -161,3 +161,6 @@ La pantalla Documentos reúne facturas, albaranes, recibos y pedidos (fotos o PD
 
 ## Sistema de diseño en 0.14.1
 Toda la interfaz sigue un sistema documentado en docs/DISENO_SISTEMA.md: paleta Mediterraneo con contraste AA, una sola escala de texto, ritmo de 8 px, componentes con estados y acento por pantalla. Se revisaron las once pantallas y los diálogos a cuatro tamaños sin solapamientos ni textos cortados.
+
+## Mensajes, decisiones y guía en 0.15.0
+La pantalla Mensajes muestra arriba «Qué hacer ahora», agrupa las conversaciones por proveedor y en cada mensaje ofrece respuestas rápidas por WhatsApp (texto visible y editable, un envío) y «Decidir y cerrar» para anotar la decisión del día. La app aprende a leer mensajes parecidos cuando corriges una lectura; nunca aprende decisiones. La pantalla «Guía» reproduce docs/GUIA_USO.md dentro de la app.

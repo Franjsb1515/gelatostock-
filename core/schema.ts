@@ -107,6 +107,8 @@ const messageSchema = z.object({
   channel: z.enum(["demo", "whatsapp"]).default("demo"),
   sender: z.string().max(30).optional(),
   order: idSchema.optional(),
+  decision: text(300).optional(),
+  decidedAt: at.optional(),
   interpretation: z
     .object({
       category: z.enum(replyCategories),
@@ -352,6 +354,7 @@ export const actionSchema = z.intersection(
       remember: z.boolean().default(true),
     }),
     z.object({ type: z.literal("forgetLearned"), id: idSchema }),
+    z.object({ type: z.literal("decide"), id: idSchema, decision: text(300) }),
     z.object({
       type: z.literal("aiNote"),
       id: idSchema,

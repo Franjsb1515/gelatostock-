@@ -423,3 +423,75 @@ test("recetario con contraseña: oculta recetas, bloquea acciones, desbloquea y 
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("responder a un mensaje de WhatsApp desde la bandeja envía el texto y anota la decisión", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-reply-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    const state = async () =>
+      (await (await fetch(origin + "/api/state", { headers })).json()).state;
+    let s = await state();
+    await post("/api/action", {
+      type: "message",
+      supplier: "s2",
+      text: "Llega el lunes",
+      channel: "whatsapp",
+      sender: "+34910000001",
+      revision: s.revision,
+      operationId: "r1",
+    });
+    s = await state();
+    const demo = s.messages.find((m) => m.channel !== "whatsapp");
+    let r = await post("/api/whatsapp", {
+      type: "reply",
+      id: demo.id,
+      text: "hola",
+    });
+    assert.equal(r.status, 400);
+    const account = app.whatsapp.store.bind("+34600000001");
+    app.whatsapp.account = account;
+    app.whatsapp.status = "connected";
+    const calls = [];
+    app.whatsapp.client = {
+      sendMessage: async (to, text) => (
+        calls.push([to, text]),
+        { id: { _serialized: "reply-1" } }
+      ),
+    };
+    app.whatsapp.store.permit(account, "+34910000001", "Fresco");
+    const target = s.messages.find((m) => m.channel === "whatsapp");
+    r = await post("/api/whatsapp", {
+      type: "reply",
+      id: target.id,
+      text: "De acuerdo, esperamos el lunes.",
+    });
+    assert.equal(r.status, 200);
+    const data = await r.json();
+    assert.equal(data.sent.id, "reply-1");
+    assert.deepEqual(calls, [
+      ["34910000001@c.us", "De acuerdo, esperamos el lunes."],
+    ]);
+    const after = data.state.messages.find((m) => m.id === target.id);
+    assert.equal(after.reviewed, true);
+    assert.match(after.decision, /Respondido por WhatsApp/);
+    app.whatsapp.client = null;
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
