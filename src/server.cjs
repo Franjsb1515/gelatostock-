@@ -259,6 +259,11 @@ function createApp({
             });
             return;
           }
+          if (data.type === "autoconnect") {
+            whatsapp.autoConnect = data.enabled === true;
+            json(200, annotate(whatsapp.view()));
+            return;
+          }
           if (data.type === "sendText") {
             const sent = await whatsapp.send({
               phone: String(data.phone || ""),

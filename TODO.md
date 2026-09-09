@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.1.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.2.
 
 ## Entregado y comprobado
 
@@ -27,7 +27,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 94 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 96 pruebas automatizadas.
 - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
 - [ ] Prueba de disco lleno y validación del corte en el equipo real.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
@@ -69,12 +69,13 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Tipo de documento confirmado por la persona en cada foto (memoria de decisiones).
 - [ ] Memoria de equivalencias por proveedor (código de albarán → producto) consultada al leer documentos.
 - [x] Implementar recepción experimental de WhatsApp por eventos; QR real verificado. Envío añadido en 0.9.1 con confirmación explícita.
-- [ ] Recuperación de mensajes perdidos, notificaciones nativas y endurecimiento del canal.
+- [ ] Recuperación de mensajes perdidos mientras la app estaba cerrada (WhatsApp Web no los reenvía por evento).
 - [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
 - [x] Reglas de relevancia por referencia exacta del mismo proveedor, independientes de prioridad; correcciones con motivo.
 - [x] Buscar mensajes sin tildes y filtrar por proveedor/estado.
 - [ ] Validar clasificación con mensajes reales anonimizados y contexto lingüístico más amplio.
-- [ ] Notificaciones nativas configurables: hoy los avisos están dentro de la app.
+- [x] Notificaciones nativas de Windows al recibir un WhatsApp autorizado; conexión automática al abrir opcional.
+- [ ] Notificaciones para mensajes de demostración y para entregas previstas; opción de silenciarlas.
 - [ ] Integración comprobada con Makro España u otro proveedor real.
 - [x] Recetas y producción con consumo estimado aprobado por la persona, producto terminado y hoja diaria (docs/PRODUCCION_Y_RECETAS.md).
 - [x] Ventas y mermas diarias de producto terminado (Producción → Ventas y mermas del día).

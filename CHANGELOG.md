@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.10.2 — 2026-09-09 · sesión 018
+
+WhatsApp: «Conectar al abrir» reutiliza la sesión guardada al arrancar y avisa con una notificación nativa de Windows cuando escribe un proveedor autorizado (clic: vuelve a la app). Ayuda de primeros pasos en Configuración. Persistencia más rápida con historial grande: cada acción con 3.000 movimientos pasa de 52 a 29 ms (caché de filas y operaciones ya guardadas).
+
+96 pruebas, ejecutable 0.10.2. Informe reports/2026-09-09T00-08-47-508Z-autoconexion-avisos-rendimiento.md.
+
 ## 0.10.1 — 2026-09-09 · sesión 017
 
 Ventas y mermas del día de producto terminado desde Producción (salidas y mermas trazables, aviso de mínimos). Etiquetas de producción y terminado en el historial. Prueba de integridad: un proceso matado a mitad de escrituras deja SQLite íntegra y consistente (quick_check, revisión y operaciones alineadas).

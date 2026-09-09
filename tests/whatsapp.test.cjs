@@ -326,3 +326,31 @@ test("un mensaje autorizado de un proveedor entra en la bandeja principal una so
     assert.match(dispatched[0].eventId, /^wa-[a-f0-9]+$/);
     c.client = null;
   }));
+
+test("preferencia de conexión automática y evento local al recibir un mensaje autorizado", () =>
+  fixture(async (c) => {
+    assert.equal(c.autoConnect, false);
+    c.autoConnect = true;
+    assert.equal(c.view().autoConnect, true);
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    c.readyAt = 0;
+    c.store.permit(a, "+34910000001", "Proveedor");
+    c.client = {};
+    const seen = [];
+    c.events.on("message", (m) => seen.push(m));
+    await c.receive(
+      {
+        from: "34910000001@c.us",
+        id: { _serialized: "ev-1" },
+        timestamp: 1,
+        body: "Llega el lunes",
+      },
+      c.generation,
+    );
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].label, "Proveedor");
+    assert.equal(seen[0].text, "Llega el lunes");
+    c.client = null;
+  }));

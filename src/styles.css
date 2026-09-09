@@ -2023,3 +2023,11 @@ dialog::backdrop {
 .field.short {
   max-width: 220px;
 }
+
+.steps {
+  padding-left: 20px;
+  line-height: 1.6;
+}
+.steps li {
+  margin-bottom: 6px;
+}

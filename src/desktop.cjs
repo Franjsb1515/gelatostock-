@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog } = require("electron");
+const { app, BrowserWindow, dialog, Notification } = require("electron");
 const path = require("node:path");
 const fs = require("node:fs");
 const base = app.isPackaged
@@ -78,7 +78,29 @@ if (!app.requestSingleInstanceLock()) {
       win.webContents.on("will-attach-webview", (e) => e.preventDefault());
       const connectWhatsApp = process.argv.includes("--connect-whatsapp");
       await win.loadURL(backend.url + (connectWhatsApp ? "#whatsapp" : ""));
-      if (connectWhatsApp) await backend.whatsapp.connect();
+      // Native notice when an authorized supplier writes; clicking brings the window back.
+      backend.whatsapp.events.on("message", (m) => {
+        try {
+          if (!Notification.isSupported()) return;
+          const n = new Notification({
+            title: "WhatsApp · " + m.label,
+            body: m.text || "Mensaje recibido",
+          });
+          n.on("click", () => {
+            if (!win) return;
+            if (win.isMinimized()) win.restore();
+            win.show();
+            win.focus();
+          });
+          n.show();
+        } catch (e) {
+          logError("aviso nativo", e);
+        }
+      });
+      if (connectWhatsApp || backend.whatsapp.autoConnect)
+        backend.whatsapp
+          .connect()
+          .catch((e) => logError("conexión WhatsApp", e));
     })
     .catch((e) => {
       dialog.showErrorBox("No se pudo abrir GelatoStock", e.message);

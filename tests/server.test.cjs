@@ -267,3 +267,36 @@ test("copia automática al arrancar, con retención de copias automáticas y avi
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("la preferencia de conectar WhatsApp al abrir se guarda y se refleja en la vista", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-ac-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    let r = await fetch(origin + "/api/whatsapp", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ type: "autoconnect", enabled: true }),
+    });
+    assert.equal((await r.json()).autoConnect, true);
+    r = await fetch(origin + "/api/whatsapp", { headers });
+    assert.equal((await r.json()).autoConnect, true);
+    r = await fetch(origin + "/api/whatsapp", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ type: "autoconnect", enabled: "yes" }),
+    });
+    assert.equal((await r.json()).autoConnect, false);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

@@ -1,5 +1,6 @@
 const fs = require("node:fs"),
   path = require("node:path");
+const { EventEmitter } = require("node:events");
 const { WhatsAppStore, normalize, hash } = require("./whatsapp-store.cjs");
 class WhatsAppConnection {
   constructor(dataDir, mainStore) {
@@ -14,6 +15,14 @@ class WhatsAppConnection {
     this.client = null;
     this.account = null;
     this.chain = Promise.resolve();
+    // Local events for the desktop shell (native notices); never leave the process.
+    this.events = new EventEmitter();
+  }
+  get autoConnect() {
+    return this.store.get("autoconnect") === "1";
+  }
+  set autoConnect(value) {
+    this.store.set("autoconnect", value ? "1" : "0");
   }
   log(text) {
     try {
@@ -39,6 +48,7 @@ class WhatsAppConnection {
   view(selected) {
     return {
       diagnostics: this.diagnostics(),
+      autoConnect: this.autoConnect,
       ...this.store.view(selected || this.account || this.store.get("active")),
       status: this.status,
       qr: this.qr,
@@ -308,8 +318,16 @@ class WhatsAppConnection {
           "\n[Adjunto no archivado: tipo no admitido, demasiado grande o no disponible.]";
     }
     if (generation === this.generation && this.status === "connected")
-      if (this.store.insert(account, entry) && permitted.supplier)
-        this.importToInbox(permitted.supplier, sender, entry);
+      if (this.store.insert(account, entry)) {
+        this.events.emit("message", {
+          sender,
+          label: permitted.label,
+          text: String(entry.text || "").slice(0, 120),
+          supplier: permitted.supplier || null,
+        });
+        if (permitted.supplier)
+          this.importToInbox(permitted.supplier, sender, entry);
+      }
   }
   // Real send. Only to a chat the person authorized for the connected account,
   // one order at a time, never automatic. The caller shows the exact text first.

@@ -32,6 +32,10 @@ export class Store {
   // Validated snapshot of the last read/write. Cleared on every write so a
   // concurrent writer (another connection) is noticed on the next load.
   private cached: State | undefined;
+  // Rows as last written/read per table, so a write only touches what changed
+  // instead of re-reading every table. Dropped whenever the state cache is dropped.
+  private rowCache: Map<Table, Map<string, Row>> | undefined;
+  private knownOperations: Set<string> | undefined;
   readonly db: DatabaseSync;
   readonly file: string;
   readonly attachments: string;
@@ -222,6 +226,8 @@ export class Store {
       if (row && Number(row.revision) === this.cached.revision)
         return structuredClone(this.cached);
       this.cached = undefined;
+      this.rowCache = undefined;
+      this.knownOperations = undefined;
     }
     const state = this.read();
     this.cached = state;
@@ -299,6 +305,20 @@ export class Store {
     // Verify content hashes when reading/exporting; stock changes do not reread every image.
     return photo;
   }
+  private tableRows(table: Table): Map<string, Row> {
+    if (!this.rowCache) this.rowCache = new Map();
+    let rows = this.rowCache.get(table);
+    if (!rows) {
+      rows = new Map(
+        this.db
+          .prepare(`SELECT * FROM ${table}`)
+          .all()
+          .map((r) => [String(r.id), r as Row]),
+      );
+      this.rowCache.set(table, rows);
+    }
+    return rows;
+  }
   private write(input: State): void {
     this.cached = undefined;
     this.db.exec("PRAGMA defer_foreign_keys=ON");
@@ -358,34 +378,39 @@ export class Store {
         status: s.productions[i]!.status,
       })),
     };
-    // Remove child rows before parent rows. Tables are a fixed internal allowlist.
-    for (const table of [...entityTables].reverse()) {
-      const ids = new Set(rows[table].map((r) => r.id));
-      for (const r of this.db.prepare(`SELECT id FROM ${table}`).all())
-        if (!ids.has(String(r.id)))
-          this.db.prepare(`DELETE FROM ${table} WHERE id=?`).run(String(r.id));
-    }
-    for (const table of entityTables) {
-      const old = new Map(
-        this.db
-          .prepare(`SELECT * FROM ${table}`)
-          .all()
-          .map((r) => [String(r.id), r]),
-      );
-      for (const r of rows[table]) {
-        const prev = old.get(r.id);
-        if (prev && Object.entries(r).every(([k, v]) => prev[k] === v))
-          continue;
-        const keys = Object.keys(r);
-        this.db
-          .prepare(
-            `INSERT INTO ${table} (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")}) ON CONFLICT(id) DO UPDATE SET ${keys
-              .filter((k) => k !== "id")
-              .map((k) => k + "=excluded." + k)
-              .join(",")}`,
-          )
-          .run(...keys.map((k) => r[k]!));
+    try {
+      // Remove child rows before parent rows. Tables are a fixed internal allowlist.
+      for (const table of [...entityTables].reverse()) {
+        const ids = new Set(rows[table].map((r) => r.id));
+        const old = this.tableRows(table);
+        for (const id of [...old.keys()])
+          if (!ids.has(id)) {
+            this.db.prepare(`DELETE FROM ${table} WHERE id=?`).run(id);
+            old.delete(id);
+          }
       }
+      for (const table of entityTables) {
+        const old = this.tableRows(table);
+        for (const r of rows[table]) {
+          const prev = old.get(r.id);
+          if (prev && Object.entries(r).every(([k, v]) => prev[k] === v))
+            continue;
+          const keys = Object.keys(r);
+          this.db
+            .prepare(
+              `INSERT INTO ${table} (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")}) ON CONFLICT(id) DO UPDATE SET ${keys
+                .filter((k) => k !== "id")
+                .map((k) => k + "=excluded." + k)
+                .join(",")}`,
+            )
+            .run(...keys.map((k) => r[k]!));
+          old.set(r.id, r);
+        }
+      }
+    } catch (error) {
+      this.rowCache = undefined;
+      this.knownOperations = undefined;
+      throw error;
     }
     const {
       products,
@@ -406,10 +431,21 @@ export class Store {
         "INSERT INTO meta(id,data) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data",
       )
       .run(JSON.stringify(meta));
+    // Only operations not yet stored are inserted; the set mirrors the table.
+    if (!this.knownOperations)
+      this.knownOperations = new Set(
+        this.db
+          .prepare("SELECT id FROM operations")
+          .all()
+          .map((r) => String(r.id)),
+      );
     for (const [position, id] of s.processed.entries())
-      this.db
-        .prepare("INSERT OR IGNORE INTO operations(id,position) VALUES(?,?)")
-        .run(id, position);
+      if (!this.knownOperations.has(id)) {
+        this.db
+          .prepare("INSERT OR IGNORE INTO operations(id,position) VALUES(?,?)")
+          .run(id, position);
+        this.knownOperations.add(id);
+      }
   }
   dispatch(input: unknown): State {
     const a = parseAction(input);
@@ -442,6 +478,8 @@ export class Store {
       return this.load();
     } catch (error) {
       this.cached = undefined;
+      this.rowCache = undefined;
+      this.knownOperations = undefined;
       if (this.db.isTransaction) this.db.exec("ROLLBACK");
       throw error;
     }
@@ -522,12 +560,15 @@ export class Store {
       return this.load();
     } catch (error) {
       this.cached = undefined;
+      this.rowCache = undefined;
+      this.knownOperations = undefined;
       if (this.db.isTransaction) this.db.exec("ROLLBACK");
       throw error;
     }
   }
   close(): void {
     this.cached = undefined;
+    this.rowCache = undefined;
     this.db.close();
   }
 }
