@@ -199,8 +199,26 @@ function nav(to) {
   filter = "Todos";
   render();
 }
+const pageLabel = {
+  home: "Resumen",
+  stock: "Inventario",
+  orders: "Compras",
+  messages: "Mensajes",
+  whatsapp: "WhatsApp",
+  suppliers: "Proveedores",
+  activity: "Actividad",
+  settings: "Configuración",
+  ai: "IA local",
+  production: "Producción",
+  documents: "Documentos",
+};
 function header(title, description, actions = "") {
-  return `<div class="page-heading"><div><div class="eyebrow">TU NEGOCIO, EN ORDEN</div><h1>${title}</h1><p>${description}</p></div><div class="heading-actions">${actions}</div></div>`;
+  // Rótulo por pantalla: el acento de color lo pone main.page-… en styles.css.
+  const eyebrow =
+    page === "home"
+      ? "TU NEGOCIO, EN ORDEN"
+      : (pageLabel[page] || "").toUpperCase();
+  return `<div class="page-heading"><div><div class="eyebrow"><i class="dot"></i>${esc(eyebrow)}</div><h1>${title}</h1><p>${description}</p></div><div class="heading-actions">${actions}</div></div>`;
 }
 const initials = (name) =>
   (name || "")
@@ -241,7 +259,7 @@ function render() {
   };
   dismissSplash();
   $("#app").innerHTML =
-    `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span><small>ARTE + GELATO · EN ORDEN</small></span></a><div class="workspace"><div class="workspace-icon">${esc(initials(state.business))}</div><div><strong>${esc(state.business)}</strong><small>${esc(state.place || "Tu negocio, en orden")}</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
+    `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brand-row"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span></span></span><small>ARTE + GELATO · EN ORDEN</small></a><div class="workspace"><div class="workspace-icon">${esc(initials(state.business))}</div><div><strong>${esc(state.business)}</strong><small>${esc(state.place || "Tu negocio, en orden")}</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
       ["home", "home", "Resumen"],
       ["stock", "box", "Inventario"],
       ["orders", "cart", "Compras"],
@@ -259,7 +277,7 @@ function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>GelatoStock · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local", production: "Producción", documents: "Documentos" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>GelatoStock · v${esc(appVersion)}</small></div></div></div></aside><main class="page-${esc(page)}"><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${esc(pageLabel[page] || "")}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
 }
 async function refreshWhatsApp() {
   if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)

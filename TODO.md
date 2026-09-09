@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.14.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.14.1.
 
 ## Entregado y comprobado
 
@@ -34,7 +34,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Prueba de disco lleno y validación del corte en el equipo real.
 - [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
 - [x] Identidad visual propia para la propuesta (paleta Mediterraneo, inicio arte + gelato, nombre y lugar editables).
-- [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia) y auditoría de contraste/teclado.
+- [x] Sistema de diseño con auditoría automática de contraste, tamaños, cortes y foco por teclado (work/design-capture.cjs, docs/DISENO_SISTEMA.md).
+- [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia).
+- [ ] Mensajes: conversación por proveedor, respuestas rápidas por WhatsApp y «qué hacer ahora»; pantalla «Guía» dentro de la app (docs/GUIA_USO.md ya escrita).
 - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
 - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
 

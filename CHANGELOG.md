@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.14.1 — 2026-09-09 · sesión 024
+
+Sistema de diseño completo, ejecutado por un agente de diseño (Fable 5.1) con el encargo docs/PROMPT_DISENO.md: tokens en :root (paleta Mediterraneo con variantes AA, escala 12/13/14/15/18/22/32, interlineados, ritmo de 8 px, anchos de lectura, radios, sombras, alturas de control), componentes con estados, acento por pantalla, navegación de 38 px, diálogos con pie fijo, tablas legibles y estados vacíos con guía. Corregidos los solapamientos de las tarjetas de Documentos y 1.165 hallazgos de la auditoría DOM (textos < 11 px, contraste, cortes, alturas) hasta 0 en 73 vistas y 4 tamaños. Documentado en docs/DISENO_SISTEMA.md; capturas antes/después en output/design y muestras en reports/design.
+
+110 pruebas, ejecutable 0.14.1. Informe reports/2026-09-09T16-49-51-088Z-sistema-de-diseno.md.
+
 ## 0.14.0 — 2026-09-09 · sesión 023
 
 Documentos por proveedor: pantalla nueva con facturas, albaranes, recibos y pedidos (fotos y PDF hasta 10 MB), filtros por proveedor, sin pedido, con propuesta y PDF. Propuestas por reglas de proveedor, tipo y pedido (número de pedido en el texto; único pedido del proveedor en 60 días; importe del documento frente al estimado del pedido ±5 %) que la persona acepta con un clic; vínculo manual a cualquier pedido del proveedor y desvinculación. Los adjuntos de WhatsApp de proveedores autorizados se archivan solos con OCR local si son imágenes. Control de entregas muestra los documentos de cada pedido.
