@@ -1,0 +1,19 @@
+diff --git a/reports/2026-09-09T11-07-12-248Z-aprendizaje-y-reglas-ampliadas.md b/reports/2026-09-09T11-07-12-248Z-aprendizaje-y-reglas-ampliadas.md
+index f57fe9d..74dd2cb 100644
+--- a/reports/2026-09-09T11-07-12-248Z-aprendizaje-y-reglas-ampliadas.md
++++ b/reports/2026-09-09T11-07-12-248Z-aprendizaje-y-reglas-ampliadas.md
+@@ -26,3 +26,14 @@ El modelo local no se entrena. La app aprende de la persona: cada corrección de
+ ## Límites
+ - El aprendizaje es literal (frases casi iguales). Un mensaje nuevo con otras palabras sigue dependiendo de las reglas; cuando llegue el lote de mensajes reales del usuario, la cifra bajará y ese será el material para afinar.
+ - El modelo local sigue siendo opcional y débil; no se ha vuelto a medir tras añadir categorías.
++
++## Evidencia final
++- npm test: 105 aprobadas (reports/tests-2026-09-09-v0120.txt). npm run format:check: aprobado. Sonda de seguridad: 26/26.
++- npm run package:win: dist/GelatoStock-0.12.0-win32-x64.
++- npm run test:desktop: 10 PASS (completa). reports/desktop-smoke-2026-09-09-v0120.txt.
++
++## Estado de archivos al crear este informe
++```text
++ M reports/2026-09-09T11-07-12-248Z-aprendizaje-y-reglas-ampliadas.md
++?? reports/desktop-smoke-2026-09-09-v0120.txt
++```
