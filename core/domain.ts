@@ -671,6 +671,12 @@ export function apply(state: State, input: unknown): State {
       note = `Limpieza: eliminadas ${removed} entradas de actividad anteriores al ${a.before.slice(0, 10)}. Los movimientos de stock se conservan.`;
       break;
     }
+    case "business": {
+      s.business = a.name;
+      s.place = a.place;
+      note = `Identidad del negocio actualizada: ${a.name}${a.place ? " · " + a.place : ""}.`;
+      break;
+    }
     case "deleteRecipe": {
       const r = item(s.recipes, a.id);
       ensure(

@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.12.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.13.0.
 
 ## Entregado y comprobado
 
@@ -29,11 +29,12 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 105 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 106 pruebas automatizadas.
 - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
 - [ ] Prueba de disco lleno y validación del corte en el equipo real.
 - [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
-- [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
+- [x] Identidad visual propia para la propuesta (paleta Mediterraneo, inicio arte + gelato, nombre y lugar editables).
+- [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia) y auditoría de contraste/teclado.
 - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
 - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
 

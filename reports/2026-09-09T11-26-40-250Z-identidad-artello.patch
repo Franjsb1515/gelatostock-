@@ -1,0 +1,1098 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 96d019a..184f61b 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.12.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.13.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 174dabf..bb54d9a 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.13.0 — 2026-09-09 · sesión 022
++
++Identidad visual para la propuesta a Artello (Palma de Mallorca): paleta propia inspirada en su sabor «Mediterraneo» (pistacho, rosa, azafrán) sobre crema de casco antiguo y acero; tipografía serif en títulos; pantalla de inicio «arte + gelato» con el nombre y el lugar del negocio; nombre y lugar editables en Configuración y presentes en barra lateral, migas, pie, pedidos y exportaciones. No se usa el logotipo ni activos de la marca real: la marca visual es original.
++
++106 pruebas, ejecutable 0.13.0. Informe reports/2026-09-09T11-26-40-250Z-identidad-artello.md.
++
+ ## 0.12.0 — 2026-09-09 · sesión 021
+ 
+ La app aprende de tus correcciones: «Corregir lectura» en un mensaje guarda tu categoría y la aplica a mensajes iguales o casi iguales (frase normalizada, coincidencia exacta o muy alta), con listado y olvido en Configuración; no entrena ningún modelo. Reglas ampliadas con tres categorías nuevas (cierre o vacaciones, pago o factura pendiente, documento enviado) y muchos escenarios más: horas («antes de las 12», «a primera hora»), fechas con mes («3 de octubre»), abreviaturas («mñn»), faltas de ortografía («kedan»), promociones sin lectura obligatoria, peticiones («devuélveme», «necesito el CIF»), abonos y reclamaciones. Corpus nuevo de 40 escenarios: 21/40 antes, 40/40 después; corpus anterior 80/80. Base SQLite versión 3 (tabla learned).
+diff --git a/CLAUDE.md b/CLAUDE.md
+index b76c191..d815245 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.12.0
++# Entrada para Claude · entrega vigente 0.13.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index bc6d53e..390f592 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.12.0
++# GelatoStock · prototipo 0.13.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.12.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.13.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.12.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.13.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
+ 9. Crear y restaurar copias en Configuración.
+ 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
+ 
+-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.12.0 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
++Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.13.0 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+ 
+ ## Qué está pendiente
+ 
+@@ -115,40 +115,43 @@ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Cont
+ 
+ Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
+ 
+-## Auditoría y mejora continua en 0.12.0
++## Auditoría y mejora continua en 0.13.0
+ La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
+ 
+-## Chat de dudas en 0.12.0
++## Chat de dudas en 0.13.0
+ IA local incluye un chat para preguntar cómo usar la app o qué dice el texto pegado en el editor. Responde el modelo local a partir de una guía fija y del texto del editor si se marca la casilla; no consulta el inventario ni los pedidos, no ejecuta acciones y sus respuestas son orientativas. Cada respuesta puede tardar de 30 segundos a más de un minuto en este equipo. El chat se conserva solo mientras la ventana está abierta.
+ 
+-## Producción y respuestas de proveedores en 0.12.0
++## Producción y respuestas de proveedores en 0.13.0
+ Producción: crea recetas (rinde X kg, ingredientes en su unidad base) y registra los kilos producidos por día. La app propone el consumo; corrígelo y aprueba para descontar ingredientes y sumar el producto terminado. La hoja diaria muestra kilos por gelato. Guía: docs/PRODUCCION_Y_RECETAS.md.
+ 
+ Mensajes: cada respuesta de proveedor se lee con reglas (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y se marca si debes leerla; las fechas como «el lunes» se resuelven. En Resumen aparece cuántos mensajes debes leer y en Control de entregas las respuestas vinculadas a cada pedido. «Segunda lectura con IA local» pide al modelo una categoría como propuesta; no cambia pedidos ni stock.
+ 
+-## Envío real por WhatsApp en 0.12.0
++## Envío real por WhatsApp en 0.13.0
+ En Compras → Control de entregas, un pedido pendiente tiene «Enviar por WhatsApp». Se muestra el texto exacto y el destinatario; al confirmar se envía una sola vez desde la cuenta vinculada por QR. Requisitos: WhatsApp conectado y el número del proveedor autorizado en WhatsApp → Autorizar chat. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a la pantalla WhatsApp y se lee por reglas. Prueba primero con un número propio.
+ 
+-## Diagnóstico de WhatsApp en 0.12.0
++## Diagnóstico de WhatsApp en 0.13.0
+ La pantalla WhatsApp muestra «Diagnóstico del canal» con los últimos eventos técnicos (remitente resuelto, autorizado o no, enviado, ignorado y por qué), sin contenido de mensajes, y un botón «Enviar mensaje de prueba» a un chat autorizado. Si un mensaje no aparece, ese diagnóstico dice el motivo.
+ 
+-## WhatsApp comprobado en 0.12.0
++## WhatsApp comprobado en 0.13.0
+ Envío y recepción reales verificados con dos números del propietario: la app envió un mensaje desde la cuenta vinculada y recibió la respuesta. Si un envío aparece como no confirmado, el diagnóstico del canal indica el motivo.
+ 
+-## Mejora general en 0.12.0
++## Mejora general en 0.13.0
+ Los mensajes de WhatsApp de proveedores autorizados aparecen también en Mensajes, con su lectura por reglas; si responden al pedido que les enviaste y es el único en curso, quedan vinculados y el pedido muestra la entrega prevista. La app hace una copia automática diaria (30 últimas en data/backups) y lo indica en Configuración. Puedes confirmar el tipo de documento de una foto desde IA local. El código de la interfaz está en src/ui/*.js.
+ 
+-## Ventas y mermas en 0.12.0
++## Ventas y mermas en 0.13.0
+ En Producción, la tabla «Ventas y mermas del día» registra kilos vendidos o desechados de cada producto terminado; cada cantidad crea una salida o merma en el historial, reversible como cualquier movimiento.
+ 
+-## Conexión automática y avisos en 0.12.0
++## Conexión automática y avisos en 0.13.0
+ En WhatsApp, «Conectar al abrir: sí» hace que la app reconecte sola al arrancar con la sesión guardada; cuando un proveedor autorizado escribe, Windows muestra una notificación y al pulsarla vuelve a la app. Configuración incluye «Primeros pasos».
+ 
+-## Historial, reconexión y CSV en 0.12.0
++## Historial, reconexión y CSV en 0.13.0
+ Al conectar WhatsApp, la app revisa los últimos mensajes de cada chat autorizado e importa los que llegaron con la app cerrada (texto). Si la sesión se cae y «Conectar al abrir» está activo, reintenta sola. Configuración → «Exportar CSV» crea inventario y movimientos en data/exportaciones para hoja de cálculo o gestoría.
+ 
+-## Recetario protegido y limpieza en 0.12.0
++## Recetario protegido y limpieza en 0.13.0
+ Configuración → «Recetario protegido»: pon una contraseña y la pantalla Producción pedirá desbloqueo (30 minutos); sin ella no se pueden crear recetas ni producir. Protege la pantalla dentro de la app, no cifra el disco; los movimientos de stock siguen visibles en Actividad. Configuración → «Limpieza periódica»: elige 7, 14, 30 o 90 días para borrar actividad y conversaciones antiguas (se conservan las 50 entradas recientes, los movimientos y las copias). Si olvidas la contraseña: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.
+ 
+-## Aprendizaje por correcciones en 0.12.0
++## Aprendizaje por correcciones en 0.13.0
+ En un mensaje, «Corregir lectura» te deja elegir qué quiso decir el proveedor (falta de producto, cancelación, cierre o vacaciones, pago, cambio, pregunta, documento, entrega, confirmación). La app lo recuerda y lo aplica a mensajes iguales o casi iguales; lo aprendido se ve y se olvida en Configuración. No es entrenamiento del modelo: son tus decisiones. Las reglas también entienden ahora horas, fechas con mes, abreviaturas y faltas de ortografía habituales.
++
++## Identidad visual en 0.13.0
++La app se presenta como propuesta para Artello (Palma de Mallorca) con una identidad propia: paleta «Mediterraneo» (pistacho, rosa y azafrán) sobre crema y acero, títulos en serif y una pantalla de inicio «arte + gelato». El nombre y el lugar se editan en Configuración → Identidad del negocio. No se incluyen logotipos ni materiales de la marca real.
+diff --git a/TODO.md b/TODO.md
+index 7330211..49127b9 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.12.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.13.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -29,11 +29,12 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
+ - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
+ - [x] Cancelar pedidos pendientes sin alterar stock.
+-- [x] Núcleo TypeScript estricto, validación de contratos y 105 pruebas automatizadas.
++- [x] Núcleo TypeScript estricto, validación de contratos y 106 pruebas automatizadas.
+ - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
+ - [ ] Prueba de disco lleno y validación del corte en el equipo real.
+ - [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
+-- [ ] Mejorar accesibilidad con auditoría de contraste, teclado y pruebas con usuarios.
++- [x] Identidad visual propia para la propuesta (paleta Mediterraneo, inicio arte + gelato, nombre y lugar editables).
++- [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia) y auditoría de contraste/teclado.
+ - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
+ - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
+ 
+diff --git a/core/domain.ts b/core/domain.ts
+index 1f8d717..ef5c7a6 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -671,6 +671,12 @@ export function apply(state: State, input: unknown): State {
+       note = `Limpieza: eliminadas ${removed} entradas de actividad anteriores al ${a.before.slice(0, 10)}. Los movimientos de stock se conservan.`;
+       break;
+     }
++    case "business": {
++      s.business = a.name;
++      s.place = a.place;
++      note = `Identidad del negocio actualizada: ${a.name}${a.place ? " · " + a.place : ""}.`;
++      break;
++    }
+     case "deleteRecipe": {
+       const r = item(s.recipes, a.id);
+       ensure(
+diff --git a/core/schema.ts b/core/schema.ts
+index e23ce0e..91b0ae5 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -210,6 +210,7 @@ export const stateSchema = z.object({
+   version: z.literal(1),
+   revision: z.number().int().min(0),
+   business: text(80),
++  place: z.string().max(80).default(""),
+   demo: z.literal(true),
+   products: z.array(productSchema).max(100000),
+   suppliers: z.array(supplierSchema).max(100000),
+@@ -350,6 +351,11 @@ export const actionSchema = z.intersection(
+       ...recipeFields,
+     }),
+     z.object({ type: z.literal("deleteRecipe"), id: idSchema }),
++    z.object({
++      type: z.literal("business"),
++      name: text(80),
++      place: z.string().trim().max(80).default(""),
++    }),
+     z.object({
+       type: z.literal("purge"),
+       before: at,
+diff --git a/core/seed.ts b/core/seed.ts
+index e712d98..44041ee 100644
+--- a/core/seed.ts
++++ b/core/seed.ts
+@@ -188,7 +188,8 @@ export function seed(): State {
+   return {
+     version: 1,
+     revision: 0,
+-    business: "Gelato & Café",
++    business: "Artello",
++    place: "Palma de Mallorca",
+     demo: true,
+     products,
+     suppliers: [
+diff --git a/package.json b/package.json
+index ec092cd..aa1fa1b 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.12.0",
++  "version": "0.13.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/src/index.html b/src/index.html
+index b414b0d..90cc23c 100644
+--- a/src/index.html
++++ b/src/index.html
+@@ -11,6 +11,14 @@
+     <link rel="stylesheet" href="/styles.css" />
+   </head>
+   <body>
++    <div id="splash" aria-hidden="true">
++      <div class="splash-inner">
++        <div class="splash-name">Artello</div>
++        <div class="splash-tag">arte + gelato</div>
++        <div class="splash-strokes"><i></i><i></i><i></i></div>
++        <div class="splash-place">Palma de Mallorca</div>
++      </div>
++    </div>
+     <div id="app"><p class="boot">Preparando tu espacio…</p></div>
+     <dialog id="modal"></dialog>
+     <div id="toast" role="status" aria-live="polite"></div>
+diff --git a/src/styles.css b/src/styles.css
+index 8a3d1eb..f8f0c96 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3,7 +3,7 @@
+ }
+ body {
+   margin: 0;
+-  background: #f7f7f2;
++  background: #faf6ee;
+   color: #2e3430;
+   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+   font-size: 14px;
+@@ -27,7 +27,7 @@ a:focus-visible,
+ input:focus-visible,
+ select:focus-visible,
+ textarea:focus-visible {
+-  outline: 3px solid #8eaa97;
++  outline: 3px solid #8fb07a;
+   outline-offset: 3px;
+ }
+ svg {
+@@ -45,10 +45,12 @@ p {
+   margin: 0;
+ }
+ h1 {
+-  font-size: 30px;
+-  letter-spacing: -1px;
+-  line-height: 1.25;
+-  font-weight: 620;
++  font-family: Georgia, "Times New Roman", serif;
++  font-size: 32px;
++  letter-spacing: -0.6px;
++  line-height: 1.2;
++  font-weight: 500;
++  color: #35604a;
+ }
+ h2 {
+   font-size: 17px;
+@@ -74,8 +76,8 @@ strong {
+   flex: none;
+   position: fixed;
+   inset: 0 auto 0 0;
+-  background: #fffefa;
+-  border-right: 1px solid #e8e9e0;
++  background: #fffdf9;
++  border-right: 1px solid #ebe4d8;
+   padding: 31px 19px 15px;
+   display: flex;
+   flex-direction: column;
+@@ -93,11 +95,11 @@ strong {
+ .brandmark {
+   width: 36px;
+   height: 40px;
+-  background: #e7eddf;
++  background: #e6eedc;
+   border-radius: 13px;
+   display: grid;
+   place-items: center;
+-  color: #4b6654;
++  color: #35604a;
+   transform: rotate(-5deg);
+ }
+ .brandmark svg {
+@@ -113,7 +115,7 @@ strong {
+   letter-spacing: 1.8px;
+   font-weight: 600;
+   margin-top: 1px;
+-  color: #92988c;
++  color: #8d9490;
+ }
+ .workspace {
+   display: flex;
+@@ -121,8 +123,8 @@ strong {
+   align-items: center;
+   padding: 16px 9px;
+   margin: 29px 0 24px;
+-  border-top: 1px solid #eeeee6;
+-  border-bottom: 1px solid #eeeee6;
++  border-top: 1px solid #efe9de;
++  border-bottom: 1px solid #efe9de;
+ }
+ .workspace strong {
+   font-size: 13px;
+@@ -170,17 +172,17 @@ strong {
+   height: 18px;
+ }
+ .nav-item.active {
+-  background: #eaf0e6;
+-  color: #425b46;
++  background: #e6eedc;
++  color: #35604a;
+   font-weight: 650;
+ }
+ .nav-item:hover {
+-  background: #f0f2ec;
++  background: #f2efe6;
+ }
+ .nav-count {
+   font-size: 10px;
+-  background: #dce7d8;
+-  color: #4e6951;
++  background: #e6eedc;
++  color: #35604a;
+   border-radius: 6px;
+   padding: 1px 6px;
+   margin-left: auto;
+@@ -191,7 +193,7 @@ strong {
+ }
+ .local-card {
+   background: #f4f5ee;
+-  border: 1px solid #e7eadf;
++  border: 1px solid #ebe4d8;
+   border-radius: 12px;
+   padding: 16px 13px;
+   margin: 0 3px 16px;
+@@ -228,7 +230,7 @@ strong {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+-  border-top: 1px solid #eeeee6;
++  border-top: 1px solid #efe9de;
+   margin-top: 14px;
+   padding: 16px 7px 0;
+ }
+@@ -267,7 +269,7 @@ main {
+   align-items: center;
+   justify-content: space-between;
+   padding: 0 38px;
+-  background: #fdfdf9;
++  background: #fffdf9;
+ }
+ .breadcrumb {
+   font-size: 11px;
+@@ -311,7 +313,7 @@ main {
+   width: 5px;
+   height: 5px;
+   background: #aa715c;
+-  border: 1px solid #fdfdf9;
++  border: 1px solid #fffdf9;
+   border-radius: 50%;
+ }
+ .content {
+@@ -362,33 +364,33 @@ main {
+   height: 16px;
+ }
+ .btn.primary {
+-  background: #486448;
+-  border-color: #486448;
++  background: #35604a;
++  border-color: #35604a;
+   color: #fff;
+ }
+ .btn.primary:hover {
+-  background: #385438;
++  background: #27493a;
+ }
+ .btn.secondary:hover {
+-  background: #f0f3e9;
++  background: #f2efe6;
+ }
+ .btn.cream {
+-  background: #f7f3e7;
++  background: #f6efe2;
+   color: #4c4f3d;
+-  border-color: #f7f3e7;
++  border-color: #f6efe2;
+   margin-top: 19px;
+ }
+ .btn.full {
+   width: 100%;
+ }
+ .hero {
+-  background: #424f3f;
++  background: linear-gradient(135deg, #35604a 0%, #4a7a5c 55%, #7f9b5a 100%);
+   border-radius: 15px;
+   min-height: 257px;
+   display: flex;
+   position: relative;
+   overflow: hidden;
+-  color: #fffdf4;
++  color: #fffdf9;
+ }
+ .hero-copy {
+   padding: 28px 32px;
+@@ -398,13 +400,13 @@ main {
+ .hero-label {
+   font-size: 8px;
+   letter-spacing: 1.8px;
+-  color: #d0d8c5;
++  color: #d8e6c8;
+   display: flex;
+   gap: 7px;
+   align-items: center;
+ }
+ .hero-label .dot {
+-  background: #c4d5a9;
++  background: #e0a53a;
+ }
+ .hero h2 {
+   font-family: Georgia, "Times New Roman", serif;
+@@ -417,7 +419,7 @@ main {
+ .hero p {
+   font-size: 11px;
+   line-height: 1.75;
+-  color: #c2caba;
++  color: #d8e6c8;
+   margin-top: 13px;
+ }
+ .hero-art {
+@@ -432,7 +434,7 @@ main {
+   width: 300px;
+   height: 300px;
+   border-radius: 50%;
+-  border: 1px solid #63725a;
++  border: 1px solid #5c7f63;
+   right: 4px;
+   top: 18px;
+ }
+@@ -453,19 +455,19 @@ main {
+     inset 6px 5px 15px #ffffff22;
+ }
+ .scoop-one {
+-  background: #c5d6a6;
++  background: #b9cf98;
+   left: 95px;
+   top: 52px;
+   transform: rotate(-14deg);
+ }
+ .scoop-two {
+-  background: #e6bdab;
++  background: #efb7c3;
+   left: 175px;
+   top: 54px;
+   transform: rotate(14deg);
+ }
+ .scoop-three {
+-  background: #ece2bd;
++  background: #f1cf7e;
+   left: 132px;
+   top: 105px;
+   z-index: 1;
+@@ -476,7 +478,7 @@ main {
+   left: 91px;
+   width: 190px;
+   height: 100px;
+-  background: linear-gradient(100deg, #eceadb, #fffcf1 45%, #e6e4d6);
++  background: linear-gradient(100deg, #eceadb, #fffdf9 45%, #e6e4d6);
+   clip-path: polygon(0 0, 100% 0, 84% 100%, 17% 100%);
+   border-radius: 7px 7px 35px 35px;
+   z-index: 2;
+@@ -514,7 +516,7 @@ main {
+   margin: 22px 0;
+ }
+ .stat {
+-  background: #fffefa;
++  background: #fffdf9;
+   border: 1px solid #e8eade;
+   border-radius: 12px;
+   padding: 20px 17px;
+@@ -532,12 +534,12 @@ main {
+   flex-shrink: 0;
+ }
+ .sage {
+-  background: #eaf0e1;
+-  color: #6b845e;
++  background: #eaf1df;
++  color: #6f8a5a;
+ }
+ .peach {
+-  background: #f8e9de;
+-  color: #ad785b;
++  background: #fbe7ec;
++  color: #b04a62;
+ }
+ .lavender {
+   background: #eee9f4;
+@@ -580,8 +582,8 @@ main {
+   gap: 20px;
+ }
+ .panel {
+-  background: #fffefa;
+-  border: 1px solid #e7eadf;
++  background: #fffdf9;
++  border: 1px solid #ebe4d8;
+   border-radius: 12px;
+   overflow: hidden;
+   min-width: 0;
+@@ -594,7 +596,7 @@ main {
+   gap: 10px;
+ }
+ .panel-heading p {
+-  color: #969d8b;
++  color: #8d9490;
+   font-size: 10px;
+   margin-top: 4px;
+ }
+@@ -627,8 +629,8 @@ th {
+   background: #fafbf5;
+   font-weight: 500;
+   padding: 12px 20px;
+-  border-top: 1px solid #f0f1e9;
+-  border-bottom: 1px solid #f0f1e9;
++  border-top: 1px solid #f2efe6;
++  border-bottom: 1px solid #f2efe6;
+ }
+ td {
+   padding: 17px 20px;
+@@ -872,7 +874,7 @@ footer {
+ }
+ .table-footer {
+   padding: 14px 20px;
+-  color: #9aa48b;
++  color: #8d9c93;
+   font-size: 10px;
+   display: flex;
+   justify-content: space-between;
+@@ -989,7 +991,7 @@ footer {
+ .order-summary > small {
+   display: block;
+   text-align: center;
+-  color: #9aa48b;
++  color: #8d9c93;
+   font-size: 9px;
+   margin-top: 12px;
+ }
+@@ -1034,14 +1036,14 @@ footer {
+ .inbox-layout {
+   display: grid;
+   grid-template-columns: 330px minmax(0, 1fr);
+-  border: 1px solid #e5e9dc;
++  border: 1px solid #e6dfd2;
+   border-radius: 12px;
+-  background: #fffefa;
++  background: #fffdf9;
+   min-height: 560px;
+   overflow: hidden;
+ }
+ .conversation-list {
+-  border-right: 1px solid #e5e9dc;
++  border-right: 1px solid #e6dfd2;
+   background: #fbfcf6;
+ }
+ .conversation-heading {
+@@ -1050,7 +1052,7 @@ footer {
+   padding: 21px;
+   font-size: 11px;
+   color: #7e8d6c;
+-  border-bottom: 1px solid #e9eddf;
++  border-bottom: 1px solid #ebe4d8;
+ }
+ .conversation-heading span {
+   color: #a7b198;
+@@ -1063,7 +1065,7 @@ footer {
+   width: 100%;
+   padding: 22px 18px;
+   border: 0;
+-  border-bottom: 1px solid #e9eddf;
++  border-bottom: 1px solid #ebe4d8;
+   background: transparent;
+ }
+ .conversation.selected {
+@@ -1086,7 +1088,7 @@ footer {
+ }
+ .conversation-title small {
+   font-size: 9px;
+-  color: #9aa88b;
++  color: #8d9c93;
+ }
+ .conversation p {
+   font-size: 11px;
+@@ -1212,7 +1214,7 @@ footer {
+   align-items: center;
+   justify-content: space-between;
+   margin-top: 24px;
+-  border-top: 1px solid #e9eddf;
++  border-top: 1px solid #ebe4d8;
+   padding-top: 20px;
+ }
+ .activity-panel {
+@@ -1272,7 +1274,7 @@ footer {
+ .path {
+   display: block;
+   word-break: break-all;
+-  background: #f0f3e9;
++  background: #f2efe6;
+   padding: 12px;
+   border-radius: 7px;
+   color: #6e825d;
+@@ -1329,7 +1331,7 @@ footer {
+ .empty {
+   text-align: center;
+   padding: 45px 20px;
+-  color: #9aa88b;
++  color: #8d9c93;
+   font-size: 12px;
+ }
+ .empty > svg {
+@@ -1368,7 +1370,7 @@ dialog {
+   width: 560px;
+   max-width: 90vw;
+   max-height: 90vh;
+-  background: #fffefa;
++  background: #fffdf9;
+   color: #43543a;
+   box-shadow: 0 30px 100px #29352225;
+ }
+@@ -1381,7 +1383,7 @@ dialog::backdrop {
+   display: flex;
+   gap: 15px;
+   align-items: flex-start;
+-  border-bottom: 1px solid #e9eddf;
++  border-bottom: 1px solid #ebe4d8;
+ }
+ .modal-heading > div {
+   flex: 1;
+@@ -1404,11 +1406,11 @@ dialog::backdrop {
+ }
+ .modal-footer {
+   padding: 18px 24px;
+-  border-top: 1px solid #e9eddf;
++  border-top: 1px solid #ebe4d8;
+   display: flex;
+   gap: 9px;
+   justify-content: flex-end;
+-  background: #fafbf6;
++  background: #fdfaf4;
+ }
+ .field {
+   display: flex;
+@@ -1499,7 +1501,7 @@ dialog::backdrop {
+   opacity: 0;
+   pointer-events: none;
+   background: #3f5737;
+-  color: #fffdf5;
++  color: #fffdf9;
+   padding: 14px 22px;
+   border-radius: 10px;
+   box-shadow: 0 10px 35px #273b3225;
+@@ -1687,7 +1689,7 @@ dialog::backdrop {
+ .message-label,
+ .settings-card > p,
+ .muted {
+-  color: #737e69 !important;
++  color: #5f6f74 !important;
+ }
+ .product-cell small {
+   font-size: 10px;
+@@ -1730,7 +1732,7 @@ dialog::backdrop {
+   max-width: 370px;
+   white-space: normal;
+   margin-top: 4px;
+-  color: #737e69;
++  color: #5f6f74;
+ }
+ .order-row > div:last-child {
+   display: flex;
+@@ -1745,7 +1747,7 @@ dialog::backdrop {
+ }
+ #form-error:not(:empty) {
+   padding: 12px;
+-  background: #f8e9de;
++  background: #fbe7ec;
+   border-radius: 7px;
+ }
+ .supplier-card-footer {
+@@ -1779,7 +1781,7 @@ dialog::backdrop {
+ .tracking-intro p {
+   line-height: 1.65;
+   max-width: 640px;
+-  color: #566152;
++  color: #3a4a50;
+ }
+ .tracking-example {
+   background: #eaf0e5;
+@@ -1799,7 +1801,7 @@ dialog::backdrop {
+   gap: 20px;
+ }
+ .delivery-card {
+-  background: #fffefa;
++  background: #fffdf9;
+   border: 1px solid #dce2d4;
+   border-radius: 14px;
+   overflow: hidden;
+@@ -1819,7 +1821,7 @@ dialog::backdrop {
+   justify-content: space-between;
+   gap: 20px;
+   padding: 0 24px 18px;
+-  color: #566152;
++  color: #3a4a50;
+   font-size: 13px;
+ }
+ .delivery-table {
+@@ -1849,7 +1851,7 @@ dialog::backdrop {
+   gap: 20px;
+   align-items: center;
+   padding: 20px 24px;
+-  background: #fafbf6;
++  background: #fdfaf4;
+   font-size: 13px;
+ }
+ .delivery-next strong {
+@@ -1863,7 +1865,7 @@ dialog::backdrop {
+   overflow-wrap: anywhere;
+   line-height: 1.7;
+   padding: 20px;
+-  background: #f0f4ea;
++  background: #eef3e6;
+   border-radius: 12px;
+ }
+ .ai-editor {
+@@ -1886,23 +1888,23 @@ dialog::backdrop {
+ }
+ 
+ .delivery-next {
+-  color: #46563d;
++  color: #35604a;
+   margin: 0;
+   max-width: none;
+ }
+ .ai-result blockquote {
+   margin: 12px 0;
+   padding-left: 14px;
+-  border-left: 3px solid #69815b;
++  border-left: 3px solid #5c7f63;
+ }
+ 
+ .ai-warning {
+-  border-left: 3px solid #97632d;
++  border-left: 3px solid #b04a62;
+   padding-left: 12px;
+-  color: #69441f;
++  color: #7d2f45;
+ }
+ .ai-math {
+-  border-top: 1px solid #c7d2bc;
++  border-top: 1px solid #d6dfd0;
+   margin-top: 18px;
+   padding-top: 14px;
+ }
+@@ -1917,10 +1919,10 @@ dialog::backdrop {
+ .ai-chat-msg {
+   padding: 12px 14px;
+   border-radius: 12px;
+-  background: #f4f1ea;
++  background: #f5f0e6;
+ }
+ .ai-chat-msg.assistant {
+-  background: #f0f4ea;
++  background: #eef3e6;
+ }
+ .ai-chat-msg p {
+   margin: 4px 0 0;
+@@ -1931,7 +1933,7 @@ dialog::backdrop {
+ .reply-reading {
+   margin-top: 14px;
+   padding-top: 12px;
+-  border-top: 1px solid #c7d2bc;
++  border-top: 1px solid #d6dfd0;
+ }
+ .reply-reading h3 {
+   display: flex;
+@@ -1950,7 +1952,7 @@ dialog::backdrop {
+   display: block;
+ }
+ .production-card {
+-  border: 1px solid #dfe5d6;
++  border: 1px solid #e6dfd2;
+   border-radius: 14px;
+   padding: 16px;
+   margin-bottom: 14px;
+@@ -1966,7 +1968,7 @@ dialog::backdrop {
+ .inline-input {
+   width: 110px;
+   padding: 6px 8px;
+-  border: 1px solid #c7d2bc;
++  border: 1px solid #d6dfd0;
+   border-radius: 8px;
+   font: inherit;
+ }
+@@ -1979,7 +1981,7 @@ dialog::backdrop {
+   gap: 14px;
+ }
+ .recipe-card {
+-  border: 1px solid #dfe5d6;
++  border: 1px solid #e6dfd2;
+   border-radius: 14px;
+   padding: 16px;
+   background: #fff;
+@@ -2005,15 +2007,15 @@ dialog::backdrop {
+ }
+ 
+ .message-bubble.outgoing {
+-  background: #e9f0e3;
+-  border-left: 3px solid #69815b;
++  background: #e6eedc;
++  border-left: 3px solid #5c7f63;
+ }
+ 
+ .diag {
+   font-size: 0.8rem;
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
+-  background: #f4f1ea;
++  background: #f5f0e6;
+   padding: 10px 12px;
+   border-radius: 10px;
+   max-height: 220px;
+@@ -2035,3 +2037,106 @@ dialog::backdrop {
+ .lock-panel {
+   max-width: 480px;
+ }
++
++/* Identidad: marca del negocio en la barra lateral */
++.workspace-icon {
++  background: #35604a;
++  color: #fffdf9;
++  font-family: Georgia, serif;
++  font-weight: 500;
++}
++.workspace small {
++  color: #8d9490;
++}
++.brand-place {
++  display: block;
++  font-size: 10px;
++  color: #8fb07a;
++  letter-spacing: 0.4px;
++}
++.btn.primary {
++  box-shadow: 0 6px 14px rgba(31, 78, 95, 0.18);
++}
++.nav-item.active {
++  box-shadow: inset 3px 0 0 #c85c73;
++}
++.stat-icon.coral {
++  background: #fbe7ec;
++  color: #b04a62;
++}
++
++/* Pantalla de inicio: arte + gelato */
++#splash {
++  position: fixed;
++  inset: 0;
++  z-index: 50;
++  display: grid;
++  place-items: center;
++  background: #fbf7f0;
++  color: #1e2a2f;
++  pointer-events: none;
++  transition: opacity 0.6s ease;
++}
++#splash.hide {
++  opacity: 0;
++}
++.splash-inner {
++  text-align: center;
++  animation: splash-in 0.7s ease both;
++}
++.splash-name {
++  font-family: Georgia, "Times New Roman", serif;
++  font-size: 56px;
++  letter-spacing: -1px;
++  color: #35604a;
++  line-height: 1;
++}
++.splash-tag {
++  margin-top: 10px;
++  font-size: 13px;
++  letter-spacing: 4px;
++  text-transform: uppercase;
++  color: #6b7680;
++}
++.splash-strokes {
++  display: flex;
++  gap: 10px;
++  justify-content: center;
++  margin-top: 26px;
++}
++.splash-strokes i {
++  display: block;
++  width: 64px;
++  height: 14px;
++  border-radius: 8px 12px 8px 12px;
++  transform: rotate(-4deg);
++}
++.splash-strokes i:nth-child(1) {
++  background: #b9cf98;
++}
++.splash-strokes i:nth-child(2) {
++  background: #efb7c3;
++}
++.splash-strokes i:nth-child(3) {
++  background: #f1cf7e;
++}
++.splash-place {
++  margin-top: 18px;
++  font-size: 12px;
++  color: #8d9490;
++}
++@keyframes splash-in {
++  from {
++    opacity: 0;
++    transform: translateY(10px);
++  }
++  to {
++    opacity: 1;
++    transform: none;
++  }
++}
++@media (prefers-reduced-motion: reduce) {
++  .splash-inner {
++    animation: none;
++  }
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index ab16a8a..91653eb 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -765,6 +765,36 @@ async function action(name, el) {
+     );
+     return;
+   }
++  if (name === "businessEditor") {
++    modal(
++      "Identidad del negocio",
++      "Solo texto: la marca visual de la app es propia y no usa logotipos de terceros.",
++      field(
++        "Nombre del negocio",
++        "name",
++        state.business,
++        "text",
++        'required maxlength="80"',
++      ) +
++        field(
++          "Lugar",
++          "place",
++          state.place || "",
++          "text",
++          'maxlength="80" placeholder="Palma de Mallorca"',
++        ),
++      async (f) =>
++        mutate(
++          {
++            type: "business",
++            name: f.get("name"),
++            place: f.get("place") || "",
++          },
++          "Identidad guardada.",
++        ),
++    );
++    return;
++  }
+   if (name === "exportCsv") {
+     try {
+       const r = await request("/api/export", {});
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 764fe17..b83a111 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -200,6 +200,28 @@ function nav(to) {
+ function header(title, description, actions = "") {
+   return `<div class="page-heading"><div><div class="eyebrow">TU NEGOCIO, EN ORDEN</div><h1>${title}</h1><p>${description}</p></div><div class="heading-actions">${actions}</div></div>`;
+ }
++const initials = (name) =>
++  (name || "")
++    .split(/\s+/)
++    .filter(Boolean)
++    .slice(0, 2)
++    .map((w) => w[0].toUpperCase())
++    .join("") || "G";
++let splashDone = false;
++function dismissSplash() {
++  if (splashDone) return;
++  splashDone = true;
++  const splash = $("#splash");
++  if (!splash) return;
++  // The splash shows the business name and place from the data, then fades.
++  splash.querySelector(".splash-name").textContent = state.business;
++  splash.querySelector(".splash-place").textContent =
++    state.place || "Tu negocio, en orden";
++  setTimeout(() => {
++    splash.classList.add("hide");
++    setTimeout(() => splash.remove(), 700);
++  }, 1400);
++}
+ function render() {
+   const unread = state.messages.filter((m) => !m.read).length;
+   const views = {
+@@ -214,8 +236,9 @@ function render() {
+     ai: aiPage,
+     production,
+   };
++  dismissSplash();
+   $("#app").innerHTML =
+-    `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span><small>EL ESPACIO DE TU NEGOCIO</small></span></a><div class="workspace"><div class="workspace-icon">G</div><div><strong>Gelato & Café</strong><small>Espacio de demostración</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
++    `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span><small>ARTE + GELATO · EN ORDEN</small></span></a><div class="workspace"><div class="workspace-icon">${esc(initials(state.business))}</div><div><strong>${esc(state.business)}</strong><small>${esc(state.place || "Tu negocio, en orden")}</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
+       ["home", "home", "Resumen"],
+       ["stock", "box", "Inventario"],
+       ["orders", "cart", "Compras"],
+@@ -232,7 +255,7 @@ function render() {
+       )
+       .join(
+         "",
+-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">GC</span><div><strong>Mi negocio</strong><small>Prototipo · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">Mi negocio <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local", production: "Producción" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">GC</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para el ritmo de tu negocio.<span>Demostración · no envía pedidos reales</span></footer></main>`;
++      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>GelatoStock · v${esc(appVersion)}</small></div></div></div></aside><main><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${{ home: "Resumen", stock: "Inventario", orders: "Compras", messages: "Mensajes", whatsapp: "WhatsApp", suppliers: "Proveedores", activity: "Actividad", settings: "Configuración", ai: "IA local", production: "Producción" }[page]}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
+ }
+ async function refreshWhatsApp() {
+   if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)
+diff --git a/src/ui/views.js b/src/ui/views.js
+index 43ca97f..cfe31e6 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -18,7 +18,7 @@ function home() {
+       btn(icon("photo") + " Cargar foto", "photo") +
+         btn(icon("plus") + " Registrar stock", "count", "primary"),
+     ) +
+-    `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> TU RESUMEN DE HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepará la reposición y seguí con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
++    `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> ARTE + GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepará la reposición y seguí con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
+  ${homeNotices()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong><small>Todo tu inventario</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Precios de demostración</small></div></article></section>
+  <div class="dashboard-grid"><section class="panel"><div class="panel-heading"><div><h2>Un vistazo al inventario</h2><p>Los productos que necesitan atención.</p></div><button class="text-button" data-nav="stock">Ver inventario ${icon("arrow")}</button></div>${productTable(low().slice(0, 5), true)}</section><div class="right-stack"><section class="panel inbox-preview"><div class="panel-heading"><h2>Tu bandeja de entrada</h2><span class="count-bubble">${important.length}</span></div>${
+    important.length
+@@ -428,6 +428,6 @@ function settings() {
+             ? `<p class="muted">Y ${state.learned.length - 30} más.</p>`
+             : "")
+         : '<p class="muted">Todavía no has corregido ninguna lectura.</p>'
+-    }</section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
++    }</section><section class="panel settings-card"><h2>Identidad del negocio</h2><p>El nombre y el lugar aparecen en la barra lateral, en los mensajes de pedido y en las exportaciones.</p><p><strong>${esc(state.business)}</strong>${state.place ? " · " + esc(state.place) : ""}</p>${btn("Editar identidad", "businessEditor", "secondary")}</section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+   );
+ }
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index f82c401..fcebe7a 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -580,7 +580,7 @@ test("envío real registra destino, texto y hora en el pedido sin tocar stock",
+   s = apply(s, { type: "authorize", revision: s.revision });
+   const o = s.orders[0];
+   const text = orderMessage(s, o.id);
+-  assert.match(text, /pedido GS-\d+ de Gelato & Café/);
++  assert.match(text, /pedido GS-\d+ de Artello/);
+   assert.match(text, /1 × Leche entera \(6 L por presentación, 6 L\)/);
+   const stock = s.products.map((p) => p.stock);
+   s = apply(s, {
+@@ -812,3 +812,18 @@ test("corregir una lectura la recuerda y se aplica a mensajes iguales o casi igu
+   assert.equal(done.learned.length, 0);
+   assert.equal(done.messages[0].interpretation.needsReading, true);
+ });
++
++test("la identidad del negocio se edita y aparece en el texto de los pedidos", () => {
++  const { orderMessage } = require("../src/domain.cjs");
++  let s = apply(seed(), {
++    type: "business",
++    name: "Heladería Prueba",
++    place: "Palma",
++  });
++  assert.equal(s.business, "Heladería Prueba");
++  assert.equal(s.place, "Palma");
++  s = apply(s, { type: "cart", product: "p2", packs: 1 });
++  s = apply(s, { type: "authorize", revision: s.revision });
++  assert.match(orderMessage(s, s.orders[0].id), /de Heladería Prueba/);
++  assert.throws(() => apply(s, { type: "business", name: "", place: "" }));
++});

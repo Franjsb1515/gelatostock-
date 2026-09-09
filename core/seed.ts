@@ -188,7 +188,8 @@ export function seed(): State {
   return {
     version: 1,
     revision: 0,
-    business: "Gelato & Café",
+    business: "Artello",
+    place: "Palma de Mallorca",
     demo: true,
     products,
     suppliers: [

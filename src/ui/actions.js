@@ -765,6 +765,36 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "businessEditor") {
+    modal(
+      "Identidad del negocio",
+      "Solo texto: la marca visual de la app es propia y no usa logotipos de terceros.",
+      field(
+        "Nombre del negocio",
+        "name",
+        state.business,
+        "text",
+        'required maxlength="80"',
+      ) +
+        field(
+          "Lugar",
+          "place",
+          state.place || "",
+          "text",
+          'maxlength="80" placeholder="Palma de Mallorca"',
+        ),
+      async (f) =>
+        mutate(
+          {
+            type: "business",
+            name: f.get("name"),
+            place: f.get("place") || "",
+          },
+          "Identidad guardada.",
+        ),
+    );
+    return;
+  }
   if (name === "exportCsv") {
     try {
       const r = await request("/api/export", {});

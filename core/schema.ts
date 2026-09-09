@@ -210,6 +210,7 @@ export const stateSchema = z.object({
   version: z.literal(1),
   revision: z.number().int().min(0),
   business: text(80),
+  place: z.string().max(80).default(""),
   demo: z.literal(true),
   products: z.array(productSchema).max(100000),
   suppliers: z.array(supplierSchema).max(100000),
@@ -350,6 +351,11 @@ export const actionSchema = z.intersection(
       ...recipeFields,
     }),
     z.object({ type: z.literal("deleteRecipe"), id: idSchema }),
+    z.object({
+      type: z.literal("business"),
+      name: text(80),
+      place: z.string().trim().max(80).default(""),
+    }),
     z.object({
       type: z.literal("purge"),
       before: at,

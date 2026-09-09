@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.13.0 — 2026-09-09 · sesión 022
+
+Identidad visual para la propuesta a Artello (Palma de Mallorca): paleta propia inspirada en su sabor «Mediterraneo» (pistacho, rosa, azafrán) sobre crema de casco antiguo y acero; tipografía serif en títulos; pantalla de inicio «arte + gelato» con el nombre y el lugar del negocio; nombre y lugar editables en Configuración y presentes en barra lateral, migas, pie, pedidos y exportaciones. No se usa el logotipo ni activos de la marca real: la marca visual es original.
+
+106 pruebas, ejecutable 0.13.0. Informe reports/2026-09-09T11-26-40-250Z-identidad-artello.md.
+
 ## 0.12.0 — 2026-09-09 · sesión 021
 
 La app aprende de tus correcciones: «Corregir lectura» en un mensaje guarda tu categoría y la aplica a mensajes iguales o casi iguales (frase normalizada, coincidencia exacta o muy alta), con listado y olvido en Configuración; no entrena ningún modelo. Reglas ampliadas con tres categorías nuevas (cierre o vacaciones, pago o factura pendiente, documento enviado) y muchos escenarios más: horas («antes de las 12», «a primera hora»), fechas con mes («3 de octubre»), abreviaturas («mñn»), faltas de ortografía («kedan»), promociones sin lectura obligatoria, peticiones («devuélveme», «necesito el CIF»), abonos y reclamaciones. Corpus nuevo de 40 escenarios: 21/40 antes, 40/40 después; corpus anterior 80/80. Base SQLite versión 3 (tabla learned).

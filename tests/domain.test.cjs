@@ -580,7 +580,7 @@ test("envío real registra destino, texto y hora en el pedido sin tocar stock", 
   s = apply(s, { type: "authorize", revision: s.revision });
   const o = s.orders[0];
   const text = orderMessage(s, o.id);
-  assert.match(text, /pedido GS-\d+ de Gelato & Café/);
+  assert.match(text, /pedido GS-\d+ de Artello/);
   assert.match(text, /1 × Leche entera \(6 L por presentación, 6 L\)/);
   const stock = s.products.map((p) => p.stock);
   s = apply(s, {
@@ -811,4 +811,19 @@ test("corregir una lectura la recuerda y se aplica a mensajes iguales o casi igu
   });
   assert.equal(done.learned.length, 0);
   assert.equal(done.messages[0].interpretation.needsReading, true);
+});
+
+test("la identidad del negocio se edita y aparece en el texto de los pedidos", () => {
+  const { orderMessage } = require("../src/domain.cjs");
+  let s = apply(seed(), {
+    type: "business",
+    name: "Heladería Prueba",
+    place: "Palma",
+  });
+  assert.equal(s.business, "Heladería Prueba");
+  assert.equal(s.place, "Palma");
+  s = apply(s, { type: "cart", product: "p2", packs: 1 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  assert.match(orderMessage(s, s.orders[0].id), /de Heladería Prueba/);
+  assert.throws(() => apply(s, { type: "business", name: "", place: "" }));
 });

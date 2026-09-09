@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.12.0
+# GelatoStock · prototipo 0.13.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.12.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.13.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.12.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.13.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -23,7 +23,7 @@ No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Par
 9. Crear y restaurar copias en Configuración.
 10. Consultar el historial de movimientos y cerrar/reabrir sin perder datos.
 
-Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.12.0 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
+Todos los proveedores, precios y datos iniciales son ficticios. La aplicación no realiza pagos. Desde 0.13.0 puede enviar un pedido por WhatsApp solo si tú lo confirmas en pantalla, al número de la ficha del proveedor autorizado para la cuenta vinculada.
 
 ## Qué está pendiente
 
@@ -115,40 +115,43 @@ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Cont
 
 Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
 
-## Auditoría y mejora continua en 0.12.0
+## Auditoría y mejora continua en 0.13.0
 La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
 
-## Chat de dudas en 0.12.0
+## Chat de dudas en 0.13.0
 IA local incluye un chat para preguntar cómo usar la app o qué dice el texto pegado en el editor. Responde el modelo local a partir de una guía fija y del texto del editor si se marca la casilla; no consulta el inventario ni los pedidos, no ejecuta acciones y sus respuestas son orientativas. Cada respuesta puede tardar de 30 segundos a más de un minuto en este equipo. El chat se conserva solo mientras la ventana está abierta.
 
-## Producción y respuestas de proveedores en 0.12.0
+## Producción y respuestas de proveedores en 0.13.0
 Producción: crea recetas (rinde X kg, ingredientes en su unidad base) y registra los kilos producidos por día. La app propone el consumo; corrígelo y aprueba para descontar ingredientes y sumar el producto terminado. La hoja diaria muestra kilos por gelato. Guía: docs/PRODUCCION_Y_RECETAS.md.
 
 Mensajes: cada respuesta de proveedor se lee con reglas (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y se marca si debes leerla; las fechas como «el lunes» se resuelven. En Resumen aparece cuántos mensajes debes leer y en Control de entregas las respuestas vinculadas a cada pedido. «Segunda lectura con IA local» pide al modelo una categoría como propuesta; no cambia pedidos ni stock.
 
-## Envío real por WhatsApp en 0.12.0
+## Envío real por WhatsApp en 0.13.0
 En Compras → Control de entregas, un pedido pendiente tiene «Enviar por WhatsApp». Se muestra el texto exacto y el destinatario; al confirmar se envía una sola vez desde la cuenta vinculada por QR. Requisitos: WhatsApp conectado y el número del proveedor autorizado en WhatsApp → Autorizar chat. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a la pantalla WhatsApp y se lee por reglas. Prueba primero con un número propio.
 
-## Diagnóstico de WhatsApp en 0.12.0
+## Diagnóstico de WhatsApp en 0.13.0
 La pantalla WhatsApp muestra «Diagnóstico del canal» con los últimos eventos técnicos (remitente resuelto, autorizado o no, enviado, ignorado y por qué), sin contenido de mensajes, y un botón «Enviar mensaje de prueba» a un chat autorizado. Si un mensaje no aparece, ese diagnóstico dice el motivo.
 
-## WhatsApp comprobado en 0.12.0
+## WhatsApp comprobado en 0.13.0
 Envío y recepción reales verificados con dos números del propietario: la app envió un mensaje desde la cuenta vinculada y recibió la respuesta. Si un envío aparece como no confirmado, el diagnóstico del canal indica el motivo.
 
-## Mejora general en 0.12.0
+## Mejora general en 0.13.0
 Los mensajes de WhatsApp de proveedores autorizados aparecen también en Mensajes, con su lectura por reglas; si responden al pedido que les enviaste y es el único en curso, quedan vinculados y el pedido muestra la entrega prevista. La app hace una copia automática diaria (30 últimas en data/backups) y lo indica en Configuración. Puedes confirmar el tipo de documento de una foto desde IA local. El código de la interfaz está en src/ui/*.js.
 
-## Ventas y mermas en 0.12.0
+## Ventas y mermas en 0.13.0
 En Producción, la tabla «Ventas y mermas del día» registra kilos vendidos o desechados de cada producto terminado; cada cantidad crea una salida o merma en el historial, reversible como cualquier movimiento.
 
-## Conexión automática y avisos en 0.12.0
+## Conexión automática y avisos en 0.13.0
 En WhatsApp, «Conectar al abrir: sí» hace que la app reconecte sola al arrancar con la sesión guardada; cuando un proveedor autorizado escribe, Windows muestra una notificación y al pulsarla vuelve a la app. Configuración incluye «Primeros pasos».
 
-## Historial, reconexión y CSV en 0.12.0
+## Historial, reconexión y CSV en 0.13.0
 Al conectar WhatsApp, la app revisa los últimos mensajes de cada chat autorizado e importa los que llegaron con la app cerrada (texto). Si la sesión se cae y «Conectar al abrir» está activo, reintenta sola. Configuración → «Exportar CSV» crea inventario y movimientos en data/exportaciones para hoja de cálculo o gestoría.
 
-## Recetario protegido y limpieza en 0.12.0
+## Recetario protegido y limpieza en 0.13.0
 Configuración → «Recetario protegido»: pon una contraseña y la pantalla Producción pedirá desbloqueo (30 minutos); sin ella no se pueden crear recetas ni producir. Protege la pantalla dentro de la app, no cifra el disco; los movimientos de stock siguen visibles en Actividad. Configuración → «Limpieza periódica»: elige 7, 14, 30 o 90 días para borrar actividad y conversaciones antiguas (se conservan las 50 entradas recientes, los movimientos y las copias). Si olvidas la contraseña: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.
 
-## Aprendizaje por correcciones en 0.12.0
+## Aprendizaje por correcciones en 0.13.0
 En un mensaje, «Corregir lectura» te deja elegir qué quiso decir el proveedor (falta de producto, cancelación, cierre o vacaciones, pago, cambio, pregunta, documento, entrega, confirmación). La app lo recuerda y lo aplica a mensajes iguales o casi iguales; lo aprendido se ve y se olvida en Configuración. No es entrenamiento del modelo: son tus decisiones. Las reglas también entienden ahora horas, fechas con mes, abreviaturas y faltas de ortografía habituales.
+
+## Identidad visual en 0.13.0
+La app se presenta como propuesta para Artello (Palma de Mallorca) con una identidad propia: paleta «Mediterraneo» (pistacho, rosa y azafrán) sobre crema y acero, títulos en serif y una pantalla de inicio «arte + gelato». El nombre y el lugar se editan en Configuración → Identidad del negocio. No se incluyen logotipos ni materiales de la marca real.
