@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.15.1
+# GelatoStock · prototipo 0.16.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.15.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.16.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.15.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.16.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -164,3 +164,6 @@ Toda la interfaz sigue un sistema documentado en docs/DISENO_SISTEMA.md: paleta 
 
 ## Mensajes, decisiones y guía en 0.15.0
 La pantalla Mensajes muestra arriba «Qué hacer ahora», agrupa las conversaciones por proveedor y en cada mensaje ofrece respuestas rápidas por WhatsApp (texto visible y editable, un envío) y «Decidir y cerrar» para anotar la decisión del día. La app aprende a leer mensajes parecidos cuando corriges una lectura; nunca aprende decisiones. La pantalla «Guía» reproduce docs/GUIA_USO.md dentro de la app.
+
+## IA con reglas primero y compra en webs en 0.16.0
+La lectura de documentos la hacen reglas deterministas sobre el título (con tolerancia a OCR) y el modelo local da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. Corpus sintético de 51 documentos: 51/51 combinado · reglas 51/51 · modelo solo 38/51 · 6.4 s por lectura reforzada. El modelo se mantiene cargado unos minutos y responde solo con el tipo, lo que acorta cada lectura. Los proveedores pueden tener una web de compra (https): el carrito ofrece la lista copiable y abre la web; la app no entra ni paga.

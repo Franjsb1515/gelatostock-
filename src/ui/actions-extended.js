@@ -122,6 +122,13 @@ async function extendedAction(name, el) {
           "tel",
           'placeholder="+34…" maxlength="30"',
         ) +
+        field(
+          "Web de compra (por ejemplo Makro)",
+          "web",
+          s.web || "",
+          "url",
+          'placeholder="https://…" maxlength="200"',
+        ) +
         `<label class="field">Otros nombres en documentos (uno por línea)<textarea name="aliases" maxlength="1000">${esc(s.aliases || "")}</textarea></label>` +
         field(
           "Iniciales",

@@ -3,6 +3,14 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createHash } = require("node:crypto");
 const { z } = require("zod");
+const os = require("node:os");
+// Threads for ONNX inside the worker, measured on a 16-thread i7 (P+E cores): 2 threads ≈ 19 s
+// per reading, 4 ≈ 17 s, 6 ≈ 50 s (oversubscription). A quarter of the logical CPUs, 2 to 4.
+// Override with GELATO_AI_THREADS to tune another machine.
+const aiThreads =
+  Number(process.env.GELATO_AI_THREADS) ||
+  Math.max(2, Math.min(4, Math.floor(os.cpus().length / 4)));
+const IDLE_MS = 3 * 60 * 1000;
 const { reviewReading } = require("./ai-review.cjs");
 const manifest = require("../runtime/ai-model.json");
 const inputSchema = z
@@ -48,7 +56,9 @@ const resultSchema = z
           "otro",
         ]),
       ),
-    evidencia: z.string().min(1).max(1500),
+    // Never displayed: the excerpt shown comes from the original. Optional so the model can
+    // answer with the type alone (shorter output, ~4x faster on CPU).
+    evidencia: z.string().max(1500).optional(),
   })
   .strict();
 function parseResult(raw, original) {
@@ -154,6 +164,9 @@ class LocalAI {
   constructor() {
     this.job = null;
     this.verified = false;
+    this.worker = null;
+    this.idleTimer = null;
+    this.seq = 0;
   }
   async verify() {
     if (this.verified) return;
@@ -183,19 +196,60 @@ class LocalAI {
     }
     this.verified = true;
   }
-  // One worker per job: receives only validated data, returns only strings.
+  async terminateWorker() {
+    clearTimeout(this.idleTimer);
+    this.idleTimer = null;
+    const w = this.worker;
+    this.worker = null;
+    if (w) await w.terminate().catch(() => {});
+  }
+  // One persistent worker: the model loads once and stays for a few minutes of inactivity.
+  // It receives only validated data and returns only strings.
+  async ensureWorker() {
+    if (this.worker) return this.worker;
+    const worker = new Worker(path.join(__dirname, "ai-worker.cjs"), {
+      workerData: { threads: aiThreads },
+      resourceLimits: { maxOldGenerationSizeMb: 512 },
+    });
+    this.worker = worker;
+    worker.on("exit", () => {
+      if (this.worker === worker) this.worker = null;
+    });
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(Error("La IA local tardó demasiado en cargar el modelo."));
+      }, 120000);
+      worker.once("message", (m) => {
+        clearTimeout(timer);
+        if (m.ready) resolve();
+        else reject(Error(m.error || "No se pudo iniciar la IA local."));
+      });
+      worker.once("error", () => {
+        clearTimeout(timer);
+        reject(Error("No se pudo iniciar la IA local."));
+      });
+      worker.once("exit", () => {
+        clearTimeout(timer);
+        reject(Error("El proceso de IA se interrumpió antes de responder."));
+      });
+    }).catch(async (e) => {
+      await this.terminateWorker();
+      throw e;
+    });
+    return worker;
+  }
   async run(workerData, expectedOutputs) {
     if (this.job) throw Error("Ya hay una lectura de IA en curso.");
     const job = { cancelled: false };
     this.job = job;
+    clearTimeout(this.idleTimer);
     try {
       await this.verify();
       if (job.cancelled) throw Error("Lectura cancelada.");
-      const worker = new Worker(path.join(__dirname, "ai-worker.cjs"), {
-        workerData,
-        resourceLimits: { maxOldGenerationSizeMb: 512 },
-      });
+      const worker = await this.ensureWorker();
+      if (job.cancelled) throw Error("Lectura cancelada.");
       job.worker = worker;
+      const id = ++this.seq;
       return await new Promise((resolve, reject) => {
         job.reject = reject;
         job.timer = setTimeout(
@@ -203,7 +257,9 @@ class LocalAI {
             reject(Error("La IA superó 4 minutos. Prueba un texto más corto.")),
           240000,
         );
-        worker.once("message", (m) => {
+        const onMessage = (m) => {
+          if (m.id !== id) return;
+          cleanup();
           if (m.error) {
             reject(Error(m.error));
             return;
@@ -217,18 +273,40 @@ class LocalAI {
             return;
           }
           resolve(m.outputs);
-        });
-        worker.once("error", () =>
-          reject(Error("No se pudo iniciar la IA local.")),
-        );
-        worker.once("exit", () =>
-          reject(Error("El proceso de IA se interrumpió antes de responder.")),
-        );
+        };
+        const onError = () => {
+          cleanup();
+          reject(Error("No se pudo iniciar la IA local."));
+        };
+        const onExit = () => {
+          cleanup();
+          reject(Error("El proceso de IA se interrumpió antes de responder."));
+        };
+        const cleanup = () => {
+          worker.off("message", onMessage);
+          worker.off("error", onError);
+          worker.off("exit", onExit);
+        };
+        job.cleanup = cleanup;
+        worker.on("message", onMessage);
+        worker.once("error", onError);
+        worker.once("exit", onExit);
+        worker.postMessage({ id, ...workerData });
       });
+    } catch (e) {
+      // A failed or cancelled job leaves the worker in an unknown state: start clean next time.
+      if (job.cleanup) job.cleanup();
+      await this.terminateWorker();
+      throw e;
     } finally {
       clearTimeout(job.timer);
-      if (job.worker) await job.worker.terminate();
       if (this.job === job) this.job = null;
+      if (this.worker) {
+        this.idleTimer = setTimeout(() => {
+          if (!this.job) this.terminateWorker();
+        }, IDLE_MS);
+        if (this.idleTimer.unref) this.idleTimer.unref();
+      }
     }
   }
   get modelLabel() {
@@ -274,9 +352,20 @@ class LocalAI {
         "Escribe una pregunta de hasta 1.500 caracteres; el chat conserva como máximo los últimos 6 mensajes.",
       );
     const started = Date.now();
+    const { combineChat } = require("./ai-guide.cjs");
+    const question = parsed.data.messages.at(-1).content;
+    // Rules first: action requests and questions the guide covers are answered without the model.
+    const direct = parsed.data.document ? null : combineChat(question, null);
+    if (direct)
+      return {
+        ...direct,
+        review: true,
+        milliseconds: Date.now() - started,
+        model: "Reglas sobre la guía, sin modelo",
+      };
     const raw = await this.run({ kind: "chat", ...parsed.data }, 1);
     return {
-      answer: sanitizeAnswer(raw[0]),
+      ...combineChat(question, sanitizeAnswer(raw[0])),
       review: true,
       milliseconds: Date.now() - started,
       model: this.modelLabel,
@@ -284,10 +373,11 @@ class LocalAI {
   }
   async cancel() {
     const job = this.job;
-    if (!job) return;
-    job.cancelled = true;
-    if (job.reject) job.reject(Error("Lectura cancelada."));
-    if (job.worker) await job.worker.terminate();
+    if (job) {
+      job.cancelled = true;
+      if (job.reject) job.reject(Error("Lectura cancelada."));
+    }
+    await this.terminateWorker();
   }
 }
 module.exports = {

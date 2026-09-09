@@ -1,0 +1,23 @@
+
+> appgelatostock@0.16.0 test:desktop
+> node scripts/desktop-smoke.cjs
+
+PASS: pantalla Documentos por proveedor con filtros y vínculo a pedido disponible.
+PASS: pedido 2 cajas de 6 L; recepción 4 L, pendiente 8 L; recepción final cierra el pedido.
+PASS: producción de 4 kg: consumo estimado (2 L leche) corregido a 1,5 L y aprobado; terminado +4 kg; nada cambió antes de aprobar.
+PASS: ventas y mermas del día descuentan producto terminado (1 kg vendido, 0,5 kg merma).
+PASS: respuesta de proveedor leída por reglas: falta de producto, fecha resuelta y marcada para leer.
+PASS: modelo local REAL en ejecutable, factura reconocida sin modificar stock.
+PASS: modelo local diferencia lista de precios de factura.
+PASS: chat de dudas (guía o modelo local) responde texto plano sin modificar stock: "Según la guía: Control de entregas: muestra por producto lo pedido, lo recibido y lo que falta recibir. Un pedido con entregas parciales sigue En curso hasta co"
+PASS: segunda lectura de respuesta de proveedor con modelo REAL anotada sin cambiar stock: ", Qwen3 0.6B · Q4 · CPU local): Sin interpretar · las lecturas discrepan: revisa tú · 20:43"
+PASS: cancelación desde la interfaz.
+PASS: OCR local automático de proveedor y propuesta en mensaje; búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.
+{"userData":"D:\\APPGELATOSTOCK\\work\\desktop-v8-8yHwbN\\runtime","sessionData":"D:\\APPGELATOSTOCK\\work\\desktop-v8-8yHwbN\\runtime"}
+ERRORES DE PÁGINA:
+console: Failed to load resource: the server responded with a status of 400 (Bad Request)
+REGISTRO IA:
+2026-09-09T23:43:43.950Z analisis modo=careful chars=87 ms=9080 tipo=factura
+2026-09-09T23:43:46.096Z analisis modo=standard chars=111 ms=1603 tipo=lista_precios
+2026-09-09T23:43:57.901Z analisis ERROR ms=24 Lectura cancelada.
+SMOKE_EXIT=0

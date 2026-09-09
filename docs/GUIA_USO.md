@@ -26,6 +26,7 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación 
 
 ## Compras
 - Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.
+- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.
 - Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.
 - Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.
 - Simular envío: para practicar sin canal real.

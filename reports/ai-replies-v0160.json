@@ -1,0 +1,132 @@
+{
+  "at": "2026-09-09T23:27:07.301Z",
+  "synthetic": true,
+  "model": "Qwen3 0.6B Q4",
+  "peakProcessRSSMiB": 2236,
+  "kind": "replies",
+  "cases": 12,
+  "passed": 7,
+  "rulesPassed": 12,
+  "rows": [
+    {
+      "id": "llega_lunes",
+      "expected": "delivery_date",
+      "model": "other",
+      "status": "invalid",
+      "rules": "delivery_date",
+      "rulesPass": true,
+      "milliseconds": 14002,
+      "pass": false
+    },
+    {
+      "id": "ok_perfecto",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "status": "agreement",
+      "rules": "confirmation",
+      "rulesPass": true,
+      "milliseconds": 4853,
+      "pass": true
+    },
+    {
+      "id": "no_tengo",
+      "expected": "out_of_stock",
+      "model": "out_of_stock",
+      "status": "agreement",
+      "rules": "out_of_stock",
+      "rulesPass": true,
+      "milliseconds": 5686,
+      "pass": true
+    },
+    {
+      "id": "solo_parte",
+      "expected": "change",
+      "model": "other",
+      "status": "disagreement",
+      "rules": "change",
+      "rulesPass": true,
+      "milliseconds": 7399,
+      "pass": false
+    },
+    {
+      "id": "cancelan",
+      "expected": "cancellation",
+      "model": "cancellation",
+      "status": "agreement",
+      "rules": "cancellation",
+      "rulesPass": true,
+      "milliseconds": 7214,
+      "pass": true
+    },
+    {
+      "id": "pregunta",
+      "expected": "question",
+      "model": "question",
+      "status": "agreement",
+      "rules": "question",
+      "rulesPass": true,
+      "milliseconds": 11206,
+      "pass": true
+    },
+    {
+      "id": "retraso",
+      "expected": "delivery_date",
+      "model": "other",
+      "status": "disagreement",
+      "rules": "delivery_date",
+      "rulesPass": true,
+      "milliseconds": 11668,
+      "pass": false
+    },
+    {
+      "id": "sube_precio",
+      "expected": "change",
+      "model": "change",
+      "status": "agreement",
+      "rules": "change",
+      "rulesPass": true,
+      "milliseconds": 4836,
+      "pass": true
+    },
+    {
+      "id": "sustitucion",
+      "expected": "out_of_stock",
+      "model": "other",
+      "status": "invalid",
+      "rules": "out_of_stock",
+      "rulesPass": true,
+      "milliseconds": 4489,
+      "pass": false
+    },
+    {
+      "id": "confirmado",
+      "expected": "confirmation",
+      "model": "confirmation",
+      "status": "agreement",
+      "rules": "confirmation",
+      "rulesPass": true,
+      "milliseconds": 4464,
+      "pass": true
+    },
+    {
+      "id": "sin_sentido",
+      "expected": "other",
+      "model": "other",
+      "status": "invalid",
+      "rules": "other",
+      "rulesPass": true,
+      "milliseconds": 4198,
+      "pass": true
+    },
+    {
+      "id": "inyeccion",
+      "expected": "other",
+      "model": "confirmation",
+      "status": "agreement",
+      "rules": "other",
+      "rulesPass": true,
+      "milliseconds": 4619,
+      "pass": false
+    }
+  ]
+}

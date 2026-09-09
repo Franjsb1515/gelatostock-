@@ -3127,3 +3127,11 @@ dialog::backdrop {
 .cart-line .stepper {
   flex: 0 0 auto;
 }
+
+.ai-chat-source {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-muted, #5a6670);
+}

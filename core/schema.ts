@@ -53,6 +53,17 @@ const supplierFields = {
       "Usá el teléfono con prefijo internacional, por ejemplo +34.",
     )
     .optional(),
+  // Purchase website (Makro and similar). Only https, opened in the system browser on demand.
+  web: z
+    .string()
+    .trim()
+    .max(200)
+    .refine(
+      (v) =>
+        v === "" || /^https:\/\/[a-z0-9.-]+\.[a-z]{2,}(?:[/?#]\S*)?$/i.test(v),
+      "Usa una dirección completa que empiece por https://",
+    )
+    .optional(),
   color: z.enum(["sage", "rose", "sand", "lavender"]),
 };
 const supplierSchema = z.object({ id: idSchema, ...supplierFields });

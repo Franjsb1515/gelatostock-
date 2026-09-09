@@ -100,10 +100,16 @@ async function action(name, el) {
     render();
     try {
       const r = await request("/api/ai/chat", {
-        messages: aiChat.slice(-6),
+        messages: aiChat
+          .slice(-6)
+          .map((m) => ({ role: m.role, content: m.content })),
         ...(aiChatUseDoc && aiDraft.trim() ? { document: aiDraft } : {}),
       });
-      aiChat.push({ role: "assistant", content: r.answer });
+      aiChat.push({
+        role: "assistant",
+        content: r.answer,
+        excerpt: r.excerpt || "",
+      });
     } catch (e) {
       aiChatError = e.message;
       aiChat.pop();
@@ -378,6 +384,39 @@ async function action(name, el) {
   if (name === "suggest") {
     if (await mutate({ type: "suggest" }, "Reposición añadida al carrito."))
       nav("orders");
+    return;
+  }
+  if (name === "webList") {
+    const s = supplier(el.dataset.supplier);
+    const lines = state.cart
+      .map((l) => ({ l, p: product(l.product) }))
+      .filter(({ p }) => p.supplier === s.id)
+      .map(({ l, p }) => `${l.packs} × ${p.name} (${num(p.pack)} ${p.unit})`);
+    const text =
+      `Lista de compra · ${s.name} · ${new Date().toLocaleDateString("es-ES")}\n` +
+      lines.join("\n");
+    modal(
+      "Lista para comprar en " + s.name,
+      "Copia la lista y compra en la web con tu cuenta. La app no entra en la web ni paga: cuando llegue, registra la entrega en Control de entregas.",
+      `<label class="field">Lista<textarea name="list" readonly rows="${Math.min(12, lines.length + 2)}">${esc(text)}</textarea></label><div class="setting-actions">${btn("Copiar lista", "copyList", "secondary")}<a class="btn secondary" href="${esc(s.web)}" target="_blank" rel="noopener noreferrer">Abrir web de ${esc(s.name)}</a></div>`,
+      async () => true,
+      "Cerrar",
+    );
+    return;
+  }
+  if (name === "copyList") {
+    const t = $("#modal-form textarea[name=list]");
+    t.focus();
+    t.select();
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {}
+    toast(
+      ok
+        ? "Lista copiada. Pégala en la web o en un mensaje."
+        : "Selecciona el texto y cópialo con Ctrl+C.",
+    );
     return;
   }
   if (name === "addcart") {

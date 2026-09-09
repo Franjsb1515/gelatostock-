@@ -615,6 +615,7 @@ function createApp({
     server.listen(port, "127.0.0.1", () =>
       resolve({
         server,
+        store,
         whatsapp,
         ai,
         url: `http://127.0.0.1:${server.address().port}/?key=${token}`,

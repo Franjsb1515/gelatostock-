@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.15.1.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.16.0.
 
 ## Entregado y comprobado
 
@@ -40,7 +40,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Pantalla «Guía» dentro de la app generada desde docs/GUIA_USO.md (0.15.0).
 - [ ] Probar la respuesta rápida con los números propios del usuario (el envío está cubierto con cliente simulado; el flujo real de pedidos ya se probó en 0.9.3).
 - [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
-- [ ] Compra en webs (Makro España u otras): decidir alcance. Lo viable sin romper el modelo local: lista de compra por proveedor web copiable/exportable y enlace que abre la web; no automatizar la compra (sin API pública, requiere cuenta, credenciales y pago de la persona).
+- [x] Compra en webs (Makro u otras): lista copiable por proveedor y apertura de la web guardada; sin automatizar la compra (0.16.0).
+- [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
+- [ ] IA: chat con el modelo 0.6B sigue siendo lento (10–25 s); valorar respuestas por reglas para las preguntas frecuentes de la guía.
 - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
 - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
 

@@ -455,7 +455,7 @@ const assert = require("node:assert/strict");
     );
     assert.ok(
       (await window.locator(".ai-result").innerText()).includes(
-        "Dos lecturas coinciden",
+        "Dos lecturas del modelo coinciden",
       ),
     );
     assert.ok(
@@ -502,7 +502,7 @@ const assert = require("node:assert/strict");
       path: path.join(root, "output/playwright/v082-ia-chat.png"),
     });
     console.log(
-      "PASS: chat de dudas con modelo REAL responde texto plano sin modificar stock: " +
+      "PASS: chat de dudas (guía o modelo local) responde texto plano sin modificar stock: " +
         JSON.stringify(answer.slice(0, 160)),
     );
     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();

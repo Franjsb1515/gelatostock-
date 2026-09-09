@@ -932,3 +932,22 @@ test("decidir sobre un mensaje lo cierra con la decisión anotada, sin tocar ped
     apply(s, { type: "decide", id: s.messages[0].id, decision: "" }),
   );
 });
+
+test("proveedor: la web de compra solo admite direcciones https completas", () => {
+  const base = {
+    type: "supplier",
+    name: "Makro Palma",
+    initials: "MK",
+    category: "Mayorista",
+    delivery: "Recogida",
+    color: "sand",
+  };
+  assert.throws(
+    () => apply(seed(), { ...base, web: "http://www.makro.es" }),
+    /https/,
+  );
+  assert.throws(() => apply(seed(), { ...base, web: "makro.es" }), /https/);
+  const s = apply(seed(), { ...base, web: "https://www.makro.es/" });
+  assert.equal(s.suppliers.at(-1).web, "https://www.makro.es/");
+  assert.equal(apply(seed(), { ...base, web: "" }).suppliers.at(-1).web, "");
+});

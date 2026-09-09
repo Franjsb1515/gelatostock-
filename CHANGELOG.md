@@ -1,5 +1,15 @@
 # Registro de parches y sesiones
 
+## 0.16.0 — 2026-09-09 · sesión 027
+
+IA local, reglas primero: src/ai-review.cjs clasifica documentos por título normalizado (OCR: «F A C T U R A», «T0TAL»; títulos en las diez primeras líneas; proforma/presupuesto, abono/rectificativa/nota de crédito, factura/nº factura/simplificada, albarán/nota de entrega/delivery note, tarifa/lista de precios/catálogo, oferta/promoción) y reconoce mensajes por rasgos (saludo, pregunta, trato directo). El modelo Qwen3 0.6B pasa a segunda opinión: si discrepa, prevalecen las reglas y se avisa; si no hay título ni rasgos, el modelo solo decide tipos que no exigen título. Corpus nuevo tests/fixtures/ai-documents-2.json (40 documentos) más el de 11: 51/51 combinado · reglas 51/51 · modelo solo 38/51 · 6.4 s por lectura reforzada (0.15.1: 10/11 · 21 s por lectura reforzada).
+
+Velocidad: trabajador persistente (el modelo se carga una vez y se libera tras 3 min sin uso), hilos ajustados por equipo (2–4, GELATO_AI_THREADS para afinar) y salida del modelo reducida a {"tipo"} (la «evidencia» nunca se mostraba). Chat de dudas con recuperación de párrafos de la guía (src/ai-guide.cjs) y evaluación nueva de 16 preguntas: 16/16 · 0.6 s por respuesta. Respuestas de proveedores (12): modelo 7/12 · reglas 12/12 · 7.1 s.
+
+Compra en webs (Makro u otras) sin cuentas ni automatización: campo «Web de compra» (solo https) en la ficha del proveedor, enlace en Proveedores, y en el carrito «Lista para …» que muestra la lista copiable de ese proveedor y abre su web en el navegador del sistema (Electron solo permite abrir las webs guardadas en fichas; todo lo demás se deniega). La compra y el pago los hace la persona.
+
+Pruebas: 117. Informe reports/2026-09-09T23-43-12-728Z-ia-reglas-primero-y-webs.md.
+
 ## 0.15.1 — 2026-09-09 · sesión 026
 
 Botones − / + para cantidades: en las líneas del carrito (cambian el pedido al momento; llegar a 0 retira el producto), en «Añadir al carrito» (paquetes), en «Qué llegó» (cada pulsación suma o resta una presentación completa en unidad base, sin pasar de lo que falta), en «Registrar producción» (0,5 kg) y en «Entrada, salida o merma» (1 unidad). Ayudante stepperField en src/ui/forms.js y gestor único en src/ui/events.js que respeta min/max/decimales; el campo sigue siendo editable a mano. Prueba de escritorio ampliada (1 → 3 → 2 en el diálogo, +1 −1 en el carrito).

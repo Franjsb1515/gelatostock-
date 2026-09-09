@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, Notification } = require("electron");
+const { app, BrowserWindow, dialog, Notification, shell } = require("electron");
 const path = require("node:path");
 const fs = require("node:fs");
 const base = app.isPackaged
@@ -67,7 +67,20 @@ if (!app.requestSingleInstanceLock()) {
           spellcheck: false,
         },
       });
-      win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+      // Links with target=_blank never open windows here. A supplier's purchase website
+      // (https, saved in its card) opens in the system browser; anything else is denied.
+      win.webContents.setWindowOpenHandler(({ url }) => {
+        try {
+          const u = new URL(url);
+          const known = backend.store
+            .load()
+            .suppliers.some(
+              (s) => s.web && u.protocol === "https:" && url.startsWith(s.web),
+            );
+          if (known) shell.openExternal(url);
+        } catch {}
+        return { action: "deny" };
+      });
       win.webContents.on("will-navigate", (e, url) => {
         if (new URL(url).origin !== origin) e.preventDefault();
       });

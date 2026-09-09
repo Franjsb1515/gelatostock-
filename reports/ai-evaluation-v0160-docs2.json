@@ -1,0 +1,953 @@
+{
+  "at": "2026-09-09T23:23:30.232Z",
+  "synthetic": true,
+  "model": "Qwen3 0.6B Q4",
+  "peakProcessRSSMiB": 3052,
+  "kind": "documents-both-corpora",
+  "cases": 51,
+  "passed": 51,
+  "modelPassed": 38,
+  "rulesPassed": 51,
+  "meanMilliseconds": 6401,
+  "rows": [
+    {
+      "id": "factura",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "factura",
+      "modelPass": true,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "matched",
+      "milliseconds": 14443,
+      "pass": true
+    },
+    {
+      "id": "tarifa",
+      "expected": "lista_precios",
+      "tipo": "lista_precios",
+      "modelType": "lista_precios",
+      "modelPass": true,
+      "rulesType": "lista_precios",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 7111,
+      "pass": true
+    },
+    {
+      "id": "albaran",
+      "expected": "albaran",
+      "tipo": "albaran",
+      "modelType": "albaran",
+      "modelPass": true,
+      "rulesType": "albaran",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 7020,
+      "pass": true
+    },
+    {
+      "id": "peticion_factura",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 6863,
+      "pass": true
+    },
+    {
+      "id": "proforma",
+      "expected": "proforma",
+      "tipo": "proforma",
+      "modelType": "proforma",
+      "modelPass": true,
+      "rulesType": "proforma",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 5998,
+      "pass": true
+    },
+    {
+      "id": "rectificativa",
+      "expected": "abono",
+      "tipo": "abono",
+      "modelType": "abono",
+      "modelPass": true,
+      "rulesType": "abono",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 6362,
+      "pass": true
+    },
+    {
+      "id": "oferta",
+      "expected": "oferta",
+      "tipo": "oferta",
+      "modelType": "oferta",
+      "modelPass": true,
+      "rulesType": "oferta",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 5850,
+      "pass": true
+    },
+    {
+      "id": "cancelacion",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 5721,
+      "pass": true
+    },
+    {
+      "id": "ambiguo",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 5036,
+      "pass": true
+    },
+    {
+      "id": "inyeccion",
+      "expected": "otro",
+      "tipo": "otro",
+      "modelType": "factura",
+      "modelPass": false,
+      "rulesType": "otro",
+      "rulesConfidence": "baja",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 6379,
+      "pass": true
+    },
+    {
+      "id": "total_incoherente",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "factura",
+      "modelPass": true,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "mismatch",
+      "milliseconds": 7103,
+      "pass": true
+    },
+    {
+      "id": "factura_makro_ticket",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "mensaje",
+      "modelPass": false,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "matched",
+      "milliseconds": 9062,
+      "pass": true
+    },
+    {
+      "id": "factura_numero_lateral",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "mensaje",
+      "modelPass": false,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "matched",
+      "milliseconds": 9047,
+      "pass": true
+    },
+    {
+      "id": "factura_ocr_ruido",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "factura",
+      "modelPass": true,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 7342,
+      "pass": true
+    },
+    {
+      "id": "factura_sin_desglose",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "oferta",
+      "modelPass": false,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 7185,
+      "pass": true
+    },
+    {
+      "id": "factura_recibo",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "mensaje",
+      "modelPass": false,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "matched",
+      "milliseconds": 8693,
+      "pass": true
+    },
+    {
+      "id": "proforma_mayuscula",
+      "expected": "proforma",
+      "tipo": "proforma",
+      "modelType": "proforma",
+      "modelPass": true,
+      "rulesType": "proforma",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "matched",
+      "milliseconds": 7503,
+      "pass": true
+    },
+    {
+      "id": "proforma_guion",
+      "expected": "proforma",
+      "tipo": "proforma",
+      "modelType": "oferta",
+      "modelPass": false,
+      "rulesType": "proforma",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 6269,
+      "pass": true
+    },
+    {
+      "id": "presupuesto",
+      "expected": "proforma",
+      "tipo": "proforma",
+      "modelType": "oferta",
+      "modelPass": false,
+      "rulesType": "proforma",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 6246,
+      "pass": true
+    },
+    {
+      "id": "proforma_en_segunda_linea",
+      "expected": "proforma",
+      "tipo": "proforma",
+      "modelType": "proforma",
+      "modelPass": true,
+      "rulesType": "proforma",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 6364,
+      "pass": true
+    },
+    {
+      "id": "abono_nota",
+      "expected": "abono",
+      "tipo": "abono",
+      "modelType": "abono",
+      "modelPass": true,
+      "rulesType": "abono",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 6821,
+      "pass": true
+    },
+    {
+      "id": "abono_rectificativa_minuscula",
+      "expected": "abono",
+      "tipo": "abono",
+      "modelType": "abono",
+      "modelPass": true,
+      "rulesType": "abono",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "matched",
+      "milliseconds": 6714,
+      "pass": true
+    },
+    {
+      "id": "abono_nota_credito",
+      "expected": "abono",
+      "tipo": "abono",
+      "modelType": "oferta",
+      "modelPass": false,
+      "rulesType": "abono",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 6440,
+      "pass": true
+    },
+    {
+      "id": "abono_encabezado_abono",
+      "expected": "abono",
+      "tipo": "abono",
+      "modelType": "abono",
+      "modelPass": true,
+      "rulesType": "abono",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 6253,
+      "pass": true
+    },
+    {
+      "id": "albaran_entrega",
+      "expected": "albaran",
+      "tipo": "albaran",
+      "modelType": "albaran",
+      "modelPass": true,
+      "rulesType": "albaran",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 9496,
+      "pass": true
+    },
+    {
+      "id": "albaran_sin_tilde",
+      "expected": "albaran",
+      "tipo": "albaran",
+      "modelType": "albaran",
+      "modelPass": true,
+      "rulesType": "albaran",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 6888,
+      "pass": true
+    },
+    {
+      "id": "albaran_nota_entrega",
+      "expected": "albaran",
+      "tipo": "albaran",
+      "modelType": "mensaje",
+      "modelPass": false,
+      "rulesType": "albaran",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 6306,
+      "pass": true
+    },
+    {
+      "id": "albaran_valorado",
+      "expected": "albaran",
+      "tipo": "albaran",
+      "modelType": "albaran",
+      "modelPass": true,
+      "rulesType": "albaran",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 7740,
+      "pass": true
+    },
+    {
+      "id": "tarifa_2026",
+      "expected": "lista_precios",
+      "tipo": "lista_precios",
+      "modelType": "lista_precios",
+      "modelPass": true,
+      "rulesType": "lista_precios",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 7138,
+      "pass": true
+    },
+    {
+      "id": "lista_precios_catalogo",
+      "expected": "lista_precios",
+      "tipo": "lista_precios",
+      "modelType": "lista_precios",
+      "modelPass": true,
+      "rulesType": "lista_precios",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 10161,
+      "pass": true
+    },
+    {
+      "id": "tarifa_ocr",
+      "expected": "lista_precios",
+      "tipo": "lista_precios",
+      "modelType": "lista_precios",
+      "modelPass": true,
+      "rulesType": "lista_precios",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 6915,
+      "pass": true
+    },
+    {
+      "id": "oferta_promocion",
+      "expected": "oferta",
+      "tipo": "oferta",
+      "modelType": "oferta",
+      "modelPass": true,
+      "rulesType": "oferta",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 6604,
+      "pass": true
+    },
+    {
+      "id": "oferta_descuento",
+      "expected": "oferta",
+      "tipo": "oferta",
+      "modelType": "oferta",
+      "modelPass": true,
+      "rulesType": "oferta",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 5915,
+      "pass": true
+    },
+    {
+      "id": "oferta_flash",
+      "expected": "oferta",
+      "tipo": "oferta",
+      "modelType": "oferta",
+      "modelPass": true,
+      "rulesType": "oferta",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 5509,
+      "pass": true
+    },
+    {
+      "id": "mensaje_entrega",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 5817,
+      "pass": true
+    },
+    {
+      "id": "mensaje_pregunta_factura",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 5365,
+      "pass": true
+    },
+    {
+      "id": "mensaje_falta",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 5795,
+      "pass": true
+    },
+    {
+      "id": "mensaje_pago",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 5831,
+      "pass": true
+    },
+    {
+      "id": "mensaje_albaran_adjunto",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 5189,
+      "pass": true
+    },
+    {
+      "id": "mensaje_oferta_conversacion",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 5472,
+      "pass": true
+    },
+    {
+      "id": "mensaje_cita",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 5964,
+      "pass": true
+    },
+    {
+      "id": "otro_vacio_util",
+      "expected": "otro",
+      "tipo": "otro",
+      "modelType": "mensaje",
+      "modelPass": false,
+      "rulesType": "otro",
+      "rulesConfidence": "baja",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 3861,
+      "pass": true
+    },
+    {
+      "id": "otro_inyeccion_json",
+      "expected": "otro",
+      "tipo": "otro",
+      "modelType": "factura",
+      "modelPass": false,
+      "rulesType": "otro",
+      "rulesConfidence": "baja",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "not_checked",
+      "milliseconds": 3545,
+      "pass": true
+    },
+    {
+      "id": "otro_mezcla",
+      "expected": "otro",
+      "tipo": "otro",
+      "modelType": "mensaje",
+      "modelPass": false,
+      "rulesType": "otro",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 4764,
+      "pass": true
+    },
+    {
+      "id": "otro_articulo",
+      "expected": "otro",
+      "tipo": "otro",
+      "modelType": "mensaje",
+      "modelPass": false,
+      "rulesType": "otro",
+      "rulesConfidence": "baja",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 3904,
+      "pass": true
+    },
+    {
+      "id": "factura_texto_largo",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "factura",
+      "modelPass": true,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "arithmetic": "matched",
+      "milliseconds": 6642,
+      "pass": true
+    },
+    {
+      "id": "factura_total_mal",
+      "expected": "factura",
+      "tipo": "factura",
+      "modelType": "factura",
+      "modelPass": true,
+      "rulesType": "factura",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "arithmetic": "mismatch",
+      "milliseconds": 4673,
+      "pass": true
+    },
+    {
+      "id": "mensaje_menciona_proforma",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 3944,
+      "pass": true
+    },
+    {
+      "id": "mensaje_menciona_abono",
+      "expected": "mensaje",
+      "tipo": "mensaje",
+      "modelType": "mensaje",
+      "modelPass": true,
+      "rulesType": "mensaje",
+      "rulesConfidence": "media",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 3303,
+      "pass": true
+    },
+    {
+      "id": "albaran_en_ingles",
+      "expected": "albaran",
+      "tipo": "albaran",
+      "modelType": "albaran",
+      "modelPass": true,
+      "rulesType": "albaran",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": true,
+      "verification": {
+        "mode": "careful",
+        "status": "disagreement"
+      },
+      "milliseconds": 3990,
+      "pass": true
+    },
+    {
+      "id": "lista_precios_mensaje_adjunto",
+      "expected": "lista_precios",
+      "tipo": "lista_precios",
+      "modelType": "lista_precios",
+      "modelPass": true,
+      "rulesType": "lista_precios",
+      "rulesConfidence": "alta",
+      "rulesPass": true,
+      "invalid": false,
+      "needsAttention": false,
+      "verification": {
+        "mode": "careful",
+        "status": "agreement"
+      },
+      "milliseconds": 3871,
+      "pass": true
+    }
+  ]
+}
