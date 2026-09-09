@@ -15,12 +15,12 @@ async function extendedAction(name, el) {
           ["exit", "Salida / consumo"],
           ["waste", "Merma / pérdida"],
         ]) +
-        field(
+        stepperField(
           "Cantidad en unidad base",
           "value",
           1,
-          "number",
           'min="0.001" max="1000000" step="0.001" required',
+          "1",
         ) +
         field(
           "Motivo",

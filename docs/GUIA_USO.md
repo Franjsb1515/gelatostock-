@@ -25,7 +25,7 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación 
 - Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).
 
 ## Compras
-- Carrito por proveedor: revisa cantidades y presentaciones; «Autorizar» crea los pedidos.
+- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.
 - Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.
 - Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.
 - Simular envío: para practicar sin canal real.

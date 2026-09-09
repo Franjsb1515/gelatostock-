@@ -3,6 +3,14 @@
 function field(label, name, value = "", type = "text", extra = "") {
   return `<label class="field">${esc(label)}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;
 }
+// Numeric field with − / + buttons. `stepBy` is the amount each press adds (default: the input step).
+let stepperSeq = 0;
+function stepperField(label, name, value = 1, extra = "", stepBy = "") {
+  const id = "stepper-" + ++stepperSeq;
+  // The buttons live outside the <label> so they don't become part of the field's accessible name.
+  return `<div class="field"><label for="${id}">${esc(label)}</label><div class="stepper"><button type="button" class="step" data-step="-1" aria-label="Menos ${esc(label)}">−</button><input id="${id}" class="quantity" name="${name}" type="number" value="${esc(value)}" ${stepBy ? `data-step-by="${esc(stepBy)}"` : ""} ${extra}><button type="button" class="step" data-step="1" aria-label="Más ${esc(label)}">+</button></div></div>
+`;
+}
 function options(items, current) {
   return items
     .map(

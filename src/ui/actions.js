@@ -213,12 +213,12 @@ async function action(name, el) {
         state.recipes.map((r) => [r.id, r.name]),
         el.dataset.recipe || state.recipes[0].id,
       ) +
-        field(
+        stepperField(
           "Kilos producidos",
           "quantity",
           1,
-          "number",
           'min="0.001" max="1000000" step="0.001" required',
+          "0.5",
         ) +
         field("Día de producción", "date", today, "date", "required"),
       async (f) => {
@@ -392,11 +392,10 @@ async function action(name, el) {
           `${p.name} · ${p.pack} ${p.unit}/paquete`,
         ]),
       ) +
-        field(
+        stepperField(
           "Paquetes",
           "packs",
           1,
-          "number",
           'min="1" max="10000" step="1" required',
         ),
       async (f) =>
@@ -468,12 +467,13 @@ async function action(name, el) {
         .map((l) => {
           const p = product(l.product);
           const rem = Math.round((l.packs * l.pack - l.received) * 1000) / 1000;
-          return field(
+          // − / + add or remove one presentation (box, bottle…) in base units.
+          return stepperField(
             `${p.name} · recibidos ${num(l.received)} de ${num(l.packs * l.pack)} ${p.unit} · faltan ${num(rem)} ${p.unit}`,
             l.product,
             0,
-            "number",
             `min="0" max="${rem}" step="0.001" required`,
+            String(Math.min(l.pack, rem)),
           );
         })
         .join(""),

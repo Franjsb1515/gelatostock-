@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.15.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.15.1.
 
 ## Entregado y comprobado
 
@@ -40,6 +40,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Pantalla «Guía» dentro de la app generada desde docs/GUIA_USO.md (0.15.0).
 - [ ] Probar la respuesta rápida con los números propios del usuario (el envío está cubierto con cliente simulado; el flujo real de pedidos ya se probó en 0.9.3).
 - [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
+- [ ] Compra en webs (Makro España u otras): decidir alcance. Lo viable sin romper el modelo local: lista de compra por proveedor web copiable/exportable y enlace que abre la web; no automatizar la compra (sin API pública, requiere cuenta, credenciales y pago de la persona).
 - [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
 - [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
 

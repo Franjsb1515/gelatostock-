@@ -3,6 +3,34 @@
 document.addEventListener("click", async (e) => {
   const el = e.target.closest("button,a");
   if (!el) return;
+  if (el.dataset.step) {
+    const input = el.parentElement.querySelector("input");
+    if (!input) return;
+    const by = Number(input.dataset.stepBy || input.step || 1) || 1;
+    const min = input.min === "" ? -Infinity : Number(input.min);
+    const max = input.max === "" ? Infinity : Number(input.max);
+    const decimals = String(by).includes(".")
+      ? String(by).split(".")[1].length
+      : 0;
+    const next = Math.min(
+      max,
+      Math.max(
+        min,
+        Number(
+          ((Number(input.value) || 0) + Number(el.dataset.step) * by).toFixed(
+            decimals,
+          ),
+        ),
+      ),
+    );
+    input.value = next;
+    if (input.dataset.cart)
+      await mutate(
+        { type: "cart", product: input.dataset.cart, packs: next },
+        next === 0 ? "Producto retirado." : "Cantidad actualizada.",
+      );
+    return;
+  }
   if (el.dataset.nav) {
     e.preventDefault();
     nav(el.dataset.nav);

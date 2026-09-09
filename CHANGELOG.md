@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.15.1 — 2026-09-09 · sesión 026
+
+Botones − / + para cantidades: en las líneas del carrito (cambian el pedido al momento; llegar a 0 retira el producto), en «Añadir al carrito» (paquetes), en «Qué llegó» (cada pulsación suma o resta una presentación completa en unidad base, sin pasar de lo que falta), en «Registrar producción» (0,5 kg) y en «Entrada, salida o merma» (1 unidad). Ayudante stepperField en src/ui/forms.js y gestor único en src/ui/events.js que respeta min/max/decimales; el campo sigue siendo editable a mano. Prueba de escritorio ampliada (1 → 3 → 2 en el diálogo, +1 −1 en el carrito).
+
+112 pruebas, ejecutable 0.15.1. Informe reports/2026-09-09T22-36-47-331Z-botones-mas-menos.md.
+
 ## 0.15.0 — 2026-09-09 · sesión 025
 
 Mensajes rehecha: «Qué hacer ahora» arriba (mensajes que exigen lectura, con atajo al filtro «Debes leer»), conversaciones agrupadas por proveedor con contador de sin leer, detalle con bloque «Responder y decidir»: respuestas rápidas por WhatsApp según la lectura (texto visible y editable antes de enviar, una sola vez, solo con canal conectado y remitente real; ruta /api/whatsapp reply que reutiliza whatsapp.send) y «Decidir y cerrar», que anota la decisión del día (acción decide: texto, fecha, marca revisado; no toca pedidos ni stock). Las acciones secundarias (segunda lectura, prioridad, relevancia, corregir lectura) quedan plegadas en «Más opciones». Aviso explícito en el detalle, en el diálogo de corrección, en la guía y en el chat: lo aprendido cambia cómo se lee un mensaje, nunca lo que se decide.

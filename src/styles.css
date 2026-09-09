@@ -3075,3 +3075,55 @@ dialog::backdrop {
     position: static;
   }
 }
+
+/* Selector de cantidad con − / + */
+.stepper {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border, #ebe4d8);
+  border-radius: var(--r-md, 10px);
+  background: #fff;
+  overflow: hidden;
+}
+.field .stepper {
+  display: flex;
+  width: 100%;
+}
+.stepper .quantity,
+.field .stepper .quantity {
+  border: 0;
+  border-radius: 0;
+  width: 72px;
+  flex: 1;
+  min-height: 38px;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.stepper .quantity::-webkit-outer-spin-button,
+.stepper .quantity::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.stepper .step {
+  border: 0;
+  background: var(--crema, #f7f1e6);
+  color: var(--ink, #1f2a24);
+  font-size: 18px;
+  line-height: 1;
+  width: 40px;
+  min-height: 38px;
+  cursor: pointer;
+}
+.stepper .step:hover {
+  background: var(--pistacho-claro, #e6eedc);
+}
+.stepper .step:focus-visible {
+  outline: 3px solid var(--pistacho-claro, #e6eedc);
+  outline-offset: -3px;
+}
+.stepper:focus-within {
+  border-color: var(--pistacho, #35604a);
+}
+.cart-line .stepper {
+  flex: 0 0 auto;
+}

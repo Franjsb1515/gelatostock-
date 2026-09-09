@@ -287,9 +287,24 @@ const assert = require("node:assert/strict");
       .getByRole("button", { name: "Añadir producto", exact: true })
       .click();
     await window.locator("#modal-form select[name=product]").selectOption("p2");
-    await window.locator("#modal-form input[name=packs]").fill("2");
+    // Botones − / +: 1 → 3 → 2 dentro del diálogo, y +1 −1 en la línea del carrito.
+    await window.locator("#modal-form .step[data-step='1']").click();
+    await window.locator("#modal-form .step[data-step='1']").click();
+    await window.locator("#modal-form .step[data-step='-1']").click();
+    assert.equal(
+      await window.locator("#modal-form input[name=packs]").inputValue(),
+      "2",
+    );
     await window.getByRole("button", { name: "Guardar", exact: true }).click();
     await window.getByRole("dialog").waitFor({ state: "hidden" });
+    await window.locator(".cart-line .step[data-step='1']").first().click();
+    await window.waitForFunction(
+      () => document.querySelector("input[data-cart='p2']")?.value === "3",
+    );
+    await window.locator(".cart-line .step[data-step='-1']").first().click();
+    await window.waitForFunction(
+      () => document.querySelector("input[data-cart='p2']")?.value === "2",
+    );
     await window.getByRole("button", { name: /Revisar y autorizar/ }).click();
     await window
       .getByRole("button", { name: "Autorizar demostración", exact: true })
