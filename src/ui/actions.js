@@ -619,6 +619,21 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "exportCsv") {
+    try {
+      const r = await request("/api/export", {});
+      modal(
+        "Exportación CSV creada",
+        "Inventario y movimientos, separados por punto y coma, listos para hoja de cálculo o gestoría.",
+        r.files.map((f) => `<code class="path">${esc(f)}</code>`).join(""),
+        async () => true,
+        "Listo",
+      );
+    } catch (e) {
+      toast(e.message);
+    }
+    return;
+  }
   if (name === "backup") {
     try {
       const r = await request("/api/backup", {});

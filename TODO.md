@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.2.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.10.3.
 
 ## Entregado y comprobado
 
@@ -27,7 +27,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
 - [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
 - [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 96 pruebas automatizadas.
+- [x] Núcleo TypeScript estricto, validación de contratos y 99 pruebas automatizadas.
 - [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
 - [ ] Prueba de disco lleno y validación del corte en el equipo real.
 - [ ] Definir autenticación y permisos si lo usa más de una persona.
@@ -69,8 +69,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Tipo de documento confirmado por la persona en cada foto (memoria de decisiones).
 - [ ] Memoria de equivalencias por proveedor (código de albarán → producto) consultada al leer documentos.
 - [x] Implementar recepción experimental de WhatsApp por eventos; QR real verificado. Envío añadido en 0.9.1 con confirmación explícita.
-- [ ] Recuperación de mensajes perdidos mientras la app estaba cerrada (WhatsApp Web no los reenvía por evento).
-- [ ] Probar retención y entrega de mensajes mientras la app está cerrada.
+- [x] Recuperación del historial reciente de chats autorizados al conectar y a demanda (solo texto); reconexión automática.
+- [ ] Recuperar adjuntos del historial y mensajes más antiguos que los cargados por WhatsApp Web.
+- [x] Mensajes llegados con la app cerrada: se recuperan del historial reciente al conectar (verificado con la sesión real).
 - [x] Reglas de relevancia por referencia exacta del mismo proveedor, independientes de prioridad; correcciones con motivo.
 - [x] Buscar mensajes sin tildes y filtrar por proveedor/estado.
 - [ ] Validar clasificación con mensajes reales anonimizados y contexto lingüístico más amplio.

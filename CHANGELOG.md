@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.10.3 — 2026-09-09 · sesión 019
+
+WhatsApp: al conectar se revisa el historial reciente de cada chat autorizado e importa lo que faltaba (texto), también a mano con «Recuperar mensajes recientes»; reconexión automática con esperas crecientes si la sesión se cae y «Conectar al abrir» está activo (nunca tras un cierre de sesión). Exportar CSV (inventario y movimientos, punto y coma, BOM) desde Configuración.
+
+99 pruebas, ejecutable 0.10.3. Recuperación verificada con la sesión real del usuario. Informe reports/2026-09-09T09-56-20-662Z-historial-reconexion-csv.md.
+
 ## 0.10.2 — 2026-09-09 · sesión 018
 
 WhatsApp: «Conectar al abrir» reutiliza la sesión guardada al arrancar y avisa con una notificación nativa de Windows cuando escribe un proveedor autorizado (clic: vuelve a la app). Ayuda de primeros pasos en Configuración. Persistencia más rápida con historial grande: cada acción con 3.000 movimientos pasa de 52 a 29 ms (caché de filas y operaciones ya guardadas).

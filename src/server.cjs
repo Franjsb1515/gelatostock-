@@ -126,6 +126,7 @@ function createApp({
         "/api/ai/message",
         "/api/action",
         "/api/backup",
+        "/api/export",
         "/api/restore",
         "/api/identify",
         "/api/whatsapp",
@@ -259,6 +260,11 @@ function createApp({
             });
             return;
           }
+          if (data.type === "recover") {
+            const imported = await whatsapp.recover();
+            json(200, { ...annotate(whatsapp.view()), imported });
+            return;
+          }
           if (data.type === "autoconnect") {
             whatsapp.autoConnect = data.enabled === true;
             json(200, annotate(whatsapp.view()));
@@ -289,6 +295,80 @@ function createApp({
             ...result,
             detection: identifySupplier(store.load(), { text: result.text }),
           });
+          return;
+        }
+        if (u.pathname === "/api/export") {
+          // CSV (semicolon, UTF-8 with BOM) of products and movements for a spreadsheet.
+          const s = store.load();
+          const cell = (v) => {
+            const t = String(v ?? "");
+            return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+          };
+          const line = (cells) => cells.map(cell).join(";");
+          const byId = new Map(s.products.map((p) => [p.id, p]));
+          const products = [
+            line([
+              "producto",
+              "detalle",
+              "categoria",
+              "unidad",
+              "stock",
+              "minimo",
+              "objetivo",
+              "presentacion",
+              "precio_eur",
+              "proveedor",
+            ]),
+            ...s.products.map((p) =>
+              line([
+                p.name,
+                p.detail,
+                p.category,
+                p.unit,
+                p.stock,
+                p.min,
+                p.target,
+                p.pack,
+                (p.price / 100).toFixed(2),
+                s.suppliers.find((x) => x.id === p.supplier)?.name || "",
+              ]),
+            ),
+          ].join("\r\n");
+          const movements = [
+            line([
+              "fecha",
+              "producto",
+              "tipo",
+              "cambio",
+              "antes",
+              "despues",
+              "motivo",
+            ]),
+            ...s.movements.map((m) =>
+              line([
+                m.at,
+                byId.get(m.product)?.name || m.product,
+                m.kind,
+                m.delta,
+                m.before,
+                m.after,
+                m.reason,
+              ]),
+            ),
+          ].join("\r\n");
+          const dir = path.join(dataDir, "exportaciones");
+          fs.mkdirSync(dir, { recursive: true });
+          const stamp = new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace(/[:T]/g, "-");
+          const files = [
+            [path.join(dir, `inventario-${stamp}.csv`), products],
+            [path.join(dir, `movimientos-${stamp}.csv`), movements],
+          ];
+          for (const [file, body] of files)
+            fs.writeFileSync(file, "\ufeff" + body + "\r\n");
+          json(200, { files: files.map(([f]) => f) });
           return;
         }
         if (u.pathname === "/api/backup") {

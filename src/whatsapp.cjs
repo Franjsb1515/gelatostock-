@@ -113,6 +113,18 @@ class WhatsAppConnection {
           this.readyAt = Math.floor(Date.now() / 1000);
           this.qr = null;
           this.status = "connected";
+          this.reconnectAttempts = 0;
+          // Messages that arrived while the app was closed are not replayed as events:
+          // read the recent history of each authorized chat once the sync settles.
+          setTimeout(() => {
+            if (generation === this.generation)
+              this.recover(generation).catch((e) =>
+                this.log(
+                  "recuperación falló: " +
+                    String(e?.message || e).slice(0, 120),
+                ),
+              );
+          }, 8000).unref?.();
         } catch (e) {
           this.error = e.message;
           this.status = "error";
@@ -126,13 +138,15 @@ class WhatsAppConnection {
           this.qr = null;
         }
       });
-      client.on("disconnected", () => {
-        if (generation === this.generation) {
-          this.status = "disconnected";
-          this.qr = null;
-          this.error =
-            "Sesión desconectada. Usá Cerrar sesión antes de volver a vincular.";
-        }
+      client.on("disconnected", (reason) => {
+        if (generation !== this.generation) return;
+        this.log("desconectado: " + String(reason || "").slice(0, 80));
+        this.status = "disconnected";
+        this.qr = null;
+        this.error =
+          "Sesión desconectada. Usá Cerrar sesión antes de volver a vincular.";
+        if (this.autoConnect && String(reason) !== "LOGOUT")
+          this.scheduleReconnect();
       });
       client.on("message", (msg) => {
         const skip =
@@ -201,6 +215,106 @@ class WhatsAppConnection {
           String(e?.message || e).slice(0, 120),
       );
     }
+  }
+  // Drop the browser without logging out and try again with growing delays (max 5 min).
+  scheduleReconnect() {
+    const attempt = (this.reconnectAttempts =
+      (this.reconnectAttempts || 0) + 1);
+    if (attempt > 20) {
+      this.log("reconexión: se detienen los intentos automáticos");
+      return;
+    }
+    const delay = Math.min(300000, 15000 * 2 ** Math.min(attempt - 1, 4));
+    this.log(
+      `reconexión automática en ${Math.round(delay / 1000)} s (intento ${attempt})`,
+    );
+    clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = setTimeout(async () => {
+      if (this.closingPromise || !this.autoConnect) return;
+      try {
+        const client = this.client;
+        this.client = null;
+        if (client) {
+          try {
+            client.pupPage?.removeAllListeners?.();
+          } catch {}
+          try {
+            await (client.pupBrowser
+              ? client.pupBrowser.close()
+              : client.destroy());
+          } catch {}
+        }
+        await this.connect();
+      } catch (e) {
+        this.log("reconexión falló: " + String(e?.message || e).slice(0, 120));
+        this.scheduleReconnect();
+      }
+    }, delay);
+    this.reconnectTimer.unref?.();
+  }
+  // Read recent messages of each authorized chat and import what is missing (text only).
+  async recover(generation = this.generation) {
+    if (!this.client || this.status !== "connected" || !this.account) return 0;
+    const allowed = this.store.view(this.account).allowed;
+    let imported = 0;
+    for (const contact of allowed) {
+      if (generation !== this.generation) break;
+      const digits = contact.phone.slice(1);
+      let rows = [];
+      try {
+        rows = await this.client.pupPage.evaluate(async (id) => {
+          const chat = await window.WWebJS.getChat(id, { getAsModel: false });
+          const list = chat?.msgs?.getModelsArray?.() || [];
+          return list
+            .filter((m) => m && !m.id?.fromMe && m.type === "chat" && m.body)
+            .slice(-50)
+            .map((m) => ({
+              id: String(m.id?._serialized || m.id),
+              remote: String(m.id?.remote?._serialized || m.id?.remote || id),
+              body: String(m.body).slice(0, 20000),
+              t: Number(m.t) || 0,
+            }));
+        }, digits + "@c.us");
+      } catch (e) {
+        this.log(
+          "historial de " +
+            contact.phone +
+            " no disponible: " +
+            String(e?.message || e).slice(0, 80),
+        );
+        continue;
+      }
+      for (const r of rows) {
+        if (generation !== this.generation) break;
+        if (!r.id || this.store.has(this.account, r.id)) continue;
+        const before = this.readyAt;
+        this.readyAt = 0;
+        try {
+          await this.receive(
+            {
+              from: digits + "@c.us",
+              id: {
+                fromMe: false,
+                remote: r.remote,
+                id: r.id.split("_").pop(),
+                _serialized: r.id,
+              },
+              timestamp: r.t,
+              body: r.body,
+              hasMedia: false,
+            },
+            generation,
+          );
+          imported++;
+        } finally {
+          this.readyAt = before;
+        }
+      }
+    }
+    this.log(
+      `historial revisado: ${allowed.length} chat(s), ${imported} mensaje(s) nuevo(s) importado(s)`,
+    );
+    return imported;
   }
   async receive(msg, generation) {
     const account = this.account;
@@ -501,6 +615,7 @@ class WhatsAppConnection {
   }
   close() {
     if (this.closingPromise) return this.closingPromise;
+    clearTimeout(this.reconnectTimer);
     ++this.generation;
     if (!this.client) {
       this.store.close();

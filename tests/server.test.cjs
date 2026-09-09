@@ -300,3 +300,49 @@ test("la preferencia de conectar WhatsApp al abrir se guarda y se refleja en la 
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("exportación CSV de inventario y movimientos con BOM y punto y coma", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-csv-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const st = (await (await fetch(origin + "/api/state", { headers })).json())
+      .state;
+    await fetch(origin + "/api/action", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        type: "count",
+        product: "p1",
+        value: 3,
+        reason: 'Conteo; con "comillas"',
+        revision: st.revision,
+        operationId: "csv1",
+      }),
+    });
+    const r = await fetch(origin + "/api/export", {
+      method: "POST",
+      headers,
+      body: "{}",
+    });
+    assert.equal(r.status, 200);
+    const { files } = await r.json();
+    assert.equal(files.length, 2);
+    const inv = fs.readFileSync(files[0], "utf8");
+    assert.ok(inv.startsWith("\ufeffproducto;detalle;"));
+    assert.ok(inv.includes("Café de especialidad;"));
+    const mov = fs.readFileSync(files[1], "utf8");
+    assert.ok(mov.includes('"Conteo; con ""comillas"""'));
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

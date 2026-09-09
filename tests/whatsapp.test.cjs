@@ -354,3 +354,57 @@ test("preferencia de conexión automática y evento local al recibir un mensaje 
     assert.equal(seen[0].text, "Llega el lunes");
     c.client = null;
   }));
+
+test("recuperación del historial reciente importa solo lo que falta y respeta autorizaciones", () =>
+  fixture(async (c) => {
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    c.readyAt = 9999999999;
+    c.store.permit(a, "+34910000001", "Proveedor");
+    c.store.insert(a, {
+      id: "old-1",
+      sender: "+34910000001",
+      at: "2026-09-01T00:00:00.000Z",
+      text: "antiguo",
+    });
+    c.client = {
+      pupPage: {
+        evaluate: async () => [
+          { id: "old-1", remote: "34910000001@c.us", body: "antiguo", t: 1 },
+          {
+            id: "false_34910000001@c.us_NEW1",
+            remote: "34910000001@c.us",
+            body: "Llega el martes",
+            t: 2,
+          },
+        ],
+      },
+    };
+    const imported = await c.recover();
+    assert.equal(imported, 1);
+    const view = c.store.view(a);
+    assert.equal(view.messages.length, 2);
+    assert.ok(view.messages.some((m) => m.text === "Llega el martes"));
+    assert.equal(await c.recover(), 0);
+    assert.ok(
+      c.diagnostics().some((l) => /historial revisado: 1 chat/.test(l)),
+    );
+    c.client = null;
+  }));
+test("reconexión automática se programa solo con la preferencia activa y sin cierre de sesión", () =>
+  fixture(async (c) => {
+    c.autoConnect = true;
+    c.reconnectAttempts = 0;
+    c.scheduleReconnect();
+    assert.ok(c.reconnectTimer);
+    assert.ok(
+      c
+        .diagnostics()
+        .some((l) => /reconexión automática en 15 s \(intento 1\)/.test(l)),
+    );
+    clearTimeout(c.reconnectTimer);
+    c.reconnectAttempts = 25;
+    c.scheduleReconnect();
+    assert.ok(c.diagnostics().some((l) => /se detienen/.test(l)));
+  }));
