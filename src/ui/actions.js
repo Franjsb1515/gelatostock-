@@ -129,10 +129,19 @@ async function action(name, el) {
   if (name === "recipeEditor") {
     const r = el.dataset.id
       ? state.recipes.find((x) => x.id === el.dataset.id)
-      : { name: "", product: "", yield: 1, ingredients: [], note: "" };
+      : {
+          name: "",
+          family: "crema",
+          product: "",
+          yield: 1,
+          ingredients: [],
+          steps: "",
+          allergens: "",
+          note: "",
+        };
     modal(
       r.id ? "Editar receta" : "Nueva receta",
-      "Indica cuánto rinde la receta y cuánto usa de cada ingrediente para esa cantidad.",
+      "Indica cuánto rinde la receta y cuánto usa de cada ingrediente para esa cantidad. Elaboración y alérgenos son texto para el recetario.",
       field(
         "Nombre de la receta",
         "name",
@@ -140,6 +149,12 @@ async function action(name, el) {
         "text",
         'required maxlength="100"',
       ) +
+        select(
+          "Familia",
+          "family",
+          Object.entries(familyLabel),
+          r.family || "crema",
+        ) +
         select(
           "Producto terminado (en kg)",
           "product",
@@ -159,6 +174,14 @@ async function action(name, el) {
           'min="0.001" max="1000000" step="0.001" required',
         ) +
         `<div class="field"><span>Ingredientes para esa cantidad</span><div id="ingredient-rows">${(r.ingredients.length ? r.ingredients : [{ product: "", quantity: "" }]).map((i) => ingredientRow(i.product, i.quantity)).join("")}</div>${btn(icon("plus") + " Añadir ingrediente", "addIngredient", "secondary")}</div>` +
+        `<label class="field">Elaboración (pasos, temperaturas, tiempos)<textarea name="steps" maxlength="3000" rows="5">${esc(r.steps || "")}</textarea></label>` +
+        field(
+          "Alérgenos",
+          "allergens",
+          r.allergens || "",
+          "text",
+          'maxlength="300" placeholder="Leche, huevo, frutos secos…"',
+        ) +
         `<label class="field">Nota<textarea name="note" maxlength="500">${esc(r.note || "")}</textarea></label>`,
       async (f) => {
         const products = f.getAll("ing-product"),
@@ -171,9 +194,12 @@ async function action(name, el) {
             type: "recipe",
             ...(r.id ? { id: r.id } : {}),
             name: f.get("name"),
+            family: f.get("family") || "crema",
             ...(f.get("product") ? { product: f.get("product") } : {}),
             yield: Number(f.get("yield")),
             ingredients,
+            steps: f.get("steps") || "",
+            allergens: f.get("allergens") || "",
             note: f.get("note") || "",
           },
           "Receta guardada.",
@@ -190,6 +216,19 @@ async function action(name, el) {
     const rows = $("#ingredient-rows");
     if (rows && rows.children.length > 1)
       el.closest(".ingredient-row").remove();
+    return;
+  }
+  if (name === "openRecipes") {
+    nav("recipes");
+    return;
+  }
+  if (name === "duplicateRecipe") {
+    const r = state.recipes.find((x) => x.id === el.dataset.id);
+    const { id, ...fields } = r;
+    await mutate(
+      { type: "recipe", ...fields, name: (r.name + " (copia)").slice(0, 100) },
+      "Receta duplicada. Edítala para ajustarla.",
+    );
     return;
   }
   if (name === "deleteRecipe") {

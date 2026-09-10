@@ -18,11 +18,17 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación 
 - Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.
 
 ## Producción
-- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera.
+- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.
 - Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.
 - Hoja diaria: kilos producidos por día y gelato.
-- Ventas y mermas del día: kilos vendidos o desechados de producto terminado.
+- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.
 - Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).
+
+## Recetario
+Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.
+- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.
+- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.
+- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.
 
 ## Compras
 - Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.

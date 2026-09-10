@@ -1,3 +1,19 @@
+// Scales the quantities shown in a recipe sheet to the kilos typed. Display only: no state changes.
+function scaleRecipe(id, kilos) {
+  const r = state.recipes.find((x) => x.id === id);
+  if (!r || !(kilos > 0)) return;
+  const factor = kilos / r.yield;
+  for (const el of document.querySelectorAll(
+    `[data-scaled="${CSS.escape(id)}"]`,
+  )) {
+    const q = Number(el.dataset.base) * factor;
+    el.textContent = `${num(el.dataset.unit === "ud" ? Math.ceil(q) : Math.round(q * 1000) / 1000)} ${el.dataset.unit}`;
+  }
+  const label = document.querySelector(
+    `[data-scale-label="${CSS.escape(id)}"]`,
+  );
+  if (label) label.textContent = num(kilos);
+}
 // Escuchadores de clic, entrada y cambio; arranque de la aplicación.
 // Los módulos de src/ui comparten el ámbito global y se cargan en orden desde index.html.
 document.addEventListener("click", async (e) => {
@@ -24,6 +40,7 @@ document.addEventListener("click", async (e) => {
       ),
     );
     input.value = next;
+    if (input.dataset.scale) scaleRecipe(input.dataset.scale, next);
     if (input.dataset.cart)
       await mutate(
         { type: "cart", product: input.dataset.cart, packs: next },
@@ -58,8 +75,19 @@ document.addEventListener("click", async (e) => {
     return;
   } else if (el.dataset.openMessage) {
     selectedMessage = el.dataset.openMessage;
+    const m = state.messages.find((x) => x.id === selectedMessage);
+    // Filters must not hide the message the person just asked to open.
+    if (m && !messageMatches(m)) {
+      messageSupplier = "all";
+      messageFilter = "all";
+      messageQuery = "";
+    }
     page = "messages";
-    await mutate({ type: "read", id: selectedMessage });
+    if (m && !m.read) await mutate({ type: "read", id: selectedMessage });
+    else render();
+    document
+      .querySelector(".message-detail")
+      ?.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 });
 document.addEventListener("input", (e) => {
@@ -107,6 +135,11 @@ document.addEventListener("change", async (e) => {
     await refreshWhatsApp();
     return;
   }
+  if (e.target.id === "recipe-family") {
+    recipeFamily = e.target.value;
+    render();
+    return;
+  }
   if (["message-supplier", "message-filter"].includes(e.target.id)) {
     const id = e.target.id;
     if (id === "message-supplier") messageSupplier = e.target.value;
@@ -127,6 +160,18 @@ document.addEventListener("change", async (e) => {
     );
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "recipe-search") {
+    recipeQuery = e.target.value;
+    const pos = e.target.selectionStart;
+    render();
+    $("#recipe-search").focus();
+    $("#recipe-search").setSelectionRange(pos, pos);
+    return;
+  }
+  if (e.target.dataset.scale) {
+    scaleRecipe(e.target.dataset.scale, Number(e.target.value));
+    return;
+  }
   if (e.target.id === "message-search") {
     const pos = e.target.selectionStart;
     messageQuery = e.target.value;

@@ -224,7 +224,9 @@ const assert = require("node:assert/strict");
       .fill("exclusiva de cafe");
     assert.equal(await window.locator(".conversation").count(), 1);
     await window
-      .getByRole("heading", { name: "Información general", exact: true })
+      .locator(".reply-reading strong")
+      .filter({ hasText: "Información general" })
+      .first()
       .waitFor();
     await window.locator(".more-actions summary").click();
     await window
@@ -239,7 +241,9 @@ const assert = require("node:assert/strict");
     await window.getByRole("button", { name: "Guardar", exact: true }).click();
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     await window
-      .getByRole("heading", { name: "No relevante", exact: true })
+      .locator(".reply-reading strong")
+      .filter({ hasText: "No relevante" })
+      .first()
       .waitFor();
     await window
       .getByRole("combobox", { name: "Mostrar", exact: true })
@@ -520,16 +524,14 @@ const assert = require("node:assert/strict");
       .click();
     await window
       .locator(".reply-reading")
-      .filter({ hasText: "Segunda lectura (IA local" })
+      .filter({ hasText: "IA local" })
       .first()
       .waitFor({ timeout: 245000 });
     const second = await window.locator(".reply-reading").first().innerText();
     assert.equal(savedStock(), 4.25);
     console.log(
       "PASS: segunda lectura de respuesta de proveedor con modelo REAL anotada sin cambiar stock: " +
-        JSON.stringify(
-          second.split("Segunda lectura (IA local")[1]?.slice(0, 120),
-        ),
+        JSON.stringify(second.split(/IA local/i)[1]?.slice(0, 120)),
     );
     await window.getByRole("button", { name: "IA local", exact: true }).click();
     await window
@@ -568,7 +570,9 @@ const assert = require("node:assert/strict");
       .getByRole("searchbox", { name: "Buscar mensajes", exact: true })
       .fill("exclusiva de cafe");
     await w2
-      .getByRole("heading", { name: "No relevante", exact: true })
+      .locator(".reply-reading strong")
+      .filter({ hasText: "No relevante" })
+      .first()
       .waitFor();
     assert.equal(await w2.locator(".conversation").count(), 1);
     console.log(

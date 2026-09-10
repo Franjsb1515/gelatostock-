@@ -145,11 +145,22 @@ const ingredientSchema = z.object({
   product: idSchema,
   quantity: quantity.refine((n) => n > 0),
 });
+export const recipeFamilies = z.enum([
+  "crema",
+  "sorbete",
+  "postre",
+  "base",
+  "otro",
+]);
 export const recipeFields = {
   name: text(100),
+  family: recipeFamilies.default("crema"),
   product: idSchema.optional(),
   yield: quantity.refine((n) => n > 0),
   ingredients: z.array(ingredientSchema).min(1).max(100),
+  // Free text for the book: method and allergens. Never used in calculations.
+  steps: z.string().max(3000).default(""),
+  allergens: z.string().max(300).default(""),
   note: z.string().max(500).default(""),
 };
 const recipeSchema = z.object({ id: idSchema, ...recipeFields });

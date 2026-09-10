@@ -1,5 +1,15 @@
 # Registro de parches y sesiones
 
+## 0.17.0 — 2026-09-09 · sesión 028
+
+Recetario: pantalla propia (bajo Producción, misma contraseña) con la ficha completa de cada receta: familia (crema, sorbete, postre, base, otro), rendimiento, ingredientes con porcentaje sobre la masa, elaboración y alérgenos (campos nuevos en core/schema.ts con valores por defecto; los datos existentes se cargan sin migración). «Calcular para X kg» escala las cantidades solo en pantalla (− / +), Producir abre el registro con esa receta, Duplicar crea una copia, Eliminar sigue exigiendo que no haya producciones aprobadas. Búsqueda por nombre o alérgeno y filtro por familia. Producción muestra un resumen y enlaza al recetario.
+
+Ventas y mermas del día: solo lista los productos terminados que alguna receta genera; antes aparecían ingredientes en kg por su categoría (pistacho, vainilla), que confundían.
+
+Mensajes: un solo bloque «Lo que entendió la app» (lectura, prioridad, pedido, segunda lectura de IA) en lugar de dos bloques que repetían el resumen; «Abrir» desde «Qué hacer ahora» o desde Resumen muestra siempre ese mensaje aunque los filtros lo ocultaran (los restablece) y desplaza al detalle; «Simular mensaje» pasa a secundario. Prueba de escritorio y guía actualizadas.
+
+Pruebas: 119. Informe reports/2026-09-10T00-34-11-313Z-recetario-y-mensajes.md.
+
 ## 0.16.0 — 2026-09-09 · sesión 027
 
 IA local, reglas primero: src/ai-review.cjs clasifica documentos por título normalizado (OCR: «F A C T U R A», «T0TAL»; títulos en las diez primeras líneas; proforma/presupuesto, abono/rectificativa/nota de crédito, factura/nº factura/simplificada, albarán/nota de entrega/delivery note, tarifa/lista de precios/catálogo, oferta/promoción) y reconoce mensajes por rasgos (saludo, pregunta, trato directo). El modelo Qwen3 0.6B pasa a segunda opinión: si discrepa, prevalecen las reglas y se avisa; si no hay título ni rasgos, el modelo solo decide tipos que no exigen título. Corpus nuevo tests/fixtures/ai-documents-2.json (40 documentos) más el de 11: 51/51 combinado · reglas 51/51 · modelo solo 38/51 · 6.4 s por lectura reforzada (0.15.1: 10/11 · 21 s por lectura reforzada).

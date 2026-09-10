@@ -17,7 +17,9 @@ let state,
   busy = false,
   messageQuery = "",
   messageSupplier = "all",
-  messageFilter = "all";
+  messageFilter = "all",
+  recipeQuery = "",
+  recipeFamily = "all";
 let orderFilter = "open";
 let aiDraft = "",
   aiMode = "careful",
@@ -210,6 +212,7 @@ const pageLabel = {
   settings: "Configuración",
   ai: "IA local",
   production: "Producción",
+  recipes: "Recetario",
   documents: "Documentos",
   guide: "Guía",
 };
@@ -256,6 +259,7 @@ function render() {
     whatsapp,
     ai: aiPage,
     production,
+    recipes: recipeBook,
     documents,
     guide: guidePage,
   };
@@ -266,6 +270,7 @@ function render() {
       ["stock", "box", "Inventario"],
       ["orders", "cart", "Compras"],
       ["production", "ice", "Producción"],
+      ["recipes", "cake", "Recetario"],
       ["messages", "message", "Mensajes"],
       ["whatsapp", "message", "WhatsApp"],
       ["suppliers", "store", "Proveedores"],

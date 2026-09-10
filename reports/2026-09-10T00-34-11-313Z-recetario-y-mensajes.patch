@@ -1,0 +1,825 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 5709a77..9eb71e4 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.16.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.17.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 17c9bc3..4aab60f 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,15 @@
+ # Registro de parches y sesiones
+ 
++## 0.17.0 — 2026-09-09 · sesión 028
++
++Recetario: pantalla propia (bajo Producción, misma contraseña) con la ficha completa de cada receta: familia (crema, sorbete, postre, base, otro), rendimiento, ingredientes con porcentaje sobre la masa, elaboración y alérgenos (campos nuevos en core/schema.ts con valores por defecto; los datos existentes se cargan sin migración). «Calcular para X kg» escala las cantidades solo en pantalla (− / +), Producir abre el registro con esa receta, Duplicar crea una copia, Eliminar sigue exigiendo que no haya producciones aprobadas. Búsqueda por nombre o alérgeno y filtro por familia. Producción muestra un resumen y enlaza al recetario.
++
++Ventas y mermas del día: solo lista los productos terminados que alguna receta genera; antes aparecían ingredientes en kg por su categoría (pistacho, vainilla), que confundían.
++
++Mensajes: un solo bloque «Lo que entendió la app» (lectura, prioridad, pedido, segunda lectura de IA) en lugar de dos bloques que repetían el resumen; «Abrir» desde «Qué hacer ahora» o desde Resumen muestra siempre ese mensaje aunque los filtros lo ocultaran (los restablece) y desplaza al detalle; «Simular mensaje» pasa a secundario. Prueba de escritorio y guía actualizadas.
++
++Pruebas: 119. Informe reports/2026-09-10T00-34-11-313Z-recetario-y-mensajes.md.
++
+ ## 0.16.0 — 2026-09-09 · sesión 027
+ 
+ IA local, reglas primero: src/ai-review.cjs clasifica documentos por título normalizado (OCR: «F A C T U R A», «T0TAL»; títulos en las diez primeras líneas; proforma/presupuesto, abono/rectificativa/nota de crédito, factura/nº factura/simplificada, albarán/nota de entrega/delivery note, tarifa/lista de precios/catálogo, oferta/promoción) y reconoce mensajes por rasgos (saludo, pregunta, trato directo). El modelo Qwen3 0.6B pasa a segunda opinión: si discrepa, prevalecen las reglas y se avisa; si no hay título ni rasgos, el modelo solo decide tipos que no exigen título. Corpus nuevo tests/fixtures/ai-documents-2.json (40 documentos) más el de 11: 51/51 combinado · reglas 51/51 · modelo solo 38/51 · 6.4 s por lectura reforzada (0.15.1: 10/11 · 21 s por lectura reforzada).
+diff --git a/CLAUDE.md b/CLAUDE.md
+index b07190d..407ebfd 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.16.0
++# Entrada para Claude · entrega vigente 0.17.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index 8c77cf1..d302a57 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.16.0
++# GelatoStock · prototipo 0.17.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.16.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.17.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.16.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.17.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué podés probar
+ 
+@@ -167,3 +167,6 @@ La pantalla Mensajes muestra arriba «Qué hacer ahora», agrupa las conversacio
+ 
+ ## IA con reglas primero y compra en webs en 0.16.0
+ La lectura de documentos la hacen reglas deterministas sobre el título (con tolerancia a OCR) y el modelo local da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. Corpus sintético de 51 documentos: 51/51 combinado · reglas 51/51 · modelo solo 38/51 · 6.4 s por lectura reforzada. El modelo se mantiene cargado unos minutos y responde solo con el tipo, lo que acorta cada lectura. Los proveedores pueden tener una web de compra (https): el carrito ofrece la lista copiable y abre la web; la app no entra ni paga.
++
++## Recetario en 0.17.0
++Pantalla Recetario con la ficha completa de cada receta (familia, proporciones con porcentaje, elaboración, alérgenos), escala por kilos en pantalla y acciones de producir, duplicar y eliminar. Ventas y mermas solo muestra productos terminados de recetas. Mensajes agrupa en un solo bloque lo que entendió la app y «Abrir» siempre lleva al mensaje.
+diff --git a/TODO.md b/TODO.md
+index 2a7cbb2..ecff580 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.16.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.17.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -41,6 +41,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [ ] Probar la respuesta rápida con los números propios del usuario (el envío está cubierto con cliente simulado; el flujo real de pedidos ya se probó en 0.9.3).
+ - [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
+ - [x] Compra en webs (Makro u otras): lista copiable por proveedor y apertura de la web guardada; sin automatizar la compra (0.16.0).
++- [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
++- [ ] Recetario: balance técnico del gelato (azúcares, grasa, sólidos) si el usuario aporta fichas reales; impresión de ficha.
+ - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
+ - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
+ - [ ] IA: chat con el modelo 0.6B sigue siendo lento (10–25 s); valorar respuestas por reglas para las preguntas frecuentes de la guía.
+diff --git a/core/schema.ts b/core/schema.ts
+index 7c380e7..16b3da6 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -145,11 +145,22 @@ const ingredientSchema = z.object({
+   product: idSchema,
+   quantity: quantity.refine((n) => n > 0),
+ });
++export const recipeFamilies = z.enum([
++  "crema",
++  "sorbete",
++  "postre",
++  "base",
++  "otro",
++]);
+ export const recipeFields = {
+   name: text(100),
++  family: recipeFamilies.default("crema"),
+   product: idSchema.optional(),
+   yield: quantity.refine((n) => n > 0),
+   ingredients: z.array(ingredientSchema).min(1).max(100),
++  // Free text for the book: method and allergens. Never used in calculations.
++  steps: z.string().max(3000).default(""),
++  allergens: z.string().max(300).default(""),
+   note: z.string().max(500).default(""),
+ };
+ const recipeSchema = z.object({ id: idSchema, ...recipeFields });
+diff --git a/core/seed.ts b/core/seed.ts
+index 44041ee..876e0fa 100644
+--- a/core/seed.ts
++++ b/core/seed.ts
+@@ -260,8 +260,12 @@ export function seed(): State {
+       {
+         id: "r1",
+         name: "Gelato de chocolate",
++        family: "crema",
+         product: "p4",
+         yield: 1,
++        steps:
++          "Calentar la leche con la nata a 45 °C, añadir el chocolate y mezclar hasta disolver. Pasteurizar a 85 °C, enfriar rápido a 4 °C y madurar 6 horas. Mantecar y abatir.",
++        allergens: "Leche. Puede contener trazas de frutos secos.",
+         ingredients: [
+           { product: "p2", quantity: 0.5 },
+           { product: "p10", quantity: 0.2 },
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 78a66dd..70eb7b3 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -18,12 +18,18 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación
+ - Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.
+ 
+ ## Producción
+-- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera.
++- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.
+ - Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.
+ - Hoja diaria: kilos producidos por día y gelato.
+-- Ventas y mermas del día: kilos vendidos o desechados de producto terminado.
++- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.
+ - Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).
+ 
++## Recetario
++Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.
++- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.
++- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.
++- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.
++
+ ## Compras
+ - Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.
+ - Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.
+diff --git a/package.json b/package.json
+index db2d2d4..1ee3efe 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.16.0",
++  "version": "0.17.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index de9b2aa..b4909c5 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -224,7 +224,9 @@ const assert = require("node:assert/strict");
+       .fill("exclusiva de cafe");
+     assert.equal(await window.locator(".conversation").count(), 1);
+     await window
+-      .getByRole("heading", { name: "Información general", exact: true })
++      .locator(".reply-reading strong")
++      .filter({ hasText: "Información general" })
++      .first()
+       .waitFor();
+     await window.locator(".more-actions summary").click();
+     await window
+@@ -239,7 +241,9 @@ const assert = require("node:assert/strict");
+     await window.getByRole("button", { name: "Guardar", exact: true }).click();
+     await window.getByRole("dialog").waitFor({ state: "hidden" });
+     await window
+-      .getByRole("heading", { name: "No relevante", exact: true })
++      .locator(".reply-reading strong")
++      .filter({ hasText: "No relevante" })
++      .first()
+       .waitFor();
+     await window
+       .getByRole("combobox", { name: "Mostrar", exact: true })
+@@ -520,16 +524,14 @@ const assert = require("node:assert/strict");
+       .click();
+     await window
+       .locator(".reply-reading")
+-      .filter({ hasText: "Segunda lectura (IA local" })
++      .filter({ hasText: "IA local" })
+       .first()
+       .waitFor({ timeout: 245000 });
+     const second = await window.locator(".reply-reading").first().innerText();
+     assert.equal(savedStock(), 4.25);
+     console.log(
+       "PASS: segunda lectura de respuesta de proveedor con modelo REAL anotada sin cambiar stock: " +
+-        JSON.stringify(
+-          second.split("Segunda lectura (IA local")[1]?.slice(0, 120),
+-        ),
++        JSON.stringify(second.split(/IA local/i)[1]?.slice(0, 120)),
+     );
+     await window.getByRole("button", { name: "IA local", exact: true }).click();
+     await window
+@@ -568,7 +570,9 @@ const assert = require("node:assert/strict");
+       .getByRole("searchbox", { name: "Buscar mensajes", exact: true })
+       .fill("exclusiva de cafe");
+     await w2
+-      .getByRole("heading", { name: "No relevante", exact: true })
++      .locator(".reply-reading strong")
++      .filter({ hasText: "No relevante" })
++      .first()
+       .waitFor();
+     assert.equal(await w2.locator(".conversation").count(), 1);
+     console.log(
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index c296d49..485de41 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -8,7 +8,7 @@ Copias: Configuración permite crear una copia con datos y fotos y restaurarla;
+ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español lee el texto y propone un proveedor existente. No extrae cantidades ni lee PDF.
+ IA local: reglas deterministas leen el título del documento (factura, proforma, abono, albarán, lista de precios, oferta) o reconocen un mensaje, y un modelo pequeño incluido en el equipo (Qwen3 0.6B) da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. El modelo propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+-Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Si un ingrediente queda bajo mínimo, la reposición lo propone.
++Recetario: pantalla con la ficha completa de cada receta (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+ Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se puede responder por WhatsApp con respuestas rápidas editables (se envía una sola vez, tras confirmar el texto) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
+ WhatsApp: se vincula por QR con el teléfono del negocio. Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.
+diff --git a/src/styles.css b/src/styles.css
+index 39a8bb6..b8795d7 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3135,3 +3135,86 @@ dialog::backdrop {
+   line-height: 1.5;
+   color: var(--ink-muted, #5a6670);
+ }
++
++/* Recetario */
++.recipe-book {
++  display: grid;
++  gap: var(--s-4, 16px);
++}
++.recipe-sheet {
++  padding: var(--s-5, 20px) var(--s-6, 24px);
++}
++.recipe-sheet-head {
++  display: flex;
++  justify-content: space-between;
++  align-items: flex-start;
++  gap: var(--s-4, 16px);
++  flex-wrap: wrap;
++  margin-bottom: var(--s-3, 12px);
++}
++.recipe-sheet-head h2 {
++  font-family: var(--font-serif);
++  font-weight: 500;
++  font-size: var(--fs-22, 22px);
++  color: var(--ink-title, #1f2a24);
++}
++.recipe-sheet-head p {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  margin-top: 6px;
++  color: var(--ink-muted, #5a6670);
++  font-size: var(--fs-13, 13px);
++}
++.recipe-scale {
++  flex-direction: row;
++  align-items: center;
++  gap: 8px;
++  margin: 0;
++  white-space: nowrap;
++}
++.recipe-scale .stepper {
++  display: inline-flex;
++}
++.recipe-scale .quantity {
++  width: 84px;
++}
++.recipe-table td:nth-child(3) {
++  color: var(--ink-muted, #5a6670);
++}
++.recipe-block {
++  margin-top: var(--s-3, 12px);
++}
++.recipe-steps {
++  white-space: pre-wrap;
++  line-height: 1.6;
++  max-width: 76ch;
++}
++.recipe-sheet .row-actions {
++  margin-top: var(--s-4, 16px);
++}
++
++/* Mensajes: bloque único «Lo que entendió la app» */
++.understood {
++  display: grid;
++  gap: 10px;
++}
++.understood-row {
++  display: grid;
++  grid-template-columns: 88px minmax(0, 1fr);
++  gap: 12px;
++  align-items: start;
++}
++.understood-row > span {
++  font-size: 12px;
++  font-weight: 600;
++  letter-spacing: 0.04em;
++  text-transform: uppercase;
++  color: var(--ink-muted, #5a6670);
++  padding-top: 3px;
++}
++.understood-row p {
++  margin-top: 2px;
++  font-size: 13px;
++  color: var(--ink-soft, #3f4a44);
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index 431fff8..6722e83 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -129,10 +129,19 @@ async function action(name, el) {
+   if (name === "recipeEditor") {
+     const r = el.dataset.id
+       ? state.recipes.find((x) => x.id === el.dataset.id)
+-      : { name: "", product: "", yield: 1, ingredients: [], note: "" };
++      : {
++          name: "",
++          family: "crema",
++          product: "",
++          yield: 1,
++          ingredients: [],
++          steps: "",
++          allergens: "",
++          note: "",
++        };
+     modal(
+       r.id ? "Editar receta" : "Nueva receta",
+-      "Indica cuánto rinde la receta y cuánto usa de cada ingrediente para esa cantidad.",
++      "Indica cuánto rinde la receta y cuánto usa de cada ingrediente para esa cantidad. Elaboración y alérgenos son texto para el recetario.",
+       field(
+         "Nombre de la receta",
+         "name",
+@@ -140,6 +149,12 @@ async function action(name, el) {
+         "text",
+         'required maxlength="100"',
+       ) +
++        select(
++          "Familia",
++          "family",
++          Object.entries(familyLabel),
++          r.family || "crema",
++        ) +
+         select(
+           "Producto terminado (en kg)",
+           "product",
+@@ -159,6 +174,14 @@ async function action(name, el) {
+           'min="0.001" max="1000000" step="0.001" required',
+         ) +
+         `<div class="field"><span>Ingredientes para esa cantidad</span><div id="ingredient-rows">${(r.ingredients.length ? r.ingredients : [{ product: "", quantity: "" }]).map((i) => ingredientRow(i.product, i.quantity)).join("")}</div>${btn(icon("plus") + " Añadir ingrediente", "addIngredient", "secondary")}</div>` +
++        `<label class="field">Elaboración (pasos, temperaturas, tiempos)<textarea name="steps" maxlength="3000" rows="5">${esc(r.steps || "")}</textarea></label>` +
++        field(
++          "Alérgenos",
++          "allergens",
++          r.allergens || "",
++          "text",
++          'maxlength="300" placeholder="Leche, huevo, frutos secos…"',
++        ) +
+         `<label class="field">Nota<textarea name="note" maxlength="500">${esc(r.note || "")}</textarea></label>`,
+       async (f) => {
+         const products = f.getAll("ing-product"),
+@@ -171,9 +194,12 @@ async function action(name, el) {
+             type: "recipe",
+             ...(r.id ? { id: r.id } : {}),
+             name: f.get("name"),
++            family: f.get("family") || "crema",
+             ...(f.get("product") ? { product: f.get("product") } : {}),
+             yield: Number(f.get("yield")),
+             ingredients,
++            steps: f.get("steps") || "",
++            allergens: f.get("allergens") || "",
+             note: f.get("note") || "",
+           },
+           "Receta guardada.",
+@@ -192,6 +218,19 @@ async function action(name, el) {
+       el.closest(".ingredient-row").remove();
+     return;
+   }
++  if (name === "openRecipes") {
++    nav("recipes");
++    return;
++  }
++  if (name === "duplicateRecipe") {
++    const r = state.recipes.find((x) => x.id === el.dataset.id);
++    const { id, ...fields } = r;
++    await mutate(
++      { type: "recipe", ...fields, name: (r.name + " (copia)").slice(0, 100) },
++      "Receta duplicada. Edítala para ajustarla.",
++    );
++    return;
++  }
+   if (name === "deleteRecipe") {
+     const r = state.recipes.find((x) => x.id === el.dataset.id);
+     modal(
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 471c409..4789c23 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -17,7 +17,9 @@ let state,
+   busy = false,
+   messageQuery = "",
+   messageSupplier = "all",
+-  messageFilter = "all";
++  messageFilter = "all",
++  recipeQuery = "",
++  recipeFamily = "all";
+ let orderFilter = "open";
+ let aiDraft = "",
+   aiMode = "careful",
+@@ -210,6 +212,7 @@ const pageLabel = {
+   settings: "Configuración",
+   ai: "IA local",
+   production: "Producción",
++  recipes: "Recetario",
+   documents: "Documentos",
+   guide: "Guía",
+ };
+@@ -256,6 +259,7 @@ function render() {
+     whatsapp,
+     ai: aiPage,
+     production,
++    recipes: recipeBook,
+     documents,
+     guide: guidePage,
+   };
+@@ -266,6 +270,7 @@ function render() {
+       ["stock", "box", "Inventario"],
+       ["orders", "cart", "Compras"],
+       ["production", "ice", "Producción"],
++      ["recipes", "cake", "Recetario"],
+       ["messages", "message", "Mensajes"],
+       ["whatsapp", "message", "WhatsApp"],
+       ["suppliers", "store", "Proveedores"],
+diff --git a/src/ui/events.js b/src/ui/events.js
+index d84660c..fdafaea 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -1,3 +1,19 @@
++// Scales the quantities shown in a recipe sheet to the kilos typed. Display only: no state changes.
++function scaleRecipe(id, kilos) {
++  const r = state.recipes.find((x) => x.id === id);
++  if (!r || !(kilos > 0)) return;
++  const factor = kilos / r.yield;
++  for (const el of document.querySelectorAll(
++    `[data-scaled="${CSS.escape(id)}"]`,
++  )) {
++    const q = Number(el.dataset.base) * factor;
++    el.textContent = `${num(el.dataset.unit === "ud" ? Math.ceil(q) : Math.round(q * 1000) / 1000)} ${el.dataset.unit}`;
++  }
++  const label = document.querySelector(
++    `[data-scale-label="${CSS.escape(id)}"]`,
++  );
++  if (label) label.textContent = num(kilos);
++}
+ // Escuchadores de clic, entrada y cambio; arranque de la aplicación.
+ // Los módulos de src/ui comparten el ámbito global y se cargan en orden desde index.html.
+ document.addEventListener("click", async (e) => {
+@@ -24,6 +40,7 @@ document.addEventListener("click", async (e) => {
+       ),
+     );
+     input.value = next;
++    if (input.dataset.scale) scaleRecipe(input.dataset.scale, next);
+     if (input.dataset.cart)
+       await mutate(
+         { type: "cart", product: input.dataset.cart, packs: next },
+@@ -58,8 +75,19 @@ document.addEventListener("click", async (e) => {
+     return;
+   } else if (el.dataset.openMessage) {
+     selectedMessage = el.dataset.openMessage;
++    const m = state.messages.find((x) => x.id === selectedMessage);
++    // Filters must not hide the message the person just asked to open.
++    if (m && !messageMatches(m)) {
++      messageSupplier = "all";
++      messageFilter = "all";
++      messageQuery = "";
++    }
+     page = "messages";
+-    await mutate({ type: "read", id: selectedMessage });
++    if (m && !m.read) await mutate({ type: "read", id: selectedMessage });
++    else render();
++    document
++      .querySelector(".message-detail")
++      ?.scrollIntoView({ block: "start", behavior: "smooth" });
+   }
+ });
+ document.addEventListener("input", (e) => {
+@@ -107,6 +135,11 @@ document.addEventListener("change", async (e) => {
+     await refreshWhatsApp();
+     return;
+   }
++  if (e.target.id === "recipe-family") {
++    recipeFamily = e.target.value;
++    render();
++    return;
++  }
+   if (["message-supplier", "message-filter"].includes(e.target.id)) {
+     const id = e.target.id;
+     if (id === "message-supplier") messageSupplier = e.target.value;
+@@ -127,6 +160,18 @@ document.addEventListener("change", async (e) => {
+     );
+ });
+ document.addEventListener("input", (e) => {
++  if (e.target.id === "recipe-search") {
++    recipeQuery = e.target.value;
++    const pos = e.target.selectionStart;
++    render();
++    $("#recipe-search").focus();
++    $("#recipe-search").setSelectionRange(pos, pos);
++    return;
++  }
++  if (e.target.dataset.scale) {
++    scaleRecipe(e.target.dataset.scale, Number(e.target.value));
++    return;
++  }
+   if (e.target.id === "message-search") {
+     const pos = e.target.selectionStart;
+     messageQuery = e.target.value;
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index 0d2e86a..b35d671 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, hay respuestas rápidas según la lectura (por ejemplo «De acuerdo con la fecha» o «Lo compramos por otro lado»). El texto se muestra antes de enviarlo, se puede editar y se envía una sola vez.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, hay respuestas rápidas según la lectura (por ejemplo «De acuerdo con la fecha» o «Lo compramos por otro lado»). El texto se muestra antes de enviarlo, se puede editar y se envía una sola vez.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views.js b/src/ui/views.js
+index dbbb100..44adbcf 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -86,9 +86,37 @@ const proposedProductions = () =>
+   state.productions.filter((p) => p.status === "proposed");
+ function replyBlock(m) {
+   const i = m.interpretation;
+-  if (!i) return "";
+   const ai = m.aiReading;
+-  return `<div class="reply-reading"><div class="message-label">RESPUESTA DEL PROVEEDOR · LECTURA POR REGLAS</div><h3>${esc(replyLabel[i.category])}${i.needsReading && !m.reviewed ? " " + pill("Debes leer", "peach") : ""}${i.learned ? " " + pill("Aprendido de ti", "sage") : i.corrected ? " " + pill("Corregido por ti", "sage") : ""}</h3><p>${esc(i.summary)}</p>${i.deliveryDate ? `<p><strong>Entrega indicada:</strong> ${date(i.deliveryDate + "T12:00:00Z")}${i.deliveryHint ? " («" + esc(i.deliveryHint) + "»)" : ""}</p>` : i.deliveryHint ? `<p><strong>Plazo indicado:</strong> ${esc(i.deliveryHint)}</p>` : ""}${i.missing ? `<p><strong>Producto que falta:</strong> ${esc(i.missing)}</p>` : ""}${ai ? `<div class="muted">Segunda lectura (IA local, ${esc(ai.model)}): ${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "dos lecturas coincidentes" : ai.status === "disagreement" ? "las lecturas discrepan: revisa tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && ai.category !== i.category ? " · No coincide con las reglas: decide leyendo el original." : ""}</div>` : '<div class="muted">Sin segunda lectura de IA todavía. Es opcional y solo propone una categoría.</div>'}</div>`;
++  const order = m.order && state.orders.find((o) => o.id === m.order);
++  const reading = i
++    ? `<div class="understood-row"><span>Lectura</span><div><strong>${esc(replyLabel[i.category])}${i.needsReading && !m.reviewed ? " " + pill("Debes leer", "peach") : ""}${i.learned ? " " + pill("Aprendido de ti", "sage") : i.corrected ? " " + pill("Corregido por ti", "sage") : ""}</strong><p>${esc(i.summary)}</p>${i.deliveryDate ? `<p><strong>Entrega indicada:</strong> ${date(i.deliveryDate + "T12:00:00Z")}${i.deliveryHint ? " («" + esc(i.deliveryHint) + "»)" : ""}</p>` : i.deliveryHint ? `<p><strong>Plazo indicado:</strong> ${esc(i.deliveryHint)}</p>` : ""}${i.missing ? `<p><strong>Producto que falta:</strong> ${esc(i.missing)}</p>` : ""}</div></div>`
++    : "";
++  const second = ai
++    ? `<div class="understood-row"><span>IA local</span><div><p>${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "dos lecturas coincidentes" : ai.status === "disagreement" ? "las lecturas discrepan: revisa tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && i && ai.category !== i.category ? " · No coincide con las reglas: decide leyendo el original." : ""}</p></div></div>`
++    : "";
++  return `<div class="reply-reading understood"><div class="message-label">LO QUE ENTENDIÓ LA APP · POR REGLAS</div>${reading}<div class="understood-row"><span>Prioridad</span><div><strong>${esc(priorityLabel[m.priority])}</strong>${i && m.reason.includes(i.summary) ? "" : `<p>${esc(m.reason)}</p>`}</div></div><div class="understood-row"><span>Pedido</span><div><strong>${order ? esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : esc(relevanceLabel[m.relevance])}</strong><p>${order ? "" : "Sin pedido vinculado. "}${esc(m.relevanceReason)} Nada de esto cambia compras ni stock.</p></div></div>${second}</div>`;
++}
++// Shared by the list and by «Abrir»: does the current filter show this message?
++function messageMatches(x) {
++  const fold = (v) =>
++    v
++      .normalize("NFD")
++      .replace(/[\u0300-\u036f]/g, "")
++      .toLowerCase();
++  return (
++    (messageSupplier === "all" || x.supplier === messageSupplier) &&
++    (messageFilter === "all" ||
++      (messageFilter === "unread" && !x.read) ||
++      (messageFilter === "pending" && !x.reviewed) ||
++      (messageFilter === "important" &&
++        x.priority === "important" &&
++        !x.reviewed) ||
++      (messageFilter === "relevant" && x.relevance === "relevant") ||
++      (messageFilter === "toread" &&
++        x.interpretation?.needsReading &&
++        !x.reviewed)) &&
++    fold(x.text + " " + supplier(x.supplier).name).includes(fold(messageQuery))
++  );
+ }
+ function homeNotices() {
+   const read = toRead().length,
+@@ -186,15 +214,86 @@ function documents() {
+     }`
+   );
+ }
++// Shared gate for Producción and Recetario when the recipe lock is enabled.
++function lockGate() {
++  if (!(lockInfo?.enabled && !lockInfo.unlocked)) return "";
++  return (
++    header(
++      "Recetario protegido",
++      "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
++    ) +
++    `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, se puede quitar con la app cerrada borrando la clave recipes_lock de la tabla settings de gelatostock.sqlite.</p></section>`
++  );
++}
++const familyLabel = {
++  crema: "Crema",
++  sorbete: "Sorbete",
++  postre: "Postre",
++  base: "Base o pasta",
++  otro: "Otro",
++};
++// Ingredients as share of the mass: kg and L count as 1:1, units are left out of the total.
++function recipeShares(r) {
++  const mass = r.ingredients.reduce((n, i) => {
++    const p = product(i.product);
++    return p.unit === "ud" ? n : n + i.quantity;
++  }, 0);
++  return r.ingredients.map((i) => {
++    const p = product(i.product);
++    return {
++      product: p,
++      quantity: i.quantity,
++      share: mass && p.unit !== "ud" ? (i.quantity / mass) * 100 : null,
++    };
++  });
++}
++function recipeBook() {
++  const gate = lockGate();
++  if (gate) return gate;
++  const fold = (s) =>
++    s
++      .normalize("NFD")
++      .replace(/[\u0300-\u036f]/g, "")
++      .toLowerCase();
++  const list = state.recipes.filter(
++    (r) =>
++      (recipeFamily === "all" || (r.family || "crema") === recipeFamily) &&
++      fold(r.name + " " + (r.allergens || "")).includes(fold(recipeQuery)),
++  );
++  return (
++    header(
++      "El recetario de la casa.",
++      "Cada receta con su familia, sus proporciones, la elaboración y los alérgenos. Desde aquí se produce y se escala.",
++      btn(icon("plus") + " Nueva receta", "recipeEditor", "primary"),
++    ) +
++    `<div class="message-filters"><label class="field">Buscar receta<input id="recipe-search" type="search" value="${esc(recipeQuery)}" placeholder="Nombre o alérgeno"></label><label class="field">Familia<select id="recipe-family"><option value="all">Todas las familias</option>${Object.entries(
++      familyLabel,
++    )
++      .map(
++        ([v, l]) =>
++          `<option value="${v}" ${recipeFamily === v ? "selected" : ""}>${l}</option>`,
++      )
++      .join("")}</select></label></div><div class="recipe-book">${
++      list
++        .map((r) => {
++          const shares = recipeShares(r);
++          return `<article class="panel recipe-sheet" data-recipe="${esc(r.id)}"><header class="recipe-sheet-head"><div><h2>${esc(r.name)}</h2><p>${pill(familyLabel[r.family || "crema"], "sage")} Rinde ${num(r.yield)} kg${r.product ? " · terminado: " + esc(product(r.product).name) : ""}</p></div><label class="field recipe-scale">Calcular para<span class="stepper"><button type="button" class="step" data-step="-1" aria-label="Menos kilos">−</button><input class="quantity" type="number" min="0.1" max="1000000" step="0.5" value="${r.yield}" data-scale="${esc(r.id)}" aria-label="Kilos para escalar ${esc(r.name)}"><button type="button" class="step" data-step="1" aria-label="Más kilos">+</button></span> kg</label></header><div class="table-scroll"><table class="delivery-table recipe-table"><thead><tr><th>Ingrediente</th><th>Para ${num(r.yield)} kg</th><th>%</th><th>Para <span data-scale-label="${esc(r.id)}">${num(r.yield)}</span> kg</th></tr></thead><tbody>${shares
++            .map(
++              (s) =>
++                `<tr><td><strong>${esc(s.product.name)}</strong></td><td>${num(s.quantity)} ${esc(s.product.unit)}</td><td>${s.share === null ? "—" : num(Math.round(s.share * 10) / 10) + " %"}</td><td><strong data-scaled="${esc(r.id)}" data-base="${s.quantity}" data-unit="${esc(s.product.unit)}">${num(s.quantity)} ${esc(s.product.unit)}</strong></td></tr>`,
++            )
++            .join(
++              "",
++            )}</tbody></table></div>${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
++        })
++        .join("") ||
++      `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
++    }</div>`
++  );
++}
+ function production() {
+-  if (lockInfo?.enabled && !lockInfo.unlocked)
+-    return (
+-      header(
+-        "Recetario protegido",
+-        "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
+-      ) +
+-      `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, se puede quitar con la app cerrada borrando la clave recipes_lock de la tabla settings de gelatostock.sqlite.</p></section>`
+-    );
++  const gate = lockGate();
++  if (gate) return gate;
+   const proposed = proposedProductions();
+   const applied = state.productions.filter((p) => p.status === "applied");
+   const byDate = {};
+@@ -245,11 +344,12 @@ function production() {
+             )
+             .join("")}</tbody></table></div>`
+         : '<div class="empty compact">Todavía no hay producciones aprobadas.</div>'
+-    }</section><section class="panel"><div class="panel-heading"><div><h2>Recetas</h2><p>Cantidades por lo que rinde cada receta, en la unidad base de cada ingrediente.</p></div></div><div class="recipe-grid">${
++    }</section><section class="panel"><div class="panel-heading"><div><h2>Recetas</h2><p>${state.recipes.length} receta${state.recipes.length === 1 ? "" : "s"} en el recetario, con proporciones, elaboración y alérgenos.</p></div>${btn("Abrir recetario", "openRecipes", "secondary")}</div><div class="recipe-grid">${
+       state.recipes
++        .slice(0, 6)
+         .map(
+           (r) =>
+-            `<article class="recipe-card"><h3>${esc(r.name)}</h3><small>Rinde ${num(r.yield)} kg${r.product ? " · terminado: " + esc(product(r.product).name) : " · sin producto terminado"}</small><ul>${r.ingredients.map((i) => `<li>${lineText(i)}</li>`).join("")}</ul>${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn("Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`,
++            `<article class="recipe-card"><h3>${esc(r.name)}</h3><small>${familyLabel[r.family || "crema"]} · rinde ${num(r.yield)} kg</small><div class="row-actions">${btn("Producir", "produce", "secondary", `data-recipe="${esc(r.id)}"`)}</div></article>`,
+         )
+         .join("") ||
+       '<div class="empty compact">Sin recetas. Crea la primera con «Nueva receta».</div>'
+@@ -257,11 +357,9 @@ function production() {
+   );
+ }
+ function salesSection() {
++  // Only what a recipe produces counts as finished product; ingredients never appear here.
+   const finished = state.products.filter(
+-    (p) =>
+-      p.unit === "kg" &&
+-      (state.recipes.some((r) => r.product === p.id) ||
+-        ["Gelatería", "Postres"].includes(p.category)),
++    (p) => p.unit === "kg" && state.recipes.some((r) => r.product === p.id),
+   );
+   const today = new Date().toISOString().slice(0, 10);
+   return `<section class="panel" data-sales><div class="panel-heading"><div><h2>Ventas y mermas del día</h2><p>Kilos vendidos o desechados de producto terminado. Cada cantidad crea una salida o una merma trazable y reversible.</p></div></div><label class="field short">Día<input type="date" class="inline-input" data-sales-date value="${today}" max="${today}"></label><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto terminado</th><th>Stock</th><th>Vendido (kg)</th><th>Merma (kg)</th></tr></thead><tbody>${finished
+@@ -271,7 +369,7 @@ function salesSection() {
+     )
+     .join(
+       "",
+-    )}</tbody></table></div>${finished.length ? `<div class="row-actions">${btn(icon("check") + " Registrar ventas y mermas", "dailySales", "primary")}</div>` : '<p class="muted">No hay productos terminados en kg.</p>'}</section>`;
++    )}</tbody></table></div>${finished.length ? `<div class="row-actions">${btn(icon("check") + " Registrar ventas y mermas", "dailySales", "primary")}</div>` : '<p class="muted">No hay productos terminados: asigna un producto terminado (en kg) a una receta del recetario.</p>'}</section>`;
+ }
+ function ingredientRow(productId = "", qty = "") {
+   return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+@@ -463,28 +561,7 @@ const quickReplies = (m) => {
+   return options.slice(0, 4);
+ };
+ function messages() {
+-  const fold = (v) =>
+-    v
+-      .normalize("NFD")
+-      .replace(/[\u0300-\u036f]/g, "")
+-      .toLowerCase();
+-  const list = state.messages.filter(
+-    (x) =>
+-      (messageSupplier === "all" || x.supplier === messageSupplier) &&
+-      (messageFilter === "all" ||
+-        (messageFilter === "unread" && !x.read) ||
+-        (messageFilter === "pending" && !x.reviewed) ||
+-        (messageFilter === "important" &&
+-          x.priority === "important" &&
+-          !x.reviewed) ||
+-        (messageFilter === "relevant" && x.relevance === "relevant") ||
+-        (messageFilter === "toread" &&
+-          x.interpretation?.needsReading &&
+-          !x.reviewed)) &&
+-      fold(x.text + " " + supplier(x.supplier).name).includes(
+-        fold(messageQuery),
+-      ),
+-  );
++  const list = state.messages.filter(messageMatches);
+   const m = list.find((x) => x.id === selectedMessage) || list[0];
+   // Conversations: one group per supplier, newest activity first.
+   const groups = [];
+@@ -511,7 +588,7 @@ function messages() {
+     header(
+       "Mensajes que se convierten en acciones.",
+       "Cada respuesta de tus proveedores, leída y ordenada por conversación. Tú decides qué hacer con cada una.",
+-      btn(icon("plus") + " Simular mensaje", "message", "primary"),
++      btn(icon("plus") + " Simular mensaje", "message", "secondary"),
+     ) +
+     `<section class="panel todo-panel"><div class="panel-heading"><div><h2>Qué hacer ahora</h2><p>${pending.length ? `${pending.length} mensaje${pending.length === 1 ? "" : "s"} que debes leer y decidir.` : "Nada pendiente de leer. Las confirmaciones y fechas quedan anotadas solas."}</p></div>${pending.length ? btn("Ver todos", "messagesToRead", "secondary") : ""}</div>${todo.map((x) => `<button class="todo-row" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><strong>${esc(supplier(x.supplier).name)} · ${esc(replyLabel[x.interpretation.category])}</strong><p>${esc(x.interpretation.summary)}</p></div><span class="text-link">Abrir ${icon("arrow")}</span></button>`).join("")}</section><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
+       {
+@@ -531,7 +608,7 @@ function messages() {
+         "",
+       )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Conversaciones <span>${list.length} de ${state.messages.length}</span></div>${groups.map((g) => `<div class="conversation-group"><div class="conversation-group-title"><strong>${esc(supplier(g.supplier).name)}</strong><small>${g.items.length} mensaje${g.items.length === 1 ? "" : "s"}${g.unread ? " · " + g.unread + " sin leer" : ""}</small></div>${g.items.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(x.interpretation ? replyLabel[x.interpretation.category] : priorityLabel[x.priority])}</strong><small>${date(x.at)} ${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? (x.decision ? "Decidido" : "Revisado") : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div>`).join("") || '<div class="empty compact"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div><div class="message-detail">${
+       m
+-        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}<div class="interpretation"><div class="message-label">${icon("leaf")} PRIORIDAD Y PEDIDO</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p><div class="muted">${order ? "Vinculado a " + esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
++        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}<div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
+             canReply
+               ? `<div class="quick-replies">${quickReplies(m)
+                   .map(([label, text]) =>
+@@ -546,7 +623,7 @@ function messages() {
+                     "",
+                   )}${btn("Escribir respuesta", "replyMessage", "secondary", `data-id="${esc(m.id)}" data-text=""`)}</div>`
+               : `<p class="muted">${m.channel === "whatsapp" ? "Conecta WhatsApp para responder desde aquí." : "Los mensajes de demostración no se responden; decide y cierra."}</p>`
+-          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">Lo que la app aprende es cómo leer un mensaje. Lo que decides (esperar, aceptar, comprar en otro sitio) se elige cada vez y queda anotado aquí, sin cambiar pedidos ni stock.</p></div>`
++          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">La app aprende a leer mensajes parecidos; nunca aprende decisiones. Lo que decides queda anotado aquí y no cambia pedidos ni stock.</p></div>`
+         : '<div class="empty"><h3>Elige una conversación.</h3><p>Aquí verás el mensaje, su lectura por reglas y las opciones para responder y decidir.</p></div>'
+     }</div></section>`
+   );
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index e492edb..4fe4493 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -951,3 +951,37 @@ test("proveedor: la web de compra solo admite direcciones https completas", () =
+   assert.equal(s.suppliers.at(-1).web, "https://www.makro.es/");
+   assert.equal(apply(seed(), { ...base, web: "" }).suppliers.at(-1).web, "");
+ });
++
++test("recetario: familia, elaboración y alérgenos se guardan; la familia por defecto es crema", () => {
++  let s = apply(seed(), {
++    type: "recipe",
++    name: "Sorbete de limón",
++    family: "sorbete",
++    yield: 2,
++    ingredients: [{ product: "p2", quantity: 0.5 }],
++    steps: "Mezclar y mantecar.",
++    allergens: "Ninguno",
++    note: "",
++  });
++  const r = s.recipes.at(-1);
++  assert.equal(r.family, "sorbete");
++  assert.equal(r.steps, "Mezclar y mantecar.");
++  assert.equal(r.allergens, "Ninguno");
++  s = apply(s, {
++    type: "recipe",
++    name: "Sin familia",
++    yield: 1,
++    ingredients: [{ product: "p2", quantity: 0.5 }],
++  });
++  assert.equal(s.recipes.at(-1).family, "crema");
++  assert.equal(s.recipes.at(-1).steps, "");
++  assert.throws(() =>
++    apply(s, {
++      type: "recipe",
++      name: "Mal",
++      family: "helado",
++      yield: 1,
++      ingredients: [{ product: "p2", quantity: 0.5 }],
++    }),
++  );
++});

@@ -86,9 +86,37 @@ const proposedProductions = () =>
   state.productions.filter((p) => p.status === "proposed");
 function replyBlock(m) {
   const i = m.interpretation;
-  if (!i) return "";
   const ai = m.aiReading;
-  return `<div class="reply-reading"><div class="message-label">RESPUESTA DEL PROVEEDOR · LECTURA POR REGLAS</div><h3>${esc(replyLabel[i.category])}${i.needsReading && !m.reviewed ? " " + pill("Debes leer", "peach") : ""}${i.learned ? " " + pill("Aprendido de ti", "sage") : i.corrected ? " " + pill("Corregido por ti", "sage") : ""}</h3><p>${esc(i.summary)}</p>${i.deliveryDate ? `<p><strong>Entrega indicada:</strong> ${date(i.deliveryDate + "T12:00:00Z")}${i.deliveryHint ? " («" + esc(i.deliveryHint) + "»)" : ""}</p>` : i.deliveryHint ? `<p><strong>Plazo indicado:</strong> ${esc(i.deliveryHint)}</p>` : ""}${i.missing ? `<p><strong>Producto que falta:</strong> ${esc(i.missing)}</p>` : ""}${ai ? `<div class="muted">Segunda lectura (IA local, ${esc(ai.model)}): ${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "dos lecturas coincidentes" : ai.status === "disagreement" ? "las lecturas discrepan: revisa tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && ai.category !== i.category ? " · No coincide con las reglas: decide leyendo el original." : ""}</div>` : '<div class="muted">Sin segunda lectura de IA todavía. Es opcional y solo propone una categoría.</div>'}</div>`;
+  const order = m.order && state.orders.find((o) => o.id === m.order);
+  const reading = i
+    ? `<div class="understood-row"><span>Lectura</span><div><strong>${esc(replyLabel[i.category])}${i.needsReading && !m.reviewed ? " " + pill("Debes leer", "peach") : ""}${i.learned ? " " + pill("Aprendido de ti", "sage") : i.corrected ? " " + pill("Corregido por ti", "sage") : ""}</strong><p>${esc(i.summary)}</p>${i.deliveryDate ? `<p><strong>Entrega indicada:</strong> ${date(i.deliveryDate + "T12:00:00Z")}${i.deliveryHint ? " («" + esc(i.deliveryHint) + "»)" : ""}</p>` : i.deliveryHint ? `<p><strong>Plazo indicado:</strong> ${esc(i.deliveryHint)}</p>` : ""}${i.missing ? `<p><strong>Producto que falta:</strong> ${esc(i.missing)}</p>` : ""}</div></div>`
+    : "";
+  const second = ai
+    ? `<div class="understood-row"><span>IA local</span><div><p>${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "dos lecturas coincidentes" : ai.status === "disagreement" ? "las lecturas discrepan: revisa tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && i && ai.category !== i.category ? " · No coincide con las reglas: decide leyendo el original." : ""}</p></div></div>`
+    : "";
+  return `<div class="reply-reading understood"><div class="message-label">LO QUE ENTENDIÓ LA APP · POR REGLAS</div>${reading}<div class="understood-row"><span>Prioridad</span><div><strong>${esc(priorityLabel[m.priority])}</strong>${i && m.reason.includes(i.summary) ? "" : `<p>${esc(m.reason)}</p>`}</div></div><div class="understood-row"><span>Pedido</span><div><strong>${order ? esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : esc(relevanceLabel[m.relevance])}</strong><p>${order ? "" : "Sin pedido vinculado. "}${esc(m.relevanceReason)} Nada de esto cambia compras ni stock.</p></div></div>${second}</div>`;
+}
+// Shared by the list and by «Abrir»: does the current filter show this message?
+function messageMatches(x) {
+  const fold = (v) =>
+    v
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  return (
+    (messageSupplier === "all" || x.supplier === messageSupplier) &&
+    (messageFilter === "all" ||
+      (messageFilter === "unread" && !x.read) ||
+      (messageFilter === "pending" && !x.reviewed) ||
+      (messageFilter === "important" &&
+        x.priority === "important" &&
+        !x.reviewed) ||
+      (messageFilter === "relevant" && x.relevance === "relevant") ||
+      (messageFilter === "toread" &&
+        x.interpretation?.needsReading &&
+        !x.reviewed)) &&
+    fold(x.text + " " + supplier(x.supplier).name).includes(fold(messageQuery))
+  );
 }
 function homeNotices() {
   const read = toRead().length,
@@ -186,15 +214,86 @@ function documents() {
     }`
   );
 }
+// Shared gate for Producción and Recetario when the recipe lock is enabled.
+function lockGate() {
+  if (!(lockInfo?.enabled && !lockInfo.unlocked)) return "";
+  return (
+    header(
+      "Recetario protegido",
+      "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
+    ) +
+    `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, se puede quitar con la app cerrada borrando la clave recipes_lock de la tabla settings de gelatostock.sqlite.</p></section>`
+  );
+}
+const familyLabel = {
+  crema: "Crema",
+  sorbete: "Sorbete",
+  postre: "Postre",
+  base: "Base o pasta",
+  otro: "Otro",
+};
+// Ingredients as share of the mass: kg and L count as 1:1, units are left out of the total.
+function recipeShares(r) {
+  const mass = r.ingredients.reduce((n, i) => {
+    const p = product(i.product);
+    return p.unit === "ud" ? n : n + i.quantity;
+  }, 0);
+  return r.ingredients.map((i) => {
+    const p = product(i.product);
+    return {
+      product: p,
+      quantity: i.quantity,
+      share: mass && p.unit !== "ud" ? (i.quantity / mass) * 100 : null,
+    };
+  });
+}
+function recipeBook() {
+  const gate = lockGate();
+  if (gate) return gate;
+  const fold = (s) =>
+    s
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  const list = state.recipes.filter(
+    (r) =>
+      (recipeFamily === "all" || (r.family || "crema") === recipeFamily) &&
+      fold(r.name + " " + (r.allergens || "")).includes(fold(recipeQuery)),
+  );
+  return (
+    header(
+      "El recetario de la casa.",
+      "Cada receta con su familia, sus proporciones, la elaboración y los alérgenos. Desde aquí se produce y se escala.",
+      btn(icon("plus") + " Nueva receta", "recipeEditor", "primary"),
+    ) +
+    `<div class="message-filters"><label class="field">Buscar receta<input id="recipe-search" type="search" value="${esc(recipeQuery)}" placeholder="Nombre o alérgeno"></label><label class="field">Familia<select id="recipe-family"><option value="all">Todas las familias</option>${Object.entries(
+      familyLabel,
+    )
+      .map(
+        ([v, l]) =>
+          `<option value="${v}" ${recipeFamily === v ? "selected" : ""}>${l}</option>`,
+      )
+      .join("")}</select></label></div><div class="recipe-book">${
+      list
+        .map((r) => {
+          const shares = recipeShares(r);
+          return `<article class="panel recipe-sheet" data-recipe="${esc(r.id)}"><header class="recipe-sheet-head"><div><h2>${esc(r.name)}</h2><p>${pill(familyLabel[r.family || "crema"], "sage")} Rinde ${num(r.yield)} kg${r.product ? " · terminado: " + esc(product(r.product).name) : ""}</p></div><label class="field recipe-scale">Calcular para<span class="stepper"><button type="button" class="step" data-step="-1" aria-label="Menos kilos">−</button><input class="quantity" type="number" min="0.1" max="1000000" step="0.5" value="${r.yield}" data-scale="${esc(r.id)}" aria-label="Kilos para escalar ${esc(r.name)}"><button type="button" class="step" data-step="1" aria-label="Más kilos">+</button></span> kg</label></header><div class="table-scroll"><table class="delivery-table recipe-table"><thead><tr><th>Ingrediente</th><th>Para ${num(r.yield)} kg</th><th>%</th><th>Para <span data-scale-label="${esc(r.id)}">${num(r.yield)}</span> kg</th></tr></thead><tbody>${shares
+            .map(
+              (s) =>
+                `<tr><td><strong>${esc(s.product.name)}</strong></td><td>${num(s.quantity)} ${esc(s.product.unit)}</td><td>${s.share === null ? "—" : num(Math.round(s.share * 10) / 10) + " %"}</td><td><strong data-scaled="${esc(r.id)}" data-base="${s.quantity}" data-unit="${esc(s.product.unit)}">${num(s.quantity)} ${esc(s.product.unit)}</strong></td></tr>`,
+            )
+            .join(
+              "",
+            )}</tbody></table></div>${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
+        })
+        .join("") ||
+      `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
+    }</div>`
+  );
+}
 function production() {
-  if (lockInfo?.enabled && !lockInfo.unlocked)
-    return (
-      header(
-        "Recetario protegido",
-        "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
-      ) +
-      `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, se puede quitar con la app cerrada borrando la clave recipes_lock de la tabla settings de gelatostock.sqlite.</p></section>`
-    );
+  const gate = lockGate();
+  if (gate) return gate;
   const proposed = proposedProductions();
   const applied = state.productions.filter((p) => p.status === "applied");
   const byDate = {};
@@ -245,11 +344,12 @@ function production() {
             )
             .join("")}</tbody></table></div>`
         : '<div class="empty compact">Todavía no hay producciones aprobadas.</div>'
-    }</section><section class="panel"><div class="panel-heading"><div><h2>Recetas</h2><p>Cantidades por lo que rinde cada receta, en la unidad base de cada ingrediente.</p></div></div><div class="recipe-grid">${
+    }</section><section class="panel"><div class="panel-heading"><div><h2>Recetas</h2><p>${state.recipes.length} receta${state.recipes.length === 1 ? "" : "s"} en el recetario, con proporciones, elaboración y alérgenos.</p></div>${btn("Abrir recetario", "openRecipes", "secondary")}</div><div class="recipe-grid">${
       state.recipes
+        .slice(0, 6)
         .map(
           (r) =>
-            `<article class="recipe-card"><h3>${esc(r.name)}</h3><small>Rinde ${num(r.yield)} kg${r.product ? " · terminado: " + esc(product(r.product).name) : " · sin producto terminado"}</small><ul>${r.ingredients.map((i) => `<li>${lineText(i)}</li>`).join("")}</ul>${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn("Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`,
+            `<article class="recipe-card"><h3>${esc(r.name)}</h3><small>${familyLabel[r.family || "crema"]} · rinde ${num(r.yield)} kg</small><div class="row-actions">${btn("Producir", "produce", "secondary", `data-recipe="${esc(r.id)}"`)}</div></article>`,
         )
         .join("") ||
       '<div class="empty compact">Sin recetas. Crea la primera con «Nueva receta».</div>'
@@ -257,11 +357,9 @@ function production() {
   );
 }
 function salesSection() {
+  // Only what a recipe produces counts as finished product; ingredients never appear here.
   const finished = state.products.filter(
-    (p) =>
-      p.unit === "kg" &&
-      (state.recipes.some((r) => r.product === p.id) ||
-        ["Gelatería", "Postres"].includes(p.category)),
+    (p) => p.unit === "kg" && state.recipes.some((r) => r.product === p.id),
   );
   const today = new Date().toISOString().slice(0, 10);
   return `<section class="panel" data-sales><div class="panel-heading"><div><h2>Ventas y mermas del día</h2><p>Kilos vendidos o desechados de producto terminado. Cada cantidad crea una salida o una merma trazable y reversible.</p></div></div><label class="field short">Día<input type="date" class="inline-input" data-sales-date value="${today}" max="${today}"></label><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto terminado</th><th>Stock</th><th>Vendido (kg)</th><th>Merma (kg)</th></tr></thead><tbody>${finished
@@ -271,7 +369,7 @@ function salesSection() {
     )
     .join(
       "",
-    )}</tbody></table></div>${finished.length ? `<div class="row-actions">${btn(icon("check") + " Registrar ventas y mermas", "dailySales", "primary")}</div>` : '<p class="muted">No hay productos terminados en kg.</p>'}</section>`;
+    )}</tbody></table></div>${finished.length ? `<div class="row-actions">${btn(icon("check") + " Registrar ventas y mermas", "dailySales", "primary")}</div>` : '<p class="muted">No hay productos terminados: asigna un producto terminado (en kg) a una receta del recetario.</p>'}</section>`;
 }
 function ingredientRow(productId = "", qty = "") {
   return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
@@ -463,28 +561,7 @@ const quickReplies = (m) => {
   return options.slice(0, 4);
 };
 function messages() {
-  const fold = (v) =>
-    v
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-  const list = state.messages.filter(
-    (x) =>
-      (messageSupplier === "all" || x.supplier === messageSupplier) &&
-      (messageFilter === "all" ||
-        (messageFilter === "unread" && !x.read) ||
-        (messageFilter === "pending" && !x.reviewed) ||
-        (messageFilter === "important" &&
-          x.priority === "important" &&
-          !x.reviewed) ||
-        (messageFilter === "relevant" && x.relevance === "relevant") ||
-        (messageFilter === "toread" &&
-          x.interpretation?.needsReading &&
-          !x.reviewed)) &&
-      fold(x.text + " " + supplier(x.supplier).name).includes(
-        fold(messageQuery),
-      ),
-  );
+  const list = state.messages.filter(messageMatches);
   const m = list.find((x) => x.id === selectedMessage) || list[0];
   // Conversations: one group per supplier, newest activity first.
   const groups = [];
@@ -511,7 +588,7 @@ function messages() {
     header(
       "Mensajes que se convierten en acciones.",
       "Cada respuesta de tus proveedores, leída y ordenada por conversación. Tú decides qué hacer con cada una.",
-      btn(icon("plus") + " Simular mensaje", "message", "primary"),
+      btn(icon("plus") + " Simular mensaje", "message", "secondary"),
     ) +
     `<section class="panel todo-panel"><div class="panel-heading"><div><h2>Qué hacer ahora</h2><p>${pending.length ? `${pending.length} mensaje${pending.length === 1 ? "" : "s"} que debes leer y decidir.` : "Nada pendiente de leer. Las confirmaciones y fechas quedan anotadas solas."}</p></div>${pending.length ? btn("Ver todos", "messagesToRead", "secondary") : ""}</div>${todo.map((x) => `<button class="todo-row" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><strong>${esc(supplier(x.supplier).name)} · ${esc(replyLabel[x.interpretation.category])}</strong><p>${esc(x.interpretation.summary)}</p></div><span class="text-link">Abrir ${icon("arrow")}</span></button>`).join("")}</section><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
       {
@@ -531,7 +608,7 @@ function messages() {
         "",
       )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Conversaciones <span>${list.length} de ${state.messages.length}</span></div>${groups.map((g) => `<div class="conversation-group"><div class="conversation-group-title"><strong>${esc(supplier(g.supplier).name)}</strong><small>${g.items.length} mensaje${g.items.length === 1 ? "" : "s"}${g.unread ? " · " + g.unread + " sin leer" : ""}</small></div>${g.items.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(x.interpretation ? replyLabel[x.interpretation.category] : priorityLabel[x.priority])}</strong><small>${date(x.at)} ${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? (x.decision ? "Decidido" : "Revisado") : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div>`).join("") || '<div class="empty compact"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div><div class="message-detail">${
       m
-        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}<div class="interpretation"><div class="message-label">${icon("leaf")} PRIORIDAD Y PEDIDO</div><h3>${esc(priorityLabel[m.priority])}</h3><p>${esc(m.reason)}</p><h3>${esc(relevanceLabel[m.relevance])}</h3><p>${esc(m.relevanceReason)}</p><div class="muted">${order ? "Vinculado a " + esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : "Sin pedido vinculado. No se han modificado compras ni stock."}</div></div><div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
+        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}<div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
             canReply
               ? `<div class="quick-replies">${quickReplies(m)
                   .map(([label, text]) =>
@@ -546,7 +623,7 @@ function messages() {
                     "",
                   )}${btn("Escribir respuesta", "replyMessage", "secondary", `data-id="${esc(m.id)}" data-text=""`)}</div>`
               : `<p class="muted">${m.channel === "whatsapp" ? "Conecta WhatsApp para responder desde aquí." : "Los mensajes de demostración no se responden; decide y cierra."}</p>`
-          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">Lo que la app aprende es cómo leer un mensaje. Lo que decides (esperar, aceptar, comprar en otro sitio) se elige cada vez y queda anotado aquí, sin cambiar pedidos ni stock.</p></div>`
+          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">La app aprende a leer mensajes parecidos; nunca aprende decisiones. Lo que decides queda anotado aquí y no cambia pedidos ni stock.</p></div>`
         : '<div class="empty"><h3>Elige una conversación.</h3><p>Aquí verás el mensaje, su lectura por reglas y las opciones para responder y decidir.</p></div>'
     }</div></section>`
   );

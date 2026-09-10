@@ -3135,3 +3135,86 @@ dialog::backdrop {
   line-height: 1.5;
   color: var(--ink-muted, #5a6670);
 }
+
+/* Recetario */
+.recipe-book {
+  display: grid;
+  gap: var(--s-4, 16px);
+}
+.recipe-sheet {
+  padding: var(--s-5, 20px) var(--s-6, 24px);
+}
+.recipe-sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s-4, 16px);
+  flex-wrap: wrap;
+  margin-bottom: var(--s-3, 12px);
+}
+.recipe-sheet-head h2 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: var(--fs-22, 22px);
+  color: var(--ink-title, #1f2a24);
+}
+.recipe-sheet-head p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--ink-muted, #5a6670);
+  font-size: var(--fs-13, 13px);
+}
+.recipe-scale {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  white-space: nowrap;
+}
+.recipe-scale .stepper {
+  display: inline-flex;
+}
+.recipe-scale .quantity {
+  width: 84px;
+}
+.recipe-table td:nth-child(3) {
+  color: var(--ink-muted, #5a6670);
+}
+.recipe-block {
+  margin-top: var(--s-3, 12px);
+}
+.recipe-steps {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  max-width: 76ch;
+}
+.recipe-sheet .row-actions {
+  margin-top: var(--s-4, 16px);
+}
+
+/* Mensajes: bloque único «Lo que entendió la app» */
+.understood {
+  display: grid;
+  gap: 10px;
+}
+.understood-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.understood-row > span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted, #5a6670);
+  padding-top: 3px;
+}
+.understood-row p {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--ink-soft, #3f4a44);
+}

@@ -260,8 +260,12 @@ export function seed(): State {
       {
         id: "r1",
         name: "Gelato de chocolate",
+        family: "crema",
         product: "p4",
         yield: 1,
+        steps:
+          "Calentar la leche con la nata a 45 °C, añadir el chocolate y mezclar hasta disolver. Pasteurizar a 85 °C, enfriar rápido a 4 °C y madurar 6 horas. Mantecar y abatir.",
+        allergens: "Leche. Puede contener trazas de frutos secos.",
         ingredients: [
           { product: "p2", quantity: 0.5 },
           { product: "p10", quantity: 0.2 },

@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.16.0
+# GelatoStock · prototipo 0.17.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.16.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.17.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.16.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.17.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué podés probar
 
@@ -167,3 +167,6 @@ La pantalla Mensajes muestra arriba «Qué hacer ahora», agrupa las conversacio
 
 ## IA con reglas primero y compra en webs en 0.16.0
 La lectura de documentos la hacen reglas deterministas sobre el título (con tolerancia a OCR) y el modelo local da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. Corpus sintético de 51 documentos: 51/51 combinado · reglas 51/51 · modelo solo 38/51 · 6.4 s por lectura reforzada. El modelo se mantiene cargado unos minutos y responde solo con el tipo, lo que acorta cada lectura. Los proveedores pueden tener una web de compra (https): el carrito ofrece la lista copiable y abre la web; la app no entra ni paga.
+
+## Recetario en 0.17.0
+Pantalla Recetario con la ficha completa de cada receta (familia, proporciones con porcentaje, elaboración, alérgenos), escala por kilos en pantalla y acciones de producir, duplicar y eliminar. Ventas y mermas solo muestra productos terminados de recetas. Mensajes agrupa en un solo bloque lo que entendió la app y «Abrir» siempre lleva al mensaje.

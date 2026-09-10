@@ -951,3 +951,37 @@ test("proveedor: la web de compra solo admite direcciones https completas", () =
   assert.equal(s.suppliers.at(-1).web, "https://www.makro.es/");
   assert.equal(apply(seed(), { ...base, web: "" }).suppliers.at(-1).web, "");
 });
+
+test("recetario: familia, elaboración y alérgenos se guardan; la familia por defecto es crema", () => {
+  let s = apply(seed(), {
+    type: "recipe",
+    name: "Sorbete de limón",
+    family: "sorbete",
+    yield: 2,
+    ingredients: [{ product: "p2", quantity: 0.5 }],
+    steps: "Mezclar y mantecar.",
+    allergens: "Ninguno",
+    note: "",
+  });
+  const r = s.recipes.at(-1);
+  assert.equal(r.family, "sorbete");
+  assert.equal(r.steps, "Mezclar y mantecar.");
+  assert.equal(r.allergens, "Ninguno");
+  s = apply(s, {
+    type: "recipe",
+    name: "Sin familia",
+    yield: 1,
+    ingredients: [{ product: "p2", quantity: 0.5 }],
+  });
+  assert.equal(s.recipes.at(-1).family, "crema");
+  assert.equal(s.recipes.at(-1).steps, "");
+  assert.throws(() =>
+    apply(s, {
+      type: "recipe",
+      name: "Mal",
+      family: "helado",
+      yield: 1,
+      ingredients: [{ product: "p2", quantity: 0.5 }],
+    }),
+  );
+});
