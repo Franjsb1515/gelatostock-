@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.17.1.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.18.0.
 
 ## Entregado y comprobado
 
@@ -42,9 +42,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
 - [x] Compra en webs (Makro u otras): lista copiable por proveedor y apertura de la web guardada; sin automatizar la compra (0.16.0).
 - [x] Auditoría 0.17.0, puntos 1–5, 9 y 10 (0.17.1): dist limpio, paquete podado, fechas locales, CSV seguro, rotación de registros, tuteo, README.
-- [ ] Auditoría 0.17.0, punto 7: enviar a la interfaz solo lo reciente y paginar Actividad/Movimientos.
-- [ ] Auditoría 0.17.0, punto 8: carpeta secundaria de copias (USB/OneDrive) y aviso de copia antigua.
-- [ ] Auditoría 0.17.0, punto 11: partir src/ui/views.js por pantalla; prueba de escritorio para Recetario y «Abrir»; Recetario y Guía en la auditoría visual.
+- [x] Auditoría 0.17.0, punto 7: historial paginado (0.18.0).
+- [x] Auditoría 0.17.0, punto 8: copia secundaria y aviso (0.18.0).
+- [x] Auditoría 0.17.0, punto 11: views.js partido, pruebas de Recetario y «Abrir», auditoría visual ampliada (0.18.0).
+- [ ] Elegir la carpeta secundaria con un diálogo del sistema (hoy se escribe la ruta; requiere preload o IPC en Electron).
 - [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
 - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
 - [ ] Recetario: balance técnico del gelato (azúcares, grasa, sólidos) si el usuario aporta fichas reales; impresión de ficha.

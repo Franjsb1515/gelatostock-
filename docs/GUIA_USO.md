@@ -75,6 +75,10 @@ Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de
 ## Configuración
 Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.
 
+## Copias y espacio
+- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.
+- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.
+
 ## Si algo falla
 - Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.
 - Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».

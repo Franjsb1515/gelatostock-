@@ -1006,6 +1006,62 @@ async function action(name, el) {
     }
     return;
   }
+  if (name === "moreHistory") {
+    const kind = el.dataset.kind;
+    historyShown[kind] += 50;
+    const total = historyInfo?.[kind] ?? state[kind].length;
+    if (historyShown[kind] > state[kind].length && state[kind].length < total) {
+      try {
+        const r = await request(
+          `/api/history?kind=${kind}&offset=${state[kind].length}&limit=300`,
+        );
+        // Append only what is not already loaded (the list is newest first).
+        const known = new Set(state[kind].map((x) => x.id));
+        state[kind] = state[kind].concat(
+          r.items.filter((x) => !known.has(x.id)),
+        );
+      } catch (e) {
+        toast(e.message);
+      }
+    }
+    render();
+    return;
+  }
+  if (name === "backupDirEditor") {
+    modal(
+      "Carpeta secundaria de copias",
+      "Cada copia (manual o automática) se duplica ahí. Usa otro disco, un USB o una carpeta sincronizada. Se comprueba que se puede escribir.",
+      field(
+        "Ruta completa de la carpeta",
+        "dir",
+        backupInfo?.secondary?.dir || "",
+        "text",
+        'required maxlength="300" placeholder="E:\\CopiasGelato"',
+      ),
+      async (f) => {
+        applyEnvelope(
+          await request("/api/maintenance", {
+            type: "backupDir",
+            dir: f.get("dir").trim(),
+          }),
+        );
+        render();
+        toast("Carpeta secundaria guardada y primera copia hecha.");
+        return true;
+      },
+    );
+    return;
+  }
+  if (name === "backupDirClear") {
+    applyEnvelope(
+      await request("/api/maintenance", { type: "backupDir", dir: "" }),
+    );
+    render();
+    toast(
+      "Carpeta secundaria quitada. Las copias siguen en la carpeta de datos.",
+    );
+    return;
+  }
   if (name === "restore") {
     modal(
       "Restaurar una copia",

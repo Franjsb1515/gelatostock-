@@ -5,6 +5,8 @@ let waState = null,
   waBusy = false;
 let appVersion = "",
   backupInfo = null,
+  historyInfo = null,
+  historyShown = { movements: 50, activity: 50 },
   lockInfo = null,
   retentionDays = 0;
 let state,
@@ -166,13 +168,7 @@ async function mutate(a, msg) {
       operationId: crypto.randomUUID(),
       ...a,
     });
-    state = data.state;
-    appVersion = data.version || appVersion;
-    if (data.backup) backupInfo = data.backup;
-    if (data.lock) lockInfo = data.lock;
-    if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
-    dataDir = data.dataDir;
-    archiveWarning = data.archiveWarning;
+    applyEnvelope(data);
     render();
     if (archiveWarning || msg) toast(archiveWarning || msg);
     return true;
@@ -192,12 +188,19 @@ async function mutate(a, msg) {
     busy = false;
   }
 }
-async function reloadState() {
-  const data = await request("/api/state");
+// Every server response carries the same envelope: state plus side information.
+function applyEnvelope(data) {
   state = data.state;
+  appVersion = data.version || appVersion;
   if (data.backup) backupInfo = data.backup;
   if (data.lock) lockInfo = data.lock;
+  if (data.history) historyInfo = data.history;
   if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
+  if (data.dataDir) dataDir = data.dataDir;
+  archiveWarning = data.archiveWarning;
+}
+async function reloadState() {
+  applyEnvelope(await request("/api/state"));
   render();
 }
 function nav(to) {

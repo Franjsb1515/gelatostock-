@@ -15,29 +15,61 @@ const { Store } = require("../build/store.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
   port = 0,
+  // Newest movements/activity sent to the UI per response; older rows come from /api/history.
+  historyLimit = Number(process.env.GELATO_HISTORY_LIMIT) || 300,
 } = {}) {
   const store = new Store(dataDir);
   // Daily automatic copy (data + photos) with a bounded history of automatic files only.
   const backupDir = path.join(dataDir, "backups");
-  const backupInfo = { last: null, warning: "" };
+  const isBackupFile = (f) => /^gelatostock-\d+-[0-9a-f-]{36}\.json$/.test(f);
+  const byStamp = (a, b) => Number(a.split("-")[1]) - Number(b.split("-")[1]);
+  // Optional second folder (USB, OneDrive, NAS…): every backup is copied there too, with the
+  // same retention. Losing the main disk then costs at most one day.
+  const secondaryInfo = { dir: "", last: null, error: "" };
+  const copyToSecondary = (file) => {
+    const dir = store.setting("backup_dir_secondary") || "";
+    secondaryInfo.dir = dir;
+    if (!dir) {
+      secondaryInfo.error = "";
+      return;
+    }
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      const target = path.join(dir, path.basename(file));
+      if (!fs.existsSync(target)) fs.copyFileSync(file, target);
+      for (const f of fs
+        .readdirSync(dir)
+        .filter(isBackupFile)
+        .sort(byStamp)
+        .slice(0, -30))
+        fs.unlinkSync(path.join(dir, f));
+      secondaryInfo.last = new Date().toISOString();
+      secondaryInfo.error = "";
+    } catch (e) {
+      secondaryInfo.error =
+        "No se pudo copiar a la carpeta secundaria: " + String(e.message || e);
+    }
+  };
+  const backupInfo = { last: null, warning: "", secondary: secondaryInfo };
   const autoBackup = () => {
     try {
       fs.mkdirSync(backupDir, { recursive: true });
       const own = () =>
-        fs
-          .readdirSync(backupDir)
-          .filter((f) => /^gelatostock-\d+-[0-9a-f-]{36}\.json$/.test(f))
-          .sort((a, b) => Number(a.split("-")[1]) - Number(b.split("-")[1]));
+        fs.readdirSync(backupDir).filter(isBackupFile).sort(byStamp);
       const files = own();
       const last = files.length
         ? Number(files[files.length - 1].split("-")[1])
         : 0;
       if (Date.now() - last > 24 * 3600 * 1000) {
-        store.backup();
+        const created = store.backup();
         for (const f of own().slice(0, -30))
           fs.unlinkSync(path.join(backupDir, f));
         backupInfo.last = new Date().toISOString();
-      } else backupInfo.last = new Date(last).toISOString();
+        copyToSecondary(created);
+      } else {
+        backupInfo.last = new Date(last).toISOString();
+        copyToSecondary(path.join(backupDir, files[files.length - 1]));
+      }
       backupInfo.warning = "";
     } catch (e) {
       backupInfo.warning =
@@ -109,13 +141,29 @@ function createApp({
   setTimeout(autoPurge, 5000).unref();
   const purgeTimer = setInterval(autoPurge, 6 * 3600 * 1000);
   purgeTimer.unref();
+  // The UI receives only the newest rows of the two unbounded tables; totals travel apart.
+  const trimHistory = (state) => ({
+    ...state,
+    movements: state.movements.slice(0, historyLimit),
+    activity: state.activity.slice(0, historyLimit),
+  });
   const envelope = (state, extra = {}) => ({
-    state: redact(state),
+    state: redact(trimHistory(state)),
+    history: {
+      limit: historyLimit,
+      movements: state.movements.length,
+      activity: state.activity.length,
+    },
     dataDir,
     storage: "SQLite",
     archiveWarning: store.archiveWarning,
     version,
-    backup: backupInfo,
+    backup: {
+      ...backupInfo,
+      stale:
+        !backupInfo.last ||
+        Date.now() - Date.parse(backupInfo.last) > 48 * 3600 * 1000,
+    },
     lock: lockInfo(),
     retentionDays: retentionDays(),
     ...extra,
@@ -186,6 +234,27 @@ function createApp({
     }
     if (u.pathname === "/api/state" && req.method === "GET") {
       json(200, envelope(store.load()));
+      return;
+    }
+    if (u.pathname === "/api/history" && req.method === "GET") {
+      // Older movements/activity on demand (newest first, same order as the state).
+      const kind = u.searchParams.get("kind");
+      if (!["movements", "activity"].includes(kind)) {
+        json(400, { error: "Historial desconocido." });
+        return;
+      }
+      const offset = Math.max(0, Number(u.searchParams.get("offset")) || 0);
+      const limit = Math.min(
+        1000,
+        Math.max(1, Number(u.searchParams.get("limit")) || historyLimit),
+      );
+      const rows = store.load()[kind];
+      json(200, {
+        kind,
+        offset,
+        total: rows.length,
+        items: rows.slice(offset, offset + limit),
+      });
       return;
     }
     if (
@@ -420,6 +489,35 @@ function createApp({
           return;
         }
         if (u.pathname === "/api/maintenance") {
+          if (data.type === "backupDir") {
+            const dir = String(data.dir || "").trim();
+            if (dir.length > 300) throw Error("Ruta demasiado larga.");
+            if (dir) {
+              if (!path.isAbsolute(dir))
+                throw Error(
+                  "Escribe la ruta completa de la carpeta, por ejemplo E:\\CopiasGelato o C:\\Users\\tú\\OneDrive\\GelatoStock.",
+                );
+              const inside = path.relative(dataDir, dir);
+              if (
+                inside === "" ||
+                (!inside.startsWith("..") && !path.isAbsolute(inside))
+              )
+                throw Error(
+                  "La carpeta secundaria debe estar fuera de la carpeta de datos (idealmente en otro disco o en la nube).",
+                );
+              fs.mkdirSync(dir, { recursive: true });
+              const probe = path.join(dir, ".gelatostock-prueba");
+              fs.writeFileSync(probe, "ok");
+              fs.unlinkSync(probe);
+            }
+            store.setSetting("backup_dir_secondary", dir || undefined);
+            secondaryInfo.last = null;
+            secondaryInfo.error = "";
+            secondaryInfo.dir = dir;
+            if (dir) copyToSecondary(store.backup());
+            json(200, envelope(store.load()));
+            return;
+          }
           if (data.type === "retention") {
             const days = Number(data.days);
             if (![0, 7, 14, 30, 90].includes(days))
@@ -508,7 +606,14 @@ function createApp({
         if (u.pathname === "/api/backup") {
           const created = store.backup();
           backupInfo.last = new Date().toISOString();
-          json(200, { path: created });
+          copyToSecondary(created);
+          json(200, {
+            path: created,
+            secondary: secondaryInfo.dir
+              ? secondaryInfo.error ||
+                path.join(secondaryInfo.dir, path.basename(created))
+              : "",
+          });
           return;
         }
         if (u.pathname === "/api/restore") {
@@ -558,6 +663,11 @@ function createApp({
       "/ui/core.js": "ui/core.js",
       "/ui/whatsapp.js": "ui/whatsapp.js",
       "/ui/views.js": "ui/views.js",
+      "/ui/views-orders.js": "ui/views-orders.js",
+      "/ui/views-production.js": "ui/views-production.js",
+      "/ui/views-messages.js": "ui/views-messages.js",
+      "/ui/views-documents.js": "ui/views-documents.js",
+      "/ui/views-ai.js": "ui/views-ai.js",
       "/ui/forms.js": "ui/forms.js",
       "/ui/actions.js": "ui/actions.js",
       "/ui/events.js": "ui/events.js",

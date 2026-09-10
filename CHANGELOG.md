@@ -1,5 +1,15 @@
 # Registro de parches y sesiones
 
+## 0.18.0 — 2026-09-10 · sesión 030
+
+Copia secundaria (auditoría, punto 8): en Configuración se elige una carpeta fuera de la carpeta de datos (otro disco, USB, OneDrive); se comprueba que se puede escribir, se hace una copia inmediata y cada copia posterior (manual o automática diaria) se duplica allí con la misma retención de 30. El estado incluye si la última copia tiene más de 48 h y los errores de la copia secundaria; Resumen avisa con enlace a Configuración.
+
+Historial paginado (punto 7): cada respuesta del servidor lleva solo los 300 movimientos y 300 entradas de actividad más recientes (GELATO_HISTORY_LIMIT o createApp({ historyLimit })) más los totales; Actividad muestra «N de M» y «Mostrar más», que primero amplía lo cargado y luego pide páginas a GET /api/history. La base de datos y las copias conservan todo.
+
+Código (punto 11): src/ui/views.js (726 líneas) partido en views.js (resumen, inventario, proveedores, actividad, configuración), views-orders.js, views-production.js, views-messages.js, views-documents.js y views-ai.js, sin cambiar comportamiento; index.html y la lista de recursos del servidor actualizados. Prueba de escritorio con dos pasos nuevos: Recetario (escala a 6 kg = 3 L) y «Abrir» en Mensajes con filtro activo. Auditoría visual con Recetario y Guía.
+
+Pruebas: 124. Informe reports/2026-09-10T09-03-04-489Z-copia-secundaria-historial-paginado.md.
+
 ## 0.17.1 — 2026-09-10 · sesión 029
 
 Correcciones de la auditoría general (reports/2026-09-10T01-05-00-000Z-auditoria-general-0170.md). Espacio: dist pasó de 49,4 GB (28 versiones) a dos versiones; scripts/package.cjs conserva solo las dos más recientes y deja de empaquetar onnxruntime-web, las variantes de sharp para otras plataformas y los binarios de onnxruntime-node de otras plataformas (ejecutable 1,9 GB, antes 2,2 GB). sharp se conserva: transformers lo exige al cargar (el primer paquete podado falló con «Cannot find module sharp»; ahora el trabajador de IA anota la causa técnica en ia.log). Fechas: toda la resolución de fechas de mensajes (core/messages.ts) y las fechas «de hoy» de producción y ventas usan el calendario local, no UTC. CSV: src/csv.cjs antepone apóstrofo a celdas que abrirían una fórmula (=, +, -, @); los números no cambian. Registros: src/logs.cjs rota ia.log, errores.log y diagnostico.log al superar 1 MB. Textos: tuteo unificado (43 textos con voseo en interfaz, núcleo y README). README con las cabeceras históricas renumeradas a su versión real.

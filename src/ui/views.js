@@ -84,40 +84,6 @@ const toRead = () =>
   state.messages.filter((m) => m.interpretation?.needsReading && !m.reviewed);
 const proposedProductions = () =>
   state.productions.filter((p) => p.status === "proposed");
-function replyBlock(m) {
-  const i = m.interpretation;
-  const ai = m.aiReading;
-  const order = m.order && state.orders.find((o) => o.id === m.order);
-  const reading = i
-    ? `<div class="understood-row"><span>Lectura</span><div><strong>${esc(replyLabel[i.category])}${i.needsReading && !m.reviewed ? " " + pill("Debes leer", "peach") : ""}${i.learned ? " " + pill("Aprendido de ti", "sage") : i.corrected ? " " + pill("Corregido por ti", "sage") : ""}</strong><p>${esc(i.summary)}</p>${i.deliveryDate ? `<p><strong>Entrega indicada:</strong> ${date(i.deliveryDate + "T12:00:00Z")}${i.deliveryHint ? " («" + esc(i.deliveryHint) + "»)" : ""}</p>` : i.deliveryHint ? `<p><strong>Plazo indicado:</strong> ${esc(i.deliveryHint)}</p>` : ""}${i.missing ? `<p><strong>Producto que falta:</strong> ${esc(i.missing)}</p>` : ""}</div></div>`
-    : "";
-  const second = ai
-    ? `<div class="understood-row"><span>IA local</span><div><p>${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "dos lecturas coincidentes" : ai.status === "disagreement" ? "las lecturas discrepan: revisa tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && i && ai.category !== i.category ? " · No coincide con las reglas: decide leyendo el original." : ""}</p></div></div>`
-    : "";
-  return `<div class="reply-reading understood"><div class="message-label">LO QUE ENTENDIÓ LA APP · POR REGLAS</div>${reading}<div class="understood-row"><span>Prioridad</span><div><strong>${esc(priorityLabel[m.priority])}</strong>${i && m.reason.includes(i.summary) ? "" : `<p>${esc(m.reason)}</p>`}</div></div><div class="understood-row"><span>Pedido</span><div><strong>${order ? esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : esc(relevanceLabel[m.relevance])}</strong><p>${order ? "" : "Sin pedido vinculado. "}${esc(m.relevanceReason)} Nada de esto cambia compras ni stock.</p></div></div>${second}</div>`;
-}
-// Shared by the list and by «Abrir»: does the current filter show this message?
-function messageMatches(x) {
-  const fold = (v) =>
-    v
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-  return (
-    (messageSupplier === "all" || x.supplier === messageSupplier) &&
-    (messageFilter === "all" ||
-      (messageFilter === "unread" && !x.read) ||
-      (messageFilter === "pending" && !x.reviewed) ||
-      (messageFilter === "important" &&
-        x.priority === "important" &&
-        !x.reviewed) ||
-      (messageFilter === "relevant" && x.relevance === "relevant") ||
-      (messageFilter === "toread" &&
-        x.interpretation?.needsReading &&
-        !x.reviewed)) &&
-    fold(x.text + " " + supplier(x.supplier).name).includes(fold(messageQuery))
-  );
-}
 function homeNotices() {
   const read = toRead().length,
     proposed = proposedProductions().length;
@@ -130,503 +96,15 @@ function homeNotices() {
   const deliveries = soon.length
     ? `<strong>${soon.length} entrega${soon.length === 1 ? "" : "s"} prevista${soon.length === 1 ? "" : "s"} en los próximos dos días</strong><span>${esc(soon.map((o) => o.number + " " + supplier(o.supplier).name + " (" + date(o.expected + "T12:00:00Z") + ")").join(", "))}. </span><button class="text-button" data-nav="orders">Ver entregas ${icon("arrow")}</button>`
     : "";
-  if (!read && !proposed && !soon.length) return "";
-  return `<div class="notice subtle home-notice">${icon("alert")}<div>${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
-}
-function orderReplies(o) {
-  const replies = state.messages.filter(
-    (m) => m.order === o.id && m.interpretation,
-  );
-  if (!replies.length) return "";
-  return `<div class="order-replies"><strong>Respuestas del proveedor vinculadas</strong>${replies
-    .slice(0, 4)
-    .map(
-      (m) =>
-        `<p>${pill(replyLabel[m.interpretation.category], m.interpretation.needsReading && !m.reviewed ? "peach" : "sage")} ${esc(m.interpretation.summary)}${m.interpretation.deliveryDate ? " Entrega: " + date(m.interpretation.deliveryDate + "T12:00:00Z") + "." : ""}</p>`,
-    )
-    .join("")}</div>`;
-}
-const docTypeLabel = (t) =>
-  t ? (aiTypes[t] || t).replace("Posible ", "") : "Sin tipo";
-function documentCard(ph) {
-  const order = ph.order && state.orders.find((o) => o.id === ph.order);
-  const sug = ph.suggestion;
-  const sugText = sug
-    ? [
-        sug.supplier
-          ? "proveedor " + esc(supplier(sug.supplier)?.name || "")
-          : "",
-        sug.order
-          ? "pedido " +
-            esc(state.orders.find((o) => o.id === sug.order)?.number || "")
-          : "",
-        sug.docType ? "tipo " + esc(docTypeLabel(sug.docType)) : "",
-      ]
-        .filter(Boolean)
-        .join(" · ")
-    : "";
-  const isPdf = ph.mime === "application/pdf";
-  // Tarjeta en rejilla: miniatura + datos arriba; propuesta y acciones ocupan todo el ancho.
-  return `<article class="doc-card"><div class="doc-thumb">${isPdf ? `<span class="doc-pdf">PDF</span>` : `<img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}">`}</div><div class="doc-body"><strong>${esc(ph.name)}</strong><small>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")} · ${esc(ph.documentDate || ph.at.slice(0, 10))} · ${ph.source === "whatsapp" ? "WhatsApp" : "Foto"}</small><div class="doc-tags">${pill(docTypeLabel(ph.docType), ph.docType ? "sage" : "neutral")}${order ? pill(order.number, "lavender") : pill("Sin pedido", "neutral")}</div></div>${sug && sugText ? `<div class="doc-suggestion"><span><strong>Propuesta por reglas:</strong> ${sugText}. <span class="muted">${esc(sug.reason)}</span></span>${btn("Aceptar", "applySuggestion", "primary", `data-id="${esc(ph.id)}"`)}</div>` : sug ? `<div class="muted">${esc(sug.reason)}</div>` : ""}<div class="row-actions doc-actions">${btn("Organizar", "organizePhoto", "secondary", `data-id="${esc(ph.id)}"`)}${btn(order ? "Cambiar pedido" : "Vincular pedido", "linkDocument", "secondary", `data-id="${esc(ph.id)}"`)}${order ? btn("Desvincular", "unlinkDocument", "secondary", `data-id="${esc(ph.id)}"`) : ""}${ph.ocrText ? btn("Revisar texto con IA", "aiPhoto", "secondary", `data-id="${esc(ph.id)}"`) : ""}${btn("Dónde está", "documentPath", "secondary", `data-id="${esc(ph.id)}"`)}</div></article>`;
-}
-function documents() {
-  const list = state.photos.filter(
-    (p) =>
-      (docSupplier === "all" ||
-        p.supplier === docSupplier ||
-        (docSupplier === "none" && !p.supplier)) &&
-      (docFilter === "all" ||
-        (docFilter === "unlinked" && !p.order) ||
-        (docFilter === "suggested" && p.suggestion) ||
-        (docFilter === "pdf" && p.mime === "application/pdf")),
-  );
-  const groups = new Map();
-  for (const p of list) {
-    const key = p.supplier || "none";
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(p);
-  }
-  return (
-    header(
-      "Documentos por proveedor",
-      "Facturas, albaranes, recibos y pedidos, archivados y vinculados al pedido al que pertenecen.",
-      btn(icon("photo") + " Añadir documento", "photo", "primary"),
-    ) +
-    `<div class="notice subtle">${icon("shield")}<div><strong>Las propuestas las hacen reglas, no la IA</strong><span>Número de pedido en el texto, proveedor y fecha, e importe frente al pedido. Nada se vincula sin tu confirmación. Los adjuntos de WhatsApp de proveedores autorizados llegan aquí solos.</span></div></div><div class="message-filters"><label class="field">Proveedor<select id="doc-supplier"><option value="all">Todos</option><option value="none" ${docSupplier === "none" ? "selected" : ""}>Sin proveedor</option>${state.suppliers.map((s) => `<option value="${s.id}" ${docSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="doc-filter">${[
-      ["all", "Todos"],
-      ["unlinked", "Sin pedido"],
-      ["suggested", "Con propuesta"],
-      ["pdf", "PDF"],
-    ]
-      .map(
-        ([v, l]) =>
-          `<option value="${v}" ${docFilter === v ? "selected" : ""}>${l}</option>`,
-      )
-      .join("")}</select></label></div>${
-      list.length
-        ? [...groups.entries()]
-            .map(
-              ([key, docs]) =>
-                `<section class="panel"><div class="panel-heading"><div><h2>${esc(key === "none" ? "Sin proveedor" : supplier(key).name)}</h2><p>${docs.length} documento${docs.length === 1 ? "" : "s"}</p></div></div><div class="doc-grid">${docs.map(documentCard).join("")}</div></section>`,
-            )
-            .join("")
-        : '<div class="panel empty compact">No hay documentos con estos filtros. Añade una foto o un PDF, o autoriza chats de WhatsApp para recibirlos solos.</div>'
-    }`
-  );
-}
-// Shared gate for Producción and Recetario when the recipe lock is enabled.
-function lockGate() {
-  if (!(lockInfo?.enabled && !lockInfo.unlocked)) return "";
-  return (
-    header(
-      "Recetario protegido",
-      "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
-    ) +
-    `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, se puede quitar con la app cerrada borrando la clave recipes_lock de la tabla settings de gelatostock.sqlite.</p></section>`
-  );
-}
-const familyLabel = {
-  crema: "Crema",
-  sorbete: "Sorbete",
-  postre: "Postre",
-  base: "Base o pasta",
-  otro: "Otro",
-};
-// Ingredients as share of the mass: kg and L count as 1:1, units are left out of the total.
-function recipeShares(r) {
-  const mass = r.ingredients.reduce((n, i) => {
-    const p = product(i.product);
-    return p.unit === "ud" ? n : n + i.quantity;
-  }, 0);
-  return r.ingredients.map((i) => {
-    const p = product(i.product);
-    return {
-      product: p,
-      quantity: i.quantity,
-      share: mass && p.unit !== "ud" ? (i.quantity / mass) * 100 : null,
-    };
-  });
-}
-function recipeBook() {
-  const gate = lockGate();
-  if (gate) return gate;
-  const fold = (s) =>
-    s
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-  const list = state.recipes.filter(
-    (r) =>
-      (recipeFamily === "all" || (r.family || "crema") === recipeFamily) &&
-      fold(r.name + " " + (r.allergens || "")).includes(fold(recipeQuery)),
-  );
-  return (
-    header(
-      "El recetario de la casa.",
-      "Cada receta con su familia, sus proporciones, la elaboración y los alérgenos. Desde aquí se produce y se escala.",
-      btn(icon("plus") + " Nueva receta", "recipeEditor", "primary"),
-    ) +
-    `<div class="message-filters"><label class="field">Buscar receta<input id="recipe-search" type="search" value="${esc(recipeQuery)}" placeholder="Nombre o alérgeno"></label><label class="field">Familia<select id="recipe-family"><option value="all">Todas las familias</option>${Object.entries(
-      familyLabel,
-    )
-      .map(
-        ([v, l]) =>
-          `<option value="${v}" ${recipeFamily === v ? "selected" : ""}>${l}</option>`,
-      )
-      .join("")}</select></label></div><div class="recipe-book">${
-      list
-        .map((r) => {
-          const shares = recipeShares(r);
-          return `<article class="panel recipe-sheet" data-recipe="${esc(r.id)}"><header class="recipe-sheet-head"><div><h2>${esc(r.name)}</h2><p>${pill(familyLabel[r.family || "crema"], "sage")} Rinde ${num(r.yield)} kg${r.product ? " · terminado: " + esc(product(r.product).name) : ""}</p></div><label class="field recipe-scale">Calcular para<span class="stepper"><button type="button" class="step" data-step="-1" aria-label="Menos kilos">−</button><input class="quantity" type="number" min="0.1" max="1000000" step="0.5" value="${r.yield}" data-scale="${esc(r.id)}" aria-label="Kilos para escalar ${esc(r.name)}"><button type="button" class="step" data-step="1" aria-label="Más kilos">+</button></span> kg</label></header><div class="table-scroll"><table class="delivery-table recipe-table"><thead><tr><th>Ingrediente</th><th>Para ${num(r.yield)} kg</th><th>%</th><th>Para <span data-scale-label="${esc(r.id)}">${num(r.yield)}</span> kg</th></tr></thead><tbody>${shares
-            .map(
-              (s) =>
-                `<tr><td><strong>${esc(s.product.name)}</strong></td><td>${num(s.quantity)} ${esc(s.product.unit)}</td><td>${s.share === null ? "—" : num(Math.round(s.share * 10) / 10) + " %"}</td><td><strong data-scaled="${esc(r.id)}" data-base="${s.quantity}" data-unit="${esc(s.product.unit)}">${num(s.quantity)} ${esc(s.product.unit)}</strong></td></tr>`,
-            )
-            .join(
-              "",
-            )}</tbody></table></div>${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
-        })
-        .join("") ||
-      `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
-    }</div>`
-  );
-}
-function production() {
-  const gate = lockGate();
-  if (gate) return gate;
-  const proposed = proposedProductions();
-  const applied = state.productions.filter((p) => p.status === "applied");
-  const byDate = {};
-  for (const p of applied) (byDate[p.date] ||= []).push(p);
-  const dates = Object.keys(byDate).sort().reverse().slice(0, 30);
-  const lineText = (l) => {
-    const p = product(l.product);
-    return `${esc(p.name)} ${num(l.quantity)} ${esc(p.unit)}`;
-  };
-  return (
-    header(
-      "Producción y recetas",
-      "Cada kilo de gelato descuenta sus ingredientes, solo cuando tú lo apruebas.",
-      btn(icon("plus") + " Nueva receta", "recipeEditor") +
-        btn(icon("plus") + " Registrar producción", "produce", "primary"),
-    ) +
-    `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta, no por IA</strong><span>La app propone el consumo y el producto terminado. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div><section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Aprobar crea movimientos de salida por producción y la entrada del producto terminado.</p></div></div>${
-      proposed.length
-        ? proposed
-            .map(
-              (p) =>
-                `<article class="production-card" data-production="${esc(p.id)}"><header><div><strong>${esc(p.name)}</strong><small>${num(p.quantity)} kg · ${date(p.date + "T12:00:00Z")}</small></div>${pill("Por aprobar", "sand")}</header><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Ingrediente</th><th>Estimado por receta</th><th>Consumo real</th><th>Stock actual</th></tr></thead><tbody>${p.lines
-                  .map((l) => {
-                    const pr = product(l.product);
-                    return `<tr><td><strong>${esc(pr.name)}</strong></td><td>${num(l.quantity)} ${esc(pr.unit)}</td><td><input type="number" class="inline-input" data-prod-line="${esc(l.product)}" value="${l.quantity}" min="0" max="1000000" step="${pr.unit === "ud" ? "1" : "0.001"}" aria-label="Consumo real de ${esc(pr.name)}"> ${esc(pr.unit)}</td><td>${num(pr.stock)} ${esc(pr.unit)}${pr.stock < l.quantity ? " " + pill("Insuficiente", "peach") : ""}</td></tr>`;
-                  })
-                  .join(
-                    "",
-                  )}</tbody></table></div>${p.output ? `<p><strong>Producto terminado:</strong> ${esc(product(p.output.product).name)} <input type="number" class="inline-input" data-prod-output value="${p.output.quantity}" min="0" max="1000000" step="0.001" aria-label="Kilos de producto terminado"> kg</p>` : '<p class="muted">Esta receta no tiene producto terminado asociado; solo se descuentan ingredientes.</p>'}<label class="field">Nota (opcional)<input type="text" class="inline-input wide" data-prod-note maxlength="500" placeholder="Ejemplo: se usó más leche"></label><div class="row-actions">${btn(icon("check") + " Aprobar y descontar", "applyProduction", "primary", `data-id="${esc(p.id)}"`)}${btn("Descartar", "discardProduction", "secondary", `data-id="${esc(p.id)}"`)}</div></article>`,
-            )
-            .join("")
-        : '<div class="empty compact">No hay producciones pendientes. Registra una producción para ver el consumo estimado.</div>'
-    }</section><section class="panel"><div class="panel-heading"><div><h2>Hoja diaria de producción</h2><p>Kilos producidos por día y por gelato, con el consumo aprobado.</p></div></div>${
-      dates.length
-        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th></tr></thead><tbody>${dates
-            .map((d) =>
-              byDate[d]
-                .map(
-                  (p, i) =>
-                    `<tr>${i === 0 ? `<td rowspan="${byDate[d].length}"><strong>${date(d + "T12:00:00Z")}</strong><small>${num(byDate[d].reduce((n, x) => n + x.quantity, 0))} kg en total</small></td>` : ""}<td>${esc(p.name)}${p.note ? `<small>${esc(p.note)}</small>` : ""}</td><td>${num(p.output?.quantity ?? p.quantity)} kg</td><td>${
-                      p.lines
-                        .filter((l) => l.quantity)
-                        .map(lineText)
-                        .join(", ") || "Sin consumo"
-                    }</td></tr>`,
-                )
-                .join(""),
-            )
-            .join("")}</tbody></table></div>`
-        : '<div class="empty compact">Todavía no hay producciones aprobadas.</div>'
-    }</section><section class="panel"><div class="panel-heading"><div><h2>Recetas</h2><p>${state.recipes.length} receta${state.recipes.length === 1 ? "" : "s"} en el recetario, con proporciones, elaboración y alérgenos.</p></div>${btn("Abrir recetario", "openRecipes", "secondary")}</div><div class="recipe-grid">${
-      state.recipes
-        .slice(0, 6)
-        .map(
-          (r) =>
-            `<article class="recipe-card"><h3>${esc(r.name)}</h3><small>${familyLabel[r.family || "crema"]} · rinde ${num(r.yield)} kg</small><div class="row-actions">${btn("Producir", "produce", "secondary", `data-recipe="${esc(r.id)}"`)}</div></article>`,
-        )
-        .join("") ||
-      '<div class="empty compact">Sin recetas. Crea la primera con «Nueva receta».</div>'
-    }</div></section>${salesSection()}`
-  );
-}
-function salesSection() {
-  // Only what a recipe produces counts as finished product; ingredients never appear here.
-  const finished = state.products.filter(
-    (p) => p.unit === "kg" && state.recipes.some((r) => r.product === p.id),
-  );
-  const today = todayLocal();
-  return `<section class="panel" data-sales><div class="panel-heading"><div><h2>Ventas y mermas del día</h2><p>Kilos vendidos o desechados de producto terminado. Cada cantidad crea una salida o una merma trazable y reversible.</p></div></div><label class="field short">Día<input type="date" class="inline-input" data-sales-date value="${today}" max="${today}"></label><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto terminado</th><th>Stock</th><th>Vendido (kg)</th><th>Merma (kg)</th></tr></thead><tbody>${finished
-    .map(
-      (p) =>
-        `<tr><td><strong>${esc(p.name)}</strong></td><td>${num(p.stock)} kg</td><td><input type="number" class="inline-input" data-sold="${esc(p.id)}" min="0" max="1000000" step="0.001" placeholder="0" aria-label="Vendido de ${esc(p.name)}"></td><td><input type="number" class="inline-input" data-waste="${esc(p.id)}" min="0" max="1000000" step="0.001" placeholder="0" aria-label="Merma de ${esc(p.name)}"></td></tr>`,
-    )
-    .join(
-      "",
-    )}</tbody></table></div>${finished.length ? `<div class="row-actions">${btn(icon("check") + " Registrar ventas y mermas", "dailySales", "primary")}</div>` : '<p class="muted">No hay productos terminados: asigna un producto terminado (en kg) a una receta del recetario.</p>'}</section>`;
-}
-function ingredientRow(productId = "", qty = "") {
-  return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
-}
-function aiChatSection() {
-  return `<section class="panel settings-card ai-chat"><h2>Dudas sobre la app o el texto</h2><p>Pregunta cómo usar GelatoStock o qué dice el texto del editor. Responde el mismo modelo local con una guía fija; no consulta tu inventario ni tus pedidos y no ejecuta acciones.</p><div class="ai-chat-log" aria-live="polite">${aiChat.map((m) => `<article class="ai-chat-msg ${m.role}"><strong>${m.role === "user" ? "Tú" : "IA local"}</strong><p class="${m.role === "assistant" ? "ai-chat-answer" : ""}">${esc(m.content)}</p>${m.excerpt ? `<small class="ai-chat-source">Según la guía: ${esc(m.excerpt)}</small>` : ""}</article>`).join("") || '<p class="muted">Ejemplo: «¿Qué hace Control de entregas?» o «¿Este texto es una factura o un presupuesto?»</p>'}</div><label class="check"><input type="checkbox" id="ai-chat-doc" ${aiChatUseDoc ? "checked" : ""} ${aiBusy ? "disabled" : ""}> Usar el texto del editor como contexto</label><label class="field">Tu pregunta<textarea id="ai-chat-input" maxlength="1500" rows="3" ${aiBusy ? "disabled" : ""}></textarea></label><div class="setting-actions">${btn(aiBusy ? "Respondiendo en este equipo…" : "Preguntar a la IA local", "aiChatSend", "primary", aiBusy ? "disabled" : "")}${aiBusy ? btn("Detener", "aiCancel") : ""}${aiChat.length ? btn("Vaciar chat", "aiChatClear", "secondary") : ""}</div>${aiChatError ? `<p role="alert">${esc(aiChatError)}</p>` : ""}<small>Respuestas orientativas generadas en este equipo; pueden ser incorrectas o incompletas. El chat se conserva solo en esta ventana. Se envían al modelo los últimos 6 mensajes.</small></section>`;
-}
-function aiPage() {
-  return (
-    header(
-      "Una segunda lectura, en tu equipo.",
-      "Interpreta textos de proveedores sin enviar tus documentos a una IA externa.",
-    ) +
-    `<div class="settings-grid"><section class="panel settings-card"><h2>Texto que quieres revisar</h2><p>Pega un mensaje o abre el texto de una foto desde Configuración. Revisa el OCR antes de analizarlo. Para PDF todavía debes copiar el texto.</p><label class="field">Profundidad de lectura<select id="ai-mode" ${aiBusy ? "disabled" : ""}><option value="careful" ${aiMode === "careful" ? "selected" : ""}>Revisión reforzada · dos lecturas</option><option value="standard" ${aiMode === "standard" ? "selected" : ""}>Lectura simple · más rápida</option></select></label><label class="field">Documento o mensaje<textarea id="ai-text" class="ai-editor" maxlength="4000" ${aiBusy ? "disabled" : ""}>${esc(aiDraft)}</textarea></label><small>Máximo 4.000 caracteres. Se analiza únicamente este texto.</small><div class="setting-actions">${btn(aiBusy ? "Leyendo en este equipo…" : "Analizar con IA local", "aiAnalyze", "primary", aiBusy ? "disabled" : "")}${aiBusy ? btn("Detener lectura", "aiCancel") : ""}</div><p role="status">${aiBusy ? "Cargando el modelo y leyendo. Puede tardar hasta 4 minutos; puedes seguir usando otras pantallas." : "Modelo local incluido · sin pagos por uso"}</p>${aiError ? `<p role="alert">${esc(aiError)}</p>` : ""}</section><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Lectura para revisar</h2>${aiResult ? `<div class="ai-result" id="ai-reading-result"><strong>${esc(aiTypes[aiResult.tipo])}</strong>${aiResult.invalid ? `<p>${esc(aiResult.reason)}</p>` : `<p>Inicio del texto original para contrastar:</p><blockquote>${esc(aiResult.evidencia)}</blockquote>`}${aiResult.rules ? `<p class="ai-readings"><strong>Reglas:</strong> ${esc(aiResult.rules.reason)} (confianza ${esc(aiResult.rules.confidence)}). <strong>Modelo:</strong> ${esc(aiTypes[aiResult.modelType] || "sin lectura").replace("Posible ", "")}.</p>` : ""}<p><strong>${aiResult.verification?.status === "agreement" ? "Dos lecturas del modelo coinciden · requiere revisión" : aiResult.verification?.status === "disagreement" ? "Las lecturas del modelo no coinciden · revisa el original" : "Una lectura del modelo · requiere revisión"}</strong></p>${(aiResult.warnings || []).map((w) => `<p class="ai-warning">${esc(w)}</p>`).join("")}${aiResult.arithmetic ? `<div class="ai-math"><strong>Comprobación de importes por la app</strong><p>${esc(aiResult.arithmetic.reason)}</p>${aiResult.arithmetic.status !== "not_checked" ? `<p>Base ${money(aiResult.arithmetic.base)} + IVA ${money(aiResult.arithmetic.tax)} = ${money(aiResult.arithmetic.expected)}<br>Total declarado: ${money(aiResult.arithmetic.total)}</p>` : ""}</div>` : ""}<small>${num(aiResult.milliseconds / 1000)} segundos · ${esc(aiResult.model)}</small>${aiSourcePhoto && state.photos.some((p) => p.id === aiSourcePhoto) && !aiResult.invalid ? `<div class="setting-actions">${btn("Confirmar este tipo en la foto", "aiSavePhotoType", "secondary")}<small>Queda guardado como tu decisión, no como la de la IA.</small></div>` : ""}</div>` : "<p>Al analizar verás un posible tipo de documento y el inicio del texto original.</p>"}<p>La IA puede equivocarse o inventar detalles. Contrasta su propuesta con el original. Una lista de precios no acredita una compra ni una recepción.</p><ul class="feature-list"><li>${icon("check")} No modifica stock ni registra facturas</li><li>${icon("check")} No compra, no envía mensajes y no abre enlaces</li><li>${icon("check")} Texto y resultado no se guardan en registros de IA</li></ul><small>El resultado se conserva en esta ventana hasta sustituirlo o cerrar la app. El documento original, si lo guardaste, permanece en su archivo.</small></section>${aiChatSection()}</div>`
-  );
-}
-function orderTracking() {
-  const open = state.orders.filter(
-    (o) => !["received", "cancelled"].includes(o.status),
-  );
-  const closed = state.orders.filter((o) =>
-    ["received", "cancelled"].includes(o.status),
-  );
-  const list = orderFilter === "open" ? open : closed;
-  return `<section class="orders-panel"><div class="tracking-intro"><div><span class="eyebrow">DESPUÉS DEL CARRITO</span><h2>Control de entregas</h2><p>Comprueba qué llegó y qué falta en cada pedido. Solo las cantidades que registres como recibidas se suman al inventario.</p></div><div class="tracking-example"><strong>Un ejemplo</strong><p>Pides 6 cajas y llegan 4: registras esas 4. Las otras 2 siguen pendientes.</p><small>Los pedidos de este prototipo son de demostración.</small></div></div><div class="tracking-tabs" aria-label="Filtrar entregas">${btn(`En curso · ${open.length}`, "orderFilter", orderFilter === "open" ? "primary" : "secondary", 'data-filter="open" aria-pressed="' + (orderFilter === "open") + '"')}${btn(`Cerrados · ${closed.length}`, "orderFilter", orderFilter === "closed" ? "primary" : "secondary", 'data-filter="closed" aria-pressed="' + (orderFilter === "closed") + '"')}</div><div class="delivery-list">${
-    list
-      .map((o) => {
-        const finished = o.lines.filter(
-          (l) => Math.round((l.packs * l.pack - l.received) * 1000) === 0,
-        ).length;
-        const hint = {
-          pending: "Siguiente paso: simular el envío para probar una entrega.",
-          sent: "Siguiente paso: cuando llegue mercancía, registra las cantidades recibidas.",
-          partial:
-            "Siguiente paso: registra la próxima entrega de los productos que faltan.",
-          received:
-            "Entrega completada. Las cantidades ya están en el inventario.",
-          cancelled: "Pedido cancelado. No se espera mercancía.",
-        }[o.status];
-        return `<article class="delivery-card" data-order-card="${esc(o.id)}"><header><div><span class="order-number">${esc(o.number)} · ${date(o.at)}${o.expected ? " · entrega prevista " + date(o.expected + "T12:00:00Z") : ""}</span><h3>${esc(supplier(o.supplier).name)}</h3></div>${pill(statusLabel[o.status], o.status === "received" ? "sage" : "sand")}</header><div class="delivery-progress"><span>${finished} de ${o.lines.length} productos recibidos por completo</span><strong>${money(o.lines.reduce((n, l) => n + l.packs * l.price, 0))} <small>estimados</small></strong></div><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto / presentación</th><th>Pedido</th><th>Recibido</th><th>${o.status === "cancelled" ? "No entregado" : "Falta recibir"}</th></tr></thead><tbody>${o.lines
-          .map((l) => {
-            const p = product(l.product);
-            const rem =
-              Math.round((l.packs * l.pack - l.received) * 1000) / 1000;
-            return `<tr><td><strong>${esc(p.name)}</strong><small>${l.packs} × ${num(l.pack)} ${esc(p.unit)} por presentación</small></td><td>${num(l.packs * l.pack)} ${esc(p.unit)}</td><td>${num(l.received)} ${esc(p.unit)}</td><td><strong>${num(rem)} ${esc(p.unit)}</strong></td></tr>`;
-          })
-          .join("")}</tbody></table></div>${orderReplies(o)}${(() => {
-          const docs = state.photos.filter((p) => p.order === o.id);
-          return docs.length
-            ? `<div class="order-replies"><strong>Documentos vinculados</strong>${docs.map((d) => `<p>${pill(docTypeLabel(d.docType), "sage")} ${esc(d.name)} · ${esc(d.documentDate || d.at.slice(0, 10))}</p>`).join("")}</div>`
-            : "";
-        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. Pendiente de confirmación del proveedor.` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "danger", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
-      })
-      .join("") ||
-    '<div class="panel empty compact">' +
-      (orderFilter === "open"
-        ? "No hay entregas pendientes. Los nuevos pedidos aparecerán aquí al autorizar el carrito."
-        : "Los pedidos completados y cancelados aparecerán aquí.") +
-      "</div>"
-  }</div></section>`;
-}
-function orders() {
-  const total = state.cart.reduce(
-    (n, l) => n + l.packs * product(l.product).price,
-    0,
-  );
-  return (
-    header(
-      "Compras con todo bajo control.",
-      "Prepara el carrito, revisa el pedido y registra lo que llega.",
-      btn("Sugerir reposición", "suggest", "primary"),
-    ) +
-    `<div class="notice">${icon("shield")}<div><strong>Compras de demostración</strong><span>Puedes probar el circuito completo. No se envían mensajes ni se realizan pagos.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${
-      state.cart.length
-        ? `<div class="cart-lines">${state.cart
-            .map((l) => {
-              const p = product(l.product);
-              return `<div class="cart-line"><span class="product-icon sage">${icon(p.icon)}</span><div class="cart-desc"><strong>${esc(p.name)}</strong><small>${esc(supplier(p.supplier).name)} · ${num(p.pack)} ${p.unit} / paquete</small></div><div class="stepper"><button type="button" class="step" data-step="-1" aria-label="Un paquete menos de ${esc(p.name)}">−</button><input aria-label="Paquetes de ${esc(p.name)}" class="quantity" type="number" min="0" max="10000" step="1" value="${l.packs}" data-cart="${p.id}"><button type="button" class="step" data-step="1" aria-label="Un paquete más de ${esc(p.name)}">+</button></div><strong>${money(l.packs * p.price)}</strong><button class="icon-button" aria-label="Quitar ${esc(p.name)}" data-remove="${p.id}">${icon("close")}</button></div>`;
-            })
-            .join("")}</div>`
-        : '<div class="empty">' +
-          icon("cart") +
-          "<h3>Tu próximo pedido empieza aquí</h3><p>Añade productos o prepara la reposición sugerida.</p></div>"
-    }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}${state.suppliers
-      .filter(
-        (s) =>
-          s.web && state.cart.some((l) => product(l.product).supplier === s.id),
-      )
-      .map((s) =>
-        btn(
-          icon("store") + " Lista para " + esc(s.name),
-          "webList",
-          "secondary",
-          `data-supplier="${s.id}"`,
-        ),
-      )
-      .join(
-        "",
-      )}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${money(total)}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${money(total)}</strong></div><p>Los precios son ficticios. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div>${orderTracking()}`
-  );
-}
-// Minimal, safe Markdown for the guide: headings, paragraphs, lists. Everything escaped.
-function guideHtml(md) {
-  const lines = md.split(/\r?\n/);
-  let html = "",
-    list = false;
-  const close = () => {
-    if (list) html += "</ul>";
-    list = false;
-  };
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) {
-      close();
-      continue;
-    }
-    if (line.startsWith("# ")) {
-      close();
-      continue;
-    }
-    if (line.startsWith("## ")) {
-      close();
-      html += `<h2 id="guia-${esc(
-        line
-          .slice(3)
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-"),
-      )}">${esc(line.slice(3))}</h2>`;
-      continue;
-    }
-    if (line.startsWith("- ")) {
-      if (!list) html += "<ul>";
-      list = true;
-      html += `<li>${esc(line.slice(2))}</li>`;
-      continue;
-    }
-    close();
-    html += `<p>${esc(line)}</p>`;
-  }
-  close();
-  return html;
-}
-function guidePage() {
-  const sections = (typeof GUIDE_MD === "string" ? GUIDE_MD : "")
-    .split(/\r?\n/)
-    .filter((l) => l.startsWith("## "))
-    .map((l) => l.slice(3));
-  return (
-    header(
-      "Guía de uso",
-      "Cómo funciona cada pantalla, qué cambia el stock y qué es solo una propuesta. El chat de IA local responde con esta misma guía.",
-      btn("Abrir chat de dudas", "aiOpen", "primary"),
-    ) +
-    `<div class="guide-layout"><nav class="guide-index panel"><div class="panel-heading"><h2>Índice</h2></div><ul>${sections.map((s) => `<li><a href="#guia-${esc(s.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}">${esc(s)}</a></li>`).join("")}</ul></nav><article class="guide-body panel">${typeof GUIDE_MD === "string" ? guideHtml(GUIDE_MD) : "<p>La guía no está disponible en este paquete.</p>"}</article></div>`
-  );
-}
-const quickReplies = (m) => {
-  const i = m.interpretation || {};
-  const when = i.deliveryDate
-    ? date(i.deliveryDate + "T12:00:00Z")
-    : i.deliveryHint || "";
-  const options = [];
-  if (i.category === "delivery_date" || i.category === "confirmation")
-    options.push(["Vale, gracias", "Vale, gracias. Quedamos así."]);
-  if (i.category === "delivery_date" && when)
-    options.push([
-      "De acuerdo con la fecha",
-      `De acuerdo, esperamos la entrega ${when}. Gracias.`,
-    ]);
-  if (i.category === "out_of_stock" || i.category === "change")
-    options.push(
-      [
-        "Mándanos lo que tengas",
-        "Mándanos lo que tengas disponible y avísanos del resto. Gracias.",
-      ],
-      [
-        "Lo compramos por otro lado",
-        "Gracias, esta vez lo resolvemos por otro lado. Deja fuera lo que falte.",
-      ],
-    );
-  if (i.category === "question")
-    options.push(
-      ["Sí, confirmado", "Sí, confirmado. Gracias."],
-      ["No, mejor no", "No, mejor no. Gracias por preguntar."],
-    );
-  if (i.category === "cancellation")
-    options.push(["Entendido", "Entendido, gracias por avisar."]);
-  options.push(["Te llamo", "Te llamo en un momento para concretarlo."]);
-  return options.slice(0, 4);
-};
-function messages() {
-  const list = state.messages.filter(messageMatches);
-  const m = list.find((x) => x.id === selectedMessage) || list[0];
-  // Conversations: one group per supplier, newest activity first.
-  const groups = [];
-  for (const x of list) {
-    let g = groups.find((y) => y.supplier === x.supplier);
-    if (!g) {
-      g = { supplier: x.supplier, items: [], unread: 0 };
-      groups.push(g);
-    }
-    g.items.push(x);
-    if (!x.read) g.unread++;
-  }
-  const pending = state.messages.filter(
-    (x) => x.interpretation?.needsReading && !x.reviewed,
-  );
-  const todo = pending.slice(0, 3);
-  const order = m?.order && state.orders.find((o) => o.id === m.order);
-  const canReply =
-    m &&
-    m.channel === "whatsapp" &&
-    !!m.sender &&
-    waState?.status === "connected";
-  return (
-    header(
-      "Mensajes que se convierten en acciones.",
-      "Cada respuesta de tus proveedores, leída y ordenada por conversación. Tú decides qué hacer con cada una.",
-      btn(icon("plus") + " Simular mensaje", "message", "secondary"),
-    ) +
-    `<section class="panel todo-panel"><div class="panel-heading"><div><h2>Qué hacer ahora</h2><p>${pending.length ? `${pending.length} mensaje${pending.length === 1 ? "" : "s"} que debes leer y decidir.` : "Nada pendiente de leer. Las confirmaciones y fechas quedan anotadas solas."}</p></div>${pending.length ? btn("Ver todos", "messagesToRead", "secondary") : ""}</div>${todo.map((x) => `<button class="todo-row" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><strong>${esc(supplier(x.supplier).name)} · ${esc(replyLabel[x.interpretation.category])}</strong><p>${esc(x.interpretation.summary)}</p></div><span class="text-link">Abrir ${icon("arrow")}</span></button>`).join("")}</section><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
-      {
-        all: "Todos los mensajes",
-        toread: "Debes leer",
-        unread: "Sin leer",
-        pending: "Sin decidir",
-        important: "Importantes pendientes",
-        relevant: "Relacionados con pedidos",
-      },
-    )
-      .map(
-        ([v, l]) =>
-          `<option value="${v}" ${messageFilter === v ? "selected" : ""}>${l}</option>`,
-      )
-      .join(
-        "",
-      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Conversaciones <span>${list.length} de ${state.messages.length}</span></div>${groups.map((g) => `<div class="conversation-group"><div class="conversation-group-title"><strong>${esc(supplier(g.supplier).name)}</strong><small>${g.items.length} mensaje${g.items.length === 1 ? "" : "s"}${g.unread ? " · " + g.unread + " sin leer" : ""}</small></div>${g.items.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(x.interpretation ? replyLabel[x.interpretation.category] : priorityLabel[x.priority])}</strong><small>${date(x.at)} ${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? (x.decision ? "Decidido" : "Revisado") : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div>`).join("") || '<div class="empty compact"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div><div class="message-detail">${
-      m
-        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}<div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
-            canReply
-              ? `<div class="quick-replies">${quickReplies(m)
-                  .map(([label, text]) =>
-                    btn(
-                      label,
-                      "replyMessage",
-                      "secondary",
-                      `data-id="${esc(m.id)}" data-text="${esc(text)}"`,
-                    ),
-                  )
-                  .join(
-                    "",
-                  )}${btn("Escribir respuesta", "replyMessage", "secondary", `data-id="${esc(m.id)}" data-text=""`)}</div>`
-              : `<p class="muted">${m.channel === "whatsapp" ? "Conecta WhatsApp para responder desde aquí." : "Los mensajes de demostración no se responden; decide y cierra."}</p>`
-          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">La app aprende a leer mensajes parecidos; nunca aprende decisiones. Lo que decides queda anotado aquí y no cambia pedidos ni stock.</p></div>`
-        : '<div class="empty"><h3>Elige una conversación.</h3><p>Aquí verás el mensaje, su lectura por reglas y las opciones para responder y decidir.</p></div>'
-    }</div></section>`
-  );
+  const backupWarning = !backupInfo
+    ? ""
+    : backupInfo.stale
+      ? "No hay copia de seguridad de las últimas 48 horas."
+      : backupInfo.secondary?.error
+        ? backupInfo.secondary.error
+        : "";
+  if (!read && !proposed && !soon.length && !backupWarning) return "";
+  return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
 }
 function suppliers() {
   return (
@@ -656,25 +134,33 @@ function activity() {
       "Movimientos trazables: ninguna corrección borra el registro original.",
       btn("Entrada / salida", "movement", "primary"),
     ) +
-    `<section class="panel"><div class="panel-heading"><div><h2>Movimientos de inventario</h2><p>Últimos 30 movimientos · ${ledger.length} registrados</p></div>${pill("Guardado en SQLite", "sage")}</div>${
+    `<section class="panel"><div class="panel-heading"><div><h2>Movimientos de inventario</h2><p>Mostrando ${Math.min(historyShown.movements, ledger.length)} de ${historyInfo?.movements ?? ledger.length} registrados</p></div>${pill("Guardado en SQLite", "sage")}</div>${
       ledger.length
         ? `<div class="table-wrap"><table><thead><tr><th>Producto y motivo</th><th>Tipo</th><th>Cambio</th><th>Antes → después</th><th>Acción</th></tr></thead><tbody>${ledger
-            .slice(0, 30)
+            .slice(0, historyShown.movements)
             .map(
               (m) =>
                 `<tr><td><strong>${esc(product(m.product).name)}</strong><small class="movement-reason">${esc(m.reason)} · ${date(m.at)} ${time(m.at)}</small></td><td>${pill(kinds[m.kind])}</td><td>${m.delta > 0 ? "+" : ""}${num(m.delta)} ${product(m.product).unit}</td><td>${num(m.before)} → ${num(m.after)}</td><td>${m.kind !== "receipt" && !m.reverses && !ledger.some((x) => x.reverses === m.id) ? btn("Revertir", "reverse", "secondary", `data-id="${m.id}"`) : pill(m.reverses ? "Compensación" : ledger.some((x) => x.reverses === m.id) ? "Revertido" : "Pedido")}</td></tr>`,
             )
             .join("")}</tbody></table></div>`
         : '<div class="empty compact">Los nuevos conteos, entradas y salidas aparecerán aquí.</div>'
-    }</section>` +
-    `<section class="panel activity-panel orders-panel"><div class="panel-heading"><h2>Actividad reciente</h2></div>${state.activity
-      .slice(0, 50)
+    }${moreHistory("movements", ledger.length)}</section>` +
+    `<section class="panel activity-panel orders-panel"><div class="panel-heading"><h2>Actividad reciente</h2><p>${Math.min(historyShown.activity, state.activity.length)} de ${historyInfo?.activity ?? state.activity.length}</p></div>${state.activity
+      .slice(0, historyShown.activity)
       .map(
         (a) =>
           `<div class="activity-row"><span class="activity-dot"></span><div><p>${esc(a.text)}</p><small>${date(a.at)} · ${time(a.at)}</small></div></div>`,
       )
-      .join("")}</section>`
+      .join("")}${moreHistory("activity", state.activity.length)}</section>`
   );
+}
+// "Load more" for the two unbounded lists: first from what the UI already has, then from
+// /api/history. Never shown when everything is on screen.
+function moreHistory(kind, loaded) {
+  const total = historyInfo?.[kind] ?? loaded;
+  const visible = Math.min(historyShown[kind], loaded);
+  if (visible >= total) return "";
+  return `<div class="panel-bottom">${btn(`Mostrar más (${total - visible} anteriores)`, "moreHistory", "secondary", `data-kind="${kind}"`)}</div>`;
 }
 function settings() {
   return (
@@ -682,7 +168,7 @@ function settings() {
       "Un espacio que funciona a tu manera.",
       "Datos locales, copias de seguridad y un camino claro para crecer.",
     ) +
-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Exportar CSV", "exportCsv", "secondary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p><p class="fineprint">Copia automática diaria en la carpeta backups (se conservan las 30 últimas automáticas). ${backupInfo?.last ? "Última: " + date(backupInfo.last) + " " + time(backupInfo.last) + "." : "Todavía no se ha creado."}${backupInfo?.warning ? " " + esc(backupInfo.warning) : ""}</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Modelo local incluido", "sage")}<p>El modelo local propone el tipo de documento y contrasta la clasificación con el texto original. El OCR español sigue leyendo las fotos dentro del equipo.</p>${btn("Abrir IA local", "aiOpen", "primary")}<ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Lecturas revisables; sin acciones automáticas</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos y documentos</h2><p>Fotos y PDF ordenados por proveedor y fecha del documento. La pantalla Documentos permite vincularlos a pedidos y aceptar propuestas.</p>${btn("Abrir Documentos", "openDocuments", "secondary")}${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
+    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Exportar CSV", "exportCsv", "secondary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p><p class="fineprint">Copia automática diaria en la carpeta backups (se conservan las 30 últimas automáticas). ${backupInfo?.last ? "Última: " + date(backupInfo.last) + " " + time(backupInfo.last) + "." : "Todavía no se ha creado."}${backupInfo?.warning ? " " + esc(backupInfo.warning) : ""}</p><h3 class="setting-subtitle">Copia secundaria</h3>${backupInfo?.secondary?.dir ? `<code class="path">${esc(backupInfo.secondary.dir)}</code><p class="fineprint">${backupInfo.secondary.error ? esc(backupInfo.secondary.error) : backupInfo.secondary.last ? "Última copia allí: " + date(backupInfo.secondary.last) + " " + time(backupInfo.secondary.last) + "." : "Todavía no se ha copiado nada."}</p>` : '<p class="fineprint">Sin carpeta secundaria. Si este disco falla se pierde todo: elige una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive).</p>'}<div class="setting-actions">${btn(backupInfo?.secondary?.dir ? "Cambiar carpeta" : "Elegir carpeta secundaria", "backupDirEditor", backupInfo?.secondary?.dir ? "secondary" : "primary")}${backupInfo?.secondary?.dir ? btn("Quitar", "backupDirClear", "secondary") : ""}</div></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Modelo local incluido", "sage")}<p>El modelo local propone el tipo de documento y contrasta la clasificación con el texto original. El OCR español sigue leyendo las fotos dentro del equipo.</p>${btn("Abrir IA local", "aiOpen", "primary")}<ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Lecturas revisables; sin acciones automáticas</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos y documentos</h2><p>Fotos y PDF ordenados por proveedor y fecha del documento. La pantalla Documentos permite vincularlos a pedidos y aceptar propuestas.</p>${btn("Abrir Documentos", "openDocuments", "secondary")}${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
       [...state.photos]
         .sort(
           (a, b) =>

@@ -405,6 +405,23 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: ventas y mermas del día descuentan producto terminado (1 kg vendido, 0,5 kg merma).",
     );
+    // Recetario: escalar la receta de ejemplo a 6 kg solo en pantalla (nada cambia en el estado).
+    await window
+      .getByRole("button", { name: "Recetario", exact: true })
+      .click();
+    await window.locator("[data-scale]").first().fill("6");
+    await window.waitForFunction(
+      () =>
+        document.querySelector("[data-scaled]")?.textContent.trim() === "3 L",
+    );
+    assert.equal(
+      await window.locator("[data-scale-label]").first().innerText(),
+      "6",
+    );
+    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
+    console.log(
+      "PASS: recetario con ficha completa; escala a 6 kg muestra 3 L de leche sin tocar el stock.",
+    );
     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
     await window
       .getByRole("button", { name: "Simular mensaje", exact: true })
@@ -430,6 +447,20 @@ const assert = require("node:assert/strict");
     assert.ok(reading.includes("Entrega indicada"), reading);
     console.log(
       "PASS: respuesta de proveedor leída por reglas: falta de producto, fecha resuelta y marcada para leer.",
+    );
+    // «Abrir» desde «Qué hacer ahora» con un filtro que ocultaría el mensaje: se restablece.
+    await window.locator("#message-filter").selectOption("all");
+    await window.locator("#message-supplier").selectOption("s1");
+    await window.locator(".todo-row").first().click();
+    await window.waitForFunction(
+      () =>
+        document.querySelector("#message-supplier")?.value === "all" &&
+        document
+          .querySelector(".message-detail .message-bubble")
+          ?.textContent.includes("No tenemos nata"),
+    );
+    console.log(
+      "PASS: «Abrir» en Qué hacer ahora muestra el mensaje aunque el filtro de proveedor lo ocultara.",
     );
     await window.getByRole("button", { name: "IA local", exact: true }).click();
     const text =

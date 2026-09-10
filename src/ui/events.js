@@ -87,7 +87,7 @@ document.addEventListener("click", async (e) => {
     else render();
     document
       .querySelector(".message-detail")
-      ?.scrollIntoView({ block: "start", behavior: "smooth" });
+      ?.scrollIntoView({ block: "start" });
   }
 });
 document.addEventListener("input", (e) => {

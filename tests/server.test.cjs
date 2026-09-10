@@ -524,3 +524,106 @@ test("registros locales: pasado 1 MB el archivo rota a .anterior y sigue escribi
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("copia secundaria: se valida la carpeta, se copia cada copia y se avisa en el estado", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-sec-"));
+  const second = fs.mkdtempSync(path.join(root, "http-sec2-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    let r = await post("/api/maintenance", {
+      type: "backupDir",
+      dir: "relativa",
+    });
+    assert.equal(r.status, 400);
+    r = await post("/api/maintenance", {
+      type: "backupDir",
+      dir: path.join(dir, "backups", "dentro"),
+    });
+    assert.equal(r.status, 400);
+    r = await post("/api/maintenance", { type: "backupDir", dir: second });
+    assert.equal(r.status, 200);
+    let data = await r.json();
+    assert.equal(data.backup.secondary.dir, second);
+    assert.equal(data.backup.secondary.error, "");
+    assert.equal(data.backup.stale, false);
+    const copies = () =>
+      fs.readdirSync(second).filter((f) => f.startsWith("gelatostock-"));
+    assert.equal(copies().length, 1);
+    r = await post("/api/backup", {});
+    data = await r.json();
+    assert.ok(data.secondary.startsWith(second));
+    assert.equal(copies().length, 2);
+    r = await post("/api/maintenance", { type: "backupDir", dir: "" });
+    data = await r.json();
+    assert.equal(data.backup.secondary.dir, "");
+    assert.equal(app.store.setting("backup_dir_secondary"), undefined);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(second, { recursive: true, force: true });
+  }
+});
+test("historial paginado: la interfaz recibe solo lo reciente y pide lo demás a /api/history", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-hist-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir, historyLimit: 3 });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const get = async (p) => (await fetch(origin + p, { headers })).json();
+    let env = await get("/api/state");
+    for (let i = 0; i < 5; i++) {
+      const r = await fetch(origin + "/api/action", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          type: "movement",
+          product: "p2",
+          kind: "entry",
+          value: 1,
+          reason: "prueba " + i,
+          revision: env.state.revision,
+          operationId: randomUUID(),
+        }),
+      });
+      assert.equal(r.status, 200);
+      env = await r.json();
+    }
+    assert.equal(env.state.movements.length, 3);
+    assert.ok(env.history.movements >= 5);
+    assert.equal(env.history.limit, 3);
+    assert.equal(env.state.activity.length, 3);
+    const page = await get("/api/history?kind=movements&offset=3&limit=10");
+    assert.equal(page.total, env.history.movements);
+    assert.equal(page.items.length, env.history.movements - 3);
+    assert.equal(page.items[0].id, app.store.load().movements[3].id);
+    const bad = await fetch(origin + "/api/history?kind=photos", { headers });
+    assert.equal(bad.status, 400);
+    // The full state on disk is untouched by the trimming.
+    assert.ok(app.store.load().movements.length >= 5);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.17.1
+# GelatoStock · prototipo 0.18.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.17.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.18.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.17.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.18.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué puedes probar
 
@@ -170,3 +170,6 @@ La lectura de documentos la hacen reglas deterministas sobre el título (con tol
 
 ## Recetario en 0.17.0
 Pantalla Recetario con la ficha completa de cada receta (familia, proporciones con porcentaje, elaboración, alérgenos), escala por kilos en pantalla y acciones de producir, duplicar y eliminar. Ventas y mermas solo muestra productos terminados de recetas. Mensajes agrupa en un solo bloque lo que entendió la app y «Abrir» siempre lleva al mensaje.
+
+## Copia secundaria e historial paginado en 0.18.0
+Configuración permite una carpeta secundaria de copias (otro disco, USB o carpeta sincronizada) con copia inmediata y duplicado de cada copia posterior; Resumen avisa si no hay copia de las últimas 48 horas. La interfaz recibe solo los 300 movimientos y entradas de actividad más recientes y pide el resto bajo demanda; los datos completos siguen en SQLite y en las copias. La interfaz está partida por pantallas en src/ui/views-*.js.

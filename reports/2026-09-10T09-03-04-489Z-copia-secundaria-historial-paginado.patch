@@ -1,0 +1,1274 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 36124aa..aa1fe9d 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.17.1-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.18.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 635ddb8..efe8398 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,15 @@
+ # Registro de parches y sesiones
+ 
++## 0.18.0 — 2026-09-10 · sesión 030
++
++Copia secundaria (auditoría, punto 8): en Configuración se elige una carpeta fuera de la carpeta de datos (otro disco, USB, OneDrive); se comprueba que se puede escribir, se hace una copia inmediata y cada copia posterior (manual o automática diaria) se duplica allí con la misma retención de 30. El estado incluye si la última copia tiene más de 48 h y los errores de la copia secundaria; Resumen avisa con enlace a Configuración.
++
++Historial paginado (punto 7): cada respuesta del servidor lleva solo los 300 movimientos y 300 entradas de actividad más recientes (GELATO_HISTORY_LIMIT o createApp({ historyLimit })) más los totales; Actividad muestra «N de M» y «Mostrar más», que primero amplía lo cargado y luego pide páginas a GET /api/history. La base de datos y las copias conservan todo.
++
++Código (punto 11): src/ui/views.js (726 líneas) partido en views.js (resumen, inventario, proveedores, actividad, configuración), views-orders.js, views-production.js, views-messages.js, views-documents.js y views-ai.js, sin cambiar comportamiento; index.html y la lista de recursos del servidor actualizados. Prueba de escritorio con dos pasos nuevos: Recetario (escala a 6 kg = 3 L) y «Abrir» en Mensajes con filtro activo. Auditoría visual con Recetario y Guía.
++
++Pruebas: 124. Informe reports/2026-09-10T09-03-04-489Z-copia-secundaria-historial-paginado.md.
++
+ ## 0.17.1 — 2026-09-10 · sesión 029
+ 
+ Correcciones de la auditoría general (reports/2026-09-10T01-05-00-000Z-auditoria-general-0170.md). Espacio: dist pasó de 49,4 GB (28 versiones) a dos versiones; scripts/package.cjs conserva solo las dos más recientes y deja de empaquetar onnxruntime-web, las variantes de sharp para otras plataformas y los binarios de onnxruntime-node de otras plataformas (ejecutable 1,9 GB, antes 2,2 GB). sharp se conserva: transformers lo exige al cargar (el primer paquete podado falló con «Cannot find module sharp»; ahora el trabajador de IA anota la causa técnica en ia.log). Fechas: toda la resolución de fechas de mensajes (core/messages.ts) y las fechas «de hoy» de producción y ventas usan el calendario local, no UTC. CSV: src/csv.cjs antepone apóstrofo a celdas que abrirían una fórmula (=, +, -, @); los números no cambian. Registros: src/logs.cjs rota ia.log, errores.log y diagnostico.log al superar 1 MB. Textos: tuteo unificado (43 textos con voseo en interfaz, núcleo y README). README con las cabeceras históricas renumeradas a su versión real.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 1bfab86..68a8227 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.17.1
++# Entrada para Claude · entrega vigente 0.18.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index e5883d1..636a409 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.17.1
++# GelatoStock · prototipo 0.18.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.17.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.18.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.17.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.18.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+@@ -170,3 +170,6 @@ La lectura de documentos la hacen reglas deterministas sobre el título (con tol
+ 
+ ## Recetario en 0.17.0
+ Pantalla Recetario con la ficha completa de cada receta (familia, proporciones con porcentaje, elaboración, alérgenos), escala por kilos en pantalla y acciones de producir, duplicar y eliminar. Ventas y mermas solo muestra productos terminados de recetas. Mensajes agrupa en un solo bloque lo que entendió la app y «Abrir» siempre lleva al mensaje.
++
++## Copia secundaria e historial paginado en 0.18.0
++Configuración permite una carpeta secundaria de copias (otro disco, USB o carpeta sincronizada) con copia inmediata y duplicado de cada copia posterior; Resumen avisa si no hay copia de las últimas 48 horas. La interfaz recibe solo los 300 movimientos y entradas de actividad más recientes y pide el resto bajo demanda; los datos completos siguen en SQLite y en las copias. La interfaz está partida por pantallas en src/ui/views-*.js.
+diff --git a/TODO.md b/TODO.md
+index 3acf9e8..302b868 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.17.1.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.18.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -42,9 +42,10 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
+ - [x] Compra en webs (Makro u otras): lista copiable por proveedor y apertura de la web guardada; sin automatizar la compra (0.16.0).
+ - [x] Auditoría 0.17.0, puntos 1–5, 9 y 10 (0.17.1): dist limpio, paquete podado, fechas locales, CSV seguro, rotación de registros, tuteo, README.
+-- [ ] Auditoría 0.17.0, punto 7: enviar a la interfaz solo lo reciente y paginar Actividad/Movimientos.
+-- [ ] Auditoría 0.17.0, punto 8: carpeta secundaria de copias (USB/OneDrive) y aviso de copia antigua.
+-- [ ] Auditoría 0.17.0, punto 11: partir src/ui/views.js por pantalla; prueba de escritorio para Recetario y «Abrir»; Recetario y Guía en la auditoría visual.
++- [x] Auditoría 0.17.0, punto 7: historial paginado (0.18.0).
++- [x] Auditoría 0.17.0, punto 8: copia secundaria y aviso (0.18.0).
++- [x] Auditoría 0.17.0, punto 11: views.js partido, pruebas de Recetario y «Abrir», auditoría visual ampliada (0.18.0).
++- [ ] Elegir la carpeta secundaria con un diálogo del sistema (hoy se escribe la ruta; requiere preload o IPC en Electron).
+ - [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
+ - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
+ - [ ] Recetario: balance técnico del gelato (azúcares, grasa, sólidos) si el usuario aporta fichas reales; impresión de ficha.
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 70eb7b3..54badf4 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -75,6 +75,10 @@ Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de
+ ## Configuración
+ Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.
+ 
++## Copias y espacio
++- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.
++- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.
++
+ ## Si algo falla
+ - Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.
+ - Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».
+diff --git a/package.json b/package.json
+index 3f11d99..9e2cab9 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.17.1",
++  "version": "0.18.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index b4909c5..a3e1b31 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -405,6 +405,23 @@ const assert = require("node:assert/strict");
+     console.log(
+       "PASS: ventas y mermas del día descuentan producto terminado (1 kg vendido, 0,5 kg merma).",
+     );
++    // Recetario: escalar la receta de ejemplo a 6 kg solo en pantalla (nada cambia en el estado).
++    await window
++      .getByRole("button", { name: "Recetario", exact: true })
++      .click();
++    await window.locator("[data-scale]").first().fill("6");
++    await window.waitForFunction(
++      () =>
++        document.querySelector("[data-scaled]")?.textContent.trim() === "3 L",
++    );
++    assert.equal(
++      await window.locator("[data-scale-label]").first().innerText(),
++      "6",
++    );
++    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
++    console.log(
++      "PASS: recetario con ficha completa; escala a 6 kg muestra 3 L de leche sin tocar el stock.",
++    );
+     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
+     await window
+       .getByRole("button", { name: "Simular mensaje", exact: true })
+@@ -431,6 +448,20 @@ const assert = require("node:assert/strict");
+     console.log(
+       "PASS: respuesta de proveedor leída por reglas: falta de producto, fecha resuelta y marcada para leer.",
+     );
++    // «Abrir» desde «Qué hacer ahora» con un filtro que ocultaría el mensaje: se restablece.
++    await window.locator("#message-filter").selectOption("all");
++    await window.locator("#message-supplier").selectOption("s1");
++    await window.locator(".todo-row").first().click();
++    await window.waitForFunction(
++      () =>
++        document.querySelector("#message-supplier")?.value === "all" &&
++        document
++          .querySelector(".message-detail .message-bubble")
++          ?.textContent.includes("No tenemos nata"),
++    );
++    console.log(
++      "PASS: «Abrir» en Qué hacer ahora muestra el mensaje aunque el filtro de proveedor lo ocultara.",
++    );
+     await window.getByRole("button", { name: "IA local", exact: true }).click();
+     const text =
+       "FACTURA F-123\nOrigen Coffee\nBase imponible: 100,00 EUR\nIVA: 21,00 EUR\nTotal: 125,00 EUR";
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index 485de41..f722cb0 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -4,7 +4,7 @@ module.exports = `GelatoStock es una aplicación local de escritorio para una ge
+ Pantallas: Resumen (estado general), Inventario (productos, conteo, mínimos, entradas, salidas y mermas con motivo, corrección con movimiento compensatorio), Compras (carrito por proveedor, propuesta de reposición, pedidos simulados y Control de entregas), Mensajes (bandeja real y de demostración por conversación de proveedor, con prioridad, relevancia, vínculo a pedidos, respuestas rápidas y decisiones), WhatsApp (conector por QR: recibe de contactos autorizados y envía pedidos y respuestas solo con confirmación en pantalla), Guía (esta misma guía dentro de la app), Proveedores (fichas con NIF, teléfono y alias), Actividad (historial de movimientos), Configuración (copias de seguridad, restauración, archivo de fotos por proveedor y fecha, OCR) e IA local.
+ Control de entregas: muestra por producto lo pedido, lo recibido y lo que falta recibir. Registrar lo que llegó suma solo esa entrega al inventario, en la unidad base del producto. Un pedido con entregas parciales sigue En curso hasta completarse.
+ Compras: los pedidos son simulados; la app no envía pedidos reales ni realiza pagos. Si un proveedor tiene web de compra (por ejemplo Makro) guardada en su ficha, el carrito ofrece «Lista para …» para copiar la lista y abrir la web en el navegador; la compra la hace la persona con su cuenta. Cancelar un pedido pendiente no cambia el stock.
+-Copias: Configuración permite crear una copia con datos y fotos y restaurarla; al restaurar se conserva una copia previa automática.
++Copias: Configuración permite crear una copia con datos y fotos y restaurarla; también elegir una carpeta secundaria (otro disco, USB o carpeta sincronizada) donde se duplica cada copia, y Resumen avisa si no hay copia de las últimas 48 horas; al restaurar se conserva una copia previa automática.
+ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español lee el texto y propone un proveedor existente. No extrae cantidades ni lee PDF.
+ IA local: reglas deterministas leen el título del documento (factura, proforma, abono, albarán, lista de precios, oferta) o reconocen un mensaje, y un modelo pequeño incluido en el equipo (Qwen3 0.6B) da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. El modelo propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+diff --git a/src/index.html b/src/index.html
+index c329929..da175ba 100644
+--- a/src/index.html
++++ b/src/index.html
+@@ -26,6 +26,11 @@
+     <script src="/ui/core.js" defer></script>
+     <script src="/ui/whatsapp.js" defer></script>
+     <script src="/ui/views.js" defer></script>
++    <script src="/ui/views-orders.js" defer></script>
++    <script src="/ui/views-production.js" defer></script>
++    <script src="/ui/views-messages.js" defer></script>
++    <script src="/ui/views-documents.js" defer></script>
++    <script src="/ui/views-ai.js" defer></script>
+     <script src="/ui/forms.js" defer></script>
+     <script src="/ui/actions.js" defer></script>
+     <script src="/ui/events.js" defer></script>
+diff --git a/src/server.cjs b/src/server.cjs
+index 65ca9c2..ae789c5 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -15,29 +15,61 @@ const { Store } = require("../build/store.js");
+ function createApp({
+   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
+   port = 0,
++  // Newest movements/activity sent to the UI per response; older rows come from /api/history.
++  historyLimit = Number(process.env.GELATO_HISTORY_LIMIT) || 300,
+ } = {}) {
+   const store = new Store(dataDir);
+   // Daily automatic copy (data + photos) with a bounded history of automatic files only.
+   const backupDir = path.join(dataDir, "backups");
+-  const backupInfo = { last: null, warning: "" };
++  const isBackupFile = (f) => /^gelatostock-\d+-[0-9a-f-]{36}\.json$/.test(f);
++  const byStamp = (a, b) => Number(a.split("-")[1]) - Number(b.split("-")[1]);
++  // Optional second folder (USB, OneDrive, NAS…): every backup is copied there too, with the
++  // same retention. Losing the main disk then costs at most one day.
++  const secondaryInfo = { dir: "", last: null, error: "" };
++  const copyToSecondary = (file) => {
++    const dir = store.setting("backup_dir_secondary") || "";
++    secondaryInfo.dir = dir;
++    if (!dir) {
++      secondaryInfo.error = "";
++      return;
++    }
++    try {
++      fs.mkdirSync(dir, { recursive: true });
++      const target = path.join(dir, path.basename(file));
++      if (!fs.existsSync(target)) fs.copyFileSync(file, target);
++      for (const f of fs
++        .readdirSync(dir)
++        .filter(isBackupFile)
++        .sort(byStamp)
++        .slice(0, -30))
++        fs.unlinkSync(path.join(dir, f));
++      secondaryInfo.last = new Date().toISOString();
++      secondaryInfo.error = "";
++    } catch (e) {
++      secondaryInfo.error =
++        "No se pudo copiar a la carpeta secundaria: " + String(e.message || e);
++    }
++  };
++  const backupInfo = { last: null, warning: "", secondary: secondaryInfo };
+   const autoBackup = () => {
+     try {
+       fs.mkdirSync(backupDir, { recursive: true });
+       const own = () =>
+-        fs
+-          .readdirSync(backupDir)
+-          .filter((f) => /^gelatostock-\d+-[0-9a-f-]{36}\.json$/.test(f))
+-          .sort((a, b) => Number(a.split("-")[1]) - Number(b.split("-")[1]));
++        fs.readdirSync(backupDir).filter(isBackupFile).sort(byStamp);
+       const files = own();
+       const last = files.length
+         ? Number(files[files.length - 1].split("-")[1])
+         : 0;
+       if (Date.now() - last > 24 * 3600 * 1000) {
+-        store.backup();
++        const created = store.backup();
+         for (const f of own().slice(0, -30))
+           fs.unlinkSync(path.join(backupDir, f));
+         backupInfo.last = new Date().toISOString();
+-      } else backupInfo.last = new Date(last).toISOString();
++        copyToSecondary(created);
++      } else {
++        backupInfo.last = new Date(last).toISOString();
++        copyToSecondary(path.join(backupDir, files[files.length - 1]));
++      }
+       backupInfo.warning = "";
+     } catch (e) {
+       backupInfo.warning =
+@@ -109,13 +141,29 @@ function createApp({
+   setTimeout(autoPurge, 5000).unref();
+   const purgeTimer = setInterval(autoPurge, 6 * 3600 * 1000);
+   purgeTimer.unref();
++  // The UI receives only the newest rows of the two unbounded tables; totals travel apart.
++  const trimHistory = (state) => ({
++    ...state,
++    movements: state.movements.slice(0, historyLimit),
++    activity: state.activity.slice(0, historyLimit),
++  });
+   const envelope = (state, extra = {}) => ({
+-    state: redact(state),
++    state: redact(trimHistory(state)),
++    history: {
++      limit: historyLimit,
++      movements: state.movements.length,
++      activity: state.activity.length,
++    },
+     dataDir,
+     storage: "SQLite",
+     archiveWarning: store.archiveWarning,
+     version,
+-    backup: backupInfo,
++    backup: {
++      ...backupInfo,
++      stale:
++        !backupInfo.last ||
++        Date.now() - Date.parse(backupInfo.last) > 48 * 3600 * 1000,
++    },
+     lock: lockInfo(),
+     retentionDays: retentionDays(),
+     ...extra,
+@@ -188,6 +236,27 @@ function createApp({
+       json(200, envelope(store.load()));
+       return;
+     }
++    if (u.pathname === "/api/history" && req.method === "GET") {
++      // Older movements/activity on demand (newest first, same order as the state).
++      const kind = u.searchParams.get("kind");
++      if (!["movements", "activity"].includes(kind)) {
++        json(400, { error: "Historial desconocido." });
++        return;
++      }
++      const offset = Math.max(0, Number(u.searchParams.get("offset")) || 0);
++      const limit = Math.min(
++        1000,
++        Math.max(1, Number(u.searchParams.get("limit")) || historyLimit),
++      );
++      const rows = store.load()[kind];
++      json(200, {
++        kind,
++        offset,
++        total: rows.length,
++        items: rows.slice(offset, offset + limit),
++      });
++      return;
++    }
+     if (
+       req.method === "POST" &&
+       [
+@@ -420,6 +489,35 @@ function createApp({
+           return;
+         }
+         if (u.pathname === "/api/maintenance") {
++          if (data.type === "backupDir") {
++            const dir = String(data.dir || "").trim();
++            if (dir.length > 300) throw Error("Ruta demasiado larga.");
++            if (dir) {
++              if (!path.isAbsolute(dir))
++                throw Error(
++                  "Escribe la ruta completa de la carpeta, por ejemplo E:\\CopiasGelato o C:\\Users\\tú\\OneDrive\\GelatoStock.",
++                );
++              const inside = path.relative(dataDir, dir);
++              if (
++                inside === "" ||
++                (!inside.startsWith("..") && !path.isAbsolute(inside))
++              )
++                throw Error(
++                  "La carpeta secundaria debe estar fuera de la carpeta de datos (idealmente en otro disco o en la nube).",
++                );
++              fs.mkdirSync(dir, { recursive: true });
++              const probe = path.join(dir, ".gelatostock-prueba");
++              fs.writeFileSync(probe, "ok");
++              fs.unlinkSync(probe);
++            }
++            store.setSetting("backup_dir_secondary", dir || undefined);
++            secondaryInfo.last = null;
++            secondaryInfo.error = "";
++            secondaryInfo.dir = dir;
++            if (dir) copyToSecondary(store.backup());
++            json(200, envelope(store.load()));
++            return;
++          }
+           if (data.type === "retention") {
+             const days = Number(data.days);
+             if (![0, 7, 14, 30, 90].includes(days))
+@@ -508,7 +606,14 @@ function createApp({
+         if (u.pathname === "/api/backup") {
+           const created = store.backup();
+           backupInfo.last = new Date().toISOString();
+-          json(200, { path: created });
++          copyToSecondary(created);
++          json(200, {
++            path: created,
++            secondary: secondaryInfo.dir
++              ? secondaryInfo.error ||
++                path.join(secondaryInfo.dir, path.basename(created))
++              : "",
++          });
+           return;
+         }
+         if (u.pathname === "/api/restore") {
+@@ -558,6 +663,11 @@ function createApp({
+       "/ui/core.js": "ui/core.js",
+       "/ui/whatsapp.js": "ui/whatsapp.js",
+       "/ui/views.js": "ui/views.js",
++      "/ui/views-orders.js": "ui/views-orders.js",
++      "/ui/views-production.js": "ui/views-production.js",
++      "/ui/views-messages.js": "ui/views-messages.js",
++      "/ui/views-documents.js": "ui/views-documents.js",
++      "/ui/views-ai.js": "ui/views-ai.js",
+       "/ui/forms.js": "ui/forms.js",
+       "/ui/actions.js": "ui/actions.js",
+       "/ui/events.js": "ui/events.js",
+diff --git a/src/styles.css b/src/styles.css
+index b8795d7..3fbf00c 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3218,3 +3218,16 @@ dialog::backdrop {
+   font-size: 13px;
+   color: var(--ink-soft, #3f4a44);
+ }
++
++.setting-subtitle {
++  margin-top: 16px;
++  font-size: 14px;
++  font-weight: 600;
++}
++.home-notice button.text-link {
++  border: 0;
++  background: none;
++  padding: 0;
++  font: inherit;
++  cursor: pointer;
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index 3cdd6ac..7cc6681 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -1006,6 +1006,62 @@ async function action(name, el) {
+     }
+     return;
+   }
++  if (name === "moreHistory") {
++    const kind = el.dataset.kind;
++    historyShown[kind] += 50;
++    const total = historyInfo?.[kind] ?? state[kind].length;
++    if (historyShown[kind] > state[kind].length && state[kind].length < total) {
++      try {
++        const r = await request(
++          `/api/history?kind=${kind}&offset=${state[kind].length}&limit=300`,
++        );
++        // Append only what is not already loaded (the list is newest first).
++        const known = new Set(state[kind].map((x) => x.id));
++        state[kind] = state[kind].concat(
++          r.items.filter((x) => !known.has(x.id)),
++        );
++      } catch (e) {
++        toast(e.message);
++      }
++    }
++    render();
++    return;
++  }
++  if (name === "backupDirEditor") {
++    modal(
++      "Carpeta secundaria de copias",
++      "Cada copia (manual o automática) se duplica ahí. Usa otro disco, un USB o una carpeta sincronizada. Se comprueba que se puede escribir.",
++      field(
++        "Ruta completa de la carpeta",
++        "dir",
++        backupInfo?.secondary?.dir || "",
++        "text",
++        'required maxlength="300" placeholder="E:\\CopiasGelato"',
++      ),
++      async (f) => {
++        applyEnvelope(
++          await request("/api/maintenance", {
++            type: "backupDir",
++            dir: f.get("dir").trim(),
++          }),
++        );
++        render();
++        toast("Carpeta secundaria guardada y primera copia hecha.");
++        return true;
++      },
++    );
++    return;
++  }
++  if (name === "backupDirClear") {
++    applyEnvelope(
++      await request("/api/maintenance", { type: "backupDir", dir: "" }),
++    );
++    render();
++    toast(
++      "Carpeta secundaria quitada. Las copias siguen en la carpeta de datos.",
++    );
++    return;
++  }
+   if (name === "restore") {
+     modal(
+       "Restaurar una copia",
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 57477b1..4253b4c 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -5,6 +5,8 @@ let waState = null,
+   waBusy = false;
+ let appVersion = "",
+   backupInfo = null,
++  historyInfo = null,
++  historyShown = { movements: 50, activity: 50 },
+   lockInfo = null,
+   retentionDays = 0;
+ let state,
+@@ -166,13 +168,7 @@ async function mutate(a, msg) {
+       operationId: crypto.randomUUID(),
+       ...a,
+     });
+-    state = data.state;
+-    appVersion = data.version || appVersion;
+-    if (data.backup) backupInfo = data.backup;
+-    if (data.lock) lockInfo = data.lock;
+-    if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
+-    dataDir = data.dataDir;
+-    archiveWarning = data.archiveWarning;
++    applyEnvelope(data);
+     render();
+     if (archiveWarning || msg) toast(archiveWarning || msg);
+     return true;
+@@ -192,12 +188,19 @@ async function mutate(a, msg) {
+     busy = false;
+   }
+ }
+-async function reloadState() {
+-  const data = await request("/api/state");
++// Every server response carries the same envelope: state plus side information.
++function applyEnvelope(data) {
+   state = data.state;
++  appVersion = data.version || appVersion;
+   if (data.backup) backupInfo = data.backup;
+   if (data.lock) lockInfo = data.lock;
++  if (data.history) historyInfo = data.history;
+   if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
++  if (data.dataDir) dataDir = data.dataDir;
++  archiveWarning = data.archiveWarning;
++}
++async function reloadState() {
++  applyEnvelope(await request("/api/state"));
+   render();
+ }
+ function nav(to) {
+diff --git a/src/ui/events.js b/src/ui/events.js
+index fdafaea..fe81686 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -87,7 +87,7 @@ document.addEventListener("click", async (e) => {
+     else render();
+     document
+       .querySelector(".message-detail")
+-      ?.scrollIntoView({ block: "start", behavior: "smooth" });
++      ?.scrollIntoView({ block: "start" });
+   }
+ });
+ document.addEventListener("input", (e) => {
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index b35d671..f22e071 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, hay respuestas rápidas según la lectura (por ejemplo «De acuerdo con la fecha» o «Lo compramos por otro lado»). El texto se muestra antes de enviarlo, se puede editar y se envía una sola vez.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, hay respuestas rápidas según la lectura (por ejemplo «De acuerdo con la fecha» o «Lo compramos por otro lado»). El texto se muestra antes de enviarlo, se puede editar y se envía una sola vez.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views.js b/src/ui/views.js
+index 16471ba..a7abc6b 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -84,40 +84,6 @@ const toRead = () =>
+   state.messages.filter((m) => m.interpretation?.needsReading && !m.reviewed);
+ const proposedProductions = () =>
+   state.productions.filter((p) => p.status === "proposed");
+-function replyBlock(m) {
+-  const i = m.interpretation;
+-  const ai = m.aiReading;
+-  const order = m.order && state.orders.find((o) => o.id === m.order);
+-  const reading = i
+-    ? `<div class="understood-row"><span>Lectura</span><div><strong>${esc(replyLabel[i.category])}${i.needsReading && !m.reviewed ? " " + pill("Debes leer", "peach") : ""}${i.learned ? " " + pill("Aprendido de ti", "sage") : i.corrected ? " " + pill("Corregido por ti", "sage") : ""}</strong><p>${esc(i.summary)}</p>${i.deliveryDate ? `<p><strong>Entrega indicada:</strong> ${date(i.deliveryDate + "T12:00:00Z")}${i.deliveryHint ? " («" + esc(i.deliveryHint) + "»)" : ""}</p>` : i.deliveryHint ? `<p><strong>Plazo indicado:</strong> ${esc(i.deliveryHint)}</p>` : ""}${i.missing ? `<p><strong>Producto que falta:</strong> ${esc(i.missing)}</p>` : ""}</div></div>`
+-    : "";
+-  const second = ai
+-    ? `<div class="understood-row"><span>IA local</span><div><p>${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "dos lecturas coincidentes" : ai.status === "disagreement" ? "las lecturas discrepan: revisa tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && i && ai.category !== i.category ? " · No coincide con las reglas: decide leyendo el original." : ""}</p></div></div>`
+-    : "";
+-  return `<div class="reply-reading understood"><div class="message-label">LO QUE ENTENDIÓ LA APP · POR REGLAS</div>${reading}<div class="understood-row"><span>Prioridad</span><div><strong>${esc(priorityLabel[m.priority])}</strong>${i && m.reason.includes(i.summary) ? "" : `<p>${esc(m.reason)}</p>`}</div></div><div class="understood-row"><span>Pedido</span><div><strong>${order ? esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : esc(relevanceLabel[m.relevance])}</strong><p>${order ? "" : "Sin pedido vinculado. "}${esc(m.relevanceReason)} Nada de esto cambia compras ni stock.</p></div></div>${second}</div>`;
+-}
+-// Shared by the list and by «Abrir»: does the current filter show this message?
+-function messageMatches(x) {
+-  const fold = (v) =>
+-    v
+-      .normalize("NFD")
+-      .replace(/[\u0300-\u036f]/g, "")
+-      .toLowerCase();
+-  return (
+-    (messageSupplier === "all" || x.supplier === messageSupplier) &&
+-    (messageFilter === "all" ||
+-      (messageFilter === "unread" && !x.read) ||
+-      (messageFilter === "pending" && !x.reviewed) ||
+-      (messageFilter === "important" &&
+-        x.priority === "important" &&
+-        !x.reviewed) ||
+-      (messageFilter === "relevant" && x.relevance === "relevant") ||
+-      (messageFilter === "toread" &&
+-        x.interpretation?.needsReading &&
+-        !x.reviewed)) &&
+-    fold(x.text + " " + supplier(x.supplier).name).includes(fold(messageQuery))
+-  );
+-}
+ function homeNotices() {
+   const read = toRead().length,
+     proposed = proposedProductions().length;
+@@ -130,503 +96,15 @@ function homeNotices() {
+   const deliveries = soon.length
+     ? `<strong>${soon.length} entrega${soon.length === 1 ? "" : "s"} prevista${soon.length === 1 ? "" : "s"} en los próximos dos días</strong><span>${esc(soon.map((o) => o.number + " " + supplier(o.supplier).name + " (" + date(o.expected + "T12:00:00Z") + ")").join(", "))}. </span><button class="text-button" data-nav="orders">Ver entregas ${icon("arrow")}</button>`
+     : "";
+-  if (!read && !proposed && !soon.length) return "";
+-  return `<div class="notice subtle home-notice">${icon("alert")}<div>${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
+-}
+-function orderReplies(o) {
+-  const replies = state.messages.filter(
+-    (m) => m.order === o.id && m.interpretation,
+-  );
+-  if (!replies.length) return "";
+-  return `<div class="order-replies"><strong>Respuestas del proveedor vinculadas</strong>${replies
+-    .slice(0, 4)
+-    .map(
+-      (m) =>
+-        `<p>${pill(replyLabel[m.interpretation.category], m.interpretation.needsReading && !m.reviewed ? "peach" : "sage")} ${esc(m.interpretation.summary)}${m.interpretation.deliveryDate ? " Entrega: " + date(m.interpretation.deliveryDate + "T12:00:00Z") + "." : ""}</p>`,
+-    )
+-    .join("")}</div>`;
+-}
+-const docTypeLabel = (t) =>
+-  t ? (aiTypes[t] || t).replace("Posible ", "") : "Sin tipo";
+-function documentCard(ph) {
+-  const order = ph.order && state.orders.find((o) => o.id === ph.order);
+-  const sug = ph.suggestion;
+-  const sugText = sug
+-    ? [
+-        sug.supplier
+-          ? "proveedor " + esc(supplier(sug.supplier)?.name || "")
+-          : "",
+-        sug.order
+-          ? "pedido " +
+-            esc(state.orders.find((o) => o.id === sug.order)?.number || "")
+-          : "",
+-        sug.docType ? "tipo " + esc(docTypeLabel(sug.docType)) : "",
+-      ]
+-        .filter(Boolean)
+-        .join(" · ")
+-    : "";
+-  const isPdf = ph.mime === "application/pdf";
+-  // Tarjeta en rejilla: miniatura + datos arriba; propuesta y acciones ocupan todo el ancho.
+-  return `<article class="doc-card"><div class="doc-thumb">${isPdf ? `<span class="doc-pdf">PDF</span>` : `<img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}">`}</div><div class="doc-body"><strong>${esc(ph.name)}</strong><small>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")} · ${esc(ph.documentDate || ph.at.slice(0, 10))} · ${ph.source === "whatsapp" ? "WhatsApp" : "Foto"}</small><div class="doc-tags">${pill(docTypeLabel(ph.docType), ph.docType ? "sage" : "neutral")}${order ? pill(order.number, "lavender") : pill("Sin pedido", "neutral")}</div></div>${sug && sugText ? `<div class="doc-suggestion"><span><strong>Propuesta por reglas:</strong> ${sugText}. <span class="muted">${esc(sug.reason)}</span></span>${btn("Aceptar", "applySuggestion", "primary", `data-id="${esc(ph.id)}"`)}</div>` : sug ? `<div class="muted">${esc(sug.reason)}</div>` : ""}<div class="row-actions doc-actions">${btn("Organizar", "organizePhoto", "secondary", `data-id="${esc(ph.id)}"`)}${btn(order ? "Cambiar pedido" : "Vincular pedido", "linkDocument", "secondary", `data-id="${esc(ph.id)}"`)}${order ? btn("Desvincular", "unlinkDocument", "secondary", `data-id="${esc(ph.id)}"`) : ""}${ph.ocrText ? btn("Revisar texto con IA", "aiPhoto", "secondary", `data-id="${esc(ph.id)}"`) : ""}${btn("Dónde está", "documentPath", "secondary", `data-id="${esc(ph.id)}"`)}</div></article>`;
+-}
+-function documents() {
+-  const list = state.photos.filter(
+-    (p) =>
+-      (docSupplier === "all" ||
+-        p.supplier === docSupplier ||
+-        (docSupplier === "none" && !p.supplier)) &&
+-      (docFilter === "all" ||
+-        (docFilter === "unlinked" && !p.order) ||
+-        (docFilter === "suggested" && p.suggestion) ||
+-        (docFilter === "pdf" && p.mime === "application/pdf")),
+-  );
+-  const groups = new Map();
+-  for (const p of list) {
+-    const key = p.supplier || "none";
+-    if (!groups.has(key)) groups.set(key, []);
+-    groups.get(key).push(p);
+-  }
+-  return (
+-    header(
+-      "Documentos por proveedor",
+-      "Facturas, albaranes, recibos y pedidos, archivados y vinculados al pedido al que pertenecen.",
+-      btn(icon("photo") + " Añadir documento", "photo", "primary"),
+-    ) +
+-    `<div class="notice subtle">${icon("shield")}<div><strong>Las propuestas las hacen reglas, no la IA</strong><span>Número de pedido en el texto, proveedor y fecha, e importe frente al pedido. Nada se vincula sin tu confirmación. Los adjuntos de WhatsApp de proveedores autorizados llegan aquí solos.</span></div></div><div class="message-filters"><label class="field">Proveedor<select id="doc-supplier"><option value="all">Todos</option><option value="none" ${docSupplier === "none" ? "selected" : ""}>Sin proveedor</option>${state.suppliers.map((s) => `<option value="${s.id}" ${docSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="doc-filter">${[
+-      ["all", "Todos"],
+-      ["unlinked", "Sin pedido"],
+-      ["suggested", "Con propuesta"],
+-      ["pdf", "PDF"],
+-    ]
+-      .map(
+-        ([v, l]) =>
+-          `<option value="${v}" ${docFilter === v ? "selected" : ""}>${l}</option>`,
+-      )
+-      .join("")}</select></label></div>${
+-      list.length
+-        ? [...groups.entries()]
+-            .map(
+-              ([key, docs]) =>
+-                `<section class="panel"><div class="panel-heading"><div><h2>${esc(key === "none" ? "Sin proveedor" : supplier(key).name)}</h2><p>${docs.length} documento${docs.length === 1 ? "" : "s"}</p></div></div><div class="doc-grid">${docs.map(documentCard).join("")}</div></section>`,
+-            )
+-            .join("")
+-        : '<div class="panel empty compact">No hay documentos con estos filtros. Añade una foto o un PDF, o autoriza chats de WhatsApp para recibirlos solos.</div>'
+-    }`
+-  );
+-}
+-// Shared gate for Producción and Recetario when the recipe lock is enabled.
+-function lockGate() {
+-  if (!(lockInfo?.enabled && !lockInfo.unlocked)) return "";
+-  return (
+-    header(
+-      "Recetario protegido",
+-      "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
+-    ) +
+-    `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, se puede quitar con la app cerrada borrando la clave recipes_lock de la tabla settings de gelatostock.sqlite.</p></section>`
+-  );
+-}
+-const familyLabel = {
+-  crema: "Crema",
+-  sorbete: "Sorbete",
+-  postre: "Postre",
+-  base: "Base o pasta",
+-  otro: "Otro",
+-};
+-// Ingredients as share of the mass: kg and L count as 1:1, units are left out of the total.
+-function recipeShares(r) {
+-  const mass = r.ingredients.reduce((n, i) => {
+-    const p = product(i.product);
+-    return p.unit === "ud" ? n : n + i.quantity;
+-  }, 0);
+-  return r.ingredients.map((i) => {
+-    const p = product(i.product);
+-    return {
+-      product: p,
+-      quantity: i.quantity,
+-      share: mass && p.unit !== "ud" ? (i.quantity / mass) * 100 : null,
+-    };
+-  });
+-}
+-function recipeBook() {
+-  const gate = lockGate();
+-  if (gate) return gate;
+-  const fold = (s) =>
+-    s
+-      .normalize("NFD")
+-      .replace(/[\u0300-\u036f]/g, "")
+-      .toLowerCase();
+-  const list = state.recipes.filter(
+-    (r) =>
+-      (recipeFamily === "all" || (r.family || "crema") === recipeFamily) &&
+-      fold(r.name + " " + (r.allergens || "")).includes(fold(recipeQuery)),
+-  );
+-  return (
+-    header(
+-      "El recetario de la casa.",
+-      "Cada receta con su familia, sus proporciones, la elaboración y los alérgenos. Desde aquí se produce y se escala.",
+-      btn(icon("plus") + " Nueva receta", "recipeEditor", "primary"),
+-    ) +
+-    `<div class="message-filters"><label class="field">Buscar receta<input id="recipe-search" type="search" value="${esc(recipeQuery)}" placeholder="Nombre o alérgeno"></label><label class="field">Familia<select id="recipe-family"><option value="all">Todas las familias</option>${Object.entries(
+-      familyLabel,
+-    )
+-      .map(
+-        ([v, l]) =>
+-          `<option value="${v}" ${recipeFamily === v ? "selected" : ""}>${l}</option>`,
+-      )
+-      .join("")}</select></label></div><div class="recipe-book">${
+-      list
+-        .map((r) => {
+-          const shares = recipeShares(r);
+-          return `<article class="panel recipe-sheet" data-recipe="${esc(r.id)}"><header class="recipe-sheet-head"><div><h2>${esc(r.name)}</h2><p>${pill(familyLabel[r.family || "crema"], "sage")} Rinde ${num(r.yield)} kg${r.product ? " · terminado: " + esc(product(r.product).name) : ""}</p></div><label class="field recipe-scale">Calcular para<span class="stepper"><button type="button" class="step" data-step="-1" aria-label="Menos kilos">−</button><input class="quantity" type="number" min="0.1" max="1000000" step="0.5" value="${r.yield}" data-scale="${esc(r.id)}" aria-label="Kilos para escalar ${esc(r.name)}"><button type="button" class="step" data-step="1" aria-label="Más kilos">+</button></span> kg</label></header><div class="table-scroll"><table class="delivery-table recipe-table"><thead><tr><th>Ingrediente</th><th>Para ${num(r.yield)} kg</th><th>%</th><th>Para <span data-scale-label="${esc(r.id)}">${num(r.yield)}</span> kg</th></tr></thead><tbody>${shares
+-            .map(
+-              (s) =>
+-                `<tr><td><strong>${esc(s.product.name)}</strong></td><td>${num(s.quantity)} ${esc(s.product.unit)}</td><td>${s.share === null ? "—" : num(Math.round(s.share * 10) / 10) + " %"}</td><td><strong data-scaled="${esc(r.id)}" data-base="${s.quantity}" data-unit="${esc(s.product.unit)}">${num(s.quantity)} ${esc(s.product.unit)}</strong></td></tr>`,
+-            )
+-            .join(
+-              "",
+-            )}</tbody></table></div>${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
+-        })
+-        .join("") ||
+-      `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
+-    }</div>`
+-  );
+-}
+-function production() {
+-  const gate = lockGate();
+-  if (gate) return gate;
+-  const proposed = proposedProductions();
+-  const applied = state.productions.filter((p) => p.status === "applied");
+-  const byDate = {};
+-  for (const p of applied) (byDate[p.date] ||= []).push(p);
+-  const dates = Object.keys(byDate).sort().reverse().slice(0, 30);
+-  const lineText = (l) => {
+-    const p = product(l.product);
+-    return `${esc(p.name)} ${num(l.quantity)} ${esc(p.unit)}`;
+-  };
+-  return (
+-    header(
+-      "Producción y recetas",
+-      "Cada kilo de gelato descuenta sus ingredientes, solo cuando tú lo apruebas.",
+-      btn(icon("plus") + " Nueva receta", "recipeEditor") +
+-        btn(icon("plus") + " Registrar producción", "produce", "primary"),
+-    ) +
+-    `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta, no por IA</strong><span>La app propone el consumo y el producto terminado. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div><section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Aprobar crea movimientos de salida por producción y la entrada del producto terminado.</p></div></div>${
+-      proposed.length
+-        ? proposed
+-            .map(
+-              (p) =>
+-                `<article class="production-card" data-production="${esc(p.id)}"><header><div><strong>${esc(p.name)}</strong><small>${num(p.quantity)} kg · ${date(p.date + "T12:00:00Z")}</small></div>${pill("Por aprobar", "sand")}</header><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Ingrediente</th><th>Estimado por receta</th><th>Consumo real</th><th>Stock actual</th></tr></thead><tbody>${p.lines
+-                  .map((l) => {
+-                    const pr = product(l.product);
+-                    return `<tr><td><strong>${esc(pr.name)}</strong></td><td>${num(l.quantity)} ${esc(pr.unit)}</td><td><input type="number" class="inline-input" data-prod-line="${esc(l.product)}" value="${l.quantity}" min="0" max="1000000" step="${pr.unit === "ud" ? "1" : "0.001"}" aria-label="Consumo real de ${esc(pr.name)}"> ${esc(pr.unit)}</td><td>${num(pr.stock)} ${esc(pr.unit)}${pr.stock < l.quantity ? " " + pill("Insuficiente", "peach") : ""}</td></tr>`;
+-                  })
+-                  .join(
+-                    "",
+-                  )}</tbody></table></div>${p.output ? `<p><strong>Producto terminado:</strong> ${esc(product(p.output.product).name)} <input type="number" class="inline-input" data-prod-output value="${p.output.quantity}" min="0" max="1000000" step="0.001" aria-label="Kilos de producto terminado"> kg</p>` : '<p class="muted">Esta receta no tiene producto terminado asociado; solo se descuentan ingredientes.</p>'}<label class="field">Nota (opcional)<input type="text" class="inline-input wide" data-prod-note maxlength="500" placeholder="Ejemplo: se usó más leche"></label><div class="row-actions">${btn(icon("check") + " Aprobar y descontar", "applyProduction", "primary", `data-id="${esc(p.id)}"`)}${btn("Descartar", "discardProduction", "secondary", `data-id="${esc(p.id)}"`)}</div></article>`,
+-            )
+-            .join("")
+-        : '<div class="empty compact">No hay producciones pendientes. Registra una producción para ver el consumo estimado.</div>'
+-    }</section><section class="panel"><div class="panel-heading"><div><h2>Hoja diaria de producción</h2><p>Kilos producidos por día y por gelato, con el consumo aprobado.</p></div></div>${
+-      dates.length
+-        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th></tr></thead><tbody>${dates
+-            .map((d) =>
+-              byDate[d]
+-                .map(
+-                  (p, i) =>
+-                    `<tr>${i === 0 ? `<td rowspan="${byDate[d].length}"><strong>${date(d + "T12:00:00Z")}</strong><small>${num(byDate[d].reduce((n, x) => n + x.quantity, 0))} kg en total</small></td>` : ""}<td>${esc(p.name)}${p.note ? `<small>${esc(p.note)}</small>` : ""}</td><td>${num(p.output?.quantity ?? p.quantity)} kg</td><td>${
+-                      p.lines
+-                        .filter((l) => l.quantity)
+-                        .map(lineText)
+-                        .join(", ") || "Sin consumo"
+-                    }</td></tr>`,
+-                )
+-                .join(""),
+-            )
+-            .join("")}</tbody></table></div>`
+-        : '<div class="empty compact">Todavía no hay producciones aprobadas.</div>'
+-    }</section><section class="panel"><div class="panel-heading"><div><h2>Recetas</h2><p>${state.recipes.length} receta${state.recipes.length === 1 ? "" : "s"} en el recetario, con proporciones, elaboración y alérgenos.</p></div>${btn("Abrir recetario", "openRecipes", "secondary")}</div><div class="recipe-grid">${
+-      state.recipes
+-        .slice(0, 6)
+-        .map(
+-          (r) =>
+-            `<article class="recipe-card"><h3>${esc(r.name)}</h3><small>${familyLabel[r.family || "crema"]} · rinde ${num(r.yield)} kg</small><div class="row-actions">${btn("Producir", "produce", "secondary", `data-recipe="${esc(r.id)}"`)}</div></article>`,
+-        )
+-        .join("") ||
+-      '<div class="empty compact">Sin recetas. Crea la primera con «Nueva receta».</div>'
+-    }</div></section>${salesSection()}`
+-  );
+-}
+-function salesSection() {
+-  // Only what a recipe produces counts as finished product; ingredients never appear here.
+-  const finished = state.products.filter(
+-    (p) => p.unit === "kg" && state.recipes.some((r) => r.product === p.id),
+-  );
+-  const today = todayLocal();
+-  return `<section class="panel" data-sales><div class="panel-heading"><div><h2>Ventas y mermas del día</h2><p>Kilos vendidos o desechados de producto terminado. Cada cantidad crea una salida o una merma trazable y reversible.</p></div></div><label class="field short">Día<input type="date" class="inline-input" data-sales-date value="${today}" max="${today}"></label><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto terminado</th><th>Stock</th><th>Vendido (kg)</th><th>Merma (kg)</th></tr></thead><tbody>${finished
+-    .map(
+-      (p) =>
+-        `<tr><td><strong>${esc(p.name)}</strong></td><td>${num(p.stock)} kg</td><td><input type="number" class="inline-input" data-sold="${esc(p.id)}" min="0" max="1000000" step="0.001" placeholder="0" aria-label="Vendido de ${esc(p.name)}"></td><td><input type="number" class="inline-input" data-waste="${esc(p.id)}" min="0" max="1000000" step="0.001" placeholder="0" aria-label="Merma de ${esc(p.name)}"></td></tr>`,
+-    )
+-    .join(
+-      "",
+-    )}</tbody></table></div>${finished.length ? `<div class="row-actions">${btn(icon("check") + " Registrar ventas y mermas", "dailySales", "primary")}</div>` : '<p class="muted">No hay productos terminados: asigna un producto terminado (en kg) a una receta del recetario.</p>'}</section>`;
+-}
+-function ingredientRow(productId = "", qty = "") {
+-  return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+-}
+-function aiChatSection() {
+-  return `<section class="panel settings-card ai-chat"><h2>Dudas sobre la app o el texto</h2><p>Pregunta cómo usar GelatoStock o qué dice el texto del editor. Responde el mismo modelo local con una guía fija; no consulta tu inventario ni tus pedidos y no ejecuta acciones.</p><div class="ai-chat-log" aria-live="polite">${aiChat.map((m) => `<article class="ai-chat-msg ${m.role}"><strong>${m.role === "user" ? "Tú" : "IA local"}</strong><p class="${m.role === "assistant" ? "ai-chat-answer" : ""}">${esc(m.content)}</p>${m.excerpt ? `<small class="ai-chat-source">Según la guía: ${esc(m.excerpt)}</small>` : ""}</article>`).join("") || '<p class="muted">Ejemplo: «¿Qué hace Control de entregas?» o «¿Este texto es una factura o un presupuesto?»</p>'}</div><label class="check"><input type="checkbox" id="ai-chat-doc" ${aiChatUseDoc ? "checked" : ""} ${aiBusy ? "disabled" : ""}> Usar el texto del editor como contexto</label><label class="field">Tu pregunta<textarea id="ai-chat-input" maxlength="1500" rows="3" ${aiBusy ? "disabled" : ""}></textarea></label><div class="setting-actions">${btn(aiBusy ? "Respondiendo en este equipo…" : "Preguntar a la IA local", "aiChatSend", "primary", aiBusy ? "disabled" : "")}${aiBusy ? btn("Detener", "aiCancel") : ""}${aiChat.length ? btn("Vaciar chat", "aiChatClear", "secondary") : ""}</div>${aiChatError ? `<p role="alert">${esc(aiChatError)}</p>` : ""}<small>Respuestas orientativas generadas en este equipo; pueden ser incorrectas o incompletas. El chat se conserva solo en esta ventana. Se envían al modelo los últimos 6 mensajes.</small></section>`;
+-}
+-function aiPage() {
+-  return (
+-    header(
+-      "Una segunda lectura, en tu equipo.",
+-      "Interpreta textos de proveedores sin enviar tus documentos a una IA externa.",
+-    ) +
+-    `<div class="settings-grid"><section class="panel settings-card"><h2>Texto que quieres revisar</h2><p>Pega un mensaje o abre el texto de una foto desde Configuración. Revisa el OCR antes de analizarlo. Para PDF todavía debes copiar el texto.</p><label class="field">Profundidad de lectura<select id="ai-mode" ${aiBusy ? "disabled" : ""}><option value="careful" ${aiMode === "careful" ? "selected" : ""}>Revisión reforzada · dos lecturas</option><option value="standard" ${aiMode === "standard" ? "selected" : ""}>Lectura simple · más rápida</option></select></label><label class="field">Documento o mensaje<textarea id="ai-text" class="ai-editor" maxlength="4000" ${aiBusy ? "disabled" : ""}>${esc(aiDraft)}</textarea></label><small>Máximo 4.000 caracteres. Se analiza únicamente este texto.</small><div class="setting-actions">${btn(aiBusy ? "Leyendo en este equipo…" : "Analizar con IA local", "aiAnalyze", "primary", aiBusy ? "disabled" : "")}${aiBusy ? btn("Detener lectura", "aiCancel") : ""}</div><p role="status">${aiBusy ? "Cargando el modelo y leyendo. Puede tardar hasta 4 minutos; puedes seguir usando otras pantallas." : "Modelo local incluido · sin pagos por uso"}</p>${aiError ? `<p role="alert">${esc(aiError)}</p>` : ""}</section><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Lectura para revisar</h2>${aiResult ? `<div class="ai-result" id="ai-reading-result"><strong>${esc(aiTypes[aiResult.tipo])}</strong>${aiResult.invalid ? `<p>${esc(aiResult.reason)}</p>` : `<p>Inicio del texto original para contrastar:</p><blockquote>${esc(aiResult.evidencia)}</blockquote>`}${aiResult.rules ? `<p class="ai-readings"><strong>Reglas:</strong> ${esc(aiResult.rules.reason)} (confianza ${esc(aiResult.rules.confidence)}). <strong>Modelo:</strong> ${esc(aiTypes[aiResult.modelType] || "sin lectura").replace("Posible ", "")}.</p>` : ""}<p><strong>${aiResult.verification?.status === "agreement" ? "Dos lecturas del modelo coinciden · requiere revisión" : aiResult.verification?.status === "disagreement" ? "Las lecturas del modelo no coinciden · revisa el original" : "Una lectura del modelo · requiere revisión"}</strong></p>${(aiResult.warnings || []).map((w) => `<p class="ai-warning">${esc(w)}</p>`).join("")}${aiResult.arithmetic ? `<div class="ai-math"><strong>Comprobación de importes por la app</strong><p>${esc(aiResult.arithmetic.reason)}</p>${aiResult.arithmetic.status !== "not_checked" ? `<p>Base ${money(aiResult.arithmetic.base)} + IVA ${money(aiResult.arithmetic.tax)} = ${money(aiResult.arithmetic.expected)}<br>Total declarado: ${money(aiResult.arithmetic.total)}</p>` : ""}</div>` : ""}<small>${num(aiResult.milliseconds / 1000)} segundos · ${esc(aiResult.model)}</small>${aiSourcePhoto && state.photos.some((p) => p.id === aiSourcePhoto) && !aiResult.invalid ? `<div class="setting-actions">${btn("Confirmar este tipo en la foto", "aiSavePhotoType", "secondary")}<small>Queda guardado como tu decisión, no como la de la IA.</small></div>` : ""}</div>` : "<p>Al analizar verás un posible tipo de documento y el inicio del texto original.</p>"}<p>La IA puede equivocarse o inventar detalles. Contrasta su propuesta con el original. Una lista de precios no acredita una compra ni una recepción.</p><ul class="feature-list"><li>${icon("check")} No modifica stock ni registra facturas</li><li>${icon("check")} No compra, no envía mensajes y no abre enlaces</li><li>${icon("check")} Texto y resultado no se guardan en registros de IA</li></ul><small>El resultado se conserva en esta ventana hasta sustituirlo o cerrar la app. El documento original, si lo guardaste, permanece en su archivo.</small></section>${aiChatSection()}</div>`
+-  );
+-}
+-function orderTracking() {
+-  const open = state.orders.filter(
+-    (o) => !["received", "cancelled"].includes(o.status),
+-  );
+-  const closed = state.orders.filter((o) =>
+-    ["received", "cancelled"].includes(o.status),
+-  );
+-  const list = orderFilter === "open" ? open : closed;
+-  return `<section class="orders-panel"><div class="tracking-intro"><div><span class="eyebrow">DESPUÉS DEL CARRITO</span><h2>Control de entregas</h2><p>Comprueba qué llegó y qué falta en cada pedido. Solo las cantidades que registres como recibidas se suman al inventario.</p></div><div class="tracking-example"><strong>Un ejemplo</strong><p>Pides 6 cajas y llegan 4: registras esas 4. Las otras 2 siguen pendientes.</p><small>Los pedidos de este prototipo son de demostración.</small></div></div><div class="tracking-tabs" aria-label="Filtrar entregas">${btn(`En curso · ${open.length}`, "orderFilter", orderFilter === "open" ? "primary" : "secondary", 'data-filter="open" aria-pressed="' + (orderFilter === "open") + '"')}${btn(`Cerrados · ${closed.length}`, "orderFilter", orderFilter === "closed" ? "primary" : "secondary", 'data-filter="closed" aria-pressed="' + (orderFilter === "closed") + '"')}</div><div class="delivery-list">${
+-    list
+-      .map((o) => {
+-        const finished = o.lines.filter(
+-          (l) => Math.round((l.packs * l.pack - l.received) * 1000) === 0,
+-        ).length;
+-        const hint = {
+-          pending: "Siguiente paso: simular el envío para probar una entrega.",
+-          sent: "Siguiente paso: cuando llegue mercancía, registra las cantidades recibidas.",
+-          partial:
+-            "Siguiente paso: registra la próxima entrega de los productos que faltan.",
+-          received:
+-            "Entrega completada. Las cantidades ya están en el inventario.",
+-          cancelled: "Pedido cancelado. No se espera mercancía.",
+-        }[o.status];
+-        return `<article class="delivery-card" data-order-card="${esc(o.id)}"><header><div><span class="order-number">${esc(o.number)} · ${date(o.at)}${o.expected ? " · entrega prevista " + date(o.expected + "T12:00:00Z") : ""}</span><h3>${esc(supplier(o.supplier).name)}</h3></div>${pill(statusLabel[o.status], o.status === "received" ? "sage" : "sand")}</header><div class="delivery-progress"><span>${finished} de ${o.lines.length} productos recibidos por completo</span><strong>${money(o.lines.reduce((n, l) => n + l.packs * l.price, 0))} <small>estimados</small></strong></div><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto / presentación</th><th>Pedido</th><th>Recibido</th><th>${o.status === "cancelled" ? "No entregado" : "Falta recibir"}</th></tr></thead><tbody>${o.lines
+-          .map((l) => {
+-            const p = product(l.product);
+-            const rem =
+-              Math.round((l.packs * l.pack - l.received) * 1000) / 1000;
+-            return `<tr><td><strong>${esc(p.name)}</strong><small>${l.packs} × ${num(l.pack)} ${esc(p.unit)} por presentación</small></td><td>${num(l.packs * l.pack)} ${esc(p.unit)}</td><td>${num(l.received)} ${esc(p.unit)}</td><td><strong>${num(rem)} ${esc(p.unit)}</strong></td></tr>`;
+-          })
+-          .join("")}</tbody></table></div>${orderReplies(o)}${(() => {
+-          const docs = state.photos.filter((p) => p.order === o.id);
+-          return docs.length
+-            ? `<div class="order-replies"><strong>Documentos vinculados</strong>${docs.map((d) => `<p>${pill(docTypeLabel(d.docType), "sage")} ${esc(d.name)} · ${esc(d.documentDate || d.at.slice(0, 10))}</p>`).join("")}</div>`
+-            : "";
+-        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. Pendiente de confirmación del proveedor.` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Registro de demostración · sin pagos ni mensajes enviados."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "danger", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) : ""}</div></footer></article>`;
+-      })
+-      .join("") ||
+-    '<div class="panel empty compact">' +
+-      (orderFilter === "open"
+-        ? "No hay entregas pendientes. Los nuevos pedidos aparecerán aquí al autorizar el carrito."
+-        : "Los pedidos completados y cancelados aparecerán aquí.") +
+-      "</div>"
+-  }</div></section>`;
+-}
+-function orders() {
+-  const total = state.cart.reduce(
+-    (n, l) => n + l.packs * product(l.product).price,
+-    0,
+-  );
+-  return (
+-    header(
+-      "Compras con todo bajo control.",
+-      "Prepara el carrito, revisa el pedido y registra lo que llega.",
+-      btn("Sugerir reposición", "suggest", "primary"),
+-    ) +
+-    `<div class="notice">${icon("shield")}<div><strong>Compras de demostración</strong><span>Puedes probar el circuito completo. No se envían mensajes ni se realizan pagos.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${
+-      state.cart.length
+-        ? `<div class="cart-lines">${state.cart
+-            .map((l) => {
+-              const p = product(l.product);
+-              return `<div class="cart-line"><span class="product-icon sage">${icon(p.icon)}</span><div class="cart-desc"><strong>${esc(p.name)}</strong><small>${esc(supplier(p.supplier).name)} · ${num(p.pack)} ${p.unit} / paquete</small></div><div class="stepper"><button type="button" class="step" data-step="-1" aria-label="Un paquete menos de ${esc(p.name)}">−</button><input aria-label="Paquetes de ${esc(p.name)}" class="quantity" type="number" min="0" max="10000" step="1" value="${l.packs}" data-cart="${p.id}"><button type="button" class="step" data-step="1" aria-label="Un paquete más de ${esc(p.name)}">+</button></div><strong>${money(l.packs * p.price)}</strong><button class="icon-button" aria-label="Quitar ${esc(p.name)}" data-remove="${p.id}">${icon("close")}</button></div>`;
+-            })
+-            .join("")}</div>`
+-        : '<div class="empty">' +
+-          icon("cart") +
+-          "<h3>Tu próximo pedido empieza aquí</h3><p>Añade productos o prepara la reposición sugerida.</p></div>"
+-    }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}${state.suppliers
+-      .filter(
+-        (s) =>
+-          s.web && state.cart.some((l) => product(l.product).supplier === s.id),
+-      )
+-      .map((s) =>
+-        btn(
+-          icon("store") + " Lista para " + esc(s.name),
+-          "webList",
+-          "secondary",
+-          `data-supplier="${s.id}"`,
+-        ),
+-      )
+-      .join(
+-        "",
+-      )}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${money(total)}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${money(total)}</strong></div><p>Los precios son ficticios. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div>${orderTracking()}`
+-  );
+-}
+-// Minimal, safe Markdown for the guide: headings, paragraphs, lists. Everything escaped.
+-function guideHtml(md) {
+-  const lines = md.split(/\r?\n/);
+-  let html = "",
+-    list = false;
+-  const close = () => {
+-    if (list) html += "</ul>";
+-    list = false;
+-  };
+-  for (const raw of lines) {
+-    const line = raw.trim();
+-    if (!line) {
+-      close();
+-      continue;
+-    }
+-    if (line.startsWith("# ")) {
+-      close();
+-      continue;
+-    }
+-    if (line.startsWith("## ")) {
+-      close();
+-      html += `<h2 id="guia-${esc(
+-        line
+-          .slice(3)
+-          .toLowerCase()
+-          .replace(/[^a-z0-9]+/g, "-"),
+-      )}">${esc(line.slice(3))}</h2>`;
+-      continue;
+-    }
+-    if (line.startsWith("- ")) {
+-      if (!list) html += "<ul>";
+-      list = true;
+-      html += `<li>${esc(line.slice(2))}</li>`;
+-      continue;
+-    }
+-    close();
+-    html += `<p>${esc(line)}</p>`;
+-  }
+-  close();
+-  return html;
+-}
+-function guidePage() {
+-  const sections = (typeof GUIDE_MD === "string" ? GUIDE_MD : "")
+-    .split(/\r?\n/)
+-    .filter((l) => l.startsWith("## "))
+-    .map((l) => l.slice(3));
+-  return (
+-    header(
+-      "Guía de uso",
+-      "Cómo funciona cada pantalla, qué cambia el stock y qué es solo una propuesta. El chat de IA local responde con esta misma guía.",
+-      btn("Abrir chat de dudas", "aiOpen", "primary"),
+-    ) +
+-    `<div class="guide-layout"><nav class="guide-index panel"><div class="panel-heading"><h2>Índice</h2></div><ul>${sections.map((s) => `<li><a href="#guia-${esc(s.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}">${esc(s)}</a></li>`).join("")}</ul></nav><article class="guide-body panel">${typeof GUIDE_MD === "string" ? guideHtml(GUIDE_MD) : "<p>La guía no está disponible en este paquete.</p>"}</article></div>`
+-  );
+-}
+-const quickReplies = (m) => {
+-  const i = m.interpretation || {};
+-  const when = i.deliveryDate
+-    ? date(i.deliveryDate + "T12:00:00Z")
+-    : i.deliveryHint || "";
+-  const options = [];
+-  if (i.category === "delivery_date" || i.category === "confirmation")
+-    options.push(["Vale, gracias", "Vale, gracias. Quedamos así."]);
+-  if (i.category === "delivery_date" && when)
+-    options.push([
+-      "De acuerdo con la fecha",
+-      `De acuerdo, esperamos la entrega ${when}. Gracias.`,
+-    ]);
+-  if (i.category === "out_of_stock" || i.category === "change")
+-    options.push(
+-      [
+-        "Mándanos lo que tengas",
+-        "Mándanos lo que tengas disponible y avísanos del resto. Gracias.",
+-      ],
+-      [
+-        "Lo compramos por otro lado",
+-        "Gracias, esta vez lo resolvemos por otro lado. Deja fuera lo que falte.",
+-      ],
+-    );
+-  if (i.category === "question")
+-    options.push(
+-      ["Sí, confirmado", "Sí, confirmado. Gracias."],
+-      ["No, mejor no", "No, mejor no. Gracias por preguntar."],
+-    );
+-  if (i.category === "cancellation")
+-    options.push(["Entendido", "Entendido, gracias por avisar."]);
+-  options.push(["Te llamo", "Te llamo en un momento para concretarlo."]);
+-  return options.slice(0, 4);
+-};
+-function messages() {
+-  const list = state.messages.filter(messageMatches);
+-  const m = list.find((x) => x.id === selectedMessage) || list[0];
+-  // Conversations: one group per supplier, newest activity first.
+-  const groups = [];
+-  for (const x of list) {
+-    let g = groups.find((y) => y.supplier === x.supplier);
+-    if (!g) {
+-      g = { supplier: x.supplier, items: [], unread: 0 };
+-      groups.push(g);
+-    }
+-    g.items.push(x);
+-    if (!x.read) g.unread++;
+-  }
+-  const pending = state.messages.filter(
+-    (x) => x.interpretation?.needsReading && !x.reviewed,
+-  );
+-  const todo = pending.slice(0, 3);
+-  const order = m?.order && state.orders.find((o) => o.id === m.order);
+-  const canReply =
+-    m &&
+-    m.channel === "whatsapp" &&
+-    !!m.sender &&
+-    waState?.status === "connected";
+-  return (
+-    header(
+-      "Mensajes que se convierten en acciones.",
+-      "Cada respuesta de tus proveedores, leída y ordenada por conversación. Tú decides qué hacer con cada una.",
+-      btn(icon("plus") + " Simular mensaje", "message", "secondary"),
+-    ) +
+-    `<section class="panel todo-panel"><div class="panel-heading"><div><h2>Qué hacer ahora</h2><p>${pending.length ? `${pending.length} mensaje${pending.length === 1 ? "" : "s"} que debes leer y decidir.` : "Nada pendiente de leer. Las confirmaciones y fechas quedan anotadas solas."}</p></div>${pending.length ? btn("Ver todos", "messagesToRead", "secondary") : ""}</div>${todo.map((x) => `<button class="todo-row" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><strong>${esc(supplier(x.supplier).name)} · ${esc(replyLabel[x.interpretation.category])}</strong><p>${esc(x.interpretation.summary)}</p></div><span class="text-link">Abrir ${icon("arrow")}</span></button>`).join("")}</section><div class="message-filters"><label class="field">Buscar mensajes<input id="message-search" type="search" value="${esc(messageQuery)}" placeholder="Texto o proveedor"></label><label class="field">Proveedor<select id="message-supplier"><option value="all">Todos los proveedores</option>${state.suppliers.map((s) => `<option value="${s.id}" ${messageSupplier === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label><label class="field">Mostrar<select id="message-filter">${Object.entries(
+-      {
+-        all: "Todos los mensajes",
+-        toread: "Debes leer",
+-        unread: "Sin leer",
+-        pending: "Sin decidir",
+-        important: "Importantes pendientes",
+-        relevant: "Relacionados con pedidos",
+-      },
+-    )
+-      .map(
+-        ([v, l]) =>
+-          `<option value="${v}" ${messageFilter === v ? "selected" : ""}>${l}</option>`,
+-      )
+-      .join(
+-        "",
+-      )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Conversaciones <span>${list.length} de ${state.messages.length}</span></div>${groups.map((g) => `<div class="conversation-group"><div class="conversation-group-title"><strong>${esc(supplier(g.supplier).name)}</strong><small>${g.items.length} mensaje${g.items.length === 1 ? "" : "s"}${g.unread ? " · " + g.unread + " sin leer" : ""}</small></div>${g.items.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(x.interpretation ? replyLabel[x.interpretation.category] : priorityLabel[x.priority])}</strong><small>${date(x.at)} ${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? (x.decision ? "Decidido" : "Revisado") : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div>`).join("") || '<div class="empty compact"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div><div class="message-detail">${
+-      m
+-        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}<div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
+-            canReply
+-              ? `<div class="quick-replies">${quickReplies(m)
+-                  .map(([label, text]) =>
+-                    btn(
+-                      label,
+-                      "replyMessage",
+-                      "secondary",
+-                      `data-id="${esc(m.id)}" data-text="${esc(text)}"`,
+-                    ),
+-                  )
+-                  .join(
+-                    "",
+-                  )}${btn("Escribir respuesta", "replyMessage", "secondary", `data-id="${esc(m.id)}" data-text=""`)}</div>`
+-              : `<p class="muted">${m.channel === "whatsapp" ? "Conecta WhatsApp para responder desde aquí." : "Los mensajes de demostración no se responden; decide y cierra."}</p>`
+-          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">La app aprende a leer mensajes parecidos; nunca aprende decisiones. Lo que decides queda anotado aquí y no cambia pedidos ni stock.</p></div>`
+-        : '<div class="empty"><h3>Elige una conversación.</h3><p>Aquí verás el mensaje, su lectura por reglas y las opciones para responder y decidir.</p></div>'
+-    }</div></section>`
+-  );
++  const backupWarning = !backupInfo
++    ? ""
++    : backupInfo.stale
++      ? "No hay copia de seguridad de las últimas 48 horas."
++      : backupInfo.secondary?.error
++        ? backupInfo.secondary.error
++        : "";
++  if (!read && !proposed && !soon.length && !backupWarning) return "";
++  return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
+ }
+ function suppliers() {
+   return (
+@@ -656,33 +134,41 @@ function activity() {
+       "Movimientos trazables: ninguna corrección borra el registro original.",
+       btn("Entrada / salida", "movement", "primary"),
+     ) +
+-    `<section class="panel"><div class="panel-heading"><div><h2>Movimientos de inventario</h2><p>Últimos 30 movimientos · ${ledger.length} registrados</p></div>${pill("Guardado en SQLite", "sage")}</div>${
++    `<section class="panel"><div class="panel-heading"><div><h2>Movimientos de inventario</h2><p>Mostrando ${Math.min(historyShown.movements, ledger.length)} de ${historyInfo?.movements ?? ledger.length} registrados</p></div>${pill("Guardado en SQLite", "sage")}</div>${
+       ledger.length
+         ? `<div class="table-wrap"><table><thead><tr><th>Producto y motivo</th><th>Tipo</th><th>Cambio</th><th>Antes → después</th><th>Acción</th></tr></thead><tbody>${ledger
+-            .slice(0, 30)
++            .slice(0, historyShown.movements)
+             .map(
+               (m) =>
+                 `<tr><td><strong>${esc(product(m.product).name)}</strong><small class="movement-reason">${esc(m.reason)} · ${date(m.at)} ${time(m.at)}</small></td><td>${pill(kinds[m.kind])}</td><td>${m.delta > 0 ? "+" : ""}${num(m.delta)} ${product(m.product).unit}</td><td>${num(m.before)} → ${num(m.after)}</td><td>${m.kind !== "receipt" && !m.reverses && !ledger.some((x) => x.reverses === m.id) ? btn("Revertir", "reverse", "secondary", `data-id="${m.id}"`) : pill(m.reverses ? "Compensación" : ledger.some((x) => x.reverses === m.id) ? "Revertido" : "Pedido")}</td></tr>`,
+             )
+             .join("")}</tbody></table></div>`
+         : '<div class="empty compact">Los nuevos conteos, entradas y salidas aparecerán aquí.</div>'
+-    }</section>` +
+-    `<section class="panel activity-panel orders-panel"><div class="panel-heading"><h2>Actividad reciente</h2></div>${state.activity
+-      .slice(0, 50)
++    }${moreHistory("movements", ledger.length)}</section>` +
++    `<section class="panel activity-panel orders-panel"><div class="panel-heading"><h2>Actividad reciente</h2><p>${Math.min(historyShown.activity, state.activity.length)} de ${historyInfo?.activity ?? state.activity.length}</p></div>${state.activity
++      .slice(0, historyShown.activity)
+       .map(
+         (a) =>
+           `<div class="activity-row"><span class="activity-dot"></span><div><p>${esc(a.text)}</p><small>${date(a.at)} · ${time(a.at)}</small></div></div>`,
+       )
+-      .join("")}</section>`
++      .join("")}${moreHistory("activity", state.activity.length)}</section>`
+   );
+ }
++// "Load more" for the two unbounded lists: first from what the UI already has, then from
++// /api/history. Never shown when everything is on screen.
++function moreHistory(kind, loaded) {
++  const total = historyInfo?.[kind] ?? loaded;
++  const visible = Math.min(historyShown[kind], loaded);
++  if (visible >= total) return "";
++  return `<div class="panel-bottom">${btn(`Mostrar más (${total - visible} anteriores)`, "moreHistory", "secondary", `data-kind="${kind}"`)}</div>`;
++}
+ function settings() {
+   return (
+     header(
+       "Un espacio que funciona a tu manera.",
+       "Datos locales, copias de seguridad y un camino claro para crecer.",
+     ) +
+-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Exportar CSV", "exportCsv", "secondary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p><p class="fineprint">Copia automática diaria en la carpeta backups (se conservan las 30 últimas automáticas). ${backupInfo?.last ? "Última: " + date(backupInfo.last) + " " + time(backupInfo.last) + "." : "Todavía no se ha creado."}${backupInfo?.warning ? " " + esc(backupInfo.warning) : ""}</p></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Modelo local incluido", "sage")}<p>El modelo local propone el tipo de documento y contrasta la clasificación con el texto original. El OCR español sigue leyendo las fotos dentro del equipo.</p>${btn("Abrir IA local", "aiOpen", "primary")}<ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Lecturas revisables; sin acciones automáticas</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos y documentos</h2><p>Fotos y PDF ordenados por proveedor y fecha del documento. La pantalla Documentos permite vincularlos a pedidos y aceptar propuestas.</p>${btn("Abrir Documentos", "openDocuments", "secondary")}${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
++    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>SQLite guarda las operaciones de forma consistente. Las fotos se almacenan por separado y se incluyen en las copias.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Exportar CSV", "exportCsv", "secondary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales. Se conserva una copia previa automáticamente.</p><p class="fineprint">Copia automática diaria en la carpeta backups (se conservan las 30 últimas automáticas). ${backupInfo?.last ? "Última: " + date(backupInfo.last) + " " + time(backupInfo.last) + "." : "Todavía no se ha creado."}${backupInfo?.warning ? " " + esc(backupInfo.warning) : ""}</p><h3 class="setting-subtitle">Copia secundaria</h3>${backupInfo?.secondary?.dir ? `<code class="path">${esc(backupInfo.secondary.dir)}</code><p class="fineprint">${backupInfo.secondary.error ? esc(backupInfo.secondary.error) : backupInfo.secondary.last ? "Última copia allí: " + date(backupInfo.secondary.last) + " " + time(backupInfo.secondary.last) + "." : "Todavía no se ha copiado nada."}</p>` : '<p class="fineprint">Sin carpeta secundaria. Si este disco falla se pierde todo: elige una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive).</p>'}<div class="setting-actions">${btn(backupInfo?.secondary?.dir ? "Cambiar carpeta" : "Elegir carpeta secundaria", "backupDirEditor", backupInfo?.secondary?.dir ? "secondary" : "primary")}${backupInfo?.secondary?.dir ? btn("Quitar", "backupDirClear", "secondary") : ""}</div></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Inteligencia integrada</h2>${pill("Modelo local incluido", "sage")}<p>El modelo local propone el tipo de documento y contrasta la clasificación con el texto original. El OCR español sigue leyendo las fotos dentro del equipo.</p>${btn("Abrir IA local", "aiOpen", "primary")}<ul class="feature-list"><li>${icon("check")} Sin API de IA ni consumo de pago</li><li>${icon("check")} Inventario operativo sin internet</li><li>${icon("clock")} Lecturas revisables; sin acciones automáticas</li></ul></section><section class="panel settings-card"><h2>Archivo de fotos y documentos</h2><p>Fotos y PDF ordenados por proveedor y fecha del documento. La pantalla Documentos permite vincularlos a pedidos y aceptar propuestas.</p>${btn("Abrir Documentos", "openDocuments", "secondary")}${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
+       [...state.photos]
+         .sort(
+           (a, b) =>
+diff --git a/tests/server.test.cjs b/tests/server.test.cjs
+index 069db20..5d50f3b 100644
+--- a/tests/server.test.cjs
++++ b/tests/server.test.cjs
+@@ -524,3 +524,106 @@ test("registros locales: pasado 1 MB el archivo rota a .anterior y sigue escribi
+     fs.rmSync(dir, { recursive: true, force: true });
+   }
+ });
++
++test("copia secundaria: se valida la carpeta, se copia cada copia y se avisa en el estado", async () => {
++  const root = path.resolve(__dirname, "../work");
++  const dir = fs.mkdtempSync(path.join(root, "http-sec-"));
++  const second = fs.mkdtempSync(path.join(root, "http-sec2-"));
++  let app;
++  try {
++    app = await createApp({ dataDir: dir });
++    const origin = new URL(app.url).origin;
++    const login = await fetch(app.url, { redirect: "manual" });
++    const headers = {
++      "Content-Type": "application/json",
++      Origin: origin,
++      Cookie: login.headers.get("set-cookie").split(";")[0],
++    };
++    const post = (p, body) =>
++      fetch(origin + p, {
++        method: "POST",
++        headers,
++        body: JSON.stringify(body),
++      });
++    let r = await post("/api/maintenance", {
++      type: "backupDir",
++      dir: "relativa",
++    });
++    assert.equal(r.status, 400);
++    r = await post("/api/maintenance", {
++      type: "backupDir",
++      dir: path.join(dir, "backups", "dentro"),
++    });
++    assert.equal(r.status, 400);
++    r = await post("/api/maintenance", { type: "backupDir", dir: second });
++    assert.equal(r.status, 200);
++    let data = await r.json();
++    assert.equal(data.backup.secondary.dir, second);
++    assert.equal(data.backup.secondary.error, "");
++    assert.equal(data.backup.stale, false);
++    const copies = () =>
++      fs.readdirSync(second).filter((f) => f.startsWith("gelatostock-"));
++    assert.equal(copies().length, 1);
++    r = await post("/api/backup", {});
++    data = await r.json();
++    assert.ok(data.secondary.startsWith(second));
++    assert.equal(copies().length, 2);
++    r = await post("/api/maintenance", { type: "backupDir", dir: "" });
++    data = await r.json();
++    assert.equal(data.backup.secondary.dir, "");
++    assert.equal(app.store.setting("backup_dir_secondary"), undefined);
++  } finally {
++    if (app) await new Promise((r) => app.server.close(r));
++    fs.rmSync(dir, { recursive: true, force: true });
++    fs.rmSync(second, { recursive: true, force: true });
++  }
++});
++test("historial paginado: la interfaz recibe solo lo reciente y pide lo demás a /api/history", async () => {
++  const root = path.resolve(__dirname, "../work");
++  const dir = fs.mkdtempSync(path.join(root, "http-hist-"));
++  let app;
++  try {
++    app = await createApp({ dataDir: dir, historyLimit: 3 });
++    const origin = new URL(app.url).origin;
++    const login = await fetch(app.url, { redirect: "manual" });
++    const headers = {
++      "Content-Type": "application/json",
++      Origin: origin,
++      Cookie: login.headers.get("set-cookie").split(";")[0],
++    };
++    const get = async (p) => (await fetch(origin + p, { headers })).json();
++    let env = await get("/api/state");
++    for (let i = 0; i < 5; i++) {
++      const r = await fetch(origin + "/api/action", {
++        method: "POST",
++        headers,
++        body: JSON.stringify({
++          type: "movement",
++          product: "p2",
++          kind: "entry",
++          value: 1,
++          reason: "prueba " + i,
++          revision: env.state.revision,
++          operationId: randomUUID(),
++        }),
++      });
++      assert.equal(r.status, 200);
++      env = await r.json();
++    }
++    assert.equal(env.state.movements.length, 3);
++    assert.ok(env.history.movements >= 5);
++    assert.equal(env.history.limit, 3);
++    assert.equal(env.state.activity.length, 3);
++    const page = await get("/api/history?kind=movements&offset=3&limit=10");
++    assert.equal(page.total, env.history.movements);
++    assert.equal(page.items.length, env.history.movements - 3);
++    assert.equal(page.items[0].id, app.store.load().movements[3].id);
++    const bad = await fetch(origin + "/api/history?kind=photos", { headers });
++    assert.equal(bad.status, 400);
++    // The full state on disk is untouched by the trimming.
++    assert.ok(app.store.load().movements.length >= 5);
++  } finally {
++    if (app) await new Promise((r) => app.server.close(r));
++    fs.rmSync(dir, { recursive: true, force: true });
++  }
++});
