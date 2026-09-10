@@ -578,7 +578,7 @@ export class Store {
       const previous = this.load();
       ensure(
         previous.revision === expectedRevision,
-        "Los datos cambiaron. Revisá la restauración.",
+        "Los datos cambiaron. Revisa la restauración.",
       );
       this.backup();
       // A portable backup must carry every image, not refer to files on another PC.

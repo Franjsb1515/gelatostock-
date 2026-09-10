@@ -2,6 +2,7 @@ const fs = require("node:fs"),
   path = require("node:path");
 const { EventEmitter } = require("node:events");
 const { WhatsAppStore, normalize, hash } = require("./whatsapp-store.cjs");
+const { appendLog } = require("./logs.cjs");
 class WhatsAppConnection {
   constructor(dataDir, mainStore) {
     this.store = new WhatsAppStore(dataDir);
@@ -26,12 +27,7 @@ class WhatsAppConnection {
   }
   log(text) {
     try {
-      if (fs.existsSync(this.logFile) && fs.statSync(this.logFile).size > 1e6)
-        fs.renameSync(this.logFile, this.logFile + ".anterior");
-      fs.appendFileSync(
-        this.logFile,
-        new Date().toISOString() + " " + text.slice(0, 400) + "\n",
-      );
+      appendLog(this.logFile, text.slice(0, 400));
     } catch {}
   }
   diagnostics() {
@@ -144,7 +140,7 @@ class WhatsAppConnection {
         this.status = "disconnected";
         this.qr = null;
         this.error =
-          "Sesión desconectada. Usá Cerrar sesión antes de volver a vincular.";
+          "Sesión desconectada. Usa Cerrar sesión antes de volver a vincular.";
         if (this.autoConnect && String(reason) !== "LOGOUT")
           this.scheduleReconnect();
       });
@@ -174,7 +170,7 @@ class WhatsAppConnection {
           .catch(() => {
             if (generation === this.generation)
               this.error =
-                "No se pudo importar un mensaje autorizado. Revisá conexión y espacio en disco.";
+                "No se pudo importar un mensaje autorizado. Revisa conexión y espacio en disco.";
           });
       });
       client.initialize().catch((e) => {
@@ -491,7 +487,7 @@ class WhatsAppConnection {
   // one order at a time, never automatic. The caller shows the exact text first.
   async send({ phone, text, order }) {
     if (!this.client || this.status !== "connected" || !this.account)
-      throw Error("Conectá WhatsApp por QR antes de enviar.");
+      throw Error("Conecta WhatsApp por QR antes de enviar.");
     const recipient = normalize(phone);
     const permitted = this.store.allowed(this.account, recipient);
     if (!permitted)
@@ -637,12 +633,12 @@ class WhatsAppConnection {
     this.store.detach();
     this.status = "disconnected";
     this.error = failure
-      ? "No se confirmó la desvinculación remota. Revisá Dispositivos vinculados en tu teléfono."
+      ? "No se confirmó la desvinculación remota. Revisa Dispositivos vinculados en tu teléfono."
       : "";
   }
   allow(data) {
     if (!this.account || this.status !== "connected")
-      throw Error("Conectá una cuenta antes de autorizar chats.");
+      throw Error("Conecta una cuenta antes de autorizar chats.");
     if (data.remove) {
       this.store.revoke(this.account, data.phone);
       return;

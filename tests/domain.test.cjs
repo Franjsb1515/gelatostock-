@@ -985,3 +985,17 @@ test("recetario: familia, elaboración y alérgenos se guardan; la familia por d
     }),
   );
 });
+
+test("fechas locales: «mañana» se resuelve con el día del calendario local, no UTC", () => {
+  const { resolveDate, localDate } = require("../src/domain.cjs");
+  // 23:30 UTC: en Palma ya es el día siguiente; la lectura debe partir del día local.
+  const at = "2026-09-08T23:30:00.000Z";
+  const local = new Date(at);
+  const tomorrow = new Date(
+    local.getFullYear(),
+    local.getMonth(),
+    local.getDate() + 1,
+  );
+  assert.equal(resolveDate("llega mañana", at)?.date, localDate(tomorrow));
+  assert.equal(localDate(new Date(2026, 0, 5, 0, 30)), "2026-01-05");
+});

@@ -22,6 +22,7 @@ export {
   labels as replyLabels,
   normalizePhrase,
 } from "./messages";
+export { localDate } from "./messages";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
 export function ensure(value: unknown, message: string): asserts value {
   if (!value) throw Error(message);
@@ -116,7 +117,7 @@ function classifyLegacy(
       kind: "change",
       priority: "important",
       reason:
-        "Posible cambio de disponibilidad o condiciones. Revisá el mensaje.",
+        "Posible cambio de disponibilidad o condiciones. Revisa el mensaje.",
     };
   if (/mañana|entrega|viernes|jueves|retras/.test(t))
     return {
@@ -139,7 +140,7 @@ function classifyLegacy(
   return {
     kind: "unknown",
     priority: "review",
-    reason: "Mensaje sin clasificación clara. Revisá su relevancia.",
+    reason: "Mensaje sin clasificación clara. Revisa su relevancia.",
   };
 }
 export function assessRelevance(
@@ -176,8 +177,8 @@ export function assessRelevance(
   return {
     relevance: "review",
     relevanceReason: active.length
-      ? `Este proveedor tiene ${active.length} pedido(s) abierto(s), pero el mensaje no identifica cuál. Revisá la relación.`
-      : "No hay una referencia comprobable a un pedido. Revisá si afecta a tu negocio.",
+      ? `Este proveedor tiene ${active.length} pedido(s) abierto(s), pero el mensaje no identifica cuál. Revisa la relación.`
+      : "No hay una referencia comprobable a un pedido. Revisa si afecta a tu negocio.",
   };
 }
 export function validate(input: unknown): State {
@@ -366,7 +367,7 @@ export function apply(state: State, input: unknown): State {
   if (a.revision !== undefined)
     ensure(
       a.revision === state.revision,
-      "Los datos cambiaron. Revisá la operación.",
+      "Los datos cambiaron. Revisa la operación.",
     );
   const s = structuredClone(state);
   let note = "";
@@ -522,7 +523,7 @@ export function apply(state: State, input: unknown): State {
         }
         total += l.value;
       }
-      ensure(total > 0, "Indicá al menos una cantidad recibida.");
+      ensure(total > 0, "Indica al menos una cantidad recibida.");
       o.status = o.lines.every((l) => l.received === round(l.pack * l.packs))
         ? "received"
         : "partial";
@@ -811,7 +812,7 @@ export function apply(state: State, input: unknown): State {
       }
       ensure(
         done.length > 0,
-        "Indicá al menos una cantidad vendida o de merma.",
+        "Indica al menos una cantidad vendida o de merma.",
       );
       const short = s.products.filter(
         (x) => a.lines.some((l) => l.product === x.id) && x.stock < x.min,

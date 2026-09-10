@@ -44,7 +44,7 @@ function count(id) {
   const p = product(id) || state.products[0];
   modal(
     "Registrar un conteo",
-    "Indicá cuánto hay ahora. Reemplaza el stock contado; no suma una entrada.",
+    "Indica cuánto hay ahora. Reemplaza el stock contado; no suma una entrada.",
     select(
       "Producto",
       "product",
@@ -123,7 +123,7 @@ function photo() {
     "Foto o PDF. En fotos se lee el texto localmente para proponer proveedor, tipo y pedido. Las cantidades no cambian.",
     '<p class="detection-status" role="status">Al elegir una foto se buscará su proveedor entre tus fichas.</p>' +
       photoFields() +
-      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Podés elegirlo manualmente si la lectura falla.</p>`,
+      `<label class="upload-zone">${icon("photo")}<strong>Elige una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Puedes elegirlo manualmente si la lectura falla.</p>`,
     async (f) => {
       const file = f.get("photo");
       const pdf = file.type === "application/pdf";
@@ -133,7 +133,7 @@ function photo() {
         ) ||
         file.size > (pdf ? 10000000 : 5000000)
       )
-        throw Error("Usá JPG, PNG o WebP de hasta 5 MB, o PDF de hasta 10 MB.");
+        throw Error("Usa JPG, PNG o WebP de hasta 5 MB, o PDF de hasta 10 MB.");
       return mutate(
         {
           type: "photo",
@@ -179,7 +179,7 @@ function photo() {
           !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
           file.size > 5000000
         )
-          throw Error("Usá JPG, PNG o WebP de hasta 5 MB.");
+          throw Error("Usa JPG, PNG o WebP de hasta 5 MB.");
         const data = await readFile(file);
         if (current !== serial || $("#modal-form") !== form) return;
         form.querySelector("#photo-preview").innerHTML =
@@ -191,7 +191,7 @@ function photo() {
       } catch (e) {
         if (current === serial && $("#modal-form") === form)
           form.querySelector(".detection-status").textContent =
-            e.message + " Podés elegir el proveedor manualmente.";
+            e.message + " Puedes elegir el proveedor manualmente.";
       } finally {
         if (current === serial && $("#modal-form") === form)
           button.disabled = false;

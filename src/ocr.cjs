@@ -10,7 +10,7 @@ async function recognizeLocal(data) {
     data.length > 8000000 ||
     !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(data)
   )
-    throw Error("Usá una imagen JPG, PNG o WebP de hasta 5 MB.");
+    throw Error("Usa una imagen JPG, PNG o WebP de hasta 5 MB.");
   const bytes = Buffer.from(data.split(",")[1], "base64");
   if (!bytes.length || bytes.length > 5000000)
     throw Error("La imagen supera 5 MB.");

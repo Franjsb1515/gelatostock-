@@ -1,0 +1,927 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 9eb71e4..36124aa 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.17.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.17.1-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 4aab60f..635ddb8 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.17.1 — 2026-09-10 · sesión 029
++
++Correcciones de la auditoría general (reports/2026-09-10T01-05-00-000Z-auditoria-general-0170.md). Espacio: dist pasó de 49,4 GB (28 versiones) a dos versiones; scripts/package.cjs conserva solo las dos más recientes y deja de empaquetar onnxruntime-web, las variantes de sharp para otras plataformas y los binarios de onnxruntime-node de otras plataformas (ejecutable 1,9 GB, antes 2,2 GB). sharp se conserva: transformers lo exige al cargar (el primer paquete podado falló con «Cannot find module sharp»; ahora el trabajador de IA anota la causa técnica en ia.log). Fechas: toda la resolución de fechas de mensajes (core/messages.ts) y las fechas «de hoy» de producción y ventas usan el calendario local, no UTC. CSV: src/csv.cjs antepone apóstrofo a celdas que abrirían una fórmula (=, +, -, @); los números no cambian. Registros: src/logs.cjs rota ia.log, errores.log y diagnostico.log al superar 1 MB. Textos: tuteo unificado (43 textos con voseo en interfaz, núcleo y README). README con las cabeceras históricas renumeradas a su versión real.
++
++Pruebas: 122. Informe reports/2026-09-10T07-32-03-168Z-correcciones-auditoria.md.
++
+ ## 0.17.0 — 2026-09-09 · sesión 028
+ 
+ Recetario: pantalla propia (bajo Producción, misma contraseña) con la ficha completa de cada receta: familia (crema, sorbete, postre, base, otro), rendimiento, ingredientes con porcentaje sobre la masa, elaboración y alérgenos (campos nuevos en core/schema.ts con valores por defecto; los datos existentes se cargan sin migración). «Calcular para X kg» escala las cantidades solo en pantalla (− / +), Producir abre el registro con esa receta, Duplicar crea una copia, Eliminar sigue exigiendo que no haya producciones aprobadas. Búsqueda por nombre o alérgeno y filtro por familia. Producción muestra un resumen y enlaza al recetario.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 407ebfd..1bfab86 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.17.0
++# Entrada para Claude · entrega vigente 0.17.1
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index d302a57..e5883d1 100644
+--- a/README.md
++++ b/README.md
+@@ -1,16 +1,16 @@
+-# GelatoStock · prototipo 0.17.0
++# GelatoStock · prototipo 0.17.1
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Hacé doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, podés abrir `dist/GelatoStock-0.17.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.17.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.17.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.17.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+-## Qué podés probar
++## Qué puedes probar
+ 
+ 1. Registrar stock mediante conteo o crear un producto.
+ 2. Filtrar y buscar productos; revisar mínimos y presentaciones.
+@@ -115,48 +115,48 @@ Por defecto usa dos lecturas. Si discrepan, el documento queda por revisar. Cont
+ 
+ Se eligió Q4 por mejores resultados medidos, no por aumentar el tamaño del modelo. El texto mostrado procede del original, nunca de explicaciones generadas. Sigue siendo un asistente local limitado, con errores y abstenciones posibles. Para Claude: docs/IA_LOCAL_Y_SEGURIDAD.md y último informe de reports/.
+ 
+-## Auditoría y mejora continua en 0.14.1
++## Auditoría y mejora continua en 0.8.1
+ La entrega 0.8.0 se auditó: parche y commit coinciden, pruebas y formato correctos. La comprobación de sumas acepta etiquetas habituales de facturas españolas (IVA 21%, Total a pagar) y sigue absteniéndose ante porcentajes sin importe o varias cuotas. El trabajador de IA bloquea más módulos de red; no es un sandbox del sistema. Cualquier IA que continúe debe leer docs/PROMPT_MAESTRO_V2.md y aplicar su directriz de mejora continua.
+ 
+-## Chat de dudas en 0.14.1
++## Chat de dudas en 0.8.2
+ IA local incluye un chat para preguntar cómo usar la app o qué dice el texto pegado en el editor. Responde el modelo local a partir de una guía fija y del texto del editor si se marca la casilla; no consulta el inventario ni los pedidos, no ejecuta acciones y sus respuestas son orientativas. Cada respuesta puede tardar de 30 segundos a más de un minuto en este equipo. El chat se conserva solo mientras la ventana está abierta.
+ 
+-## Producción y respuestas de proveedores en 0.14.1
++## Producción y respuestas de proveedores en 0.9.0
+ Producción: crea recetas (rinde X kg, ingredientes en su unidad base) y registra los kilos producidos por día. La app propone el consumo; corrígelo y aprueba para descontar ingredientes y sumar el producto terminado. La hoja diaria muestra kilos por gelato. Guía: docs/PRODUCCION_Y_RECETAS.md.
+ 
+ Mensajes: cada respuesta de proveedor se lee con reglas (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y se marca si debes leerla; las fechas como «el lunes» se resuelven. En Resumen aparece cuántos mensajes debes leer y en Control de entregas las respuestas vinculadas a cada pedido. «Segunda lectura con IA local» pide al modelo una categoría como propuesta; no cambia pedidos ni stock.
+ 
+-## Envío real por WhatsApp en 0.14.1
++## Envío real por WhatsApp en 0.9.1
+ En Compras → Control de entregas, un pedido pendiente tiene «Enviar por WhatsApp». Se muestra el texto exacto y el destinatario; al confirmar se envía una sola vez desde la cuenta vinculada por QR. Requisitos: WhatsApp conectado y el número del proveedor autorizado en WhatsApp → Autorizar chat. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a la pantalla WhatsApp y se lee por reglas. Prueba primero con un número propio.
+ 
+-## Diagnóstico de WhatsApp en 0.14.1
++## Diagnóstico de WhatsApp en 0.9.3
+ La pantalla WhatsApp muestra «Diagnóstico del canal» con los últimos eventos técnicos (remitente resuelto, autorizado o no, enviado, ignorado y por qué), sin contenido de mensajes, y un botón «Enviar mensaje de prueba» a un chat autorizado. Si un mensaje no aparece, ese diagnóstico dice el motivo.
+ 
+-## WhatsApp comprobado en 0.14.1
++## WhatsApp comprobado en 0.9.4
+ Envío y recepción reales verificados con dos números del propietario: la app envió un mensaje desde la cuenta vinculada y recibió la respuesta. Si un envío aparece como no confirmado, el diagnóstico del canal indica el motivo.
+ 
+-## Mejora general en 0.14.1
++## Mejora general en 0.10.0
+ Los mensajes de WhatsApp de proveedores autorizados aparecen también en Mensajes, con su lectura por reglas; si responden al pedido que les enviaste y es el único en curso, quedan vinculados y el pedido muestra la entrega prevista. La app hace una copia automática diaria (30 últimas en data/backups) y lo indica en Configuración. Puedes confirmar el tipo de documento de una foto desde IA local. El código de la interfaz está en src/ui/*.js.
+ 
+-## Ventas y mermas en 0.14.1
++## Ventas y mermas en 0.10.1
+ En Producción, la tabla «Ventas y mermas del día» registra kilos vendidos o desechados de cada producto terminado; cada cantidad crea una salida o merma en el historial, reversible como cualquier movimiento.
+ 
+-## Conexión automática y avisos en 0.14.1
++## Conexión automática y avisos en 0.10.2
+ En WhatsApp, «Conectar al abrir: sí» hace que la app reconecte sola al arrancar con la sesión guardada; cuando un proveedor autorizado escribe, Windows muestra una notificación y al pulsarla vuelve a la app. Configuración incluye «Primeros pasos».
+ 
+-## Historial, reconexión y CSV en 0.14.1
++## Historial, reconexión y CSV en 0.10.3
+ Al conectar WhatsApp, la app revisa los últimos mensajes de cada chat autorizado e importa los que llegaron con la app cerrada (texto). Si la sesión se cae y «Conectar al abrir» está activo, reintenta sola. Configuración → «Exportar CSV» crea inventario y movimientos en data/exportaciones para hoja de cálculo o gestoría.
+ 
+-## Recetario protegido y limpieza en 0.14.1
++## Recetario protegido y limpieza en 0.11.0
+ Configuración → «Recetario protegido»: pon una contraseña y la pantalla Producción pedirá desbloqueo (30 minutos); sin ella no se pueden crear recetas ni producir. Protege la pantalla dentro de la app, no cifra el disco; los movimientos de stock siguen visibles en Actividad. Configuración → «Limpieza periódica»: elige 7, 14, 30 o 90 días para borrar actividad y conversaciones antiguas (se conservan las 50 entradas recientes, los movimientos y las copias). Si olvidas la contraseña: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.
+ 
+-## Aprendizaje por correcciones en 0.14.1
++## Aprendizaje por correcciones en 0.12.0
+ En un mensaje, «Corregir lectura» te deja elegir qué quiso decir el proveedor (falta de producto, cancelación, cierre o vacaciones, pago, cambio, pregunta, documento, entrega, confirmación). La app lo recuerda y lo aplica a mensajes iguales o casi iguales; lo aprendido se ve y se olvida en Configuración. No es entrenamiento del modelo: son tus decisiones. Las reglas también entienden ahora horas, fechas con mes, abreviaturas y faltas de ortografía habituales.
+ 
+-## Identidad visual en 0.14.1
++## Identidad visual en 0.13.0
+ La app se presenta como propuesta para Artello (Palma de Mallorca) con una identidad propia: paleta «Mediterraneo» (pistacho, rosa y azafrán) sobre crema y acero, títulos en serif y una pantalla de inicio «arte + gelato». El nombre y el lugar se editan en Configuración → Identidad del negocio. No se incluyen logotipos ni materiales de la marca real.
+ 
+-## Documentos por proveedor en 0.14.1
++## Documentos por proveedor en 0.14.0
+ La pantalla Documentos reúne facturas, albaranes, recibos y pedidos (fotos o PDF) por proveedor. Para cada documento la app propone, por reglas, el proveedor, el tipo y el pedido al que pertenece (número de pedido en el texto, único pedido reciente del proveedor o importe coincidente); tú aceptas con un clic o vinculas a mano. Los adjuntos que envían por WhatsApp los proveedores autorizados entran solos. En Control de entregas se ven los documentos de cada pedido.
+ 
+ ## Sistema de diseño en 0.14.1
+diff --git a/TODO.md b/TODO.md
+index ecff580..3acf9e8 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.17.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.17.1.
+ 
+ ## Entregado y comprobado
+ 
+@@ -41,6 +41,11 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [ ] Probar la respuesta rápida con los números propios del usuario (el envío está cubierto con cliente simulado; el flujo real de pedidos ya se probó en 0.9.3).
+ - [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
+ - [x] Compra en webs (Makro u otras): lista copiable por proveedor y apertura de la web guardada; sin automatizar la compra (0.16.0).
++- [x] Auditoría 0.17.0, puntos 1–5, 9 y 10 (0.17.1): dist limpio, paquete podado, fechas locales, CSV seguro, rotación de registros, tuteo, README.
++- [ ] Auditoría 0.17.0, punto 7: enviar a la interfaz solo lo reciente y paginar Actividad/Movimientos.
++- [ ] Auditoría 0.17.0, punto 8: carpeta secundaria de copias (USB/OneDrive) y aviso de copia antigua.
++- [ ] Auditoría 0.17.0, punto 11: partir src/ui/views.js por pantalla; prueba de escritorio para Recetario y «Abrir»; Recetario y Guía en la auditoría visual.
++- [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
+ - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
+ - [ ] Recetario: balance técnico del gelato (azúcares, grasa, sólidos) si el usuario aporta fichas reales; impresión de ficha.
+ - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
+diff --git a/core/domain.ts b/core/domain.ts
+index 2c87ba1..c34f04c 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -22,6 +22,7 @@ export {
+   labels as replyLabels,
+   normalizePhrase,
+ } from "./messages";
++export { localDate } from "./messages";
+ export const round = (n: number) => Math.round(n * 1000) / 1000;
+ export function ensure(value: unknown, message: string): asserts value {
+   if (!value) throw Error(message);
+@@ -116,7 +117,7 @@ function classifyLegacy(
+       kind: "change",
+       priority: "important",
+       reason:
+-        "Posible cambio de disponibilidad o condiciones. Revisá el mensaje.",
++        "Posible cambio de disponibilidad o condiciones. Revisa el mensaje.",
+     };
+   if (/mañana|entrega|viernes|jueves|retras/.test(t))
+     return {
+@@ -139,7 +140,7 @@ function classifyLegacy(
+   return {
+     kind: "unknown",
+     priority: "review",
+-    reason: "Mensaje sin clasificación clara. Revisá su relevancia.",
++    reason: "Mensaje sin clasificación clara. Revisa su relevancia.",
+   };
+ }
+ export function assessRelevance(
+@@ -176,8 +177,8 @@ export function assessRelevance(
+   return {
+     relevance: "review",
+     relevanceReason: active.length
+-      ? `Este proveedor tiene ${active.length} pedido(s) abierto(s), pero el mensaje no identifica cuál. Revisá la relación.`
+-      : "No hay una referencia comprobable a un pedido. Revisá si afecta a tu negocio.",
++      ? `Este proveedor tiene ${active.length} pedido(s) abierto(s), pero el mensaje no identifica cuál. Revisa la relación.`
++      : "No hay una referencia comprobable a un pedido. Revisa si afecta a tu negocio.",
+   };
+ }
+ export function validate(input: unknown): State {
+@@ -366,7 +367,7 @@ export function apply(state: State, input: unknown): State {
+   if (a.revision !== undefined)
+     ensure(
+       a.revision === state.revision,
+-      "Los datos cambiaron. Revisá la operación.",
++      "Los datos cambiaron. Revisa la operación.",
+     );
+   const s = structuredClone(state);
+   let note = "";
+@@ -522,7 +523,7 @@ export function apply(state: State, input: unknown): State {
+         }
+         total += l.value;
+       }
+-      ensure(total > 0, "Indicá al menos una cantidad recibida.");
++      ensure(total > 0, "Indica al menos una cantidad recibida.");
+       o.status = o.lines.every((l) => l.received === round(l.pack * l.packs))
+         ? "received"
+         : "partial";
+@@ -811,7 +812,7 @@ export function apply(state: State, input: unknown): State {
+       }
+       ensure(
+         done.length > 0,
+-        "Indicá al menos una cantidad vendida o de merma.",
++        "Indica al menos una cantidad vendida o de merma.",
+       );
+       const short = s.products.filter(
+         (x) => a.lines.some((l) => l.product === x.id) && x.stock < x.min,
+diff --git a/core/identify.ts b/core/identify.ts
+index 9e783d4..fabba1d 100644
+--- a/core/identify.ts
++++ b/core/identify.ts
+@@ -62,7 +62,7 @@ export function identifySupplier(s: State, input: unknown) {
+       : channel === "whatsapp"
+         ? "El remitente no identifica de forma única a un proveedor registrado."
+         : candidates.length
+-          ? "Hay varios proveedores posibles. Elegí el emisor del documento."
++          ? "Hay varios proveedores posibles. Elige el emisor del documento."
+           : "No se encontró un proveedor registrado. Elegilo o añadí sus datos de identificación.",
+   };
+ }
+diff --git a/core/messages.ts b/core/messages.ts
+index 2ee0296..f2cf5ab 100644
+--- a/core/messages.ts
++++ b/core/messages.ts
+@@ -58,10 +58,13 @@ const months = [
+   "noviembre",
+   "diciembre",
+ ];
+-const iso = (d: Date) => d.toISOString().slice(0, 10);
++// Calendar day in local time: a message at 00:30 in Palma is "today" there, not yesterday (UTC).
++export const localDate = (d: Date): string =>
++  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
++const iso = localDate;
+ const addDays = (base: Date, days: number) => {
+   const d = new Date(base);
+-  d.setUTCDate(d.getUTCDate() + days);
++  d.setDate(d.getDate() + days);
+   return d;
+ };
+ export const labels: Record<ReplyCategory, string> = {
+@@ -89,11 +92,11 @@ export function resolveDate(
+   if (explicit) {
+     const day = Number(explicit[1]),
+       month = Number(explicit[2]);
+-    let year = explicit[3] ? Number(explicit[3]) : base.getUTCFullYear();
++    let year = explicit[3] ? Number(explicit[3]) : base.getFullYear();
+     if (year < 100) year += 2000;
+-    const d = new Date(Date.UTC(year, month - 1, day));
+-    if (d.getUTCMonth() === month - 1 && d.getUTCDate() === day) {
+-      if (!explicit[3] && d < addDays(base, -30)) d.setUTCFullYear(year + 1);
++    const d = new Date(year, month - 1, day, 12);
++    if (d.getMonth() === month - 1 && d.getDate() === day) {
++      if (!explicit[3] && d < addDays(base, -30)) d.setFullYear(year + 1);
+       return { date: iso(d), hint: explicit[0] };
+     }
+   }
+@@ -105,10 +108,10 @@ export function resolveDate(
+     const month = months.indexOf(
+       named[2] === "setiembre" ? "septiembre" : named[2] || "",
+     );
+-    let d = new Date(Date.UTC(base.getUTCFullYear(), month, day));
++    let d = new Date(base.getFullYear(), month, day, 12);
+     if (d < addDays(base, -30))
+-      d = new Date(Date.UTC(base.getUTCFullYear() + 1, month, day));
+-    if (d.getUTCDate() === day) return { date: iso(d), hint: named[0] };
++      d = new Date(base.getFullYear() + 1, month, day, 12);
++    if (d.getDate() === day) return { date: iso(d), hint: named[0] };
+   }
+   if (/\bpasado manana\b/.test(t))
+     return { date: iso(addDays(base, 2)), hint: "pasado mañana" };
+@@ -123,19 +126,15 @@ export function resolveDate(
+   if (dayOfMonth) {
+     const day = Number(dayOfMonth[1]);
+     if (day >= 1 && day <= 31) {
+-      let d = new Date(
+-        Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), day),
+-      );
+-      if (d < base)
+-        d = new Date(
+-          Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, day),
+-        );
+-      if (d.getUTCDate() === day) return { date: iso(d), hint: "el " + day };
++      let d = new Date(base.getFullYear(), base.getMonth(), day, 12);
++      if (iso(d) < iso(base))
++        d = new Date(base.getFullYear(), base.getMonth() + 1, day, 12);
++      if (d.getDate() === day) return { date: iso(d), hint: "el " + day };
+     }
+   }
+   for (const [index, name] of weekdays.entries()) {
+     if (new RegExp("\\b" + name + "\\b").test(t)) {
+-      let delta = (index - base.getUTCDay() + 7) % 7;
++      let delta = (index - base.getDay() + 7) % 7;
+       if (delta === 0) delta = 7;
+       return {
+         date: iso(addDays(base, delta)),
+diff --git a/core/schema.ts b/core/schema.ts
+index 16b3da6..a662f78 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -50,7 +50,7 @@ const supplierFields = {
+     .transform((v) => v.replace(/[ ()-]/g, ""))
+     .refine(
+       (v) => v === "" || /^\+[1-9]\d{7,14}$/.test(v),
+-      "Usá el teléfono con prefijo internacional, por ejemplo +34.",
++      "Usa el teléfono con prefijo internacional, por ejemplo +34.",
+     )
+     .optional(),
+   // Purchase website (Makro and similar). Only https, opened in the system browser on demand.
+@@ -457,7 +457,7 @@ export function parseAction(input: unknown): Action {
+   const r = actionSchema.safeParse(input);
+   if (!r.success)
+     throw Error(
+-      "Revisá los datos: " +
++      "Revisa los datos: " +
+         r.error.issues
+           .map((i) => i.path.join(".") + ": " + i.message)
+           .slice(0, 3)
+diff --git a/core/seed.ts b/core/seed.ts
+index 876e0fa..0c3d63b 100644
+--- a/core/seed.ts
++++ b/core/seed.ts
+@@ -242,7 +242,7 @@ export function seed(): State {
+         reviewed: false,
+         relevance: "review",
+         relevanceReason:
+-          "Mensaje de ejemplo: revisá su relación con un pedido.",
++          "Mensaje de ejemplo: revisa su relación con un pedido.",
+         at: new Date().toISOString(),
+         simulated: true,
+         channel: "demo",
+diff --git a/core/store.ts b/core/store.ts
+index 951616d..0893ef6 100644
+--- a/core/store.ts
++++ b/core/store.ts
+@@ -578,7 +578,7 @@ export class Store {
+       const previous = this.load();
+       ensure(
+         previous.revision === expectedRevision,
+-        "Los datos cambiaron. Revisá la restauración.",
++        "Los datos cambiaron. Revisa la restauración.",
+       );
+       this.backup();
+       // A portable backup must carry every image, not refer to files on another PC.
+diff --git a/package.json b/package.json
+index 1ee3efe..3f11d99 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.17.0",
++  "version": "0.17.1",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/package.cjs b/scripts/package.cjs
+index 406fc82..d538410 100644
+--- a/scripts/package.cjs
++++ b/scripts/package.cjs
+@@ -2,11 +2,26 @@ const fs = require("node:fs");
+ const path = require("node:path");
+ const root = path.resolve(__dirname, "..");
+ const version = require("../package.json").version;
+-const dest = path.join(root, "dist", `GelatoStock-${version}-win32-x64`);
++const distRoot = path.join(root, "dist");
++const dest = path.join(distRoot, `GelatoStock-${version}-win32-x64`);
+ if (process.platform !== "win32")
+   throw Error(
+     "Este empaquetado requiere Windows. Preparar y probar Mac por separado.",
+   );
++// Old builds are only disk weight (2 GB each): keep the newest two, this one included.
++const KEEP_BUILDS = 2;
++if (fs.existsSync(distRoot)) {
++  const builds = fs
++    .readdirSync(distRoot)
++    .filter((n) => /^GelatoStock-\d+\.\d+\.\d+-win32-x64$/.test(n))
++    .filter((n) => n !== path.basename(dest))
++    .map((n) => ({ n, at: fs.statSync(path.join(distRoot, n)).mtimeMs }))
++    .sort((a, b) => b.at - a.at);
++  for (const b of builds.slice(KEEP_BUILDS - 1)) {
++    fs.rmSync(path.join(distRoot, b.n), { recursive: true, force: true });
++    console.log("Versión antigua eliminada: " + b.n);
++  }
++}
+ fs.mkdirSync(dest, { recursive: true });
+ fs.cpSync(path.join(root, "node_modules", "electron", "dist"), dest, {
+   recursive: true,
+@@ -26,21 +41,49 @@ fs.writeFileSync(
+     main: "src/desktop.cjs",
+   }),
+ );
+-console.log("Aplicación portátil creada en " + newExe);
+ 
+ fs.cpSync(path.join(root, "build"), path.join(app, "build"), {
+   recursive: true,
+ });
+ fs.mkdirSync(path.join(app, "node_modules"), { recursive: true });
++// Not shipped: never executed by this app on Windows x64 (measured 0.17.0/0.17.1).
++// onnxruntime-web is the browser backend (we use onnxruntime-node) and the node build of
++// transformers does not require it; sharp IS required at load by transformers (verified: the
++// pruned package failed with "Cannot find module 'sharp'"), so sharp stays with only its
++// Windows x64 binary; the other @img platform variants and onnxruntime-node binaries for
++// darwin/linux/win32-arm64 are dead weight here.
++const keepPackages = [
++  "node_modules/sharp",
++  "node_modules/@img/colour",
++  "node_modules/@img/sharp-win32-x64",
++];
++const skipPackages = ["node_modules/onnxruntime-web", "node_modules/@img/"];
++const skipFile = (source) => {
++  const rel = path.relative(root, source).split(path.sep).join("/");
++  return (
++    /^node_modules\/onnxruntime-node\/bin\/[^/]+\/(darwin|linux)\//.test(rel) ||
++    /^node_modules\/onnxruntime-node\/bin\/[^/]+\/win32\/arm64/.test(rel)
++  );
++};
+ // Copy the locked production dependency graph, including local OCR WASM/language files.
+ const lock = require("../package-lock.json");
++let skipped = 0;
+ for (const [location, info] of Object.entries(lock.packages)) {
+   if (!location || info.dev || !location.startsWith("node_modules/")) continue;
++  if (
++    !keepPackages.some((k) => location === k || location.startsWith(k + "/")) &&
++    skipPackages.some((s) => location === s || location.startsWith(s))
++  ) {
++    skipped++;
++    continue;
++  }
+   if (info.optional && !fs.existsSync(path.join(root, location))) continue;
+   fs.cpSync(path.join(root, location), path.join(app, location), {
+     recursive: true,
++    filter: (source) => !skipFile(source),
+   });
+ }
++console.log("Paquetes omitidos por no usarse en Windows x64: " + skipped);
+ 
+ const manifest = require("../runtime/ai-model.json");
+ if (!/^[a-zA-Z0-9_-]+$/.test(manifest.directory))
+@@ -57,3 +100,4 @@ for (const name of [...Object.keys(manifest.files), "LICENSE"]) {
+   fs.mkdirSync(path.dirname(to), { recursive: true });
+   fs.copyFileSync(from, to);
+ }
++console.log("Aplicación portátil creada en " + newExe);
+diff --git a/src/ai-worker.cjs b/src/ai-worker.cjs
+index f588e42..ba4e4ea 100644
+--- a/src/ai-worker.cjs
++++ b/src/ai-worker.cjs
+@@ -109,17 +109,19 @@ function runsFor(job) {
+         outputs.push(result[0].generated_text);
+       }
+       parentPort.postMessage({ id: job.id, outputs });
+-    } catch {
++    } catch (e) {
+       parentPort.postMessage({
+         id: job.id,
+         error:
+           "No se pudo ejecutar el modelo local. Comprueba el paquete y la memoria disponible.",
++        detail: String((e && e.message) || e).slice(0, 300),
+       });
+     }
+   });
+-})().catch(() =>
++})().catch((e) =>
+   parentPort.postMessage({
+     error:
+       "No se pudo ejecutar el modelo local. Comprueba el paquete y la memoria disponible.",
++    detail: String((e && e.message) || e).slice(0, 300),
+   }),
+ );
+diff --git a/src/ai.cjs b/src/ai.cjs
+index 38ec82c..a7ca492 100644
+--- a/src/ai.cjs
++++ b/src/ai.cjs
+@@ -222,7 +222,12 @@ class LocalAI {
+       worker.once("message", (m) => {
+         clearTimeout(timer);
+         if (m.ready) resolve();
+-        else reject(Error(m.error || "No se pudo iniciar la IA local."));
++        else
++          reject(
++            Object.assign(Error(m.error || "No se pudo iniciar la IA local."), {
++              detail: m.detail || "",
++            }),
++          );
+       });
+       worker.once("error", () => {
+         clearTimeout(timer);
+@@ -261,7 +266,7 @@ class LocalAI {
+           if (m.id !== id) return;
+           cleanup();
+           if (m.error) {
+-            reject(Error(m.error));
++            reject(Object.assign(Error(m.error), { detail: m.detail || "" }));
+             return;
+           }
+           if (
+diff --git a/src/desktop.cjs b/src/desktop.cjs
+index d054dda..56a6dd8 100644
+--- a/src/desktop.cjs
++++ b/src/desktop.cjs
+@@ -12,15 +12,9 @@ app.setPath("logs", path.join(data, "runtime", "logs"));
+ app.setPath("crashDumps", path.join(data, "runtime", "crashes"));
+ // Unexpected failures are written locally instead of closing the app or showing raw traces.
+ const errorLog = path.join(data, "runtime", "logs", "errores.log");
+-const logError = (kind, e) => {
+-  try {
+-    fs.mkdirSync(path.dirname(errorLog), { recursive: true });
+-    fs.appendFileSync(
+-      errorLog,
+-      `${new Date().toISOString()} ${kind}: ${String((e && (e.stack || e.message)) || e).slice(0, 2000)}\n`,
+-    );
+-  } catch {}
+-};
++const { appendLog } = require("./logs.cjs");
++const logError = (kind, e) =>
++  appendLog(errorLog, kind + ": " + String((e && (e.stack || e.message)) || e));
+ process.on("unhandledRejection", (e) => logError("rechazo no controlado", e));
+ process.on("uncaughtException", (e) => logError("excepción no controlada", e));
+ if (!app.requestSingleInstanceLock()) {
+diff --git a/src/ocr.cjs b/src/ocr.cjs
+index bd13f2c..4c76895 100644
+--- a/src/ocr.cjs
++++ b/src/ocr.cjs
+@@ -10,7 +10,7 @@ async function recognizeLocal(data) {
+     data.length > 8000000 ||
+     !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(data)
+   )
+-    throw Error("Usá una imagen JPG, PNG o WebP de hasta 5 MB.");
++    throw Error("Usa una imagen JPG, PNG o WebP de hasta 5 MB.");
+   const bytes = Buffer.from(data.split(",")[1], "base64");
+   if (!bytes.length || bytes.length > 5000000)
+     throw Error("La imagen supera 5 MB.");
+diff --git a/src/server.cjs b/src/server.cjs
+index 73f2926..65ca9c2 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -8,6 +8,8 @@ const { orderMessage } = require("../build/domain.js");
+ const { recognizeLocal } = require("./ocr.cjs");
+ const { WhatsAppConnection } = require("./whatsapp.cjs");
+ const { LocalAI } = require("./ai.cjs");
++const { appendLog } = require("./logs.cjs");
++const { csvCell } = require("./csv.cjs");
+ const version = require("../package.json").version;
+ const { Store } = require("../build/store.js");
+ function createApp({
+@@ -119,16 +121,8 @@ function createApp({
+     ...extra,
+   });
+   const ai = new LocalAI();
+-  const aiLog = (line) => {
+-    try {
+-      const dir = path.join(dataDir, "runtime", "logs");
+-      fs.mkdirSync(dir, { recursive: true });
+-      fs.appendFileSync(
+-        path.join(dir, "ia.log"),
+-        new Date().toISOString() + " " + line + "\n",
+-      );
+-    } catch {}
+-  };
++  const aiLog = (line) =>
++    appendLog(path.join(dataDir, "runtime", "logs", "ia.log"), line);
+   const whatsapp = new WhatsAppConnection(dataDir, store);
+   whatsapp.ocr = (data) => recognizeLocal(data);
+   const token = randomBytes(32).toString("hex");
+@@ -254,7 +248,7 @@ function createApp({
+             json(200, result);
+           } catch (e) {
+             aiLog(
+-              `analisis ERROR ms=${Date.now() - startedAt} ${String(e.message || e).slice(0, 120)}`,
++              `analisis ERROR ms=${Date.now() - startedAt} ${String(e.message || e).slice(0, 120)}${e.detail ? " · causa: " + String(e.detail).slice(0, 300) : ""}`,
+             );
+             throw e;
+           }
+@@ -429,7 +423,7 @@ function createApp({
+           if (data.type === "retention") {
+             const days = Number(data.days);
+             if (![0, 7, 14, 30, 90].includes(days))
+-              throw Error("Elegí 0 (sin limpieza), 7, 14, 30 o 90 días.");
++              throw Error("Elige 0 (sin limpieza), 7, 14, 30 o 90 días.");
+             store.setSetting("retention_days", String(days));
+             json(200, envelope(store.load()));
+             return;
+@@ -444,11 +438,7 @@ function createApp({
+         if (u.pathname === "/api/export") {
+           // CSV (semicolon, UTF-8 with BOM) of products and movements for a spreadsheet.
+           const s = store.load();
+-          const cell = (v) => {
+-            const t = String(v ?? "");
+-            return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+-          };
+-          const line = (cells) => cells.map(cell).join(";");
++          const line = (cells) => cells.map(csvCell).join(";");
+           const byId = new Map(s.products.map((p) => [p.id, p]));
+           const products = [
+             line([
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index 6722e83..3cdd6ac 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -54,9 +54,9 @@ async function action(name, el) {
+       return;
+     }
+     const blocked = !preview.connected
+-      ? "WhatsApp no está conectado. Conectá por QR en la pantalla WhatsApp."
++      ? "WhatsApp no está conectado. Conecta por QR en la pantalla WhatsApp."
+       : !preview.authorized
+-        ? "Este número no está autorizado para la cuenta conectada. Autorizalo en WhatsApp → Autorizar chat."
++        ? "Este número no está autorizado para la cuenta conectada. Autorízalo en WhatsApp → Autorizar chat."
+         : "";
+     modal(
+       "Enviar " + o.number + " por WhatsApp",
+@@ -248,7 +248,7 @@ async function action(name, el) {
+       toast("Crea primero una receta.");
+       return;
+     }
+-    const today = new Date().toISOString().slice(0, 10);
++    const today = todayLocal();
+     modal(
+       "Registrar producción",
+       "La app calcula el consumo por receta. Nada cambia hasta que apruebes la propuesta.",
+@@ -315,7 +315,7 @@ async function action(name, el) {
+       }))
+       .filter((l) => l.sold || l.waste);
+     if (!lines.length) {
+-      toast("Indicá al menos una cantidad vendida o de merma.");
++      toast("Indica al menos una cantidad vendida o de merma.");
+       return;
+     }
+     await mutate(
+@@ -461,7 +461,7 @@ async function action(name, el) {
+   if (name === "addcart") {
+     modal(
+       "Añadir al carrito",
+-      "Elegí el producto y la cantidad de paquetes.",
++      "Elige el producto y la cantidad de paquetes.",
+       select(
+         "Producto",
+         "product",
+@@ -590,7 +590,7 @@ async function action(name, el) {
+           "tel",
+           'placeholder="+34…" maxlength="40"',
+         ) +
+-        `<p class="detection-status" role="status">Pegá un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
++        `<p class="detection-status" role="status">Pega un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
+       async (f) => {
+         const ok = await mutate(
+           { type: "message", supplier: f.get("supplier"), text: f.get("text") },
+@@ -709,7 +709,7 @@ async function action(name, el) {
+     const ph = state.photos.find((p) => p.id === el.dataset.id);
+     modal(
+       "Organizar foto",
+-      "Elegí el proveedor y la fecha del documento.",
++      "Elige el proveedor y la fecha del documento.",
+       photoFields(ph),
+       async (f) =>
+         mutate(
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 4789c23..57477b1 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -46,6 +46,11 @@ const money = (n) =>
+   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(
+     n / 100,
+   );
++// Today's calendar date in local time (never toISOString, which is UTC).
++const todayLocal = () => {
++  const d = new Date();
++  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
++};
+ const num = (n) =>
+   new Intl.NumberFormat("es-ES", { maximumFractionDigits: 3 }).format(n);
+ const date = (v) =>
+diff --git a/src/ui/forms.js b/src/ui/forms.js
+index f9ee745..43d4f7e 100644
+--- a/src/ui/forms.js
++++ b/src/ui/forms.js
+@@ -44,7 +44,7 @@ function count(id) {
+   const p = product(id) || state.products[0];
+   modal(
+     "Registrar un conteo",
+-    "Indicá cuánto hay ahora. Reemplaza el stock contado; no suma una entrada.",
++    "Indica cuánto hay ahora. Reemplaza el stock contado; no suma una entrada.",
+     select(
+       "Producto",
+       "product",
+@@ -123,7 +123,7 @@ function photo() {
+     "Foto o PDF. En fotos se lee el texto localmente para proponer proveedor, tipo y pedido. Las cantidades no cambian.",
+     '<p class="detection-status" role="status">Al elegir una foto se buscará su proveedor entre tus fichas.</p>' +
+       photoFields() +
+-      `<label class="upload-zone">${icon("photo")}<strong>Elegí una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Podés elegirlo manualmente si la lectura falla.</p>`,
++      `<label class="upload-zone">${icon("photo")}<strong>Elige una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Puedes elegirlo manualmente si la lectura falla.</p>`,
+     async (f) => {
+       const file = f.get("photo");
+       const pdf = file.type === "application/pdf";
+@@ -133,7 +133,7 @@ function photo() {
+         ) ||
+         file.size > (pdf ? 10000000 : 5000000)
+       )
+-        throw Error("Usá JPG, PNG o WebP de hasta 5 MB, o PDF de hasta 10 MB.");
++        throw Error("Usa JPG, PNG o WebP de hasta 5 MB, o PDF de hasta 10 MB.");
+       return mutate(
+         {
+           type: "photo",
+@@ -179,7 +179,7 @@ function photo() {
+           !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
+           file.size > 5000000
+         )
+-          throw Error("Usá JPG, PNG o WebP de hasta 5 MB.");
++          throw Error("Usa JPG, PNG o WebP de hasta 5 MB.");
+         const data = await readFile(file);
+         if (current !== serial || $("#modal-form") !== form) return;
+         form.querySelector("#photo-preview").innerHTML =
+@@ -191,7 +191,7 @@ function photo() {
+       } catch (e) {
+         if (current === serial && $("#modal-form") === form)
+           form.querySelector(".detection-status").textContent =
+-            e.message + " Podés elegir el proveedor manualmente.";
++            e.message + " Puedes elegir el proveedor manualmente.";
+       } finally {
+         if (current === serial && $("#modal-form") === form)
+           button.disabled = false;
+diff --git a/src/ui/views.js b/src/ui/views.js
+index 44adbcf..16471ba 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -18,7 +18,7 @@ function home() {
+       btn(icon("photo") + " Cargar foto", "photo") +
+         btn(icon("plus") + " Registrar stock", "count", "primary"),
+     ) +
+-    `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> ARTE + GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepará la reposición y seguí con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
++    `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> ARTE + GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepara la reposición y seguí con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
+  ${homeNotices()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong><small>Todo tu inventario</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Precios de demostración</small></div></article></section>
+  <div class="dashboard-grid"><section class="panel"><div class="panel-heading"><div><h2>Un vistazo al inventario</h2><p>Los productos que necesitan atención.</p></div><button class="text-button" data-nav="stock">Ver inventario ${icon("arrow")}</button></div>${productTable(low().slice(0, 5), true)}</section><div class="right-stack"><section class="panel inbox-preview"><div class="panel-heading"><h2>Tu bandeja de entrada</h2><span class="count-bubble">${important.length}</span></div>${
+    important.length
+@@ -361,7 +361,7 @@ function salesSection() {
+   const finished = state.products.filter(
+     (p) => p.unit === "kg" && state.recipes.some((r) => r.product === p.id),
+   );
+-  const today = new Date().toISOString().slice(0, 10);
++  const today = todayLocal();
+   return `<section class="panel" data-sales><div class="panel-heading"><div><h2>Ventas y mermas del día</h2><p>Kilos vendidos o desechados de producto terminado. Cada cantidad crea una salida o una merma trazable y reversible.</p></div></div><label class="field short">Día<input type="date" class="inline-input" data-sales-date value="${today}" max="${today}"></label><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto terminado</th><th>Stock</th><th>Vendido (kg)</th><th>Merma (kg)</th></tr></thead><tbody>${finished
+     .map(
+       (p) =>
+@@ -439,10 +439,10 @@ function orders() {
+   return (
+     header(
+       "Compras con todo bajo control.",
+-      "Prepará el carrito, revisá el pedido y registrá lo que llega.",
++      "Prepara el carrito, revisa el pedido y registra lo que llega.",
+       btn("Sugerir reposición", "suggest", "primary"),
+     ) +
+-    `<div class="notice">${icon("shield")}<div><strong>Compras de demostración</strong><span>Podés probar el circuito completo. No se envían mensajes ni se realizan pagos.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${
++    `<div class="notice">${icon("shield")}<div><strong>Compras de demostración</strong><span>Puedes probar el circuito completo. No se envían mensajes ni se realizan pagos.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${
+       state.cart.length
+         ? `<div class="cart-lines">${state.cart
+             .map((l) => {
+@@ -452,7 +452,7 @@ function orders() {
+             .join("")}</div>`
+         : '<div class="empty">' +
+           icon("cart") +
+-          "<h3>Tu próximo pedido empieza aquí</h3><p>Añadí productos o prepará la reposición sugerida.</p></div>"
++          "<h3>Tu próximo pedido empieza aquí</h3><p>Añade productos o prepara la reposición sugerida.</p></div>"
+     }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}${state.suppliers
+       .filter(
+         (s) =>
+diff --git a/src/whatsapp-store.cjs b/src/whatsapp-store.cjs
+index 7fe28f6..b40b739 100644
+--- a/src/whatsapp-store.cjs
++++ b/src/whatsapp-store.cjs
+@@ -87,7 +87,7 @@ class WhatsAppStore {
+   permit(account, phone, label, supplier) {
+     phone = normalize(phone);
+     if (!label || label.trim().length > 100)
+-      throw Error("Indicá un nombre de hasta 100 caracteres.");
++      throw Error("Indica un nombre de hasta 100 caracteres.");
+     this.db
+       .prepare(
+         "INSERT INTO allowed VALUES(?,?,?,?) ON CONFLICT(account,phone) DO UPDATE SET label=excluded.label,supplier=excluded.supplier",
+diff --git a/src/whatsapp.cjs b/src/whatsapp.cjs
+index 553e58d..229bb7a 100644
+--- a/src/whatsapp.cjs
++++ b/src/whatsapp.cjs
+@@ -2,6 +2,7 @@ const fs = require("node:fs"),
+   path = require("node:path");
+ const { EventEmitter } = require("node:events");
+ const { WhatsAppStore, normalize, hash } = require("./whatsapp-store.cjs");
++const { appendLog } = require("./logs.cjs");
+ class WhatsAppConnection {
+   constructor(dataDir, mainStore) {
+     this.store = new WhatsAppStore(dataDir);
+@@ -26,12 +27,7 @@ class WhatsAppConnection {
+   }
+   log(text) {
+     try {
+-      if (fs.existsSync(this.logFile) && fs.statSync(this.logFile).size > 1e6)
+-        fs.renameSync(this.logFile, this.logFile + ".anterior");
+-      fs.appendFileSync(
+-        this.logFile,
+-        new Date().toISOString() + " " + text.slice(0, 400) + "\n",
+-      );
++      appendLog(this.logFile, text.slice(0, 400));
+     } catch {}
+   }
+   diagnostics() {
+@@ -144,7 +140,7 @@ class WhatsAppConnection {
+         this.status = "disconnected";
+         this.qr = null;
+         this.error =
+-          "Sesión desconectada. Usá Cerrar sesión antes de volver a vincular.";
++          "Sesión desconectada. Usa Cerrar sesión antes de volver a vincular.";
+         if (this.autoConnect && String(reason) !== "LOGOUT")
+           this.scheduleReconnect();
+       });
+@@ -174,7 +170,7 @@ class WhatsAppConnection {
+           .catch(() => {
+             if (generation === this.generation)
+               this.error =
+-                "No se pudo importar un mensaje autorizado. Revisá conexión y espacio en disco.";
++                "No se pudo importar un mensaje autorizado. Revisa conexión y espacio en disco.";
+           });
+       });
+       client.initialize().catch((e) => {
+@@ -491,7 +487,7 @@ class WhatsAppConnection {
+   // one order at a time, never automatic. The caller shows the exact text first.
+   async send({ phone, text, order }) {
+     if (!this.client || this.status !== "connected" || !this.account)
+-      throw Error("Conectá WhatsApp por QR antes de enviar.");
++      throw Error("Conecta WhatsApp por QR antes de enviar.");
+     const recipient = normalize(phone);
+     const permitted = this.store.allowed(this.account, recipient);
+     if (!permitted)
+@@ -637,12 +633,12 @@ class WhatsAppConnection {
+     this.store.detach();
+     this.status = "disconnected";
+     this.error = failure
+-      ? "No se confirmó la desvinculación remota. Revisá Dispositivos vinculados en tu teléfono."
++      ? "No se confirmó la desvinculación remota. Revisa Dispositivos vinculados en tu teléfono."
+       : "";
+   }
+   allow(data) {
+     if (!this.account || this.status !== "connected")
+-      throw Error("Conectá una cuenta antes de autorizar chats.");
++      throw Error("Conecta una cuenta antes de autorizar chats.");
+     if (data.remove) {
+       this.store.revoke(this.account, data.phone);
+       return;
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index 4fe4493..17027ae 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -985,3 +985,17 @@ test("recetario: familia, elaboración y alérgenos se guardan; la familia por d
+     }),
+   );
+ });
++
++test("fechas locales: «mañana» se resuelve con el día del calendario local, no UTC", () => {
++  const { resolveDate, localDate } = require("../src/domain.cjs");
++  // 23:30 UTC: en Palma ya es el día siguiente; la lectura debe partir del día local.
++  const at = "2026-09-08T23:30:00.000Z";
++  const local = new Date(at);
++  const tomorrow = new Date(
++    local.getFullYear(),
++    local.getMonth(),
++    local.getDate() + 1,
++  );
++  assert.equal(resolveDate("llega mañana", at)?.date, localDate(tomorrow));
++  assert.equal(localDate(new Date(2026, 0, 5, 0, 30)), "2026-01-05");
++});
+diff --git a/tests/server.test.cjs b/tests/server.test.cjs
+index bd62a0d..069db20 100644
+--- a/tests/server.test.cjs
++++ b/tests/server.test.cjs
+@@ -495,3 +495,32 @@ test("responder a un mensaje de WhatsApp desde la bandeja envía el texto y anot
+     fs.rmSync(dir, { recursive: true, force: true });
+   }
+ });
++
++test("CSV: las celdas que empezarían una fórmula llevan apóstrofo; los números no cambian", () => {
++  const { csvCell } = require("../src/csv.cjs");
++  assert.equal(csvCell("=SUMA(A1:A9)"), "'=SUMA(A1:A9)");
++  assert.equal(csvCell("+34 600"), "'+34 600");
++  assert.equal(csvCell("-oferta"), "'-oferta");
++  assert.equal(csvCell("@nombre"), "'@nombre");
++  assert.equal(csvCell(-5), "-5");
++  assert.equal(csvCell("Leche; entera"), '"Leche; entera"');
++  assert.equal(csvCell('Dice "hola"'), '"Dice ""hola"""');
++  assert.equal(csvCell(null), "");
++});
++test("registros locales: pasado 1 MB el archivo rota a .anterior y sigue escribiendo", () => {
++  const { appendLog } = require("../src/logs.cjs");
++  const dir = fs.mkdtempSync(
++    path.join(path.resolve(__dirname, "../work"), "logs-"),
++  );
++  try {
++    const file = path.join(dir, "prueba.log");
++    appendLog(file, "primera", 50);
++    fs.appendFileSync(file, "x".repeat(60));
++    appendLog(file, "segunda", 50);
++    assert.ok(fs.existsSync(file + ".anterior"));
++    assert.match(fs.readFileSync(file, "utf8"), /segunda\n$/);
++    assert.match(fs.readFileSync(file + ".anterior", "utf8"), /primera/);
++  } finally {
++    fs.rmSync(dir, { recursive: true, force: true });
++  }
++});
+diff --git a/tests/whatsapp.test.cjs b/tests/whatsapp.test.cjs
+index d78f978..edb3481 100644
+--- a/tests/whatsapp.test.cjs
++++ b/tests/whatsapp.test.cjs
+@@ -156,7 +156,7 @@ test("envío real: solo conectado, solo a chats autorizados, una vez por pedido
+   fixture(async (c) => {
+     await assert.rejects(
+       c.send({ phone: "+34910000001", text: "hola" }),
+-      /Conectá WhatsApp/,
++      /Conecta WhatsApp/,
+     );
+     const a = c.store.bind("+34600000001");
+     c.account = a;

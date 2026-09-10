@@ -12,15 +12,9 @@ app.setPath("logs", path.join(data, "runtime", "logs"));
 app.setPath("crashDumps", path.join(data, "runtime", "crashes"));
 // Unexpected failures are written locally instead of closing the app or showing raw traces.
 const errorLog = path.join(data, "runtime", "logs", "errores.log");
-const logError = (kind, e) => {
-  try {
-    fs.mkdirSync(path.dirname(errorLog), { recursive: true });
-    fs.appendFileSync(
-      errorLog,
-      `${new Date().toISOString()} ${kind}: ${String((e && (e.stack || e.message)) || e).slice(0, 2000)}\n`,
-    );
-  } catch {}
-};
+const { appendLog } = require("./logs.cjs");
+const logError = (kind, e) =>
+  appendLog(errorLog, kind + ": " + String((e && (e.stack || e.message)) || e));
 process.on("unhandledRejection", (e) => logError("rechazo no controlado", e));
 process.on("uncaughtException", (e) => logError("excepción no controlada", e));
 if (!app.requestSingleInstanceLock()) {

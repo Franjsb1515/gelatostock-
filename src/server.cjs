@@ -8,6 +8,8 @@ const { orderMessage } = require("../build/domain.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { LocalAI } = require("./ai.cjs");
+const { appendLog } = require("./logs.cjs");
+const { csvCell } = require("./csv.cjs");
 const version = require("../package.json").version;
 const { Store } = require("../build/store.js");
 function createApp({
@@ -119,16 +121,8 @@ function createApp({
     ...extra,
   });
   const ai = new LocalAI();
-  const aiLog = (line) => {
-    try {
-      const dir = path.join(dataDir, "runtime", "logs");
-      fs.mkdirSync(dir, { recursive: true });
-      fs.appendFileSync(
-        path.join(dir, "ia.log"),
-        new Date().toISOString() + " " + line + "\n",
-      );
-    } catch {}
-  };
+  const aiLog = (line) =>
+    appendLog(path.join(dataDir, "runtime", "logs", "ia.log"), line);
   const whatsapp = new WhatsAppConnection(dataDir, store);
   whatsapp.ocr = (data) => recognizeLocal(data);
   const token = randomBytes(32).toString("hex");
@@ -254,7 +248,7 @@ function createApp({
             json(200, result);
           } catch (e) {
             aiLog(
-              `analisis ERROR ms=${Date.now() - startedAt} ${String(e.message || e).slice(0, 120)}`,
+              `analisis ERROR ms=${Date.now() - startedAt} ${String(e.message || e).slice(0, 120)}${e.detail ? " · causa: " + String(e.detail).slice(0, 300) : ""}`,
             );
             throw e;
           }
@@ -429,7 +423,7 @@ function createApp({
           if (data.type === "retention") {
             const days = Number(data.days);
             if (![0, 7, 14, 30, 90].includes(days))
-              throw Error("Elegí 0 (sin limpieza), 7, 14, 30 o 90 días.");
+              throw Error("Elige 0 (sin limpieza), 7, 14, 30 o 90 días.");
             store.setSetting("retention_days", String(days));
             json(200, envelope(store.load()));
             return;
@@ -444,11 +438,7 @@ function createApp({
         if (u.pathname === "/api/export") {
           // CSV (semicolon, UTF-8 with BOM) of products and movements for a spreadsheet.
           const s = store.load();
-          const cell = (v) => {
-            const t = String(v ?? "");
-            return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
-          };
-          const line = (cells) => cells.map(cell).join(";");
+          const line = (cells) => cells.map(csvCell).join(";");
           const byId = new Map(s.products.map((p) => [p.id, p]));
           const products = [
             line([

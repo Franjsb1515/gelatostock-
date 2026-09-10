@@ -54,9 +54,9 @@ async function action(name, el) {
       return;
     }
     const blocked = !preview.connected
-      ? "WhatsApp no está conectado. Conectá por QR en la pantalla WhatsApp."
+      ? "WhatsApp no está conectado. Conecta por QR en la pantalla WhatsApp."
       : !preview.authorized
-        ? "Este número no está autorizado para la cuenta conectada. Autorizalo en WhatsApp → Autorizar chat."
+        ? "Este número no está autorizado para la cuenta conectada. Autorízalo en WhatsApp → Autorizar chat."
         : "";
     modal(
       "Enviar " + o.number + " por WhatsApp",
@@ -248,7 +248,7 @@ async function action(name, el) {
       toast("Crea primero una receta.");
       return;
     }
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayLocal();
     modal(
       "Registrar producción",
       "La app calcula el consumo por receta. Nada cambia hasta que apruebes la propuesta.",
@@ -315,7 +315,7 @@ async function action(name, el) {
       }))
       .filter((l) => l.sold || l.waste);
     if (!lines.length) {
-      toast("Indicá al menos una cantidad vendida o de merma.");
+      toast("Indica al menos una cantidad vendida o de merma.");
       return;
     }
     await mutate(
@@ -461,7 +461,7 @@ async function action(name, el) {
   if (name === "addcart") {
     modal(
       "Añadir al carrito",
-      "Elegí el producto y la cantidad de paquetes.",
+      "Elige el producto y la cantidad de paquetes.",
       select(
         "Producto",
         "product",
@@ -590,7 +590,7 @@ async function action(name, el) {
           "tel",
           'placeholder="+34…" maxlength="40"',
         ) +
-        `<p class="detection-status" role="status">Pegá un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
+        `<p class="detection-status" role="status">Pega un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
       async (f) => {
         const ok = await mutate(
           { type: "message", supplier: f.get("supplier"), text: f.get("text") },
@@ -709,7 +709,7 @@ async function action(name, el) {
     const ph = state.photos.find((p) => p.id === el.dataset.id);
     modal(
       "Organizar foto",
-      "Elegí el proveedor y la fecha del documento.",
+      "Elige el proveedor y la fecha del documento.",
       photoFields(ph),
       async (f) =>
         mutate(

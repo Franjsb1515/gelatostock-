@@ -156,7 +156,7 @@ test("envío real: solo conectado, solo a chats autorizados, una vez por pedido 
   fixture(async (c) => {
     await assert.rejects(
       c.send({ phone: "+34910000001", text: "hola" }),
-      /Conectá WhatsApp/,
+      /Conecta WhatsApp/,
     );
     const a = c.store.bind("+34600000001");
     c.account = a;

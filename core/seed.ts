@@ -242,7 +242,7 @@ export function seed(): State {
         reviewed: false,
         relevance: "review",
         relevanceReason:
-          "Mensaje de ejemplo: revisá su relación con un pedido.",
+          "Mensaje de ejemplo: revisa su relación con un pedido.",
         at: new Date().toISOString(),
         simulated: true,
         channel: "demo",

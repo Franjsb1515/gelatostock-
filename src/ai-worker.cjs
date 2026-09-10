@@ -109,17 +109,19 @@ function runsFor(job) {
         outputs.push(result[0].generated_text);
       }
       parentPort.postMessage({ id: job.id, outputs });
-    } catch {
+    } catch (e) {
       parentPort.postMessage({
         id: job.id,
         error:
           "No se pudo ejecutar el modelo local. Comprueba el paquete y la memoria disponible.",
+        detail: String((e && e.message) || e).slice(0, 300),
       });
     }
   });
-})().catch(() =>
+})().catch((e) =>
   parentPort.postMessage({
     error:
       "No se pudo ejecutar el modelo local. Comprueba el paquete y la memoria disponible.",
+    detail: String((e && e.message) || e).slice(0, 300),
   }),
 );

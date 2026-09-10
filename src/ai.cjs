@@ -222,7 +222,12 @@ class LocalAI {
       worker.once("message", (m) => {
         clearTimeout(timer);
         if (m.ready) resolve();
-        else reject(Error(m.error || "No se pudo iniciar la IA local."));
+        else
+          reject(
+            Object.assign(Error(m.error || "No se pudo iniciar la IA local."), {
+              detail: m.detail || "",
+            }),
+          );
       });
       worker.once("error", () => {
         clearTimeout(timer);
@@ -261,7 +266,7 @@ class LocalAI {
           if (m.id !== id) return;
           cleanup();
           if (m.error) {
-            reject(Error(m.error));
+            reject(Object.assign(Error(m.error), { detail: m.detail || "" }));
             return;
           }
           if (

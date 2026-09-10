@@ -87,7 +87,7 @@ class WhatsAppStore {
   permit(account, phone, label, supplier) {
     phone = normalize(phone);
     if (!label || label.trim().length > 100)
-      throw Error("Indicá un nombre de hasta 100 caracteres.");
+      throw Error("Indica un nombre de hasta 100 caracteres.");
     this.db
       .prepare(
         "INSERT INTO allowed VALUES(?,?,?,?) ON CONFLICT(account,phone) DO UPDATE SET label=excluded.label,supplier=excluded.supplier",

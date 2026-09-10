@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.17.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.17.1.
 
 ## Entregado y comprobado
 
@@ -41,6 +41,11 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Probar la respuesta rápida con los números propios del usuario (el envío está cubierto con cliente simulado; el flujo real de pedidos ya se probó en 0.9.3).
 - [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
 - [x] Compra en webs (Makro u otras): lista copiable por proveedor y apertura de la web guardada; sin automatizar la compra (0.16.0).
+- [x] Auditoría 0.17.0, puntos 1–5, 9 y 10 (0.17.1): dist limpio, paquete podado, fechas locales, CSV seguro, rotación de registros, tuteo, README.
+- [ ] Auditoría 0.17.0, punto 7: enviar a la interfaz solo lo reciente y paginar Actividad/Movimientos.
+- [ ] Auditoría 0.17.0, punto 8: carpeta secundaria de copias (USB/OneDrive) y aviso de copia antigua.
+- [ ] Auditoría 0.17.0, punto 11: partir src/ui/views.js por pantalla; prueba de escritorio para Recetario y «Abrir»; Recetario y Guía en la auditoría visual.
+- [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
 - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
 - [ ] Recetario: balance técnico del gelato (azúcares, grasa, sólidos) si el usuario aporta fichas reales; impresión de ficha.
 - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.

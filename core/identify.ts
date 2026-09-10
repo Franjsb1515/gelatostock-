@@ -62,7 +62,7 @@ export function identifySupplier(s: State, input: unknown) {
       : channel === "whatsapp"
         ? "El remitente no identifica de forma única a un proveedor registrado."
         : candidates.length
-          ? "Hay varios proveedores posibles. Elegí el emisor del documento."
+          ? "Hay varios proveedores posibles. Elige el emisor del documento."
           : "No se encontró un proveedor registrado. Elegilo o añadí sus datos de identificación.",
   };
 }

@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.17.1 — 2026-09-10 · sesión 029
+
+Correcciones de la auditoría general (reports/2026-09-10T01-05-00-000Z-auditoria-general-0170.md). Espacio: dist pasó de 49,4 GB (28 versiones) a dos versiones; scripts/package.cjs conserva solo las dos más recientes y deja de empaquetar onnxruntime-web, las variantes de sharp para otras plataformas y los binarios de onnxruntime-node de otras plataformas (ejecutable 1,9 GB, antes 2,2 GB). sharp se conserva: transformers lo exige al cargar (el primer paquete podado falló con «Cannot find module sharp»; ahora el trabajador de IA anota la causa técnica en ia.log). Fechas: toda la resolución de fechas de mensajes (core/messages.ts) y las fechas «de hoy» de producción y ventas usan el calendario local, no UTC. CSV: src/csv.cjs antepone apóstrofo a celdas que abrirían una fórmula (=, +, -, @); los números no cambian. Registros: src/logs.cjs rota ia.log, errores.log y diagnostico.log al superar 1 MB. Textos: tuteo unificado (43 textos con voseo en interfaz, núcleo y README). README con las cabeceras históricas renumeradas a su versión real.
+
+Pruebas: 122. Informe reports/2026-09-10T07-32-03-168Z-correcciones-auditoria.md.
+
 ## 0.17.0 — 2026-09-09 · sesión 028
 
 Recetario: pantalla propia (bajo Producción, misma contraseña) con la ficha completa de cada receta: familia (crema, sorbete, postre, base, otro), rendimiento, ingredientes con porcentaje sobre la masa, elaboración y alérgenos (campos nuevos en core/schema.ts con valores por defecto; los datos existentes se cargan sin migración). «Calcular para X kg» escala las cantidades solo en pantalla (− / +), Producir abre el registro con esa receta, Duplicar crea una copia, Eliminar sigue exigiendo que no haya producciones aprobadas. Búsqueda por nombre o alérgeno y filtro por familia. Producción muestra un resumen y enlaza al recetario.

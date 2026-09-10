@@ -495,3 +495,32 @@ test("responder a un mensaje de WhatsApp desde la bandeja envía el texto y anot
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("CSV: las celdas que empezarían una fórmula llevan apóstrofo; los números no cambian", () => {
+  const { csvCell } = require("../src/csv.cjs");
+  assert.equal(csvCell("=SUMA(A1:A9)"), "'=SUMA(A1:A9)");
+  assert.equal(csvCell("+34 600"), "'+34 600");
+  assert.equal(csvCell("-oferta"), "'-oferta");
+  assert.equal(csvCell("@nombre"), "'@nombre");
+  assert.equal(csvCell(-5), "-5");
+  assert.equal(csvCell("Leche; entera"), '"Leche; entera"');
+  assert.equal(csvCell('Dice "hola"'), '"Dice ""hola"""');
+  assert.equal(csvCell(null), "");
+});
+test("registros locales: pasado 1 MB el archivo rota a .anterior y sigue escribiendo", () => {
+  const { appendLog } = require("../src/logs.cjs");
+  const dir = fs.mkdtempSync(
+    path.join(path.resolve(__dirname, "../work"), "logs-"),
+  );
+  try {
+    const file = path.join(dir, "prueba.log");
+    appendLog(file, "primera", 50);
+    fs.appendFileSync(file, "x".repeat(60));
+    appendLog(file, "segunda", 50);
+    assert.ok(fs.existsSync(file + ".anterior"));
+    assert.match(fs.readFileSync(file, "utf8"), /segunda\n$/);
+    assert.match(fs.readFileSync(file + ".anterior", "utf8"), /primera/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

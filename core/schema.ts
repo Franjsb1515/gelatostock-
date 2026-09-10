@@ -50,7 +50,7 @@ const supplierFields = {
     .transform((v) => v.replace(/[ ()-]/g, ""))
     .refine(
       (v) => v === "" || /^\+[1-9]\d{7,14}$/.test(v),
-      "Usá el teléfono con prefijo internacional, por ejemplo +34.",
+      "Usa el teléfono con prefijo internacional, por ejemplo +34.",
     )
     .optional(),
   // Purchase website (Makro and similar). Only https, opened in the system browser on demand.
@@ -457,7 +457,7 @@ export function parseAction(input: unknown): Action {
   const r = actionSchema.safeParse(input);
   if (!r.success)
     throw Error(
-      "Revisá los datos: " +
+      "Revisa los datos: " +
         r.error.issues
           .map((i) => i.path.join(".") + ": " + i.message)
           .slice(0, 3)

@@ -58,10 +58,13 @@ const months = [
   "noviembre",
   "diciembre",
 ];
-const iso = (d: Date) => d.toISOString().slice(0, 10);
+// Calendar day in local time: a message at 00:30 in Palma is "today" there, not yesterday (UTC).
+export const localDate = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const iso = localDate;
 const addDays = (base: Date, days: number) => {
   const d = new Date(base);
-  d.setUTCDate(d.getUTCDate() + days);
+  d.setDate(d.getDate() + days);
   return d;
 };
 export const labels: Record<ReplyCategory, string> = {
@@ -89,11 +92,11 @@ export function resolveDate(
   if (explicit) {
     const day = Number(explicit[1]),
       month = Number(explicit[2]);
-    let year = explicit[3] ? Number(explicit[3]) : base.getUTCFullYear();
+    let year = explicit[3] ? Number(explicit[3]) : base.getFullYear();
     if (year < 100) year += 2000;
-    const d = new Date(Date.UTC(year, month - 1, day));
-    if (d.getUTCMonth() === month - 1 && d.getUTCDate() === day) {
-      if (!explicit[3] && d < addDays(base, -30)) d.setUTCFullYear(year + 1);
+    const d = new Date(year, month - 1, day, 12);
+    if (d.getMonth() === month - 1 && d.getDate() === day) {
+      if (!explicit[3] && d < addDays(base, -30)) d.setFullYear(year + 1);
       return { date: iso(d), hint: explicit[0] };
     }
   }
@@ -105,10 +108,10 @@ export function resolveDate(
     const month = months.indexOf(
       named[2] === "setiembre" ? "septiembre" : named[2] || "",
     );
-    let d = new Date(Date.UTC(base.getUTCFullYear(), month, day));
+    let d = new Date(base.getFullYear(), month, day, 12);
     if (d < addDays(base, -30))
-      d = new Date(Date.UTC(base.getUTCFullYear() + 1, month, day));
-    if (d.getUTCDate() === day) return { date: iso(d), hint: named[0] };
+      d = new Date(base.getFullYear() + 1, month, day, 12);
+    if (d.getDate() === day) return { date: iso(d), hint: named[0] };
   }
   if (/\bpasado manana\b/.test(t))
     return { date: iso(addDays(base, 2)), hint: "pasado mañana" };
@@ -123,19 +126,15 @@ export function resolveDate(
   if (dayOfMonth) {
     const day = Number(dayOfMonth[1]);
     if (day >= 1 && day <= 31) {
-      let d = new Date(
-        Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), day),
-      );
-      if (d < base)
-        d = new Date(
-          Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, day),
-        );
-      if (d.getUTCDate() === day) return { date: iso(d), hint: "el " + day };
+      let d = new Date(base.getFullYear(), base.getMonth(), day, 12);
+      if (iso(d) < iso(base))
+        d = new Date(base.getFullYear(), base.getMonth() + 1, day, 12);
+      if (d.getDate() === day) return { date: iso(d), hint: "el " + day };
     }
   }
   for (const [index, name] of weekdays.entries()) {
     if (new RegExp("\\b" + name + "\\b").test(t)) {
-      let delta = (index - base.getUTCDay() + 7) % 7;
+      let delta = (index - base.getDay() + 7) % 7;
       if (delta === 0) delta = 7;
       return {
         date: iso(addDays(base, delta)),

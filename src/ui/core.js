@@ -46,6 +46,11 @@ const money = (n) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(
     n / 100,
   );
+// Today's calendar date in local time (never toISOString, which is UTC).
+const todayLocal = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 const num = (n) =>
   new Intl.NumberFormat("es-ES", { maximumFractionDigits: 3 }).format(n);
 const date = (v) =>
