@@ -3231,3 +3231,79 @@ dialog::backdrop {
   font: inherit;
   cursor: pointer;
 }
+
+/* Respuesta desde el mensaje */
+.reply-composer {
+  margin: 8px 0 12px;
+}
+.reply-composer textarea {
+  width: 100%;
+  min-height: 84px;
+  border: 1px solid var(--border, #ebe4d8);
+  border-radius: var(--r-md, 10px);
+  padding: 10px 12px;
+  font: inherit;
+  resize: vertical;
+}
+.composer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.composer-row small {
+  color: var(--ink-muted, #5a6670);
+}
+/* Envío por lotes */
+.batch-row {
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+.batch-row small {
+  color: var(--ink-muted, #5a6670);
+}
+.batch-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft, #f0eae0);
+}
+.batch-item.blocked label {
+  color: var(--ink-muted, #5a6670);
+}
+.batch-item details {
+  margin-top: 6px;
+}
+.batch-item summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-muted, #5a6670);
+}
+.batch-text {
+  width: 100%;
+  margin: 6px 0;
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--border, #ebe4d8);
+  border-radius: 8px;
+  padding: 8px;
+}
+.batch-progress {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+}
+.batch-progress li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-soft, #f0eae0);
+}
+.batch-progress li.ok {
+  color: var(--pistacho, #35604a);
+}
+.batch-progress li.error {
+  color: var(--peach-dark, #a3512e);
+}
+.batch-progress li.pending {
+  color: var(--ink-muted, #5a6670);
+}

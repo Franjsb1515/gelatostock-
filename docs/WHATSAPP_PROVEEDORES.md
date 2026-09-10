@@ -63,3 +63,6 @@ Autorizado por el usuario el 2026-09-08 tras validar QR y cambio de número con 
 
 ## Respuestas desde Mensajes (0.15.0)
 Un mensaje recibido por WhatsApp de un chat autorizado puede responderse desde su detalle en Mensajes. La app propone textos cortos según la lectura por reglas (fecha aceptada, «mándanos lo que tengas», «lo compramos por otro lado», sí/no a una pregunta, «te llamo»); el texto se muestra en un diálogo, se puede editar y se envía una sola vez con la misma ruta y comprobación en la página que los pedidos (whatsapp.send). Al enviar, el mensaje queda cerrado con la decisión «Respondido por WhatsApp: …». Sin canal conectado, sin remitente real o para mensajes de demostración no hay botón de respuesta.
+
+## Envío por lotes (0.19.0)
+«Enviar pendientes por WhatsApp» (Compras → Control de entregas) lista todos los pedidos pendientes con el texto exacto que se enviará. La persona marca los que quiere y confirma una vez; la app los envía uno a uno, con una pausa de 4 segundos entre mensajes, con la misma comprobación en página que el envío individual, y muestra el progreso. Un pedido con texto distinto al de la vista previa, sin WhatsApp, no autorizado o ya enviado no se envía y se explica el motivo. Solo puede haber un lote en curso.

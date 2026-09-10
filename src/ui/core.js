@@ -6,6 +6,7 @@ let waState = null,
 let appVersion = "",
   backupInfo = null,
   historyInfo = null,
+  replyDrafts = {},
   historyShown = { movements: 50, activity: 50 },
   lockInfo = null,
   retentionDays = 0;

@@ -659,27 +659,124 @@ async function action(name, el) {
     );
     return;
   }
-  if (name === "replyMessage") {
+  if (name === "fillReply") {
+    const box = $("#reply-text");
+    if (!box) return;
+    box.value = el.dataset.text || "";
+    const id = $("[data-action=sendReply]")?.dataset.id;
+    if (id) replyDrafts[id] = box.value;
+    box.focus();
+    return;
+  }
+  if (name === "sendReply") {
     const m = state.messages.find((x) => x.id === el.dataset.id);
+    const text = ($("#reply-text")?.value || "").trim();
+    if (!text) {
+      toast("Escribe la respuesta o elige una rápida.");
+      return;
+    }
+    if (busy) return;
+    busy = true;
+    try {
+      const data = await request("/api/whatsapp", {
+        type: "reply",
+        id: m.id,
+        text,
+      });
+      delete replyDrafts[m.id];
+      applyEnvelope(data);
+      render();
+      toast("Respuesta enviada a " + (m.sender || "") + " y decisión anotada.");
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      busy = false;
+    }
+    return;
+  }
+  if (name === "orderBatch") {
+    let preview;
+    try {
+      preview = await request("/api/whatsapp", { type: "batchPreview" });
+    } catch (e) {
+      toast(e.message);
+      return;
+    }
+    const sendable = preview.items.filter((i) => i.sendable);
+    const byId = Object.fromEntries(preview.items.map((i) => [i.order, i]));
     modal(
-      "Responder por WhatsApp",
-      "Se envía exactamente este texto a " +
-        (m.sender || "") +
-        " desde tu cuenta conectada, una sola vez.",
-      `<label class="field">Respuesta<textarea name="text" maxlength="4000" required>${esc(el.dataset.text || "")}</textarea></label>`,
+      "Enviar pedidos pendientes por WhatsApp",
+      preview.connected
+        ? "Marca los pedidos y revisa cada texto. Se envían uno a uno, con unos segundos de pausa, exactamente como se muestran."
+        : "WhatsApp no está conectado: conecta por QR en la pantalla WhatsApp. Los pedidos sin WhatsApp se copian para la web o el correo.",
+      preview.items
+        .map(
+          (i) =>
+            `<div class="batch-item ${i.sendable ? "" : "blocked"}"><label class="check-label"><input type="checkbox" name="order" value="${esc(i.order)}" ${i.sendable ? "checked" : "disabled"}> <strong>${esc(i.number)}</strong> · ${esc(i.supplier)}${i.to ? " · " + esc(i.to) : ""}</label>${i.reason ? `<p class="fineprint">${esc(i.reason)}${i.web ? ` <a class="text-link" href="${esc(i.web)}" target="_blank" rel="noopener noreferrer">Abrir web</a>` : ""}</p>` : ""}<details><summary>Ver texto</summary><textarea class="batch-text" readonly rows="5" data-order="${esc(i.order)}">${esc(i.text)}</textarea>${btn("Copiar texto", "copyBatchText", "secondary", `data-order="${esc(i.order)}"`)}</details></div>`,
+        )
+        .join("") ||
+        '<div class="empty compact">No hay pedidos pendientes.</div>',
       async (f) => {
-        const data = await request("/api/whatsapp", {
-          type: "reply",
-          id: m.id,
-          text: f.get("text"),
+        const chosen = f.getAll("order").map(String);
+        if (!chosen.length) throw Error("Marca al menos un pedido.");
+        const r = await request("/api/whatsapp", {
+          type: "sendBatch",
+          orders: chosen.map((id) => ({ order: id, text: byId[id].text })),
         });
-        state = data.state;
-        render();
-        toast("Respuesta enviada y decisión anotada.");
-        return true;
+        // Keep the dialog open and turn it into a progress view.
+        $("#modal-form button[type=submit]").hidden = true;
+        const body = $("#modal .modal-body");
+        const paint = (b) => {
+          body.innerHTML = `<p><strong>${b.running ? "Enviando…" : "Envío terminado."}</strong> ${b.done} de ${b.total}.</p><ul class="batch-progress">${chosen
+            .map((id) => {
+              const res = b.results.find((x) => x.order === id);
+              const it = byId[id];
+              return `<li class="${res ? (res.ok ? "ok" : "error") : b.running ? "pending" : ""}"><strong>${esc(it.number)}</strong> · ${esc(it.supplier)} · ${res ? (res.ok ? "enviado a " + esc(res.to || it.to) : "error: " + esc(res.error || "")) : "en cola"}</li>`;
+            })
+            .join(
+              "",
+            )}</ul>${b.running ? "" : '<p class="fineprint">Cada pedido enviado queda marcado como Enviado en Control de entregas; los que fallaron siguen pendientes.</p>'}`;
+        };
+        paint({ running: true, done: 0, total: r.total, results: [] });
+        const poll = async () => {
+          try {
+            const view = await request("/api/whatsapp");
+            paint(view.batch);
+            if (view.batch.running) setTimeout(poll, 1500);
+            else {
+              await reloadState();
+              const ok = view.batch.results.filter((x) => x.ok).length;
+              toast(
+                `Lote terminado: ${ok} de ${view.batch.total} pedidos enviados.`,
+              );
+            }
+          } catch (e) {
+            body.insertAdjacentHTML(
+              "beforeend",
+              `<p role="alert">${esc(e.message)}</p>`,
+            );
+          }
+        };
+        setTimeout(poll, 1200);
+        return false;
       },
-      "Enviar respuesta",
+      "Enviar los marcados, uno a uno",
     );
+    if (!sendable.length) $("#modal-form button[type=submit]").disabled = true;
+    return;
+  }
+  if (name === "copyBatchText") {
+    const t = $(
+      `#modal-form textarea[data-order="${CSS.escape(el.dataset.order)}"]`,
+    );
+    if (!t) return;
+    t.focus();
+    t.select();
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {}
+    toast(ok ? "Texto copiado." : "Selecciona el texto y cópialo con Ctrl+C.");
     return;
   }
   if (name === "review") {

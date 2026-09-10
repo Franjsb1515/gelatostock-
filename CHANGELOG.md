@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.19.0 — 2026-09-10 · sesión 031
+
+Mensajes: respuesta directa desde el propio mensaje. Con WhatsApp conectado, el detalle muestra un cuadro de respuesta; las respuestas rápidas lo rellenan (ya no abren diálogo) y «Enviar por WhatsApp» envía ese texto una sola vez y anota la decisión. El borrador se conserva por mensaje mientras la pantalla se repinta.
+
+Compras: «Enviar pendientes por WhatsApp» con un solo clic de decisión. Muestra la lista completa de pedidos pendientes con su texto exacto, motivo si no se puede enviar (sin WhatsApp, chat no autorizado, ya enviado, proveedor con web de compra: texto copiable y enlace), la persona marca los que quiere y la app los envía uno a uno con una pausa de 4 s (GELATO_BATCH_DELAY_MS) mostrando el progreso; cada pedido enviado queda Enviado y los fallidos siguen pendientes. Rutas batchPreview y sendBatch en /api/whatsapp; el lote se consulta en el GET del canal; solo un lote a la vez (409).
+
+Pruebas: 125. Informe reports/2026-09-10T09-18-56-019Z-responder-y-lotes.md.
+
 ## 0.18.0 — 2026-09-10 · sesión 030
 
 Copia secundaria (auditoría, punto 8): en Configuración se elige una carpeta fuera de la carpeta de datos (otro disco, USB, OneDrive); se comprueba que se puede escribir, se hace una copia inmediata y cada copia posterior (manual o automática diaria) se duplica allí con la misma retención de 30. El estado incluye si la última copia tiene más de 48 h y los errores de la copia secundaria; Resumen avisa con enlace a Configuración.

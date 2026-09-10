@@ -17,6 +17,8 @@ function createApp({
   port = 0,
   // Newest movements/activity sent to the UI per response; older rows come from /api/history.
   historyLimit = Number(process.env.GELATO_HISTORY_LIMIT) || 300,
+  // Pause between two orders of a batch send, so WhatsApp never sees a burst.
+  batchDelayMs = Number(process.env.GELATO_BATCH_DELAY_MS) || 4000,
 } = {}) {
   const store = new Store(dataDir);
   // Daily automatic copy (data + photos) with a bounded history of automatic files only.
@@ -179,8 +181,110 @@ function createApp({
     value.length === token.length &&
     timingSafeEqual(Buffer.from(value), Buffer.from(token));
   // Rules only: category, resolved date and "needs reading" for each imported message.
+  // One batch of order sends at a time; the UI polls this while it runs.
+  const batch = {
+    running: false,
+    total: 0,
+    done: 0,
+    results: [],
+    startedAt: null,
+    finishedAt: null,
+  };
+  const batchItems = (state) =>
+    state.orders
+      .filter((o) => o.status === "pending")
+      .map((o) => {
+        const supplier = state.suppliers.find((x) => x.id === o.supplier);
+        const connected = whatsapp.status === "connected";
+        const hasPhone = !!supplier?.whatsapp;
+        const authorized =
+          hasPhone &&
+          !!whatsapp.account &&
+          !!whatsapp.store.allowed(whatsapp.account, supplier.whatsapp);
+        const already = !!whatsapp.store.sentFor(o.id);
+        const reason = already
+          ? "Ya se envió por WhatsApp."
+          : !hasPhone
+            ? supplier?.web
+              ? "Sin WhatsApp: proveedor con web de compra."
+              : "El proveedor no tiene WhatsApp en su ficha."
+            : !connected
+              ? "WhatsApp no está conectado."
+              : !authorized
+                ? "Chat no autorizado para la cuenta conectada."
+                : "";
+        return {
+          order: o.id,
+          number: o.number,
+          supplier: supplier?.name || "",
+          to: supplier?.whatsapp || "",
+          web: supplier?.web || "",
+          text: orderMessage(state, o.id),
+          sendable: !reason,
+          reason,
+        };
+      });
+  const runBatch = async (queue) => {
+    batch.running = true;
+    batch.total = queue.length;
+    batch.done = 0;
+    batch.results = [];
+    batch.startedAt = new Date().toISOString();
+    batch.finishedAt = null;
+    for (const [i, item] of queue.entries()) {
+      if (item.error) {
+        batch.results.push({
+          order: item.order,
+          number: item.number,
+          ok: false,
+          error: item.error,
+        });
+      } else {
+        try {
+          const sent = await whatsapp.send({
+            phone: item.phone,
+            text: item.text,
+            order: item.order,
+          });
+          store.dispatch({
+            type: "send",
+            order: item.order,
+            dispatch: {
+              channel: "whatsapp",
+              to: sent.recipient,
+              messageId: sent.id,
+              at: new Date().toISOString(),
+              text: item.text,
+            },
+          });
+          batch.results.push({
+            order: item.order,
+            number: item.number,
+            ok: true,
+            to: sent.recipient,
+          });
+        } catch (e) {
+          batch.results.push({
+            order: item.order,
+            number: item.number,
+            ok: false,
+            error: String(e.message || e),
+          });
+        }
+      }
+      batch.done = i + 1;
+      if (i < queue.length - 1)
+        await new Promise((r) => setTimeout(r, batchDelayMs));
+    }
+    batch.running = false;
+    batch.finishedAt = new Date().toISOString();
+    whatsapp.log(
+      `lote terminado: ${batch.results.filter((r) => r.ok).length}/${batch.total} pedidos enviados`,
+    );
+  };
   const annotate = (view) => ({
     ...view,
+    batch,
     messages: (view.messages || []).map((m) => ({
       ...m,
       interpretation: m.text ? interpretReply(m.text, m.at) : undefined,
@@ -409,6 +513,50 @@ function createApp({
           if (data.type === "autoconnect") {
             whatsapp.autoConnect = data.enabled === true;
             json(200, annotate(whatsapp.view()));
+            return;
+          }
+          if (data.type === "batchPreview") {
+            json(200, {
+              connected: whatsapp.status === "connected",
+              items: batchItems(store.load()),
+            });
+            return;
+          }
+          if (data.type === "sendBatch") {
+            // The person selected the orders and saw each text; the app sends them one by one.
+            if (batch.running) {
+              json(409, {
+                error: "Ya hay un envío en curso. Espera a que termine.",
+              });
+              return;
+            }
+            if (whatsapp.status !== "connected")
+              throw Error("WhatsApp no está conectado.");
+            const wanted = Array.isArray(data.orders)
+              ? data.orders.slice(0, 50)
+              : [];
+            if (!wanted.length) throw Error("No hay pedidos seleccionados.");
+            const items = batchItems(store.load());
+            const queue = wanted.map((w) => {
+              const item = items.find(
+                (x) => x.order === String(w?.order || ""),
+              );
+              if (!item)
+                return {
+                  order: String(w?.order || ""),
+                  number: "?",
+                  error: "Pedido no pendiente.",
+                };
+              if (!item.sendable) return { ...item, error: item.reason };
+              if (w.text !== item.text)
+                return {
+                  ...item,
+                  error: "El texto cambió desde la vista previa.",
+                };
+              return { ...item, phone: item.to };
+            });
+            runBatch(queue);
+            json(200, { started: true, total: queue.length });
             return;
           }
           if (data.type === "reply") {

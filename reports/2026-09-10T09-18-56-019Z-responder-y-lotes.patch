@@ -1,0 +1,789 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index aa1fe9d..1eb3485 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.18.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.19.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index efe8398..3f9e9b5 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Registro de parches y sesiones
+ 
++## 0.19.0 — 2026-09-10 · sesión 031
++
++Mensajes: respuesta directa desde el propio mensaje. Con WhatsApp conectado, el detalle muestra un cuadro de respuesta; las respuestas rápidas lo rellenan (ya no abren diálogo) y «Enviar por WhatsApp» envía ese texto una sola vez y anota la decisión. El borrador se conserva por mensaje mientras la pantalla se repinta.
++
++Compras: «Enviar pendientes por WhatsApp» con un solo clic de decisión. Muestra la lista completa de pedidos pendientes con su texto exacto, motivo si no se puede enviar (sin WhatsApp, chat no autorizado, ya enviado, proveedor con web de compra: texto copiable y enlace), la persona marca los que quiere y la app los envía uno a uno con una pausa de 4 s (GELATO_BATCH_DELAY_MS) mostrando el progreso; cada pedido enviado queda Enviado y los fallidos siguen pendientes. Rutas batchPreview y sendBatch en /api/whatsapp; el lote se consulta en el GET del canal; solo un lote a la vez (409).
++
++Pruebas: 125. Informe reports/2026-09-10T09-18-56-019Z-responder-y-lotes.md.
++
+ ## 0.18.0 — 2026-09-10 · sesión 030
+ 
+ Copia secundaria (auditoría, punto 8): en Configuración se elige una carpeta fuera de la carpeta de datos (otro disco, USB, OneDrive); se comprueba que se puede escribir, se hace una copia inmediata y cada copia posterior (manual o automática diaria) se duplica allí con la misma retención de 30. El estado incluye si la última copia tiene más de 48 h y los errores de la copia secundaria; Resumen avisa con enlace a Configuración.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 68a8227..8924c00 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.18.0
++# Entrada para Claude · entrega vigente 0.19.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index 636a409..cb1155a 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.18.0
++# GelatoStock · prototipo 0.19.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.18.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.19.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.18.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.19.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+@@ -173,3 +173,6 @@ Pantalla Recetario con la ficha completa de cada receta (familia, proporciones c
+ 
+ ## Copia secundaria e historial paginado en 0.18.0
+ Configuración permite una carpeta secundaria de copias (otro disco, USB o carpeta sincronizada) con copia inmediata y duplicado de cada copia posterior; Resumen avisa si no hay copia de las últimas 48 horas. La interfaz recibe solo los 300 movimientos y entradas de actividad más recientes y pide el resto bajo demanda; los datos completos siguen en SQLite y en las copias. La interfaz está partida por pantallas en src/ui/views-*.js.
++
++## Respuesta directa y lotes en 0.19.0
++En Mensajes se responde escribiendo en el propio mensaje (las respuestas rápidas rellenan el cuadro) y se envía con un clic. En Compras, «Enviar pendientes por WhatsApp» muestra todos los pedidos pendientes con su texto; se marcan los que se quieren y la app los envía uno a uno con pausa, mostrando el progreso.
+diff --git a/TODO.md b/TODO.md
+index 302b868..e737463 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.18.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.19.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -45,6 +45,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Auditoría 0.17.0, punto 7: historial paginado (0.18.0).
+ - [x] Auditoría 0.17.0, punto 8: copia secundaria y aviso (0.18.0).
+ - [x] Auditoría 0.17.0, punto 11: views.js partido, pruebas de Recetario y «Abrir», auditoría visual ampliada (0.18.0).
++- [x] Respuesta directa desde el mensaje y envío de pedidos por lotes uno a uno (0.19.0).
++- [ ] Probar el lote con los números propios del usuario (la prueba usa cliente simulado).
+ - [ ] Elegir la carpeta secundaria con un diálogo del sistema (hoy se escribe la ruta; requiere preload o IPC en Electron).
+ - [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
+ - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 54badf4..a937271 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -33,6 +33,7 @@ Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), l
+ ## Compras
+ - Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.
+ - Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.
++- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.
+ - Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.
+ - Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.
+ - Simular envío: para practicar sin canal real.
+@@ -41,7 +42,7 @@ Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), l
+ ## Mensajes
+ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.
+ - «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.
+-- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, hay respuestas rápidas según la lectura (por ejemplo «De acuerdo con la fecha» o «Lo compramos por otro lado»). El texto se muestra antes de enviarlo, se puede editar y se envía una sola vez.
++- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.
+ - Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.
+ - Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.
+ - Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».
+diff --git a/docs/WHATSAPP_PROVEEDORES.md b/docs/WHATSAPP_PROVEEDORES.md
+index 1e54afb..00b06a5 100644
+--- a/docs/WHATSAPP_PROVEEDORES.md
++++ b/docs/WHATSAPP_PROVEEDORES.md
+@@ -63,3 +63,6 @@ Autorizado por el usuario el 2026-09-08 tras validar QR y cambio de número con
+ 
+ ## Respuestas desde Mensajes (0.15.0)
+ Un mensaje recibido por WhatsApp de un chat autorizado puede responderse desde su detalle en Mensajes. La app propone textos cortos según la lectura por reglas (fecha aceptada, «mándanos lo que tengas», «lo compramos por otro lado», sí/no a una pregunta, «te llamo»); el texto se muestra en un diálogo, se puede editar y se envía una sola vez con la misma ruta y comprobación en la página que los pedidos (whatsapp.send). Al enviar, el mensaje queda cerrado con la decisión «Respondido por WhatsApp: …». Sin canal conectado, sin remitente real o para mensajes de demostración no hay botón de respuesta.
++
++## Envío por lotes (0.19.0)
++«Enviar pendientes por WhatsApp» (Compras → Control de entregas) lista todos los pedidos pendientes con el texto exacto que se enviará. La persona marca los que quiere y confirma una vez; la app los envía uno a uno, con una pausa de 4 segundos entre mensajes, con la misma comprobación en página que el envío individual, y muestra el progreso. Un pedido con texto distinto al de la vista previa, sin WhatsApp, no autorizado o ya enviado no se envía y se explica el motivo. Solo puede haber un lote en curso.
+diff --git a/package.json b/package.json
+index 9e2cab9..811b12d 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.18.0",
++  "version": "0.19.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index f722cb0..82bc78b 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -3,13 +3,13 @@
+ module.exports = `GelatoStock es una aplicación local de escritorio para una gelatería con café y postres. Funciona sin internet y guarda los datos en el equipo (SQLite y fotos).
+ Pantallas: Resumen (estado general), Inventario (productos, conteo, mínimos, entradas, salidas y mermas con motivo, corrección con movimiento compensatorio), Compras (carrito por proveedor, propuesta de reposición, pedidos simulados y Control de entregas), Mensajes (bandeja real y de demostración por conversación de proveedor, con prioridad, relevancia, vínculo a pedidos, respuestas rápidas y decisiones), WhatsApp (conector por QR: recibe de contactos autorizados y envía pedidos y respuestas solo con confirmación en pantalla), Guía (esta misma guía dentro de la app), Proveedores (fichas con NIF, teléfono y alias), Actividad (historial de movimientos), Configuración (copias de seguridad, restauración, archivo de fotos por proveedor y fecha, OCR) e IA local.
+ Control de entregas: muestra por producto lo pedido, lo recibido y lo que falta recibir. Registrar lo que llegó suma solo esa entrega al inventario, en la unidad base del producto. Un pedido con entregas parciales sigue En curso hasta completarse.
+-Compras: los pedidos son simulados; la app no envía pedidos reales ni realiza pagos. Si un proveedor tiene web de compra (por ejemplo Makro) guardada en su ficha, el carrito ofrece «Lista para …» para copiar la lista y abrir la web en el navegador; la compra la hace la persona con su cuenta. Cancelar un pedido pendiente no cambia el stock.
++Compras: los pedidos son simulados; la app no envía pedidos reales ni realiza pagos salvo por WhatsApp con confirmación. «Enviar pendientes por WhatsApp» muestra todos los pedidos pendientes, la persona marca los que quiere y revisa los textos, y la app los envía uno a uno con pausa mostrando el progreso. Si un proveedor tiene web de compra (por ejemplo Makro) guardada en su ficha, el carrito ofrece «Lista para …» para copiar la lista y abrir la web en el navegador; la compra la hace la persona con su cuenta. Cancelar un pedido pendiente no cambia el stock.
+ Copias: Configuración permite crear una copia con datos y fotos y restaurarla; también elegir una carpeta secundaria (otro disco, USB o carpeta sincronizada) donde se duplica cada copia, y Resumen avisa si no hay copia de las últimas 48 horas; al restaurar se conserva una copia previa automática.
+ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español lee el texto y propone un proveedor existente. No extrae cantidades ni lee PDF.
+ IA local: reglas deterministas leen el título del documento (factura, proforma, abono, albarán, lista de precios, oferta) o reconocen un mensaje, y un modelo pequeño incluido en el equipo (Qwen3 0.6B) da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. El modelo propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+ Recetario: pantalla con la ficha completa de cada receta (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+-Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se puede responder por WhatsApp con respuestas rápidas editables (se envía una sola vez, tras confirmar el texto) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
++Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se responde por WhatsApp escribiendo en el propio mensaje o con respuestas rápidas que rellenan el cuadro (se envía una sola vez al pulsar Enviar) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
+ WhatsApp: se vincula por QR con el teléfono del negocio. Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.
+ Configuración: copias manuales y automática diaria (se conservan 30), restauración, exportación CSV, contraseña del recetario (con contraseña, Producción pide desbloqueo y dura 30 minutos), limpieza periódica del historial con días de retención, identidad del negocio (nombre, ciudad, lema) y lista de frases aprendidas que se pueden olvidar.
+diff --git a/src/server.cjs b/src/server.cjs
+index ae789c5..0b9c94a 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -17,6 +17,8 @@ function createApp({
+   port = 0,
+   // Newest movements/activity sent to the UI per response; older rows come from /api/history.
+   historyLimit = Number(process.env.GELATO_HISTORY_LIMIT) || 300,
++  // Pause between two orders of a batch send, so WhatsApp never sees a burst.
++  batchDelayMs = Number(process.env.GELATO_BATCH_DELAY_MS) || 4000,
+ } = {}) {
+   const store = new Store(dataDir);
+   // Daily automatic copy (data + photos) with a bounded history of automatic files only.
+@@ -179,8 +181,110 @@ function createApp({
+     value.length === token.length &&
+     timingSafeEqual(Buffer.from(value), Buffer.from(token));
+   // Rules only: category, resolved date and "needs reading" for each imported message.
++  // One batch of order sends at a time; the UI polls this while it runs.
++  const batch = {
++    running: false,
++    total: 0,
++    done: 0,
++    results: [],
++    startedAt: null,
++    finishedAt: null,
++  };
++  const batchItems = (state) =>
++    state.orders
++      .filter((o) => o.status === "pending")
++      .map((o) => {
++        const supplier = state.suppliers.find((x) => x.id === o.supplier);
++        const connected = whatsapp.status === "connected";
++        const hasPhone = !!supplier?.whatsapp;
++        const authorized =
++          hasPhone &&
++          !!whatsapp.account &&
++          !!whatsapp.store.allowed(whatsapp.account, supplier.whatsapp);
++        const already = !!whatsapp.store.sentFor(o.id);
++        const reason = already
++          ? "Ya se envió por WhatsApp."
++          : !hasPhone
++            ? supplier?.web
++              ? "Sin WhatsApp: proveedor con web de compra."
++              : "El proveedor no tiene WhatsApp en su ficha."
++            : !connected
++              ? "WhatsApp no está conectado."
++              : !authorized
++                ? "Chat no autorizado para la cuenta conectada."
++                : "";
++        return {
++          order: o.id,
++          number: o.number,
++          supplier: supplier?.name || "",
++          to: supplier?.whatsapp || "",
++          web: supplier?.web || "",
++          text: orderMessage(state, o.id),
++          sendable: !reason,
++          reason,
++        };
++      });
++  const runBatch = async (queue) => {
++    batch.running = true;
++    batch.total = queue.length;
++    batch.done = 0;
++    batch.results = [];
++    batch.startedAt = new Date().toISOString();
++    batch.finishedAt = null;
++    for (const [i, item] of queue.entries()) {
++      if (item.error) {
++        batch.results.push({
++          order: item.order,
++          number: item.number,
++          ok: false,
++          error: item.error,
++        });
++      } else {
++        try {
++          const sent = await whatsapp.send({
++            phone: item.phone,
++            text: item.text,
++            order: item.order,
++          });
++          store.dispatch({
++            type: "send",
++            order: item.order,
++            dispatch: {
++              channel: "whatsapp",
++              to: sent.recipient,
++              messageId: sent.id,
++              at: new Date().toISOString(),
++              text: item.text,
++            },
++          });
++          batch.results.push({
++            order: item.order,
++            number: item.number,
++            ok: true,
++            to: sent.recipient,
++          });
++        } catch (e) {
++          batch.results.push({
++            order: item.order,
++            number: item.number,
++            ok: false,
++            error: String(e.message || e),
++          });
++        }
++      }
++      batch.done = i + 1;
++      if (i < queue.length - 1)
++        await new Promise((r) => setTimeout(r, batchDelayMs));
++    }
++    batch.running = false;
++    batch.finishedAt = new Date().toISOString();
++    whatsapp.log(
++      `lote terminado: ${batch.results.filter((r) => r.ok).length}/${batch.total} pedidos enviados`,
++    );
++  };
+   const annotate = (view) => ({
+     ...view,
++    batch,
+     messages: (view.messages || []).map((m) => ({
+       ...m,
+       interpretation: m.text ? interpretReply(m.text, m.at) : undefined,
+@@ -411,6 +515,50 @@ function createApp({
+             json(200, annotate(whatsapp.view()));
+             return;
+           }
++          if (data.type === "batchPreview") {
++            json(200, {
++              connected: whatsapp.status === "connected",
++              items: batchItems(store.load()),
++            });
++            return;
++          }
++          if (data.type === "sendBatch") {
++            // The person selected the orders and saw each text; the app sends them one by one.
++            if (batch.running) {
++              json(409, {
++                error: "Ya hay un envío en curso. Espera a que termine.",
++              });
++              return;
++            }
++            if (whatsapp.status !== "connected")
++              throw Error("WhatsApp no está conectado.");
++            const wanted = Array.isArray(data.orders)
++              ? data.orders.slice(0, 50)
++              : [];
++            if (!wanted.length) throw Error("No hay pedidos seleccionados.");
++            const items = batchItems(store.load());
++            const queue = wanted.map((w) => {
++              const item = items.find(
++                (x) => x.order === String(w?.order || ""),
++              );
++              if (!item)
++                return {
++                  order: String(w?.order || ""),
++                  number: "?",
++                  error: "Pedido no pendiente.",
++                };
++              if (!item.sendable) return { ...item, error: item.reason };
++              if (w.text !== item.text)
++                return {
++                  ...item,
++                  error: "El texto cambió desde la vista previa.",
++                };
++              return { ...item, phone: item.to };
++            });
++            runBatch(queue);
++            json(200, { started: true, total: queue.length });
++            return;
++          }
+           if (data.type === "reply") {
+             // Reply to a supplier message from the inbox; the person wrote or edited the text.
+             const message = store
+diff --git a/src/styles.css b/src/styles.css
+index 3fbf00c..5c25d68 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3231,3 +3231,79 @@ dialog::backdrop {
+   font: inherit;
+   cursor: pointer;
+ }
++
++/* Respuesta desde el mensaje */
++.reply-composer {
++  margin: 8px 0 12px;
++}
++.reply-composer textarea {
++  width: 100%;
++  min-height: 84px;
++  border: 1px solid var(--border, #ebe4d8);
++  border-radius: var(--r-md, 10px);
++  padding: 10px 12px;
++  font: inherit;
++  resize: vertical;
++}
++.composer-row {
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++  gap: 12px;
++  margin-top: 8px;
++  flex-wrap: wrap;
++}
++.composer-row small {
++  color: var(--ink-muted, #5a6670);
++}
++/* Envío por lotes */
++.batch-row {
++  align-items: center;
++  gap: 12px;
++  margin: 0 0 12px;
++}
++.batch-row small {
++  color: var(--ink-muted, #5a6670);
++}
++.batch-item {
++  padding: 10px 0;
++  border-bottom: 1px solid var(--border-soft, #f0eae0);
++}
++.batch-item.blocked label {
++  color: var(--ink-muted, #5a6670);
++}
++.batch-item details {
++  margin-top: 6px;
++}
++.batch-item summary {
++  cursor: pointer;
++  font-size: 13px;
++  color: var(--ink-muted, #5a6670);
++}
++.batch-text {
++  width: 100%;
++  margin: 6px 0;
++  font: inherit;
++  font-size: 13px;
++  border: 1px solid var(--border, #ebe4d8);
++  border-radius: 8px;
++  padding: 8px;
++}
++.batch-progress {
++  list-style: none;
++  margin: 8px 0;
++  padding: 0;
++}
++.batch-progress li {
++  padding: 6px 0;
++  border-bottom: 1px solid var(--border-soft, #f0eae0);
++}
++.batch-progress li.ok {
++  color: var(--pistacho, #35604a);
++}
++.batch-progress li.error {
++  color: var(--peach-dark, #a3512e);
++}
++.batch-progress li.pending {
++  color: var(--ink-muted, #5a6670);
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index 7cc6681..a159b53 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -659,27 +659,124 @@ async function action(name, el) {
+     );
+     return;
+   }
+-  if (name === "replyMessage") {
++  if (name === "fillReply") {
++    const box = $("#reply-text");
++    if (!box) return;
++    box.value = el.dataset.text || "";
++    const id = $("[data-action=sendReply]")?.dataset.id;
++    if (id) replyDrafts[id] = box.value;
++    box.focus();
++    return;
++  }
++  if (name === "sendReply") {
+     const m = state.messages.find((x) => x.id === el.dataset.id);
++    const text = ($("#reply-text")?.value || "").trim();
++    if (!text) {
++      toast("Escribe la respuesta o elige una rápida.");
++      return;
++    }
++    if (busy) return;
++    busy = true;
++    try {
++      const data = await request("/api/whatsapp", {
++        type: "reply",
++        id: m.id,
++        text,
++      });
++      delete replyDrafts[m.id];
++      applyEnvelope(data);
++      render();
++      toast("Respuesta enviada a " + (m.sender || "") + " y decisión anotada.");
++    } catch (e) {
++      toast(e.message);
++    } finally {
++      busy = false;
++    }
++    return;
++  }
++  if (name === "orderBatch") {
++    let preview;
++    try {
++      preview = await request("/api/whatsapp", { type: "batchPreview" });
++    } catch (e) {
++      toast(e.message);
++      return;
++    }
++    const sendable = preview.items.filter((i) => i.sendable);
++    const byId = Object.fromEntries(preview.items.map((i) => [i.order, i]));
+     modal(
+-      "Responder por WhatsApp",
+-      "Se envía exactamente este texto a " +
+-        (m.sender || "") +
+-        " desde tu cuenta conectada, una sola vez.",
+-      `<label class="field">Respuesta<textarea name="text" maxlength="4000" required>${esc(el.dataset.text || "")}</textarea></label>`,
++      "Enviar pedidos pendientes por WhatsApp",
++      preview.connected
++        ? "Marca los pedidos y revisa cada texto. Se envían uno a uno, con unos segundos de pausa, exactamente como se muestran."
++        : "WhatsApp no está conectado: conecta por QR en la pantalla WhatsApp. Los pedidos sin WhatsApp se copian para la web o el correo.",
++      preview.items
++        .map(
++          (i) =>
++            `<div class="batch-item ${i.sendable ? "" : "blocked"}"><label class="check-label"><input type="checkbox" name="order" value="${esc(i.order)}" ${i.sendable ? "checked" : "disabled"}> <strong>${esc(i.number)}</strong> · ${esc(i.supplier)}${i.to ? " · " + esc(i.to) : ""}</label>${i.reason ? `<p class="fineprint">${esc(i.reason)}${i.web ? ` <a class="text-link" href="${esc(i.web)}" target="_blank" rel="noopener noreferrer">Abrir web</a>` : ""}</p>` : ""}<details><summary>Ver texto</summary><textarea class="batch-text" readonly rows="5" data-order="${esc(i.order)}">${esc(i.text)}</textarea>${btn("Copiar texto", "copyBatchText", "secondary", `data-order="${esc(i.order)}"`)}</details></div>`,
++        )
++        .join("") ||
++        '<div class="empty compact">No hay pedidos pendientes.</div>',
+       async (f) => {
+-        const data = await request("/api/whatsapp", {
+-          type: "reply",
+-          id: m.id,
+-          text: f.get("text"),
++        const chosen = f.getAll("order").map(String);
++        if (!chosen.length) throw Error("Marca al menos un pedido.");
++        const r = await request("/api/whatsapp", {
++          type: "sendBatch",
++          orders: chosen.map((id) => ({ order: id, text: byId[id].text })),
+         });
+-        state = data.state;
+-        render();
+-        toast("Respuesta enviada y decisión anotada.");
+-        return true;
++        // Keep the dialog open and turn it into a progress view.
++        $("#modal-form button[type=submit]").hidden = true;
++        const body = $("#modal .modal-body");
++        const paint = (b) => {
++          body.innerHTML = `<p><strong>${b.running ? "Enviando…" : "Envío terminado."}</strong> ${b.done} de ${b.total}.</p><ul class="batch-progress">${chosen
++            .map((id) => {
++              const res = b.results.find((x) => x.order === id);
++              const it = byId[id];
++              return `<li class="${res ? (res.ok ? "ok" : "error") : b.running ? "pending" : ""}"><strong>${esc(it.number)}</strong> · ${esc(it.supplier)} · ${res ? (res.ok ? "enviado a " + esc(res.to || it.to) : "error: " + esc(res.error || "")) : "en cola"}</li>`;
++            })
++            .join(
++              "",
++            )}</ul>${b.running ? "" : '<p class="fineprint">Cada pedido enviado queda marcado como Enviado en Control de entregas; los que fallaron siguen pendientes.</p>'}`;
++        };
++        paint({ running: true, done: 0, total: r.total, results: [] });
++        const poll = async () => {
++          try {
++            const view = await request("/api/whatsapp");
++            paint(view.batch);
++            if (view.batch.running) setTimeout(poll, 1500);
++            else {
++              await reloadState();
++              const ok = view.batch.results.filter((x) => x.ok).length;
++              toast(
++                `Lote terminado: ${ok} de ${view.batch.total} pedidos enviados.`,
++              );
++            }
++          } catch (e) {
++            body.insertAdjacentHTML(
++              "beforeend",
++              `<p role="alert">${esc(e.message)}</p>`,
++            );
++          }
++        };
++        setTimeout(poll, 1200);
++        return false;
+       },
+-      "Enviar respuesta",
++      "Enviar los marcados, uno a uno",
+     );
++    if (!sendable.length) $("#modal-form button[type=submit]").disabled = true;
++    return;
++  }
++  if (name === "copyBatchText") {
++    const t = $(
++      `#modal-form textarea[data-order="${CSS.escape(el.dataset.order)}"]`,
++    );
++    if (!t) return;
++    t.focus();
++    t.select();
++    let ok = false;
++    try {
++      ok = document.execCommand("copy");
++    } catch {}
++    toast(ok ? "Texto copiado." : "Selecciona el texto y cópialo con Ctrl+C.");
+     return;
+   }
+   if (name === "review") {
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 4253b4c..bfb9cd7 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -6,6 +6,7 @@ let waState = null,
+ let appVersion = "",
+   backupInfo = null,
+   historyInfo = null,
++  replyDrafts = {},
+   historyShown = { movements: 50, activity: 50 },
+   lockInfo = null,
+   retentionDays = 0;
+diff --git a/src/ui/events.js b/src/ui/events.js
+index fe81686..1a46915 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -91,6 +91,12 @@ document.addEventListener("click", async (e) => {
+   }
+ });
+ document.addEventListener("input", (e) => {
++  if (e.target.id === "reply-text") {
++    const id = e.target
++      .closest(".message-detail")
++      ?.querySelector("[data-action=sendReply]")?.dataset.id;
++    if (id) replyDrafts[id] = e.target.value;
++  }
+   if (e.target.id === "ai-text") {
+     aiDraft = e.target.value;
+     aiResult = null;
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index f22e071..a3f0bca 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, hay respuestas rápidas según la lectura (por ejemplo «De acuerdo con la fecha» o «Lo compramos por otro lado»). El texto se muestra antes de enviarlo, se puede editar y se envía una sola vez.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views-messages.js b/src/ui/views-messages.js
+index 8b90de1..c587aee 100644
+--- a/src/ui/views-messages.js
++++ b/src/ui/views-messages.js
+@@ -122,14 +122,14 @@ function messages() {
+                   .map(([label, text]) =>
+                     btn(
+                       label,
+-                      "replyMessage",
++                      "fillReply",
+                       "secondary",
+-                      `data-id="${esc(m.id)}" data-text="${esc(text)}"`,
++                      `data-text="${esc(text)}"`,
+                     ),
+                   )
+                   .join(
+                     "",
+-                  )}${btn("Escribir respuesta", "replyMessage", "secondary", `data-id="${esc(m.id)}" data-text=""`)}</div>`
++                  )}</div><div class="reply-composer"><textarea id="reply-text" rows="3" maxlength="4000" placeholder="Escribe tu respuesta a ${esc(supplier(m.supplier).name)}…">${esc(replyDrafts[m.id] || "")}</textarea><div class="composer-row"><small>Se envía a ${esc(m.sender || "")} desde tu cuenta, una sola vez, al pulsar Enviar.</small>${btn(icon("message") + " Enviar por WhatsApp", "sendReply", "primary", `data-id="${esc(m.id)}"`)}</div></div>`
+               : `<p class="muted">${m.channel === "whatsapp" ? "Conecta WhatsApp para responder desde aquí." : "Los mensajes de demostración no se responden; decide y cierra."}</p>`
+           }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con IA local", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en IA local", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">La app aprende a leer mensajes parecidos; nunca aprende decisiones. Lo que decides queda anotado aquí y no cambia pedidos ni stock.</p></div>`
+         : '<div class="empty"><h3>Elige una conversación.</h3><p>Aquí verás el mensaje, su lectura por reglas y las opciones para responder y decidir.</p></div>'
+diff --git a/src/ui/views-orders.js b/src/ui/views-orders.js
+index 3fecad8..1ba63c9 100644
+--- a/src/ui/views-orders.js
++++ b/src/ui/views-orders.js
+@@ -21,7 +21,11 @@ function orderTracking() {
+     ["received", "cancelled"].includes(o.status),
+   );
+   const list = orderFilter === "open" ? open : closed;
+-  return `<section class="orders-panel"><div class="tracking-intro"><div><span class="eyebrow">DESPUÉS DEL CARRITO</span><h2>Control de entregas</h2><p>Comprueba qué llegó y qué falta en cada pedido. Solo las cantidades que registres como recibidas se suman al inventario.</p></div><div class="tracking-example"><strong>Un ejemplo</strong><p>Pides 6 cajas y llegan 4: registras esas 4. Las otras 2 siguen pendientes.</p><small>Los pedidos de este prototipo son de demostración.</small></div></div><div class="tracking-tabs" aria-label="Filtrar entregas">${btn(`En curso · ${open.length}`, "orderFilter", orderFilter === "open" ? "primary" : "secondary", 'data-filter="open" aria-pressed="' + (orderFilter === "open") + '"')}${btn(`Cerrados · ${closed.length}`, "orderFilter", orderFilter === "closed" ? "primary" : "secondary", 'data-filter="closed" aria-pressed="' + (orderFilter === "closed") + '"')}</div><div class="delivery-list">${
++  return `<section class="orders-panel"><div class="tracking-intro"><div><span class="eyebrow">DESPUÉS DEL CARRITO</span><h2>Control de entregas</h2><p>Comprueba qué llegó y qué falta en cada pedido. Solo las cantidades que registres como recibidas se suman al inventario.</p></div><div class="tracking-example"><strong>Un ejemplo</strong><p>Pides 6 cajas y llegan 4: registras esas 4. Las otras 2 siguen pendientes.</p><small>Los pedidos de este prototipo son de demostración.</small></div></div>${
++    state.orders.some((o) => o.status === "pending")
++      ? `<div class="row-actions batch-row">${btn(icon("message") + " Enviar pendientes por WhatsApp", "orderBatch", "primary")}<small>Eliges la lista completa una vez; la app los envía uno a uno con pausa.</small></div>`
++      : ""
++  }<div class="tracking-tabs" aria-label="Filtrar entregas">${btn(`En curso · ${open.length}`, "orderFilter", orderFilter === "open" ? "primary" : "secondary", 'data-filter="open" aria-pressed="' + (orderFilter === "open") + '"')}${btn(`Cerrados · ${closed.length}`, "orderFilter", orderFilter === "closed" ? "primary" : "secondary", 'data-filter="closed" aria-pressed="' + (orderFilter === "closed") + '"')}</div><div class="delivery-list">${
+     list
+       .map((o) => {
+         const finished = o.lines.filter(
+diff --git a/tests/server.test.cjs b/tests/server.test.cjs
+index 5d50f3b..b4dd7f6 100644
+--- a/tests/server.test.cjs
++++ b/tests/server.test.cjs
+@@ -627,3 +627,153 @@ test("historial paginado: la interfaz recibe solo lo reciente y pide lo demás a
+     fs.rmSync(dir, { recursive: true, force: true });
+   }
+ });
++
++test("envío por lotes: lista completa, selección, envío uno a uno con pausa y progreso consultable", async () => {
++  const root = path.resolve(__dirname, "../work");
++  const dir = fs.mkdtempSync(path.join(root, "http-batch-"));
++  let app;
++  try {
++    app = await createApp({ dataDir: dir, batchDelayMs: 20 });
++    const origin = new URL(app.url).origin;
++    const login = await fetch(app.url, { redirect: "manual" });
++    const headers = {
++      "Content-Type": "application/json",
++      Origin: origin,
++      Cookie: login.headers.get("set-cookie").split(";")[0],
++    };
++    const post = (p, body) =>
++      fetch(origin + p, {
++        method: "POST",
++        headers,
++        body: JSON.stringify(body),
++      });
++    const state = async () =>
++      (await (await fetch(origin + "/api/state", { headers })).json()).state;
++    let s = await state();
++    const supplier = (id, name, phone, extra = {}) =>
++      post("/api/action", {
++        type: "supplier",
++        id,
++        name,
++        initials: name.slice(0, 2).toUpperCase(),
++        category: "x",
++        delivery: "x",
++        color: "sage",
++        whatsapp: phone,
++        revision: s.revision,
++        operationId: randomUUID(),
++        ...extra,
++      });
++    await supplier("s1", "Origen Coffee", "+34910000002");
++    s = await state();
++    await supplier("s2", "Fresco Mercado", "+34910000001");
++    s = await state();
++    await post("/api/action", {
++      type: "cart",
++      product: "p1",
++      packs: 1,
++      revision: s.revision,
++      operationId: randomUUID(),
++    });
++    s = await state();
++    await post("/api/action", {
++      type: "cart",
++      product: "p2",
++      packs: 2,
++      revision: s.revision,
++      operationId: randomUUID(),
++    });
++    s = await state();
++    await post("/api/action", {
++      type: "authorize",
++      revision: s.revision,
++      operationId: randomUUID(),
++    });
++    s = await state();
++    const pending = s.orders.filter((o) => o.status === "pending");
++    assert.equal(pending.length, 2);
++    let r = await post("/api/whatsapp", { type: "batchPreview" });
++    let preview = await r.json();
++    assert.equal(preview.connected, false);
++    assert.equal(preview.items.length, 2);
++    assert.ok(
++      preview.items.every((i) => !i.sendable && /conectado/.test(i.reason)),
++    );
++    const account = app.whatsapp.store.bind("+34600000001");
++    app.whatsapp.account = account;
++    app.whatsapp.status = "connected";
++    const calls = [];
++    app.whatsapp.client = {
++      sendMessage: async (to, text) => (
++        calls.push([to, text, Date.now()]),
++        { id: { _serialized: "b-" + calls.length } }
++      ),
++    };
++    app.whatsapp.store.permit(account, "+34910000001", "Fresco");
++    preview = await (
++      await post("/api/whatsapp", { type: "batchPreview" })
++    ).json();
++    const fresco = preview.items.find((i) => i.supplier === "Fresco Mercado");
++    const origen = preview.items.find((i) => i.supplier === "Origen Coffee");
++    assert.equal(fresco.sendable, true);
++    assert.equal(origen.sendable, false);
++    assert.match(origen.reason, /autorizado/);
++    app.whatsapp.store.permit(account, "+34910000002", "Origen");
++    preview = await (
++      await post("/api/whatsapp", { type: "batchPreview" })
++    ).json();
++    assert.ok(preview.items.every((i) => i.sendable));
++    r = await post("/api/whatsapp", {
++      type: "sendBatch",
++      orders: [
++        { order: fresco.order, text: fresco.text },
++        { order: origen.order, text: origen.text + " cambiado" },
++      ],
++    });
++    assert.equal(r.status, 200);
++    assert.deepEqual(await r.json(), { started: true, total: 2 });
++    let view;
++    for (let i = 0; i < 100; i++) {
++      view = await (await fetch(origin + "/api/whatsapp", { headers })).json();
++      if (!view.batch.running) break;
++      await new Promise((res) => setTimeout(res, 20));
++    }
++    assert.equal(view.batch.running, false);
++    assert.equal(view.batch.done, 2);
++    assert.equal(view.batch.results[0].ok, true);
++    assert.equal(view.batch.results[1].ok, false);
++    assert.match(view.batch.results[1].error, /texto cambió/);
++    assert.equal(calls.length, 1);
++    assert.equal(calls[0][0], "34910000001@c.us");
++    s = await state();
++    assert.equal(s.orders.find((o) => o.id === fresco.order).status, "sent");
++    assert.equal(s.orders.find((o) => o.id === origen.order).status, "pending");
++    // Second batch: the sent order is no longer offered; the other one goes out now.
++    preview = await (
++      await post("/api/whatsapp", { type: "batchPreview" })
++    ).json();
++    assert.equal(preview.items.length, 1);
++    assert.equal(preview.items[0].order, origen.order);
++    r = await post("/api/whatsapp", {
++      type: "sendBatch",
++      orders: [{ order: origen.order, text: origen.text }],
++    });
++    assert.equal(r.status, 200);
++    for (let i = 0; i < 100; i++) {
++      view = await (await fetch(origin + "/api/whatsapp", { headers })).json();
++      if (!view.batch.running) break;
++      await new Promise((res) => setTimeout(res, 20));
++    }
++    assert.equal(calls.length, 2);
++    assert.equal(
++      (await state()).orders.filter((o) => o.status === "sent").length,
++      2,
++    );
++    r = await post("/api/whatsapp", { type: "sendBatch", orders: [] });
++    assert.equal(r.status, 400);
++    app.whatsapp.client = null;
++  } finally {
++    if (app) await new Promise((r) => app.server.close(r));
++    fs.rmSync(dir, { recursive: true, force: true });
++  }
++});

@@ -91,6 +91,12 @@ document.addEventListener("click", async (e) => {
   }
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "reply-text") {
+    const id = e.target
+      .closest(".message-detail")
+      ?.querySelector("[data-action=sendReply]")?.dataset.id;
+    if (id) replyDrafts[id] = e.target.value;
+  }
   if (e.target.id === "ai-text") {
     aiDraft = e.target.value;
     aiResult = null;

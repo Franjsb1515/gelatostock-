@@ -627,3 +627,153 @@ test("historial paginado: la interfaz recibe solo lo reciente y pide lo demás a
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("envío por lotes: lista completa, selección, envío uno a uno con pausa y progreso consultable", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-batch-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir, batchDelayMs: 20 });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    const state = async () =>
+      (await (await fetch(origin + "/api/state", { headers })).json()).state;
+    let s = await state();
+    const supplier = (id, name, phone, extra = {}) =>
+      post("/api/action", {
+        type: "supplier",
+        id,
+        name,
+        initials: name.slice(0, 2).toUpperCase(),
+        category: "x",
+        delivery: "x",
+        color: "sage",
+        whatsapp: phone,
+        revision: s.revision,
+        operationId: randomUUID(),
+        ...extra,
+      });
+    await supplier("s1", "Origen Coffee", "+34910000002");
+    s = await state();
+    await supplier("s2", "Fresco Mercado", "+34910000001");
+    s = await state();
+    await post("/api/action", {
+      type: "cart",
+      product: "p1",
+      packs: 1,
+      revision: s.revision,
+      operationId: randomUUID(),
+    });
+    s = await state();
+    await post("/api/action", {
+      type: "cart",
+      product: "p2",
+      packs: 2,
+      revision: s.revision,
+      operationId: randomUUID(),
+    });
+    s = await state();
+    await post("/api/action", {
+      type: "authorize",
+      revision: s.revision,
+      operationId: randomUUID(),
+    });
+    s = await state();
+    const pending = s.orders.filter((o) => o.status === "pending");
+    assert.equal(pending.length, 2);
+    let r = await post("/api/whatsapp", { type: "batchPreview" });
+    let preview = await r.json();
+    assert.equal(preview.connected, false);
+    assert.equal(preview.items.length, 2);
+    assert.ok(
+      preview.items.every((i) => !i.sendable && /conectado/.test(i.reason)),
+    );
+    const account = app.whatsapp.store.bind("+34600000001");
+    app.whatsapp.account = account;
+    app.whatsapp.status = "connected";
+    const calls = [];
+    app.whatsapp.client = {
+      sendMessage: async (to, text) => (
+        calls.push([to, text, Date.now()]),
+        { id: { _serialized: "b-" + calls.length } }
+      ),
+    };
+    app.whatsapp.store.permit(account, "+34910000001", "Fresco");
+    preview = await (
+      await post("/api/whatsapp", { type: "batchPreview" })
+    ).json();
+    const fresco = preview.items.find((i) => i.supplier === "Fresco Mercado");
+    const origen = preview.items.find((i) => i.supplier === "Origen Coffee");
+    assert.equal(fresco.sendable, true);
+    assert.equal(origen.sendable, false);
+    assert.match(origen.reason, /autorizado/);
+    app.whatsapp.store.permit(account, "+34910000002", "Origen");
+    preview = await (
+      await post("/api/whatsapp", { type: "batchPreview" })
+    ).json();
+    assert.ok(preview.items.every((i) => i.sendable));
+    r = await post("/api/whatsapp", {
+      type: "sendBatch",
+      orders: [
+        { order: fresco.order, text: fresco.text },
+        { order: origen.order, text: origen.text + " cambiado" },
+      ],
+    });
+    assert.equal(r.status, 200);
+    assert.deepEqual(await r.json(), { started: true, total: 2 });
+    let view;
+    for (let i = 0; i < 100; i++) {
+      view = await (await fetch(origin + "/api/whatsapp", { headers })).json();
+      if (!view.batch.running) break;
+      await new Promise((res) => setTimeout(res, 20));
+    }
+    assert.equal(view.batch.running, false);
+    assert.equal(view.batch.done, 2);
+    assert.equal(view.batch.results[0].ok, true);
+    assert.equal(view.batch.results[1].ok, false);
+    assert.match(view.batch.results[1].error, /texto cambió/);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0][0], "34910000001@c.us");
+    s = await state();
+    assert.equal(s.orders.find((o) => o.id === fresco.order).status, "sent");
+    assert.equal(s.orders.find((o) => o.id === origen.order).status, "pending");
+    // Second batch: the sent order is no longer offered; the other one goes out now.
+    preview = await (
+      await post("/api/whatsapp", { type: "batchPreview" })
+    ).json();
+    assert.equal(preview.items.length, 1);
+    assert.equal(preview.items[0].order, origen.order);
+    r = await post("/api/whatsapp", {
+      type: "sendBatch",
+      orders: [{ order: origen.order, text: origen.text }],
+    });
+    assert.equal(r.status, 200);
+    for (let i = 0; i < 100; i++) {
+      view = await (await fetch(origin + "/api/whatsapp", { headers })).json();
+      if (!view.batch.running) break;
+      await new Promise((res) => setTimeout(res, 20));
+    }
+    assert.equal(calls.length, 2);
+    assert.equal(
+      (await state()).orders.filter((o) => o.status === "sent").length,
+      2,
+    );
+    r = await post("/api/whatsapp", { type: "sendBatch", orders: [] });
+    assert.equal(r.status, 400);
+    app.whatsapp.client = null;
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

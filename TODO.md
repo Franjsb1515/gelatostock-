@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.18.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.19.0.
 
 ## Entregado y comprobado
 
@@ -45,6 +45,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Auditoría 0.17.0, punto 7: historial paginado (0.18.0).
 - [x] Auditoría 0.17.0, punto 8: copia secundaria y aviso (0.18.0).
 - [x] Auditoría 0.17.0, punto 11: views.js partido, pruebas de Recetario y «Abrir», auditoría visual ampliada (0.18.0).
+- [x] Respuesta directa desde el mensaje y envío de pedidos por lotes uno a uno (0.19.0).
+- [ ] Probar el lote con los números propios del usuario (la prueba usa cliente simulado).
 - [ ] Elegir la carpeta secundaria con un diálogo del sistema (hoy se escribe la ruta; requiere preload o IPC en Electron).
 - [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
 - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
