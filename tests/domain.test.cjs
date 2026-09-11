@@ -1185,3 +1185,102 @@ test("conteo por zonas: la hoja ajusta el stock, deja conteos y el recordatorio 
     }),
   );
 });
+
+test("respuestas vinculadas: confirmación y fecha marcan el pedido; acciones desde el mensaje", () => {
+  const {
+    orderReminders,
+    renderOrderTemplate,
+    defaultOrderTemplate,
+  } = require("../src/domain.cjs");
+  let s = apply(seed(), {
+    type: "supplier",
+    id: "s2",
+    name: "Fresco Mercado",
+    initials: "FM",
+    category: "x",
+    delivery: "x",
+    color: "sage",
+    whatsapp: "+34910000001",
+  });
+  s = apply(s, { type: "cart", product: "p2", packs: 1 });
+  s = apply(s, { type: "cart", product: "p10", packs: 1 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  const o = s.orders.find((x) => x.status === "pending");
+  s = apply(s, {
+    type: "send",
+    order: o.id,
+    dispatch: {
+      channel: "whatsapp",
+      to: "+34910000001",
+      messageId: "m1",
+      at: new Date().toISOString(),
+      text: "x",
+    },
+  });
+  assert.equal(s.orders[0].confirmedAt, undefined);
+  s = apply(s, {
+    type: "message",
+    supplier: "s2",
+    text: "Ok perfecto, os lo llevamos el lunes",
+    channel: "whatsapp",
+    sender: "+34910000001",
+  });
+  const sent = s.orders.find((x) => x.id === o.id);
+  assert.equal(s.messages[0].order, o.id);
+  assert.ok(sent.confirmedAt);
+  assert.ok(sent.expected);
+  // Out of stock: the product leaves the order by an explicit action; the other line stays.
+  s = apply(s, { type: "removeLine", order: o.id, product: "p10" });
+  assert.equal(s.orders.find((x) => x.id === o.id).lines.length, 1);
+  assert.throws(
+    () => apply(s, { type: "removeLine", order: o.id, product: "p2" }),
+    /único producto/,
+  );
+  s = apply(s, { type: "setExpected", order: o.id, date: "2030-01-15" });
+  assert.equal(s.orders.find((x) => x.id === o.id).expected, "2030-01-15");
+  // Reminders: an old pending order, an unanswered sent order and an overdue one.
+  let r = apply(seed(), { type: "cart", product: "p1", packs: 1 });
+  r = apply(r, { type: "authorize", revision: r.revision });
+  r.orders[0].at = new Date(Date.now() - 2 * 86400000).toISOString();
+  const rem = orderReminders(r);
+  assert.equal(rem.length, 1);
+  assert.equal(rem[0].kind, "unsent");
+  r.orders[0].status = "sent";
+  r.orders[0].dispatch = {
+    channel: "whatsapp",
+    to: "+34600000000",
+    messageId: "x",
+    at: new Date(Date.now() - 2 * 86400000).toISOString(),
+    text: "x",
+  };
+  assert.equal(orderReminders(r)[0].kind, "unanswered");
+  r.orders[0].expected = "2020-01-01";
+  assert.equal(orderReminders(r)[0].kind, "overdue");
+  r.orders[0].expected = undefined;
+  r.orders[0].confirmedAt = new Date().toISOString();
+  assert.equal(orderReminders(r).length, 0);
+  // Template rendering keeps the default when {lineas} is missing.
+  assert.match(
+    renderOrderTemplate("Buenas, {proveedor}:\n{lineas}\nGracias, {negocio}", {
+      numero: "GS-1",
+      negocio: "Artello",
+      lineas: "- 1 × Leche",
+      proveedor: "Fresco",
+    }),
+    /^Buenas, Fresco:\n- 1 × Leche\nGracias, Artello$/,
+  );
+  assert.equal(
+    renderOrderTemplate("sin marcador", {
+      numero: "GS-1",
+      negocio: "A",
+      lineas: "L",
+      proveedor: "P",
+    }),
+    renderOrderTemplate(defaultOrderTemplate, {
+      numero: "GS-1",
+      negocio: "A",
+      lineas: "L",
+      proveedor: "P",
+    }),
+  );
+});

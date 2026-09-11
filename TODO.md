@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.22.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.23.0.
 
 ## Entregado y comprobado
 
@@ -55,7 +55,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Precios: registrar también los cambios detectados en listas de precios (documentos) y mensajes «sube de precio» (hoy solo la ficha).
 - [x] Bloque 3: diálogo del sistema para carpetas; preparación Mac (0.22.0).
 - [ ] Mac: ejecutar docs/MAC.md en el equipo del usuario y enviar la salida de scripts/measure-ai-memory.cjs; adaptar la prueba de escritorio; nombre e icono del bundle; firma.
-- [ ] Después: Compras y Mensajes al 100 % (objetivo principal del usuario).
+- [x] Compras y Mensajes I (0.23.0): confirmaciones y fechas desde respuestas, acciones sobre el pedido desde el mensaje, seguimiento, plantilla, envío tras autorizar.
+- [ ] Compras y Mensajes II: propuesta de sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic (mensaje de recordatorio al proveedor); catálogo/precios por proveedor desde listas de precios; prueba real del ciclo completo con los números del usuario.
 - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
 - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
 - [ ] IA: chat con el modelo 0.6B sigue siendo lento (10–25 s); valorar respuestas por reglas para las preguntas frecuentes de la guía.

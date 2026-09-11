@@ -106,16 +106,22 @@ function homeNotices() {
         : "";
   const rises = alerts?.prices || [];
   const dueZones = (alerts?.counts || []).filter((z) => z.due);
+  const follow = alerts?.orders || [];
   if (
     !read &&
     !proposed &&
     !soon.length &&
     !backupWarning &&
     !rises.length &&
-    !dueZones.length
+    !dueZones.length &&
+    !follow.length
   )
     return "";
   return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
+    follow.length
+      ? `<strong>Pedidos que necesitan seguimiento</strong><span>${esc(follow.map((f) => f.text).join(" "))} </span><button class="text-button" data-nav="orders">Ver pedidos ${icon("arrow")}</button>`
+      : ""
+  }${
     rises.length
       ? `<strong>${rises.length} subida${rises.length === 1 ? "" : "s"} de precio en 30 días</strong><span>${esc(
           rises
@@ -260,6 +266,6 @@ function settings() {
             ? `<p class="muted">Y ${state.learned.length - 30} más.</p>`
             : "")
         : '<p class="muted">Todavía no has corregido ninguna lectura.</p>'
-    }</section><section class="panel settings-card"><h2>Identidad del negocio</h2><p>El nombre y el lugar aparecen en la barra lateral, en los mensajes de pedido y en las exportaciones.</p><p><strong>${esc(state.business)}</strong>${state.place ? " · " + esc(state.place) : ""}</p>${btn("Editar identidad", "businessEditor", "secondary")}</section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+    }</section><section class="panel settings-card"><h2>Plantilla del pedido</h2><p>Es el texto que se envía por WhatsApp. Puedes cambiar saludo, despedida o firma; {lineas} se sustituye por los productos, {numero}, {negocio} y {proveedor} por sus valores.</p><pre class="template-preview">${esc(orderTemplate)}</pre><div class="setting-actions">${btn("Editar plantilla", "orderTemplateEditor", "secondary")}</div></section><section class="panel settings-card"><h2>Identidad del negocio</h2><p>El nombre y el lugar aparecen en la barra lateral, en los mensajes de pedido y en las exportaciones.</p><p><strong>${esc(state.business)}</strong>${state.place ? " · " + esc(state.place) : ""}</p>${btn("Editar identidad", "businessEditor", "secondary")}</section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
   );
 }

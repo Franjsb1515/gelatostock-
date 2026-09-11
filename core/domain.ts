@@ -26,6 +26,12 @@ export { localDate } from "./messages";
 export { recipeBalance, balanceRanges, balanceLabels } from "./balance";
 export { weeklyReport, weekStart, weekBounds } from "./report";
 export { priceAlerts, countStatus, zoneLabels } from "./inventory";
+export {
+  orderReminders,
+  defaultOrderTemplate,
+  renderOrderTemplate,
+} from "./orders";
+import { defaultOrderTemplate, renderOrderTemplate } from "./orders";
 import { zoneLabels } from "./inventory";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
 export function ensure(value: unknown, message: string): asserts value {
@@ -58,17 +64,22 @@ export function needed(s: State, p: Product): number {
   );
 }
 // Exact text a real send carries. Deterministic so the person authorizes what is sent.
-export function orderMessage(s: State, orderId: string): string {
+export function orderMessage(
+  s: State,
+  orderId: string,
+  template = defaultOrderTemplate,
+): string {
   const o = item(s.orders, orderId);
   const lines = o.lines.map((l) => {
     const p = item(s.products, l.product);
     return `- ${l.packs} × ${p.name} (${round(l.pack)} ${p.unit} por presentación, ${round(l.packs * l.pack)} ${p.unit})`;
   });
-  return [
-    `Hola, pedido ${o.number} de ${s.business}:`,
-    ...lines,
-    "¿Nos confirmas disponibilidad y fecha de entrega? Gracias.",
-  ].join("\n");
+  return renderOrderTemplate(template, {
+    numero: o.number,
+    negocio: s.business,
+    lineas: lines.join("\n"),
+    proveedor: item(s.suppliers, o.supplier).name,
+  });
 }
 export function classify(
   text: string,
@@ -336,6 +347,17 @@ function refreshSuggestion(s: State, photo: State["photos"][number]): void {
   const sug = suggestDocument(s, photo);
   photo.suggestion = sug.supplier || sug.order || sug.docType ? sug : undefined;
 }
+// What a linked supplier reply changes on its order: the delivery date it states and the
+// confirmation flag. Never quantities, never stock; those wait for the person.
+function applyReplyToOrder(
+  o: State["orders"][number],
+  i: Message["interpretation"] | undefined,
+): void {
+  if (!i) return;
+  if (i.deliveryDate) o.expected = i.deliveryDate;
+  if (i.category === "confirmation" || i.category === "delivery_date")
+    o.confirmedAt = o.confirmedAt ?? now();
+}
 function move(
   s: State,
   product: string,
@@ -527,6 +549,43 @@ export function apply(state: State, input: unknown): State {
         note = `Envío SIMULADO de ${o.number}. Ningún mensaje real enviado.`;
       break;
     }
+    case "setExpected": {
+      const o = item(s.orders, a.order);
+      ensure(
+        !["received", "cancelled"].includes(o.status),
+        "El pedido ya está cerrado.",
+      );
+      o.expected = a.date;
+      note = `Entrega prevista de ${o.number}: ${a.date}.`;
+      break;
+    }
+    case "confirmOrder": {
+      const o = item(s.orders, a.order);
+      ensure(
+        ["sent", "partial"].includes(o.status),
+        "Solo se confirma un pedido enviado.",
+      );
+      o.confirmedAt = now();
+      note = `Pedido ${o.number} confirmado por el proveedor.`;
+      break;
+    }
+    case "removeLine": {
+      const o = item(s.orders, a.order);
+      ensure(
+        !["received", "cancelled"].includes(o.status),
+        "El pedido ya está cerrado.",
+      );
+      const line = o.lines.find((l) => l.product === a.product);
+      ensure(line, "Ese producto no está en el pedido.");
+      ensure(line.received === 0, "Ya se recibió parte de ese producto.");
+      ensure(
+        o.lines.length > 1,
+        "Es el único producto del pedido: cancela el pedido en su lugar.",
+      );
+      o.lines = o.lines.filter((l) => l.product !== a.product);
+      note = `${item(s.products, a.product).name} retirado de ${o.number}: el proveedor no lo sirve. Nada cambia en el stock.`;
+      break;
+    }
     case "cancel": {
       const o = item(s.orders, a.order);
       ensure(
@@ -607,9 +666,8 @@ export function apply(state: State, input: unknown): State {
           const o = candidates[0]!;
           message.order = o.id;
           message.relevance = "relevant";
-          message.relevanceReason = `Respuesta al pedido ${o.number}, enviado por WhatsApp a este número. Verificá el contenido.`;
-          if (message.interpretation?.deliveryDate)
-            o.expected = message.interpretation.deliveryDate;
+          message.relevanceReason = `Respuesta al pedido ${o.number}, enviado por WhatsApp a este número. Verifica el contenido.`;
+          applyReplyToOrder(o, message.interpretation);
         }
       }
       s.messages.unshift(message);
@@ -878,8 +936,7 @@ export function apply(state: State, input: unknown): State {
         "El pedido debe pertenecer al mismo proveedor.",
       );
       m.order = o.id;
-      if (m.interpretation?.deliveryDate)
-        o.expected = m.interpretation.deliveryDate;
+      applyReplyToOrder(o, m.interpretation);
       note = `Mensaje vinculado a ${o.number}.`;
       break;
     }

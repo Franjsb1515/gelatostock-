@@ -9,6 +9,7 @@ let appVersion = "",
   replyDrafts = {},
   alerts = null,
   countDays = 7,
+  orderTemplate = "",
   weeklyData = null,
   weeklyWeek = "",
   weeklyBusy = false,
@@ -203,6 +204,7 @@ function applyEnvelope(data) {
   if (data.history) historyInfo = data.history;
   if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
   if (data.countDays !== undefined) countDays = data.countDays;
+  if (data.orderTemplate !== undefined) orderTemplate = data.orderTemplate;
   if (data.alerts) alerts = data.alerts;
   if (data.dataDir) dataDir = data.dataDir;
   archiveWarning = data.archiveWarning;

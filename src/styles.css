@@ -3464,3 +3464,24 @@ dialog::backdrop {
 .count-table input {
   width: 110px;
 }
+
+/* Acciones sobre el pedido desde el mensaje; plantilla del pedido */
+.order-actions {
+  margin: 14px 0 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--crema, #f7f1e6);
+}
+.order-actions .message-actions {
+  margin-top: 8px;
+}
+.template-preview {
+  white-space: pre-wrap;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--crema, #f7f1e6);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 8px 0;
+}

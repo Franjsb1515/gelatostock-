@@ -815,3 +815,80 @@ test("exportación CSV a una carpeta elegida: ruta absoluta obligatoria, archivo
     fs.rmSync(target, { recursive: true, force: true });
   }
 });
+
+test("plantilla del pedido: se guarda, exige {lineas} y la vista previa la usa", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-tpl-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    const state = async () =>
+      (await (await fetch(origin + "/api/state", { headers })).json()).state;
+    let s = await state();
+    await post("/api/action", {
+      type: "supplier",
+      id: "s2",
+      name: "Fresco Mercado",
+      initials: "FM",
+      category: "x",
+      delivery: "x",
+      color: "sage",
+      whatsapp: "+34910000001",
+      revision: s.revision,
+      operationId: randomUUID(),
+    });
+    s = await state();
+    await post("/api/action", {
+      type: "cart",
+      product: "p2",
+      packs: 1,
+      revision: s.revision,
+      operationId: randomUUID(),
+    });
+    s = await state();
+    await post("/api/action", {
+      type: "authorize",
+      revision: s.revision,
+      operationId: randomUUID(),
+    });
+    s = await state();
+    const order = s.orders.find((o) => o.status === "pending");
+    let r = await post("/api/maintenance", {
+      type: "orderTemplate",
+      template: "sin marcador",
+    });
+    assert.equal(r.status, 400);
+    r = await post("/api/maintenance", {
+      type: "orderTemplate",
+      template: "Buenas {proveedor}, de {negocio}:\n{lineas}\nUn saludo",
+    });
+    assert.equal(r.status, 200);
+    assert.match((await r.json()).orderTemplate, /^Buenas/);
+    const preview = await (
+      await post("/api/whatsapp", { type: "preview", order: order.id })
+    ).json();
+    assert.match(
+      preview.text,
+      /^Buenas Fresco Mercado, de Artello:\n- 1 × Leche entera/,
+    );
+    assert.match(preview.text, /Un saludo$/);
+    r = await post("/api/maintenance", { type: "orderTemplate", template: "" });
+    assert.match((await r.json()).orderTemplate, /^Hola, pedido/);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

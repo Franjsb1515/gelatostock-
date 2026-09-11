@@ -109,6 +109,8 @@ const orderSchema = z.object({
   lines: z.array(lineSchema).min(1).max(10000),
   dispatch: dispatchSchema.optional(),
   expected: documentDate.optional(),
+  // Set when the supplier confirmed (by a linked reply or by hand). Never changes stock.
+  confirmedAt: at.optional(),
 });
 export const priorities = z.enum(["important", "normal", "low", "review"]);
 export const relevanceLevels = z.enum([
@@ -376,6 +378,18 @@ export const actionSchema = z.intersection(
       dispatch: dispatchSchema.optional(),
     }),
     z.object({ type: z.literal("cancel"), order: idSchema }),
+    z.object({
+      type: z.literal("setExpected"),
+      order: idSchema,
+      date: documentDate,
+    }),
+    z.object({ type: z.literal("confirmOrder"), order: idSchema }),
+    // The supplier cannot serve a product: it leaves the order (nothing received yet for it).
+    z.object({
+      type: z.literal("removeLine"),
+      order: idSchema,
+      product: idSchema,
+    }),
     z.object({
       type: z.literal("receive"),
       order: idSchema,

@@ -330,7 +330,7 @@ const assert = require("node:assert/strict");
     );
     await window.getByRole("button", { name: /Revisar y autorizar/ }).click();
     await window
-      .getByRole("button", { name: "Autorizar demostración", exact: true })
+      .getByRole("button", { name: "Autorizar pedidos", exact: true })
       .click();
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     let card = window.locator(".delivery-card").first();

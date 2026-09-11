@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.23.0 — 2026-09-11 · sesión 036
+
+Compras y Mensajes, primera entrega hacia el 100 %. Las respuestas vinculadas a un pedido actúan sobre él: una confirmación o una fecha de entrega marcan el pedido como confirmado (confirmedAt) y fijan la fecha prevista; las cantidades y el stock nunca cambian solos. Desde el mensaje, la app propone acciones según la lectura: fijar la entrega que dice el proveedor, marcar confirmado, quitar del pedido el producto que no tiene (removeLine, solo si no se recibió nada de él y no es el único), cancelar si lo anula, y ver el pedido. En Control de entregas: «Confirmado por el proveedor el…», «Fijar fecha de entrega» y «Marcar confirmado».
+
+Seguimiento en Resumen (core/orders.ts orderReminders): pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas ya pasadas sin registrar. Plantilla del pedido editable en Configuración con {lineas}, {numero}, {negocio} y {proveedor} (ajuste order_template; la vista previa y los envíos la usan). Al autorizar el carrito, si WhatsApp está conectado se abre directamente el envío por lotes. Textos de autorización sin la palabra «demostración».
+
+Pruebas: 134. Informe reports/2026-09-11T11-26-49-711Z-compras-y-mensajes-1.md.
+
 ## 0.22.0 — 2026-09-11 · sesión 035
 
 Diálogo del sistema para carpetas: src/preload.cjs (sandbox y aislamiento de contexto) expone una única función, pickFolder, que pide al proceso principal el selector nativo de carpetas (ipcMain «pick-folder», solo desde nuestra ventana). Configuración → carpeta secundaria tiene «Elegir con el explorador…» y Exportar CSV pregunta primero dónde guardar (cancelar usa la carpeta de datos; /api/export acepta dir absoluto). En el navegador de desarrollo, sin puente, se sigue escribiendo la ruta.

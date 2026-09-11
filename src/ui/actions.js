@@ -517,15 +517,20 @@ async function action(name, el) {
   if (name === "checkout") {
     const revision = state.revision;
     modal(
-      "Autorizar pedidos de demostración",
-      "No se enviará ningún mensaje ni se realizará ningún pago.",
+      "Autorizar pedidos",
+      "Se crean los pedidos, uno por proveedor. No se envía nada todavía: el envío por WhatsApp es el paso siguiente y lo confirmas tú.",
       `<p>Se crearán ${new Set(state.cart.map((l) => product(l.product).supplier)).size} pedidos pendientes de envío.</p><div class="review-total">Total estimado <strong>${money(state.cart.reduce((n, l) => n + l.packs * product(l.product).price, 0))}</strong></div><p class="fineprint">Envío e impuestos por confirmar. En el siguiente paso podrás simular el envío.</p>`,
-      async () =>
-        mutate(
+      async () => {
+        const ok = await mutate(
           { type: "authorize", revision },
-          "Pedidos de demostración creados.",
-        ),
-      "Autorizar demostración",
+          "Pedidos creados y pendientes de envío.",
+        );
+        // The natural next step: send them one by one by WhatsApp, in one decision.
+        if (ok && waState?.status === "connected")
+          setTimeout(() => action("orderBatch", el), 300);
+        return ok;
+      },
+      "Autorizar pedidos",
     );
     return;
   }
@@ -533,6 +538,73 @@ async function action(name, el) {
     await mutate(
       { type: "send", order: el.dataset.order },
       "Envío simulado. No se contactó al proveedor.",
+    );
+    return;
+  }
+  if (name === "setExpectedFromMessage") {
+    await mutate(
+      { type: "setExpected", order: el.dataset.order, date: el.dataset.date },
+      "Fecha de entrega fijada en el pedido.",
+    );
+    return;
+  }
+  if (name === "setExpected") {
+    const o = state.orders.find((x) => x.id === el.dataset.order);
+    modal(
+      "Fecha de entrega prevista · " + o.number,
+      "Solo cambia la fecha que esperas; el stock se mueve al registrar lo que llega.",
+      field("Fecha", "date", o.expected || todayLocal(), "date", "required"),
+      async (f) =>
+        mutate(
+          { type: "setExpected", order: o.id, date: f.get("date") },
+          "Fecha de entrega fijada.",
+        ),
+    );
+    return;
+  }
+  if (name === "confirmOrder") {
+    await mutate(
+      { type: "confirmOrder", order: el.dataset.order },
+      "Pedido marcado como confirmado por el proveedor.",
+    );
+    return;
+  }
+  if (name === "removeLine") {
+    const o = state.orders.find((x) => x.id === el.dataset.order);
+    const p = product(el.dataset.product);
+    modal(
+      "Quitar " + p.name + " de " + o.number,
+      "El proveedor no lo sirve: el producto sale del pedido y sigue bajo mínimo en el inventario para pedirlo a otro proveedor. El stock no cambia.",
+      "",
+      async () =>
+        mutate(
+          { type: "removeLine", order: o.id, product: p.id },
+          p.name + " retirado del pedido.",
+        ),
+      "Quitar del pedido",
+    );
+    return;
+  }
+  if (name === "gotoOrder") {
+    nav("orders");
+    return;
+  }
+  if (name === "orderTemplateEditor") {
+    modal(
+      "Plantilla del pedido",
+      "Texto que se envía al proveedor. Usa {lineas} para los productos y, si quieres, {numero}, {negocio} y {proveedor}. Vacío = plantilla original.",
+      `<label class="field">Plantilla<textarea name="template" maxlength="1000" rows="7">${esc(orderTemplate)}</textarea></label>`,
+      async (f) => {
+        applyEnvelope(
+          await request("/api/maintenance", {
+            type: "orderTemplate",
+            template: f.get("template"),
+          }),
+        );
+        render();
+        toast("Plantilla guardada. Se aplica a los próximos envíos.");
+        return true;
+      },
     );
     return;
   }
