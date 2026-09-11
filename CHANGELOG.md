@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.19.1 — 2026-09-11 · sesión 032
+
+Guiño «arte + gelato» en el chat de IA local: src/ai-lore.cjs (texto propio: gelato frente a helado, sorbete, historia con sus atribuciones, Mallorca y Ca'n Joan de s'Aigo, Artello y el sabor Mediterraneo, equilibrio de una receta, maduración, pistacho de Bronte, vitrina). El chat lo usa por reglas cuando encaja mejor que la guía de la app, con el prefijo «Arte + gelato:», sin modelo y sin coste de memoria; sinónimos nuevos (origen/inventó → historia, ice cream → helado…). Pista discreta en el ejemplo del chat. Evaluación --chat ampliada a 19 preguntas: 19/19 (fuentes: {"guide":13,"model":2,"rule":1,"lore":3}).
+
+Pruebas: 126. Informe reports/2026-09-11T08-48-38-112Z-arte-gelato-chat.md.
+
 ## 0.19.0 — 2026-09-10 · sesión 031
 
 Mensajes: respuesta directa desde el propio mensaje. Con WhatsApp conectado, el detalle muestra un cuadro de respuesta; las respuestas rápidas lo rellenan (ya no abren diálogo) y «Enviar por WhatsApp» envía ese texto una sola vez y anota la decisión. El borrador se conserva por mensaje mientras la pantalla se repinta.

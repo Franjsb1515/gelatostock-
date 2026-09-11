@@ -73,6 +73,9 @@ Historial de movimientos con motivo y corrección: revertir crea una compensaci�
 ## Guía
 Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.
 
+## IA local, un guiño
+El chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.
+
 ## Configuración
 Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.
 

@@ -3,6 +3,10 @@
 // Pure functions, no model access; unit-tested without inference.
 const guide = require("./ai-help.cjs");
 const guideLines = guide.split(/\r?\n/).filter((l) => l.trim());
+// «Arte + gelato»: cultura del gelato (historia, gelato frente a helado, equilibrio…), texto propio.
+const loreLines = require("./ai-lore.cjs")
+  .split(/\r?\n/)
+  .filter((l) => l.trim());
 const stopWords = new Set(
   "que como para con por los las del una uno unos unas hace hay esta este esto puede puedo desde sobre entre tiene cuando donde cual cuales sirve app aplicacion gelatostock cuanto cuantos cuanta cuantas hacer hago tengo ahora mismo quien quienes todo todos".split(
     " ",
@@ -25,40 +29,67 @@ const synonyms = [
   ["borr", ["accio"]],
   ["elimin", ["accio"]],
   ["envi", ["accio", "whats"]],
-  ["contrasen", ["recet", "bloqu"]],
-  ["clave", ["contrasen", "recet"]],
+  ["contrasen", ["bloqu"]],
+  ["clave", ["contrasen", "bloqu"]],
   ["aprend", ["corre", "lectu"]],
   ["decid", ["decis", "mensa"]],
   ["ingred", ["produ", "recet"]],
-  ["helad", ["produ", "gelat"]],
+  ["helad", ["produ", "gelat", "helad"]],
   ["control", ["entre"]],
+  ["origen", ["histor"]],
+  ["invent", ["histor"]],
+  ["nacio", ["histor"]],
+  ["cuando", ["histor"]],
+  ["quien", ["histor"]],
+  ["ice", ["helado"]],
+  ["cream", ["helado"]],
+  ["temper", ["frio", "°c"]],
+  ["azucar", ["equili", "solid"]],
+  ["grasa", ["equili"]],
+  ["sorbet", ["sorbet"]],
+  ["mallor", ["mallor", "palma"]],
+  ["artell", ["artell", "mediterran"]],
 ];
-function questionTerms(question) {
-  const terms = new Set();
+// Each question word becomes a group: its six-letter stem plus synonyms. A group counts once
+// however many of its forms appear ("Palma" and its synonym "Mallorca" are one hit, not two).
+function questionGroups(question) {
+  const groups = [];
+  const seen = new Set();
   for (const word of fold(question).match(/[a-z0-9]{3,}/g) || []) {
     if (stopWords.has(word)) continue;
     // Six letters keep "contraseña" apart from "control" and "recetario" from "recibo".
-    terms.add(word.slice(0, 6));
+    const stem = word.slice(0, 6);
+    if (seen.has(stem)) continue;
+    seen.add(stem);
     const hit = synonyms
       .filter(([p]) => word.startsWith(p))
       .sort((a, b) => b[0].length - a[0].length)[0];
-    if (hit) for (const s of hit[1]) terms.add(s);
+    groups.push([stem, ...(hit ? hit[1] : [])]);
   }
-  return [...terms];
+  return groups;
+}
+function questionTerms(question) {
+  return [...new Set(questionGroups(question).flat())];
 }
 // A term counts when it starts a word ("anual" no longer matches "manual"); a sentence whose
 // label starts with a term ("Copias:", "Unidades:") gets one extra point.
 const hasTerm = (folded, t) => new RegExp("\\b" + t).test(folded);
-function score(text, terms) {
+// The question's own word counts 1; a hit only through a synonym counts 0,5; a sentence whose
+// label starts with one of the terms gets 0,5 more.
+function score(text, groups) {
   const f = fold(text);
-  const n = terms.filter((t) => hasTerm(f, t)).length;
-  return n && terms.some((t) => f.startsWith(t)) ? n + 1 : n;
+  let n = 0;
+  for (const g of groups) {
+    if (hasTerm(f, g[0])) n += 1;
+    else if (g.slice(1).some((t) => hasTerm(f, t))) n += 0.5;
+  }
+  return n && groups.some((g) => g.some((t) => f.startsWith(t))) ? n + 0.5 : n;
 }
 function relevantGuide(question, limit = 4) {
-  const terms = questionTerms(question);
+  const groups = questionGroups(question);
   const scored = guideLines.map((line, i) => ({
     i,
-    score: score(line, terms),
+    score: score(line, groups),
   }));
   const top = scored
     .filter((x) => x.score > 0)
@@ -75,18 +106,34 @@ function relevantGuide(question, limit = 4) {
 const NO_ANSWER_CHAT = "No lo sé: la guía de la app no lo cubre.";
 // Deterministic excerpt: the guide sentences that share most terms with the question.
 // Shown as the answer's source (or as the answer itself); never generated.
-function guideExcerptDetailed(question, max = 2) {
-  const terms = questionTerms(question);
-  const sentences = guideLines
-    .slice(1)
-    .flatMap((l) => l.split(/(?<=\.)\s+/))
-    .map((s) => s.trim())
-    .filter((s) => s.length > 20 && s.length <= 450);
-  return sentences
-    .map((s, i) => ({ s, i, score: score(s, terms) }))
+function guideExcerptDetailed(question, max = 2, lines = guideLines.slice(1)) {
+  const groups = questionGroups(question);
+  const sentences = lines
+    .flatMap((l, p) => l.split(/(?<=\.)\s+/).map((s) => ({ s: s.trim(), p })))
+    .filter((x) => x.s.length > 20 && x.s.length <= 450);
+  const scored = sentences
+    .map((x, i) => ({ ...x, i, score: score(x.s, groups) }))
     .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score || a.s.length - b.s.length)
-    .slice(0, max);
+    .sort((a, b) => b.score - a.score || a.s.length - b.s.length);
+  if (!scored.length) return [];
+  // The excerpt reads as a paragraph: after the best sentence comes the one that follows it in
+  // the same paragraph (the answer often continues there), then the next best hits.
+  const top = scored[0];
+  const indexed = sentences.map((x, i) => ({ ...x, i }));
+  const follow = indexed.find((x) => x.p === top.p && x.i === top.i + 1);
+  const rest = scored
+    .slice(1)
+    .filter((x) => !follow || x.i !== follow.i)
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (a.p === top.p ? 0 : 1) - (b.p === top.p ? 0 : 1) ||
+        a.s.length - b.s.length,
+    );
+  return [top, ...(follow ? [{ ...follow, score: 0 }] : []), ...rest].slice(
+    0,
+    max,
+  );
 }
 function guideExcerpt(question, max = 2) {
   return guideExcerptDetailed(question, max)
@@ -103,12 +150,13 @@ const NO_ACTION_CHAT =
 // the model (measured: the 0.6B model refused or contradicted the guide in those cases). The
 // model only answers when coverage is weak. Call with modelAnswer = null to ask whether the
 // model is needed at all: null back means "run the model".
+const isStrong = (best, terms) =>
+  best.length > 0 &&
+  (best[0].score >= 2 || (terms > 0 && best[0].score / terms >= 0.5));
 function combineChat(question, modelAnswer) {
   const best = guideExcerptDetailed(question);
-  const terms = questionTerms(question).length;
-  const strong =
-    best.length > 0 &&
-    (best[0].score >= 2 || (terms > 0 && best[0].score / terms >= 0.5));
+  const terms = questionGroups(question).length;
+  const strong = isStrong(best, terms);
   const excerpt = best.map((x) => x.s).join(" ");
   if (actionRequest.test(question))
     return {
@@ -116,6 +164,13 @@ function combineChat(question, modelAnswer) {
       excerpt,
       source: "rule",
     };
+  // Easter egg: questions about gelato culture (history, gelato vs ice cream, balance, Mallorca)
+  // are answered from src/ai-lore.cjs when it fits better than the app guide.
+  const lore = guideExcerptDetailed(question, 2, loreLines);
+  if (isStrong(lore, terms) && (!strong || lore[0].score > best[0].score)) {
+    const text = lore.map((x) => x.s).join(" ");
+    return { answer: "Arte + gelato: " + text, excerpt: text, source: "lore" };
+  }
   if (strong)
     return { answer: "Según la guía: " + excerpt, excerpt, source: "guide" };
   if (modelAnswer === null) return null;
@@ -154,6 +209,7 @@ function chatSystemPrompt(question, document) {
 }
 module.exports = {
   guideLines,
+  loreLines,
   questionTerms,
   relevantGuide,
   guideExcerpt,

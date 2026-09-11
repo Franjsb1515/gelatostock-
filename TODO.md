@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.19.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.19.1.
 
 ## Entregado y comprobado
 

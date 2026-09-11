@@ -462,6 +462,8 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: «Abrir» en Qué hacer ahora muestra el mensaje aunque el filtro de proveedor lo ocultara.",
     );
+    // Let the open handler finish (it awaits a read mutation) before leaving the screen.
+    await window.waitForTimeout(500);
     await window.getByRole("button", { name: "IA local", exact: true }).click();
     const text =
       "FACTURA F-123\nOrigen Coffee\nBase imponible: 100,00 EUR\nIVA: 21,00 EUR\nTotal: 125,00 EUR";

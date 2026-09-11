@@ -189,3 +189,22 @@ test("chat: las reglas prevalecen sobre el modelo en peticiones de acción y cua
   assert.equal(covered.source, "guide");
   assert.match(covered.answer, /lo pedido, lo recibido/);
 });
+
+test("chat: cultura del gelato (easter egg) responde por reglas y no desplaza las dudas de la app", () => {
+  const { combineChat } = require("../src/ai-guide.cjs");
+  const diff = combineChat("¿En qué se diferencia el gelato del helado?", null);
+  assert.equal(diff.source, "lore");
+  assert.match(diff.answer, /menos grasa/);
+  const hist = combineChat("¿Quién inventó el gelato?", null);
+  assert.equal(hist.source, "lore");
+  assert.match(hist.answer, /Buontalenti|Procopio/);
+  const palma = combineChat("¿Hay tradición de helado en Mallorca?", null);
+  assert.equal(palma.source, "lore");
+  assert.match(palma.answer, /Ca'n Joan de s'Aigo/);
+  const app = combineChat(
+    "¿Cuándo se descuentan los ingredientes al producir?",
+    null,
+  );
+  assert.equal(app.source, "guide");
+  assert.equal(combineChat("¿Qué tiempo hará mañana en Palma?", null), null);
+});

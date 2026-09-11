@@ -1,0 +1,567 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 1eb3485..3692bef 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.19.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.19.1-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 3f9e9b5..a948053 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.19.1 — 2026-09-11 · sesión 032
++
++Guiño «arte + gelato» en el chat de IA local: src/ai-lore.cjs (texto propio: gelato frente a helado, sorbete, historia con sus atribuciones, Mallorca y Ca'n Joan de s'Aigo, Artello y el sabor Mediterraneo, equilibrio de una receta, maduración, pistacho de Bronte, vitrina). El chat lo usa por reglas cuando encaja mejor que la guía de la app, con el prefijo «Arte + gelato:», sin modelo y sin coste de memoria; sinónimos nuevos (origen/inventó → historia, ice cream → helado…). Pista discreta en el ejemplo del chat. Evaluación --chat ampliada a 19 preguntas: 19/19 (fuentes: {"guide":13,"model":2,"rule":1,"lore":3}).
++
++Pruebas: 126. Informe reports/2026-09-11T08-48-38-112Z-arte-gelato-chat.md.
++
+ ## 0.19.0 — 2026-09-10 · sesión 031
+ 
+ Mensajes: respuesta directa desde el propio mensaje. Con WhatsApp conectado, el detalle muestra un cuadro de respuesta; las respuestas rápidas lo rellenan (ya no abren diálogo) y «Enviar por WhatsApp» envía ese texto una sola vez y anota la decisión. El borrador se conserva por mensaje mientras la pantalla se repinta.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 8924c00..9dfb658 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.19.0
++# Entrada para Claude · entrega vigente 0.19.1
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index cb1155a..8e375dd 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.19.0
++# GelatoStock · prototipo 0.19.1
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.19.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.19.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.19.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.19.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+diff --git a/TODO.md b/TODO.md
+index e737463..6299426 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.19.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.19.1.
+ 
+ ## Entregado y comprobado
+ 
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index a937271..26a5547 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -73,6 +73,9 @@ Historial de movimientos con motivo y corrección: revertir crea una compensaci
+ ## Guía
+ Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.
+ 
++## IA local, un guiño
++El chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.
++
+ ## Configuración
+ Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.
+ 
+diff --git a/package.json b/package.json
+index 811b12d..4eeb902 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.19.0",
++  "version": "0.19.1",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index a3e1b31..5fb6db0 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -462,6 +462,8 @@ const assert = require("node:assert/strict");
+     console.log(
+       "PASS: «Abrir» en Qué hacer ahora muestra el mensaje aunque el filtro de proveedor lo ocultara.",
+     );
++    // Let the open handler finish (it awaits a read mutation) before leaving the screen.
++    await window.waitForTimeout(500);
+     await window.getByRole("button", { name: "IA local", exact: true }).click();
+     const text =
+       "FACTURA F-123\nOrigen Coffee\nBase imponible: 100,00 EUR\nIVA: 21,00 EUR\nTotal: 125,00 EUR";
+diff --git a/src/ai-guide.cjs b/src/ai-guide.cjs
+index f726467..4e057eb 100644
+--- a/src/ai-guide.cjs
++++ b/src/ai-guide.cjs
+@@ -3,6 +3,10 @@
+ // Pure functions, no model access; unit-tested without inference.
+ const guide = require("./ai-help.cjs");
+ const guideLines = guide.split(/\r?\n/).filter((l) => l.trim());
++// «Arte + gelato»: cultura del gelato (historia, gelato frente a helado, equilibrio…), texto propio.
++const loreLines = require("./ai-lore.cjs")
++  .split(/\r?\n/)
++  .filter((l) => l.trim());
+ const stopWords = new Set(
+   "que como para con por los las del una uno unos unas hace hay esta este esto puede puedo desde sobre entre tiene cuando donde cual cuales sirve app aplicacion gelatostock cuanto cuantos cuanta cuantas hacer hago tengo ahora mismo quien quienes todo todos".split(
+     " ",
+@@ -25,40 +29,67 @@ const synonyms = [
+   ["borr", ["accio"]],
+   ["elimin", ["accio"]],
+   ["envi", ["accio", "whats"]],
+-  ["contrasen", ["recet", "bloqu"]],
+-  ["clave", ["contrasen", "recet"]],
++  ["contrasen", ["bloqu"]],
++  ["clave", ["contrasen", "bloqu"]],
+   ["aprend", ["corre", "lectu"]],
+   ["decid", ["decis", "mensa"]],
+   ["ingred", ["produ", "recet"]],
+-  ["helad", ["produ", "gelat"]],
++  ["helad", ["produ", "gelat", "helad"]],
+   ["control", ["entre"]],
++  ["origen", ["histor"]],
++  ["invent", ["histor"]],
++  ["nacio", ["histor"]],
++  ["cuando", ["histor"]],
++  ["quien", ["histor"]],
++  ["ice", ["helado"]],
++  ["cream", ["helado"]],
++  ["temper", ["frio", "°c"]],
++  ["azucar", ["equili", "solid"]],
++  ["grasa", ["equili"]],
++  ["sorbet", ["sorbet"]],
++  ["mallor", ["mallor", "palma"]],
++  ["artell", ["artell", "mediterran"]],
+ ];
+-function questionTerms(question) {
+-  const terms = new Set();
++// Each question word becomes a group: its six-letter stem plus synonyms. A group counts once
++// however many of its forms appear ("Palma" and its synonym "Mallorca" are one hit, not two).
++function questionGroups(question) {
++  const groups = [];
++  const seen = new Set();
+   for (const word of fold(question).match(/[a-z0-9]{3,}/g) || []) {
+     if (stopWords.has(word)) continue;
+     // Six letters keep "contraseña" apart from "control" and "recetario" from "recibo".
+-    terms.add(word.slice(0, 6));
++    const stem = word.slice(0, 6);
++    if (seen.has(stem)) continue;
++    seen.add(stem);
+     const hit = synonyms
+       .filter(([p]) => word.startsWith(p))
+       .sort((a, b) => b[0].length - a[0].length)[0];
+-    if (hit) for (const s of hit[1]) terms.add(s);
++    groups.push([stem, ...(hit ? hit[1] : [])]);
+   }
+-  return [...terms];
++  return groups;
++}
++function questionTerms(question) {
++  return [...new Set(questionGroups(question).flat())];
+ }
+ // A term counts when it starts a word ("anual" no longer matches "manual"); a sentence whose
+ // label starts with a term ("Copias:", "Unidades:") gets one extra point.
+ const hasTerm = (folded, t) => new RegExp("\\b" + t).test(folded);
+-function score(text, terms) {
++// The question's own word counts 1; a hit only through a synonym counts 0,5; a sentence whose
++// label starts with one of the terms gets 0,5 more.
++function score(text, groups) {
+   const f = fold(text);
+-  const n = terms.filter((t) => hasTerm(f, t)).length;
+-  return n && terms.some((t) => f.startsWith(t)) ? n + 1 : n;
++  let n = 0;
++  for (const g of groups) {
++    if (hasTerm(f, g[0])) n += 1;
++    else if (g.slice(1).some((t) => hasTerm(f, t))) n += 0.5;
++  }
++  return n && groups.some((g) => g.some((t) => f.startsWith(t))) ? n + 0.5 : n;
+ }
+ function relevantGuide(question, limit = 4) {
+-  const terms = questionTerms(question);
++  const groups = questionGroups(question);
+   const scored = guideLines.map((line, i) => ({
+     i,
+-    score: score(line, terms),
++    score: score(line, groups),
+   }));
+   const top = scored
+     .filter((x) => x.score > 0)
+@@ -75,18 +106,34 @@ function relevantGuide(question, limit = 4) {
+ const NO_ANSWER_CHAT = "No lo sé: la guía de la app no lo cubre.";
+ // Deterministic excerpt: the guide sentences that share most terms with the question.
+ // Shown as the answer's source (or as the answer itself); never generated.
+-function guideExcerptDetailed(question, max = 2) {
+-  const terms = questionTerms(question);
+-  const sentences = guideLines
+-    .slice(1)
+-    .flatMap((l) => l.split(/(?<=\.)\s+/))
+-    .map((s) => s.trim())
+-    .filter((s) => s.length > 20 && s.length <= 450);
+-  return sentences
+-    .map((s, i) => ({ s, i, score: score(s, terms) }))
++function guideExcerptDetailed(question, max = 2, lines = guideLines.slice(1)) {
++  const groups = questionGroups(question);
++  const sentences = lines
++    .flatMap((l, p) => l.split(/(?<=\.)\s+/).map((s) => ({ s: s.trim(), p })))
++    .filter((x) => x.s.length > 20 && x.s.length <= 450);
++  const scored = sentences
++    .map((x, i) => ({ ...x, i, score: score(x.s, groups) }))
+     .filter((x) => x.score > 0)
+-    .sort((a, b) => b.score - a.score || a.s.length - b.s.length)
+-    .slice(0, max);
++    .sort((a, b) => b.score - a.score || a.s.length - b.s.length);
++  if (!scored.length) return [];
++  // The excerpt reads as a paragraph: after the best sentence comes the one that follows it in
++  // the same paragraph (the answer often continues there), then the next best hits.
++  const top = scored[0];
++  const indexed = sentences.map((x, i) => ({ ...x, i }));
++  const follow = indexed.find((x) => x.p === top.p && x.i === top.i + 1);
++  const rest = scored
++    .slice(1)
++    .filter((x) => !follow || x.i !== follow.i)
++    .sort(
++      (a, b) =>
++        b.score - a.score ||
++        (a.p === top.p ? 0 : 1) - (b.p === top.p ? 0 : 1) ||
++        a.s.length - b.s.length,
++    );
++  return [top, ...(follow ? [{ ...follow, score: 0 }] : []), ...rest].slice(
++    0,
++    max,
++  );
+ }
+ function guideExcerpt(question, max = 2) {
+   return guideExcerptDetailed(question, max)
+@@ -103,12 +150,13 @@ const NO_ACTION_CHAT =
+ // the model (measured: the 0.6B model refused or contradicted the guide in those cases). The
+ // model only answers when coverage is weak. Call with modelAnswer = null to ask whether the
+ // model is needed at all: null back means "run the model".
++const isStrong = (best, terms) =>
++  best.length > 0 &&
++  (best[0].score >= 2 || (terms > 0 && best[0].score / terms >= 0.5));
+ function combineChat(question, modelAnswer) {
+   const best = guideExcerptDetailed(question);
+-  const terms = questionTerms(question).length;
+-  const strong =
+-    best.length > 0 &&
+-    (best[0].score >= 2 || (terms > 0 && best[0].score / terms >= 0.5));
++  const terms = questionGroups(question).length;
++  const strong = isStrong(best, terms);
+   const excerpt = best.map((x) => x.s).join(" ");
+   if (actionRequest.test(question))
+     return {
+@@ -116,6 +164,13 @@ function combineChat(question, modelAnswer) {
+       excerpt,
+       source: "rule",
+     };
++  // Easter egg: questions about gelato culture (history, gelato vs ice cream, balance, Mallorca)
++  // are answered from src/ai-lore.cjs when it fits better than the app guide.
++  const lore = guideExcerptDetailed(question, 2, loreLines);
++  if (isStrong(lore, terms) && (!strong || lore[0].score > best[0].score)) {
++    const text = lore.map((x) => x.s).join(" ");
++    return { answer: "Arte + gelato: " + text, excerpt: text, source: "lore" };
++  }
+   if (strong)
+     return { answer: "Según la guía: " + excerpt, excerpt, source: "guide" };
+   if (modelAnswer === null) return null;
+@@ -154,6 +209,7 @@ function chatSystemPrompt(question, document) {
+ }
+ module.exports = {
+   guideLines,
++  loreLines,
+   questionTerms,
+   relevantGuide,
+   guideExcerpt,
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index a3f0bca..c76c4b1 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views-ai.js b/src/ui/views-ai.js
+index aac6ac6..dc70201 100644
+--- a/src/ui/views-ai.js
++++ b/src/ui/views-ai.js
+@@ -1,7 +1,7 @@
+ // Vistas de IA local y Guía.
+ // Los módulos de src/ui comparten el ámbito global y se cargan en orden desde index.html.
+ function aiChatSection() {
+-  return `<section class="panel settings-card ai-chat"><h2>Dudas sobre la app o el texto</h2><p>Pregunta cómo usar GelatoStock o qué dice el texto del editor. Responde el mismo modelo local con una guía fija; no consulta tu inventario ni tus pedidos y no ejecuta acciones.</p><div class="ai-chat-log" aria-live="polite">${aiChat.map((m) => `<article class="ai-chat-msg ${m.role}"><strong>${m.role === "user" ? "Tú" : "IA local"}</strong><p class="${m.role === "assistant" ? "ai-chat-answer" : ""}">${esc(m.content)}</p>${m.excerpt ? `<small class="ai-chat-source">Según la guía: ${esc(m.excerpt)}</small>` : ""}</article>`).join("") || '<p class="muted">Ejemplo: «¿Qué hace Control de entregas?» o «¿Este texto es una factura o un presupuesto?»</p>'}</div><label class="check"><input type="checkbox" id="ai-chat-doc" ${aiChatUseDoc ? "checked" : ""} ${aiBusy ? "disabled" : ""}> Usar el texto del editor como contexto</label><label class="field">Tu pregunta<textarea id="ai-chat-input" maxlength="1500" rows="3" ${aiBusy ? "disabled" : ""}></textarea></label><div class="setting-actions">${btn(aiBusy ? "Respondiendo en este equipo…" : "Preguntar a la IA local", "aiChatSend", "primary", aiBusy ? "disabled" : "")}${aiBusy ? btn("Detener", "aiCancel") : ""}${aiChat.length ? btn("Vaciar chat", "aiChatClear", "secondary") : ""}</div>${aiChatError ? `<p role="alert">${esc(aiChatError)}</p>` : ""}<small>Respuestas orientativas generadas en este equipo; pueden ser incorrectas o incompletas. El chat se conserva solo en esta ventana. Se envían al modelo los últimos 6 mensajes.</small></section>`;
++  return `<section class="panel settings-card ai-chat"><h2>Dudas sobre la app o el texto</h2><p>Pregunta cómo usar GelatoStock o qué dice el texto del editor. Responde el mismo modelo local con una guía fija; no consulta tu inventario ni tus pedidos y no ejecuta acciones.</p><div class="ai-chat-log" aria-live="polite">${aiChat.map((m) => `<article class="ai-chat-msg ${m.role}"><strong>${m.role === "user" ? "Tú" : "IA local"}</strong><p class="${m.role === "assistant" ? "ai-chat-answer" : ""}">${esc(m.content)}</p>${m.excerpt ? `<small class="ai-chat-source">Según la guía: ${esc(m.excerpt)}</small>` : ""}</article>`).join("") || '<p class="muted">Ejemplo: «¿Qué hace Control de entregas?» · «¿Cómo hago una copia?» · y, si te apetece, «¿En qué se diferencia el gelato del helado?»</p>'}</div><label class="check"><input type="checkbox" id="ai-chat-doc" ${aiChatUseDoc ? "checked" : ""} ${aiBusy ? "disabled" : ""}> Usar el texto del editor como contexto</label><label class="field">Tu pregunta<textarea id="ai-chat-input" maxlength="1500" rows="3" ${aiBusy ? "disabled" : ""}></textarea></label><div class="setting-actions">${btn(aiBusy ? "Respondiendo en este equipo…" : "Preguntar a la IA local", "aiChatSend", "primary", aiBusy ? "disabled" : "")}${aiBusy ? btn("Detener", "aiCancel") : ""}${aiChat.length ? btn("Vaciar chat", "aiChatClear", "secondary") : ""}</div>${aiChatError ? `<p role="alert">${esc(aiChatError)}</p>` : ""}<small>Respuestas orientativas generadas en este equipo; pueden ser incorrectas o incompletas. El chat se conserva solo en esta ventana. Se envían al modelo los últimos 6 mensajes.</small></section>`;
+ }
+ function aiPage() {
+   return (
+diff --git a/tests/ai.test.cjs b/tests/ai.test.cjs
+index c77194e..458d600 100644
+--- a/tests/ai.test.cjs
++++ b/tests/ai.test.cjs
+@@ -189,3 +189,22 @@ test("chat: las reglas prevalecen sobre el modelo en peticiones de acción y cua
+   assert.equal(covered.source, "guide");
+   assert.match(covered.answer, /lo pedido, lo recibido/);
+ });
++
++test("chat: cultura del gelato (easter egg) responde por reglas y no desplaza las dudas de la app", () => {
++  const { combineChat } = require("../src/ai-guide.cjs");
++  const diff = combineChat("¿En qué se diferencia el gelato del helado?", null);
++  assert.equal(diff.source, "lore");
++  assert.match(diff.answer, /menos grasa/);
++  const hist = combineChat("¿Quién inventó el gelato?", null);
++  assert.equal(hist.source, "lore");
++  assert.match(hist.answer, /Buontalenti|Procopio/);
++  const palma = combineChat("¿Hay tradición de helado en Mallorca?", null);
++  assert.equal(palma.source, "lore");
++  assert.match(palma.answer, /Ca'n Joan de s'Aigo/);
++  const app = combineChat(
++    "¿Cuándo se descuentan los ingredientes al producir?",
++    null,
++  );
++  assert.equal(app.source, "guide");
++  assert.equal(combineChat("¿Qué tiempo hará mañana en Palma?", null), null);
++});
+diff --git a/tests/fixtures/ai-chat.json b/tests/fixtures/ai-chat.json
+index de1475e..a15c1d3 100644
+--- a/tests/fixtures/ai-chat.json
++++ b/tests/fixtures/ai-chat.json
+@@ -2,97 +2,191 @@
+   {
+     "id": "control_entregas",
+     "question": "¿Qué hace la pantalla Control de entregas?",
+-    "expect": ["recib"],
+-    "forbid": ["no lo sé"]
++    "expect": [
++      "recib"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
+   },
+   {
+     "id": "stock_al_recibir",
+     "question": "Si registro que llegaron 4 litros, ¿cambia el stock?",
+-    "expect": ["suma|se suma|inventario|stock"],
+-    "forbid": ["no lo sé"]
++    "expect": [
++      "suma|se suma|inventario|stock"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
+   },
+   {
+     "id": "pedidos_reales",
+     "question": "¿La app envía pedidos reales o hace pagos?",
+-    "expect": ["no realiza pagos|no hace pagos|no paga|sin pagos|no envía pedidos reales|simulad|solo si tú lo confirmas|confirm"],
+-    "forbid": ["sí, paga|realiza pagos automáticamente"]
++    "expect": [
++      "no realiza pagos|no hace pagos|no paga|sin pagos|no envía pedidos reales|simulad|solo si tú lo confirmas|confirm"
++    ],
++    "forbid": [
++      "sí, paga|realiza pagos automáticamente"
++    ]
+   },
+   {
+     "id": "copias",
+     "question": "¿Cómo hago una copia de seguridad?",
+-    "expect": ["configuraci"],
+-    "forbid": ["no lo sé"]
++    "expect": [
++      "configuraci"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
+   },
+   {
+     "id": "produccion_descuento",
+     "question": "¿Cuándo se descuentan los ingredientes al producir?",
+-    "expect": ["aprob"],
+-    "forbid": ["automáticamente al registrar|al instante"]
++    "expect": [
++      "aprob"
++    ],
++    "forbid": [
++      "automáticamente al registrar|al instante"
++    ]
+   },
+   {
+     "id": "aprendizaje_decisiones",
+     "question": "Si corrijo la lectura de un mensaje, ¿la app decidirá por mí la próxima vez?",
+-    "expect": ["no|nunca"],
+-    "forbid": ["sí, decidirá|decide por ti"]
++    "expect": [
++      "no|nunca"
++    ],
++    "forbid": [
++      "sí, decidirá|decide por ti"
++    ]
+   },
+   {
+     "id": "documentos_pdf",
+     "question": "¿Puedo guardar un PDF en Documentos?",
+-    "expect": ["pdf"],
+-    "forbid": ["no lo sé"]
++    "expect": [
++      "pdf"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
+   },
+   {
+     "id": "whatsapp_autorizados",
+     "question": "¿De quién recibe mensajes por WhatsApp?",
+-    "expect": ["autorizad"],
+-    "forbid": ["de cualquiera|todos los contactos"]
++    "expect": [
++      "autorizad"
++    ],
++    "forbid": [
++      "de cualquiera|todos los contactos"
++    ]
+   },
+   {
+     "id": "recetario_contrasena",
+     "question": "¿Se puede proteger el recetario con contraseña?",
+-    "expect": ["contraseña"],
+-    "forbid": ["no se puede|no es posible"]
++    "expect": [
++      "contraseña"
++    ],
++    "forbid": [
++      "no se puede|no es posible"
++    ]
+   },
+   {
+     "id": "ia_acciones",
+     "question": "¿La IA local puede modificar el stock?",
+-    "expect": ["no"],
+-    "forbid": ["sí, puede modificar|modifica el stock"]
++    "expect": [
++      "no"
++    ],
++    "forbid": [
++      "sí, puede modificar|modifica el stock"
++    ]
+   },
+   {
+     "id": "unidades",
+     "question": "¿Qué unidades usa la app?",
+-    "expect": ["kilo|kg|litro|unidad"],
+-    "forbid": ["no lo sé"]
++    "expect": [
++      "kilo|kg|litro|unidad"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
+   },
+   {
+     "id": "fuera_de_guia",
+     "question": "¿Cuánto cuesta la licencia anual de la app?",
+-    "expect": ["no lo sé|no tengo|no aparece|no está|no cubre|no dispongo|no puedo"],
+-    "forbid": ["euros al año|cuesta \\d"]
++    "expect": [
++      "no lo sé|no tengo|no aparece|no está|no cubre|no dispongo|no puedo"
++    ],
++    "forbid": [
++      "euros al año|cuesta \\d"
++    ]
+   },
+   {
+     "id": "fuera_de_guia_2",
+     "question": "¿Qué tiempo hará mañana en Palma?",
+-    "expect": ["no lo sé|no tengo|no puedo|no aparece|no está|no cubre|no dispongo"],
+-    "forbid": ["soleado|lluvia|grados"]
++    "expect": [
++      "no lo sé|no tengo|no puedo|no aparece|no está|no cubre|no dispongo"
++    ],
++    "forbid": [
++      "soleado|lluvia|grados"
++    ]
+   },
+   {
+     "id": "no_accion",
+     "question": "Borra todos los pedidos ahora mismo.",
+-    "expect": ["no puedo|no ejecut|no realizo|no tengo acceso|no es posible"],
+-    "forbid": ["hecho|borrados|eliminados|he borrado"]
++    "expect": [
++      "no puedo|no ejecut|no realizo|no tengo acceso|no es posible"
++    ],
++    "forbid": [
++      "hecho|borrados|eliminados|he borrado"
++    ]
+   },
+   {
+     "id": "documentos_vinculo",
+     "question": "¿Cómo se vincula un documento a un pedido?",
+-    "expect": ["pedido"],
+-    "forbid": ["no lo sé"]
++    "expect": [
++      "pedido"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
+   },
+   {
+     "id": "mensajes_decidir",
+     "question": "¿Para qué sirve «Decidir y cerrar» en Mensajes?",
+-    "expect": ["decisi|anot"],
+-    "forbid": ["no lo sé"]
++    "expect": [
++      "decisi|anot"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
++  },
++  {
++    "id": "lore_diferencia",
++    "question": "¿En qué se diferencia el gelato del helado?",
++    "expect": [
++      "grasa|aire"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
++  },
++  {
++    "id": "lore_historia",
++    "question": "¿Cuál es la historia del gelato?",
++    "expect": [
++      "florencia|buontalenti|procopio"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
++  },
++  {
++    "id": "lore_mallorca",
++    "question": "¿Qué helado es típico de Mallorca?",
++    "expect": [
++      "almendra"
++    ],
++    "forbid": [
++      "no lo sé"
++    ]
+   }
+ ]
