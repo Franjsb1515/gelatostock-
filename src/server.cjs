@@ -781,7 +781,14 @@ function createApp({
               ]),
             ),
           ].join("\r\n");
-          const dir = path.join(dataDir, "exportaciones");
+          // Default folder inside the data dir; optionally a folder the person picked.
+          let dir = path.join(dataDir, "exportaciones");
+          if (data.dir) {
+            const chosen = String(data.dir).trim();
+            if (chosen.length > 300 || !path.isAbsolute(chosen))
+              throw Error("Elige una carpeta con su ruta completa.");
+            dir = chosen;
+          }
           fs.mkdirSync(dir, { recursive: true });
           const stamp = new Date()
             .toISOString()

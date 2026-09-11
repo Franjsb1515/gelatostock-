@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.22.0 — 2026-09-11 · sesión 035
+
+Diálogo del sistema para carpetas: src/preload.cjs (sandbox y aislamiento de contexto) expone una única función, pickFolder, que pide al proceso principal el selector nativo de carpetas (ipcMain «pick-folder», solo desde nuestra ventana). Configuración → carpeta secundaria tiene «Elegir con el explorador…» y Exportar CSV pregunta primero dónde guardar (cancelar usa la carpeta de datos; /api/export acepta dir absoluto). En el navegador de desarrollo, sin puente, se sigue escribiendo la ruta.
+
+Preparación para Mac: scripts/package.cjs empaqueta también en macOS (Electron.app con la app en Contents/Resources/app, poda de binarios de otras plataformas por plataforma y arquitectura), npm run package:mac, scripts/setup-browser.cjs descarga el Chrome de WhatsApp para la plataforma actual y scripts/measure-ai-memory.cjs mide memoria y tiempos de la IA local. docs/MAC.md con los pasos y lo que falta (firma, prueba de escritorio, nombre del bundle). Nada de esto se ha ejecutado en un Mac todavía. Referencia en este Windows: pico 2227 MiB, base 47 MiB, tras liberar 132 MiB; lecturas 12379 ms, 4366 ms, 5125 ms (13th Gen Intel(R) Core(TM) i7-13620H, 15.6 GiB).
+
+Pruebas: 132. Informe reports/2026-09-11T11-10-08-280Z-carpetas-y-mac.md.
+
 ## 0.21.0 — 2026-09-11 · sesión 034
 
 Historial de precios: cada cambio de precio en la ficha del producto se guarda en la tabla prices (SQLite user_version 4; de, a, fecha, proveedor, origen). Resumen avisa de las subidas de los últimos 30 días con el porcentaje; la ficha del proveedor muestra los últimos tres cambios; el resumen semanal lista los cambios de la semana.

@@ -1073,9 +1073,26 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "pickFolder") {
+    try {
+      const chosen = await window.gelato.pickFolder(el.dataset.purpose);
+      if (!chosen) return;
+      const input = $(
+        `#modal-form input[name="${CSS.escape(el.dataset.target)}"]`,
+      );
+      if (input) input.value = chosen;
+    } catch (e) {
+      toast("No se pudo abrir el explorador: " + e.message);
+    }
+    return;
+  }
   if (name === "exportCsv") {
     try {
-      const r = await request("/api/export", {});
+      // With the native picker the person chooses where the CSV files go; cancel keeps the default.
+      let dir = "";
+      if (window.gelato?.pickFolder)
+        dir = (await window.gelato.pickFolder("export")) || "";
+      const r = await request("/api/export", dir ? { dir } : {});
       modal(
         "Exportación CSV creada",
         "Inventario y movimientos, separados por punto y coma, listos para hoja de cálculo o gestoría.",
@@ -1176,7 +1193,10 @@ async function action(name, el) {
         backupInfo?.secondary?.dir || "",
         "text",
         'required maxlength="300" placeholder="E:\\CopiasGelato"',
-      ),
+      ) +
+        (window.gelato?.pickFolder
+          ? `<div class="setting-actions">${btn("Elegir con el explorador…", "pickFolder", "secondary", 'data-purpose="backup" data-target="dir"')}</div>`
+          : '<p class="fineprint">Escribe la ruta tal como aparece en el explorador de archivos.</p>'),
       async (f) => {
         applyEnvelope(
           await request("/api/maintenance", {

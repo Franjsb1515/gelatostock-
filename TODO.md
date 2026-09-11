@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.21.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.22.0.
 
 ## Entregado y comprobado
 
@@ -47,14 +47,14 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Auditoría 0.17.0, punto 11: views.js partido, pruebas de Recetario y «Abrir», auditoría visual ampliada (0.18.0).
 - [x] Respuesta directa desde el mensaje y envío de pedidos por lotes uno a uno (0.19.0).
 - [ ] Probar el lote con los números propios del usuario (la prueba usa cliente simulado).
-- [ ] Elegir la carpeta secundaria con un diálogo del sistema (hoy se escribe la ruta; requiere preload o IPC en Electron).
 - [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
 - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
 - [x] Recetario: balance técnico con fichas de composición por ingrediente (0.20.0); faltan las fichas reales del usuario.
 - [x] Resumen semanal imprimible (0.20.0).
 - [x] Bloque 2: historial de precios con aviso de subida; conteo por zonas con recordatorio (0.21.0).
 - [ ] Precios: registrar también los cambios detectados en listas de precios (documentos) y mensajes «sube de precio» (hoy solo la ficha).
-- [ ] Bloque 3: diálogo del sistema para carpetas; preparación de la versión Mac y medición de memoria de la IA allí.
+- [x] Bloque 3: diálogo del sistema para carpetas; preparación Mac (0.22.0).
+- [ ] Mac: ejecutar docs/MAC.md en el equipo del usuario y enviar la salida de scripts/measure-ai-memory.cjs; adaptar la prueba de escritorio; nombre e icono del bundle; firma.
 - [ ] Después: Compras y Mensajes al 100 % (objetivo principal del usuario).
 - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
 - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).

@@ -777,3 +777,41 @@ test("envío por lotes: lista completa, selección, envío uno a uno con pausa y
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("exportación CSV a una carpeta elegida: ruta absoluta obligatoria, archivos creados allí", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-export-"));
+  const target = fs.mkdtempSync(path.join(root, "http-export-dest-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    let r = await post("/api/export", { dir: "relativa/carpeta" });
+    assert.equal(r.status, 400);
+    r = await post("/api/export", { dir: target });
+    assert.equal(r.status, 200);
+    const { files } = await r.json();
+    assert.equal(files.length, 2);
+    assert.ok(files.every((f) => f.startsWith(target) && fs.existsSync(f)));
+    r = await post("/api/export", {});
+    assert.ok(
+      (await r.json()).files[0].startsWith(path.join(dir, "exportaciones")),
+    );
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(target, { recursive: true, force: true });
+  }
+});

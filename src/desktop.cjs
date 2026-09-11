@@ -1,4 +1,11 @@
-const { app, BrowserWindow, dialog, Notification, shell } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  dialog,
+  Notification,
+  shell,
+  ipcMain,
+} = require("electron");
 const path = require("node:path");
 const fs = require("node:fs");
 const base = app.isPackaged
@@ -53,6 +60,7 @@ if (!app.requestSingleInstanceLock()) {
         title: "GelatoStock",
         autoHideMenuBar: true,
         webPreferences: {
+          preload: path.join(__dirname, "preload.cjs"),
           nodeIntegration: false,
           contextIsolation: true,
           sandbox: true,
@@ -77,6 +85,19 @@ if (!app.requestSingleInstanceLock()) {
       });
       win.webContents.on("will-navigate", (e, url) => {
         if (new URL(url).origin !== origin) e.preventDefault();
+      });
+      // The only bridge from the page: a native folder picker. Only our window may ask.
+      ipcMain.handle("pick-folder", async (event, purpose) => {
+        if (!win || event.sender !== win.webContents) return "";
+        const titles = {
+          backup: "Carpeta secundaria de copias",
+          export: "Carpeta para la exportación CSV",
+        };
+        const r = await dialog.showOpenDialog(win, {
+          title: titles[purpose] || "Elegir carpeta",
+          properties: ["openDirectory", "createDirectory"],
+        });
+        return r.canceled || !r.filePaths[0] ? "" : r.filePaths[0];
       });
       win.webContents.session.setPermissionRequestHandler((_w, _p, cb) =>
         cb(false),
