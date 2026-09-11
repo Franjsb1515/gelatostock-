@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.19.1
+# GelatoStock · prototipo 0.20.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.19.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.20.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.19.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.20.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué puedes probar
 
@@ -176,3 +176,6 @@ Configuración permite una carpeta secundaria de copias (otro disco, USB o carpe
 
 ## Respuesta directa y lotes en 0.19.0
 En Mensajes se responde escribiendo en el propio mensaje (las respuestas rápidas rellenan el cuadro) y se envía con un clic. En Compras, «Enviar pendientes por WhatsApp» muestra todos los pedidos pendientes con su texto; se marcan los que se quieren y la app los envía uno a uno con pausa, mostrando el progreso.
+
+## Balance técnico y resumen semanal en 0.20.0
+El recetario calcula azúcares, grasa, sólidos totales y sólidos lácteos no grasos de cada receta a partir de las fichas de composición de los ingredientes y los compara con rangos orientativos por familia. La pantalla Semana resume producción, ventas, mermas, recepciones, pedidos, mensajes y avisos de stock, e imprime o guarda en PDF.

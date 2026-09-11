@@ -1103,6 +1103,18 @@ async function action(name, el) {
     }
     return;
   }
+  if (name === "weeklyPrev" || name === "weeklyNext") {
+    const start = weeklyWeek || (weeklyData && weeklyData.start);
+    if (!start) return;
+    weeklyData = null;
+    weeklyWeek = shiftWeek(start, name === "weeklyPrev" ? -7 : 7);
+    render();
+    return;
+  }
+  if (name === "printPage") {
+    window.print();
+    return;
+  }
   if (name === "moreHistory") {
     const kind = el.dataset.kind;
     historyShown[kind] += 50;

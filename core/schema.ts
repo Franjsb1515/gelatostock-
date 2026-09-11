@@ -21,8 +21,14 @@ const documentDate = z
   }, "Fecha inválida.");
 const at = z.string().datetime();
 const cents = z.number().int().min(0).max(100_000_000);
+// Composition per 100 g or 100 mL, in percent. Optional: only what the ingredient sheet says.
+const pct = z.number().min(0).max(100);
+export const compositionSchema = z
+  .object({ sugars: pct, fat: pct, solids: pct, msnf: pct })
+  .partial();
 export const productFields = {
   name: text(100),
+  composition: compositionSchema.optional(),
   detail: z.string().max(200).default(""),
   category: z.enum(["Gelatería", "Cafetería", "Postres", "Envases"]),
   unit: z.enum(["kg", "L", "ud"]),
@@ -302,6 +308,7 @@ export const actionSchema = z.intersection(
     z.object({
       type: z.literal("editProduct"),
       product: idSchema,
+      composition: compositionSchema.optional(),
       name: text(100),
       detail: z.string().max(200),
       min: quantity,

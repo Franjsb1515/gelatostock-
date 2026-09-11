@@ -7,6 +7,9 @@ let appVersion = "",
   backupInfo = null,
   historyInfo = null,
   replyDrafts = {},
+  weeklyData = null,
+  weeklyWeek = "",
+  weeklyBusy = false,
   historyShown = { movements: 50, activity: 50 },
   lockInfo = null,
   retentionDays = 0;
@@ -222,6 +225,7 @@ const pageLabel = {
   ai: "IA local",
   production: "Producción",
   recipes: "Recetario",
+  weekly: "Resumen semanal",
   documents: "Documentos",
   guide: "Guía",
 };
@@ -269,6 +273,7 @@ function render() {
     ai: aiPage,
     production,
     recipes: recipeBook,
+    weekly: weeklyPage,
     documents,
     guide: guidePage,
   };
@@ -285,6 +290,7 @@ function render() {
       ["suppliers", "store", "Proveedores"],
       ["documents", "photo", "Documentos"],
       ["activity", "clock", "Actividad"],
+      ["weekly", "check", "Semana"],
       ["ai", "leaf", "IA local"],
       ["guide", "shield", "Guía"],
     ]
@@ -313,3 +319,8 @@ async function refreshWhatsApp() {
   }
 }
 setInterval(refreshWhatsApp, 2000);
+
+// Name shown on printed pages.
+function businessName() {
+  return state?.business || "GelatoStock";
+}

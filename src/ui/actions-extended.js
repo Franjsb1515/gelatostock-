@@ -82,7 +82,7 @@ async function extendedAction(name, el) {
     modal(
       "Editar producto",
       "La unidad base y el stock se conservan. Los pedidos existentes mantienen su presentación y precio.",
-      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Unidades base por paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${select(
+      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Unidades base por paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${["sugars", "fat", "solids", "msnf"].map((k) => field({ sugars: "Azúcares % (ficha)", fat: "Grasa % (ficha)", solids: "Sólidos totales % (ficha)", msnf: "Sólidos lácteos no grasos % (ficha)" }[k], "comp_" + k, p.composition?.[k] ?? "", "number", 'min="0" max="100" step="0.1" placeholder="opcional"')).join("")}${select(
         "Proveedor",
         "supplier",
         state.suppliers.map((s) => [s.id, s.name]),
@@ -93,7 +93,19 @@ async function extendedAction(name, el) {
         for (const k of ["min", "target", "pack"]) a[k] = Number(a[k]);
         a.price = Math.round(Number(a.price) * 100);
         return mutate(
-          { type: "editProduct", product: p.id, ...a },
+          {
+            type: "editProduct",
+            product: p.id,
+            ...a,
+            composition: Object.fromEntries(
+              ["sugars", "fat", "solids", "msnf"]
+                .filter(
+                  (k) =>
+                    f.get("comp_" + k) !== "" && f.get("comp_" + k) !== null,
+                )
+                .map((k) => [k, Number(f.get("comp_" + k))]),
+            ),
+          },
           "Ficha actualizada.",
         );
       },

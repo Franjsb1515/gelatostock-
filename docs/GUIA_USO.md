@@ -27,6 +27,7 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación 
 ## Recetario
 Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.
 - Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.
+- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.
 - Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.
 - Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.
 
@@ -61,6 +62,9 @@ Facturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se
 
 ## Proveedores
 Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).
+
+## Semana
+Resumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.
 
 ## Actividad
 Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.

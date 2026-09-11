@@ -3307,3 +3307,127 @@ dialog::backdrop {
 .batch-progress li.pending {
   color: var(--ink-muted, #5a6670);
 }
+
+/* Balance técnico */
+.balance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.balance-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--crema, #f7f1e6);
+  display: grid;
+  gap: 2px;
+}
+.balance-item span {
+  font-size: 12px;
+  color: var(--ink-muted, #5a6670);
+}
+.balance-item strong {
+  font-size: 18px;
+}
+.balance-item small {
+  font-size: 12px;
+  color: var(--ink-muted, #5a6670);
+}
+.balance-item.ok {
+  background: var(--pistacho-claro, #e6eedc);
+}
+.balance-item.low,
+.balance-item.high {
+  background: #fbe7d9;
+}
+/* Resumen semanal e impresión */
+.report {
+  padding: 24px 28px;
+}
+.report-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.report-head h2 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 24px;
+}
+.report-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.report-kpis div {
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--crema, #f7f1e6);
+  display: grid;
+  gap: 2px;
+}
+.report-kpis strong {
+  font-size: 22px;
+}
+.report-kpis span {
+  font-size: 12px;
+  color: var(--ink-muted, #5a6670);
+}
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px 24px;
+  margin-top: 16px;
+}
+.report-grid h3 {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.report-table td,
+.report-table th {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-soft, #f0eae0);
+  text-align: left;
+}
+.report-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+@media print {
+  .sidebar,
+  .topbar,
+  .page-header .heading-actions,
+  .toast,
+  footer,
+  .app-footer {
+    display: none !important;
+  }
+  body,
+  #app,
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  main {
+    margin-left: 0 !important;
+    max-width: none !important;
+  }
+  .report {
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  .report-kpis div,
+  .balance-item {
+    background: #f3f3f3 !important;
+  }
+}

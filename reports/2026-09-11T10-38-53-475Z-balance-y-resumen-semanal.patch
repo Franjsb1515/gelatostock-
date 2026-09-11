@@ -1,0 +1,668 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 3692bef..2d1cb01 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.19.1-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.20.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index a948053..41dd1ea 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Registro de parches y sesiones
+ 
++## 0.20.0 — 2026-09-11 · sesión 033
++
++Balance técnico del recetario: cada producto admite una ficha de composición (azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g; Inventario → Editar producto) y core/balance.ts calcula los porcentajes de la receta sobre la masa de ingredientes (kg y L 1:1, unidades fuera), comparados con rangos orientativos por familia (crema, sorbete, postre). Si falta alguna ficha lo dice y no marca rangos. Se calcula en el servidor y viaja con cada receta cuando el recetario está desbloqueado. Datos de ejemplo con fichas típicas para leche, nata, pistacho, chocolate y bebida de avena.
++
++Resumen semanal imprimible: pantalla «Semana» (core/report.ts, GET /api/report?week=) con producción, ventas y mermas por día y por producto, recepciones, pedidos creados/enviados/recibidos y gasto estimado, mensajes y productos bajo mínimo al cierre; navegación por semanas e «Imprimir» con el diálogo del sistema (sirve para PDF). Estilos de impresión sin barra lateral.
++
++Pruebas: 128. Informe reports/2026-09-11T10-38-53-475Z-balance-y-resumen-semanal.md.
++
+ ## 0.19.1 — 2026-09-11 · sesión 032
+ 
+ Guiño «arte + gelato» en el chat de IA local: src/ai-lore.cjs (texto propio: gelato frente a helado, sorbete, historia con sus atribuciones, Mallorca y Ca'n Joan de s'Aigo, Artello y el sabor Mediterraneo, equilibrio de una receta, maduración, pistacho de Bronte, vitrina). El chat lo usa por reglas cuando encaja mejor que la guía de la app, con el prefijo «Arte + gelato:», sin modelo y sin coste de memoria; sinónimos nuevos (origen/inventó → historia, ice cream → helado…). Pista discreta en el ejemplo del chat. Evaluación --chat ampliada a 19 preguntas: 19/19 (fuentes: {"guide":13,"model":2,"rule":1,"lore":3}).
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 9dfb658..fd9d0ad 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.19.1
++# Entrada para Claude · entrega vigente 0.20.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index 8e375dd..caf4db6 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.19.1
++# GelatoStock · prototipo 0.20.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.19.1-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.20.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.19.1-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.20.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+@@ -176,3 +176,6 @@ Configuración permite una carpeta secundaria de copias (otro disco, USB o carpe
+ 
+ ## Respuesta directa y lotes en 0.19.0
+ En Mensajes se responde escribiendo en el propio mensaje (las respuestas rápidas rellenan el cuadro) y se envía con un clic. En Compras, «Enviar pendientes por WhatsApp» muestra todos los pedidos pendientes con su texto; se marcan los que se quieren y la app los envía uno a uno con pausa, mostrando el progreso.
++
++## Balance técnico y resumen semanal en 0.20.0
++El recetario calcula azúcares, grasa, sólidos totales y sólidos lácteos no grasos de cada receta a partir de las fichas de composición de los ingredientes y los compara con rangos orientativos por familia. La pantalla Semana resume producción, ventas, mermas, recepciones, pedidos, mensajes y avisos de stock, e imprime o guarda en PDF.
+diff --git a/TODO.md b/TODO.md
+index 6299426..9adb7da 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.19.1.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.20.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -50,7 +50,11 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [ ] Elegir la carpeta secundaria con un diálogo del sistema (hoy se escribe la ruta; requiere preload o IPC en Electron).
+ - [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
+ - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
+-- [ ] Recetario: balance técnico del gelato (azúcares, grasa, sólidos) si el usuario aporta fichas reales; impresión de ficha.
++- [x] Recetario: balance técnico con fichas de composición por ingrediente (0.20.0); faltan las fichas reales del usuario.
++- [x] Resumen semanal imprimible (0.20.0).
++- [ ] Bloque 2: historial de precios por proveedor con aviso de subida; conteo de inventario por zonas con recordatorio.
++- [ ] Bloque 3: diálogo del sistema para carpetas; preparación de la versión Mac y medición de memoria de la IA allí.
++- [ ] Después: Compras y Mensajes al 100 % (objetivo principal del usuario).
+ - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
+ - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
+ - [ ] IA: chat con el modelo 0.6B sigue siendo lento (10–25 s); valorar respuestas por reglas para las preguntas frecuentes de la guía.
+diff --git a/core/domain.ts b/core/domain.ts
+index c34f04c..0648ad9 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -23,6 +23,8 @@ export {
+   normalizePhrase,
+ } from "./messages";
+ export { localDate } from "./messages";
++export { recipeBalance, balanceRanges, balanceLabels } from "./balance";
++export { weeklyReport, weekStart, weekBounds } from "./report";
+ export const round = (n: number) => Math.round(n * 1000) / 1000;
+ export function ensure(value: unknown, message: string): asserts value {
+   if (!value) throw Error(message);
+@@ -414,6 +416,12 @@ export function apply(state: State, input: unknown): State {
+         price: a.price,
+         supplier: a.supplier,
+       });
++      if (a.composition !== undefined)
++        p.composition = Object.values(a.composition).some(
++          (v) => v !== undefined,
++        )
++          ? a.composition
++          : undefined;
+       note = `Ficha actualizada: ${p.name}. La unidad base y el stock no se modificaron.`;
+       break;
+     }
+diff --git a/core/schema.ts b/core/schema.ts
+index a662f78..9c7801c 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -21,8 +21,14 @@ const documentDate = z
+   }, "Fecha inválida.");
+ const at = z.string().datetime();
+ const cents = z.number().int().min(0).max(100_000_000);
++// Composition per 100 g or 100 mL, in percent. Optional: only what the ingredient sheet says.
++const pct = z.number().min(0).max(100);
++export const compositionSchema = z
++  .object({ sugars: pct, fat: pct, solids: pct, msnf: pct })
++  .partial();
+ export const productFields = {
+   name: text(100),
++  composition: compositionSchema.optional(),
+   detail: z.string().max(200).default(""),
+   category: z.enum(["Gelatería", "Cafetería", "Postres", "Envases"]),
+   unit: z.enum(["kg", "L", "ud"]),
+@@ -302,6 +308,7 @@ export const actionSchema = z.intersection(
+     z.object({
+       type: z.literal("editProduct"),
+       product: idSchema,
++      composition: compositionSchema.optional(),
+       name: text(100),
+       detail: z.string().max(200),
+       min: quantity,
+diff --git a/core/seed.ts b/core/seed.ts
+index 0c3d63b..7279737 100644
+--- a/core/seed.ts
++++ b/core/seed.ts
+@@ -156,6 +156,15 @@ export function seed(): State {
+       "milk",
+     ],
+   ];
++  // Typical composition per 100 g/mL of the demo ingredients (sugars, fat, total solids,
++  // milk solids non-fat). Replace with the supplier sheets; the balance uses these.
++  const compositions: Record<string, Product["composition"]> = {
++    p2: { sugars: 4.8, fat: 3.6, solids: 12.5, msnf: 8.9 },
++    p10: { sugars: 3, fat: 35, solids: 41, msnf: 6 },
++    p3: { sugars: 7, fat: 45, solids: 96, msnf: 0 },
++    p4: { sugars: 30, fat: 42, solids: 99, msnf: 0 },
++    p7: { sugars: 4, fat: 1.5, solids: 9, msnf: 0 },
++  };
+   const products: Product[] = rows.map(
+     ([
+       id,
+@@ -176,6 +185,7 @@ export function seed(): State {
+       detail,
+       category,
+       unit,
++      composition: compositions[id],
+       stock,
+       min,
+       target,
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 26a5547..70c8852 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -27,6 +27,7 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación
+ ## Recetario
+ Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.
+ - Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.
++- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.
+ - Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.
+ - Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.
+ 
+@@ -62,6 +63,9 @@ Facturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se
+ ## Proveedores
+ Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).
+ 
++## Semana
++Resumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.
++
+ ## Actividad
+ Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.
+ 
+diff --git a/package.json b/package.json
+index 4eeb902..fb402c2 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.19.1",
++  "version": "0.20.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index 82bc78b..0de03dc 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -8,7 +8,7 @@ Copias: Configuración permite crear una copia con datos y fotos y restaurarla;
+ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español lee el texto y propone un proveedor existente. No extrae cantidades ni lee PDF.
+ IA local: reglas deterministas leen el título del documento (factura, proforma, abono, albarán, lista de precios, oferta) o reconocen un mensaje, y un modelo pequeño incluido en el equipo (Qwen3 0.6B) da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. El modelo propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+-Recetario: pantalla con la ficha completa de cada receta (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
++Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+ Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se responde por WhatsApp escribiendo en el propio mensaje o con respuestas rápidas que rellenan el cuadro (se envía una sola vez al pulsar Enviar) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
+ WhatsApp: se vincula por QR con el teléfono del negocio. Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.
+diff --git a/src/index.html b/src/index.html
+index da175ba..ae2a566 100644
+--- a/src/index.html
++++ b/src/index.html
+@@ -31,6 +31,7 @@
+     <script src="/ui/views-messages.js" defer></script>
+     <script src="/ui/views-documents.js" defer></script>
+     <script src="/ui/views-ai.js" defer></script>
++    <script src="/ui/views-weekly.js" defer></script>
+     <script src="/ui/forms.js" defer></script>
+     <script src="/ui/actions.js" defer></script>
+     <script src="/ui/events.js" defer></script>
+diff --git a/src/server.cjs b/src/server.cjs
+index 0b9c94a..66599b2 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -4,7 +4,12 @@ const path = require("node:path");
+ const { randomBytes, timingSafeEqual, scryptSync } = require("node:crypto");
+ const { identifySupplier } = require("../build/identify.js");
+ const { interpretReply } = require("../build/messages.js");
+-const { orderMessage } = require("../build/domain.js");
++const {
++  orderMessage,
++  recipeBalance,
++  weeklyReport,
++  weekStart,
++} = require("../build/domain.js");
+ const { recognizeLocal } = require("./ocr.cjs");
+ const { WhatsAppConnection } = require("./whatsapp.cjs");
+ const { LocalAI } = require("./ai.cjs");
+@@ -100,7 +105,14 @@ function createApp({
+   const lockInfo = () => ({ enabled: lockEnabled(), unlocked: unlocked() });
+   const redact = (state) =>
+     unlocked()
+-      ? state
++      ? {
++          ...state,
++          // Computed in core from the ingredient sheets; shown in the recipe book.
++          recipes: state.recipes.map((r) => ({
++            ...r,
++            balance: recipeBalance(state, r),
++          })),
++        }
+       : {
+           ...state,
+           recipes: state.recipes.map((r) => ({
+@@ -340,6 +352,19 @@ function createApp({
+       json(200, envelope(store.load()));
+       return;
+     }
++    if (u.pathname === "/api/report" && req.method === "GET") {
++      // Weekly summary from the full state; the UI only prints it.
++      const week = u.searchParams.get("week") || weekStart(new Date());
++      if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) {
++        json(400, { error: "Semana inválida." });
++        return;
++      }
++      json(
++        200,
++        weeklyReport(store.load(), weekStart(new Date(week + "T12:00:00"))),
++      );
++      return;
++    }
+     if (u.pathname === "/api/history" && req.method === "GET") {
+       // Older movements/activity on demand (newest first, same order as the state).
+       const kind = u.searchParams.get("kind");
+@@ -816,6 +841,7 @@ function createApp({
+       "/ui/views-messages.js": "ui/views-messages.js",
+       "/ui/views-documents.js": "ui/views-documents.js",
+       "/ui/views-ai.js": "ui/views-ai.js",
++      "/ui/views-weekly.js": "ui/views-weekly.js",
+       "/ui/forms.js": "ui/forms.js",
+       "/ui/actions.js": "ui/actions.js",
+       "/ui/events.js": "ui/events.js",
+diff --git a/src/styles.css b/src/styles.css
+index 5c25d68..9d776e4 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3307,3 +3307,127 @@ dialog::backdrop {
+ .batch-progress li.pending {
+   color: var(--ink-muted, #5a6670);
+ }
++
++/* Balance técnico */
++.balance-grid {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
++  gap: 10px;
++  margin-top: 8px;
++}
++.balance-item {
++  padding: 10px 12px;
++  border-radius: 10px;
++  background: var(--crema, #f7f1e6);
++  display: grid;
++  gap: 2px;
++}
++.balance-item span {
++  font-size: 12px;
++  color: var(--ink-muted, #5a6670);
++}
++.balance-item strong {
++  font-size: 18px;
++}
++.balance-item small {
++  font-size: 12px;
++  color: var(--ink-muted, #5a6670);
++}
++.balance-item.ok {
++  background: var(--pistacho-claro, #e6eedc);
++}
++.balance-item.low,
++.balance-item.high {
++  background: #fbe7d9;
++}
++/* Resumen semanal e impresión */
++.report {
++  padding: 24px 28px;
++}
++.report-head {
++  display: flex;
++  justify-content: space-between;
++  align-items: flex-end;
++  gap: 12px;
++  margin-bottom: 16px;
++}
++.report-head h2 {
++  font-family: var(--font-serif);
++  font-weight: 500;
++  font-size: 24px;
++}
++.report-kpis {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
++  gap: 10px;
++  margin-bottom: 16px;
++}
++.report-kpis div {
++  padding: 12px;
++  border-radius: 10px;
++  background: var(--crema, #f7f1e6);
++  display: grid;
++  gap: 2px;
++}
++.report-kpis strong {
++  font-size: 22px;
++}
++.report-kpis span {
++  font-size: 12px;
++  color: var(--ink-muted, #5a6670);
++}
++.report-grid {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
++  gap: 16px 24px;
++  margin-top: 16px;
++}
++.report-grid h3 {
++  font-size: 14px;
++  margin-bottom: 6px;
++}
++.report-table {
++  width: 100%;
++  border-collapse: collapse;
++  font-size: 13px;
++}
++.report-table td,
++.report-table th {
++  padding: 6px 8px;
++  border-bottom: 1px solid var(--border-soft, #f0eae0);
++  text-align: left;
++}
++.report-table .num {
++  text-align: right;
++  white-space: nowrap;
++}
++@media print {
++  .sidebar,
++  .topbar,
++  .page-header .heading-actions,
++  .toast,
++  footer,
++  .app-footer {
++    display: none !important;
++  }
++  body,
++  #app,
++  main {
++    margin: 0 !important;
++    padding: 0 !important;
++    background: #fff !important;
++  }
++  main {
++    margin-left: 0 !important;
++    max-width: none !important;
++  }
++  .report {
++    border: 0;
++    box-shadow: none;
++    padding: 0;
++  }
++  .report-kpis div,
++  .balance-item {
++    background: #f3f3f3 !important;
++  }
++}
+diff --git a/src/ui/actions-extended.js b/src/ui/actions-extended.js
+index 7f12620..4a486fc 100644
+--- a/src/ui/actions-extended.js
++++ b/src/ui/actions-extended.js
+@@ -82,7 +82,7 @@ async function extendedAction(name, el) {
+     modal(
+       "Editar producto",
+       "La unidad base y el stock se conservan. Los pedidos existentes mantienen su presentación y precio.",
+-      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Unidades base por paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${select(
++      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Unidades base por paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${["sugars", "fat", "solids", "msnf"].map((k) => field({ sugars: "Azúcares % (ficha)", fat: "Grasa % (ficha)", solids: "Sólidos totales % (ficha)", msnf: "Sólidos lácteos no grasos % (ficha)" }[k], "comp_" + k, p.composition?.[k] ?? "", "number", 'min="0" max="100" step="0.1" placeholder="opcional"')).join("")}${select(
+         "Proveedor",
+         "supplier",
+         state.suppliers.map((s) => [s.id, s.name]),
+@@ -93,7 +93,19 @@ async function extendedAction(name, el) {
+         for (const k of ["min", "target", "pack"]) a[k] = Number(a[k]);
+         a.price = Math.round(Number(a.price) * 100);
+         return mutate(
+-          { type: "editProduct", product: p.id, ...a },
++          {
++            type: "editProduct",
++            product: p.id,
++            ...a,
++            composition: Object.fromEntries(
++              ["sugars", "fat", "solids", "msnf"]
++                .filter(
++                  (k) =>
++                    f.get("comp_" + k) !== "" && f.get("comp_" + k) !== null,
++                )
++                .map((k) => [k, Number(f.get("comp_" + k))]),
++            ),
++          },
+           "Ficha actualizada.",
+         );
+       },
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index a159b53..e6b12da 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -1103,6 +1103,18 @@ async function action(name, el) {
+     }
+     return;
+   }
++  if (name === "weeklyPrev" || name === "weeklyNext") {
++    const start = weeklyWeek || (weeklyData && weeklyData.start);
++    if (!start) return;
++    weeklyData = null;
++    weeklyWeek = shiftWeek(start, name === "weeklyPrev" ? -7 : 7);
++    render();
++    return;
++  }
++  if (name === "printPage") {
++    window.print();
++    return;
++  }
+   if (name === "moreHistory") {
+     const kind = el.dataset.kind;
+     historyShown[kind] += 50;
+diff --git a/src/ui/core.js b/src/ui/core.js
+index bfb9cd7..f9c448b 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -7,6 +7,9 @@ let appVersion = "",
+   backupInfo = null,
+   historyInfo = null,
+   replyDrafts = {},
++  weeklyData = null,
++  weeklyWeek = "",
++  weeklyBusy = false,
+   historyShown = { movements: 50, activity: 50 },
+   lockInfo = null,
+   retentionDays = 0;
+@@ -222,6 +225,7 @@ const pageLabel = {
+   ai: "IA local",
+   production: "Producción",
+   recipes: "Recetario",
++  weekly: "Resumen semanal",
+   documents: "Documentos",
+   guide: "Guía",
+ };
+@@ -269,6 +273,7 @@ function render() {
+     ai: aiPage,
+     production,
+     recipes: recipeBook,
++    weekly: weeklyPage,
+     documents,
+     guide: guidePage,
+   };
+@@ -285,6 +290,7 @@ function render() {
+       ["suppliers", "store", "Proveedores"],
+       ["documents", "photo", "Documentos"],
+       ["activity", "clock", "Actividad"],
++      ["weekly", "check", "Semana"],
+       ["ai", "leaf", "IA local"],
+       ["guide", "shield", "Guía"],
+     ]
+@@ -313,3 +319,8 @@ async function refreshWhatsApp() {
+   }
+ }
+ setInterval(refreshWhatsApp, 2000);
++
++// Name shown on printed pages.
++function businessName() {
++  return state?.business || "GelatoStock";
++}
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index c76c4b1..ffec330 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views-production.js b/src/ui/views-production.js
+index af810c9..7b16597 100644
+--- a/src/ui/views-production.js
++++ b/src/ui/views-production.js
+@@ -70,7 +70,7 @@ function recipeBook() {
+             )
+             .join(
+               "",
+-            )}</tbody></table></div>${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
++            )}</tbody></table></div>${balanceBlock(r)}${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
+         })
+         .join("") ||
+       `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
+@@ -160,3 +160,24 @@ function salesSection() {
+ function ingredientRow(productId = "", qty = "") {
+   return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+ }
++
++// Technical balance computed by the server from the ingredient sheets (core/balance.ts).
++function balanceBlock(r) {
++  const b = r.balance;
++  if (!b || !b.mass) return "";
++  const statusLabel = {
++    ok: "en rango",
++    low: "bajo",
++    high: "alto",
++    info: "sin rango para esta familia",
++    unknown: "faltan fichas",
++  };
++  return `<div class="recipe-block balance"><div class="message-label">BALANCE TÉCNICO · sobre ${num(b.mass)} kg de ingredientes</div><div class="balance-grid">${b.flags
++    .map(
++      (f) =>
++        `<div class="balance-item ${f.status}"><span>${esc(f.label)}</span><strong>${num(f.value)} %</strong><small>${f.range ? `${f.range[0]}–${f.range[1]} % · ` : ""}${statusLabel[f.status]}</small></div>`,
++    )
++    .join(
++      "",
++    )}</div>${b.complete ? '<p class="fineprint">Calculado con las fichas de composición de los ingredientes (azúcares, grasa, sólidos por 100 g). Los rangos son orientativos para gelato artesanal.</p>' : `<p class="fineprint">Faltan fichas de composición: ${esc(b.missing.join(", "))} (cubierto el ${b.covered} % de la masa). Añádelas en Inventario → Editar producto.</p>`}</div>`;
++}
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index 17027ae..741bdfa 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -999,3 +999,87 @@ test("fechas locales: «mañana» se resuelve con el día del calendario local,
+   assert.equal(resolveDate("llega mañana", at)?.date, localDate(tomorrow));
+   assert.equal(localDate(new Date(2026, 0, 5, 0, 30)), "2026-01-05");
+ });
++
++test("balance técnico: porcentajes sobre la masa, rangos por familia y fichas que faltan", () => {
++  const { recipeBalance } = require("../src/domain.cjs");
++  const s = seed();
++  const r = s.recipes[0]; // 0,5 L leche + 0,2 L nata por kg
++  const b = recipeBalance(s, r);
++  assert.equal(b.mass, 0.7);
++  assert.equal(b.complete, true);
++  // leche 4,8/3,6/12,5/8,9 · nata 3/35/41/6 → (0,5·x + 0,2·y)/0,7
++  assert.equal(
++    b.values.fat,
++    Math.round(((0.5 * 3.6 + 0.2 * 35) / 0.7) * 10) / 10,
++  );
++  assert.equal(
++    b.values.sugars,
++    Math.round(((0.5 * 4.8 + 0.2 * 3) / 0.7) * 10) / 10,
++  );
++  assert.equal(b.flags.find((f) => f.key === "fat").status, "high");
++  assert.equal(b.flags.find((f) => f.key === "sugars").status, "low");
++  const s2 = apply(s, {
++    type: "editProduct",
++    product: "p2",
++    name: "Leche entera",
++    detail: "",
++    min: 1,
++    target: 2,
++    pack: 6,
++    price: 690,
++    supplier: "s2",
++    composition: {},
++  });
++  assert.equal(s2.products.find((p) => p.id === "p2").composition, undefined);
++  const b2 = recipeBalance(s2, s2.recipes[0]);
++  assert.equal(b2.complete, false);
++  assert.deepEqual(b2.missing, ["Leche entera"]);
++  assert.equal(b2.flags[0].status, "unknown");
++  assert.throws(() =>
++    apply(s, {
++      type: "editProduct",
++      product: "p2",
++      name: "Leche",
++      detail: "",
++      min: 1,
++      target: 2,
++      pack: 6,
++      price: 690,
++      supplier: "s2",
++      composition: { fat: 150 },
++    }),
++  );
++});
++test("resumen semanal: ventas, mermas, producción, pedidos y avisos de la semana local", () => {
++  const { weeklyReport, weekStart, localDate } = require("../src/domain.cjs");
++  const today = localDate(new Date());
++  const start = weekStart(new Date());
++  let s = apply(seed(), { type: "cart", product: "p2", packs: 1 });
++  s = apply(s, { type: "authorize", revision: s.revision });
++  s = apply(s, {
++    type: "dailySales",
++    date: today,
++    lines: [{ product: "p4", sold: 1, waste: 0.5 }],
++  });
++  s = apply(s, {
++    type: "movement",
++    product: "p2",
++    kind: "waste",
++    value: 0.25,
++    reason: "caducada",
++  });
++  const r = weeklyReport(s, start);
++  assert.equal(r.start, start);
++  assert.ok(r.days.some((d) => d.date === today));
++  assert.equal(r.totals.sales, 1);
++  assert.equal(r.totals.waste, 0.75);
++  assert.equal(r.sales[0].name, "Chocolate 70 %");
++  assert.equal(r.orders.created, 1);
++  assert.ok(r.orders.spent > 0);
++  assert.equal(r.production.length, 0);
++  assert.ok(r.totals.movements >= 3);
++  const empty = weeklyReport(s, "2020-01-06");
++  assert.equal(empty.totals.sales, 0);
++  assert.equal(empty.orders.created, 0);
++  assert.equal(empty.days.length, 7);
++});

@@ -4,7 +4,12 @@ const path = require("node:path");
 const { randomBytes, timingSafeEqual, scryptSync } = require("node:crypto");
 const { identifySupplier } = require("../build/identify.js");
 const { interpretReply } = require("../build/messages.js");
-const { orderMessage } = require("../build/domain.js");
+const {
+  orderMessage,
+  recipeBalance,
+  weeklyReport,
+  weekStart,
+} = require("../build/domain.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { LocalAI } = require("./ai.cjs");
@@ -100,7 +105,14 @@ function createApp({
   const lockInfo = () => ({ enabled: lockEnabled(), unlocked: unlocked() });
   const redact = (state) =>
     unlocked()
-      ? state
+      ? {
+          ...state,
+          // Computed in core from the ingredient sheets; shown in the recipe book.
+          recipes: state.recipes.map((r) => ({
+            ...r,
+            balance: recipeBalance(state, r),
+          })),
+        }
       : {
           ...state,
           recipes: state.recipes.map((r) => ({
@@ -338,6 +350,19 @@ function createApp({
     }
     if (u.pathname === "/api/state" && req.method === "GET") {
       json(200, envelope(store.load()));
+      return;
+    }
+    if (u.pathname === "/api/report" && req.method === "GET") {
+      // Weekly summary from the full state; the UI only prints it.
+      const week = u.searchParams.get("week") || weekStart(new Date());
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) {
+        json(400, { error: "Semana inválida." });
+        return;
+      }
+      json(
+        200,
+        weeklyReport(store.load(), weekStart(new Date(week + "T12:00:00"))),
+      );
       return;
     }
     if (u.pathname === "/api/history" && req.method === "GET") {
@@ -816,6 +841,7 @@ function createApp({
       "/ui/views-messages.js": "ui/views-messages.js",
       "/ui/views-documents.js": "ui/views-documents.js",
       "/ui/views-ai.js": "ui/views-ai.js",
+      "/ui/views-weekly.js": "ui/views-weekly.js",
       "/ui/forms.js": "ui/forms.js",
       "/ui/actions.js": "ui/actions.js",
       "/ui/events.js": "ui/events.js",

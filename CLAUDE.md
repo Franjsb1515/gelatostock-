@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.19.1
+# Entrada para Claude · entrega vigente 0.20.0
 
 Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
 

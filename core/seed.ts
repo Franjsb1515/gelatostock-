@@ -156,6 +156,15 @@ export function seed(): State {
       "milk",
     ],
   ];
+  // Typical composition per 100 g/mL of the demo ingredients (sugars, fat, total solids,
+  // milk solids non-fat). Replace with the supplier sheets; the balance uses these.
+  const compositions: Record<string, Product["composition"]> = {
+    p2: { sugars: 4.8, fat: 3.6, solids: 12.5, msnf: 8.9 },
+    p10: { sugars: 3, fat: 35, solids: 41, msnf: 6 },
+    p3: { sugars: 7, fat: 45, solids: 96, msnf: 0 },
+    p4: { sugars: 30, fat: 42, solids: 99, msnf: 0 },
+    p7: { sugars: 4, fat: 1.5, solids: 9, msnf: 0 },
+  };
   const products: Product[] = rows.map(
     ([
       id,
@@ -176,6 +185,7 @@ export function seed(): State {
       detail,
       category,
       unit,
+      composition: compositions[id],
       stock,
       min,
       target,

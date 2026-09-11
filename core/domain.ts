@@ -23,6 +23,8 @@ export {
   normalizePhrase,
 } from "./messages";
 export { localDate } from "./messages";
+export { recipeBalance, balanceRanges, balanceLabels } from "./balance";
+export { weeklyReport, weekStart, weekBounds } from "./report";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
 export function ensure(value: unknown, message: string): asserts value {
   if (!value) throw Error(message);
@@ -414,6 +416,12 @@ export function apply(state: State, input: unknown): State {
         price: a.price,
         supplier: a.supplier,
       });
+      if (a.composition !== undefined)
+        p.composition = Object.values(a.composition).some(
+          (v) => v !== undefined,
+        )
+          ? a.composition
+          : undefined;
       note = `Ficha actualizada: ${p.name}. La unidad base y el stock no se modificaron.`;
       break;
     }

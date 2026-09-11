@@ -999,3 +999,87 @@ test("fechas locales: «mañana» se resuelve con el día del calendario local, 
   assert.equal(resolveDate("llega mañana", at)?.date, localDate(tomorrow));
   assert.equal(localDate(new Date(2026, 0, 5, 0, 30)), "2026-01-05");
 });
+
+test("balance técnico: porcentajes sobre la masa, rangos por familia y fichas que faltan", () => {
+  const { recipeBalance } = require("../src/domain.cjs");
+  const s = seed();
+  const r = s.recipes[0]; // 0,5 L leche + 0,2 L nata por kg
+  const b = recipeBalance(s, r);
+  assert.equal(b.mass, 0.7);
+  assert.equal(b.complete, true);
+  // leche 4,8/3,6/12,5/8,9 · nata 3/35/41/6 → (0,5·x + 0,2·y)/0,7
+  assert.equal(
+    b.values.fat,
+    Math.round(((0.5 * 3.6 + 0.2 * 35) / 0.7) * 10) / 10,
+  );
+  assert.equal(
+    b.values.sugars,
+    Math.round(((0.5 * 4.8 + 0.2 * 3) / 0.7) * 10) / 10,
+  );
+  assert.equal(b.flags.find((f) => f.key === "fat").status, "high");
+  assert.equal(b.flags.find((f) => f.key === "sugars").status, "low");
+  const s2 = apply(s, {
+    type: "editProduct",
+    product: "p2",
+    name: "Leche entera",
+    detail: "",
+    min: 1,
+    target: 2,
+    pack: 6,
+    price: 690,
+    supplier: "s2",
+    composition: {},
+  });
+  assert.equal(s2.products.find((p) => p.id === "p2").composition, undefined);
+  const b2 = recipeBalance(s2, s2.recipes[0]);
+  assert.equal(b2.complete, false);
+  assert.deepEqual(b2.missing, ["Leche entera"]);
+  assert.equal(b2.flags[0].status, "unknown");
+  assert.throws(() =>
+    apply(s, {
+      type: "editProduct",
+      product: "p2",
+      name: "Leche",
+      detail: "",
+      min: 1,
+      target: 2,
+      pack: 6,
+      price: 690,
+      supplier: "s2",
+      composition: { fat: 150 },
+    }),
+  );
+});
+test("resumen semanal: ventas, mermas, producción, pedidos y avisos de la semana local", () => {
+  const { weeklyReport, weekStart, localDate } = require("../src/domain.cjs");
+  const today = localDate(new Date());
+  const start = weekStart(new Date());
+  let s = apply(seed(), { type: "cart", product: "p2", packs: 1 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  s = apply(s, {
+    type: "dailySales",
+    date: today,
+    lines: [{ product: "p4", sold: 1, waste: 0.5 }],
+  });
+  s = apply(s, {
+    type: "movement",
+    product: "p2",
+    kind: "waste",
+    value: 0.25,
+    reason: "caducada",
+  });
+  const r = weeklyReport(s, start);
+  assert.equal(r.start, start);
+  assert.ok(r.days.some((d) => d.date === today));
+  assert.equal(r.totals.sales, 1);
+  assert.equal(r.totals.waste, 0.75);
+  assert.equal(r.sales[0].name, "Chocolate 70 %");
+  assert.equal(r.orders.created, 1);
+  assert.ok(r.orders.spent > 0);
+  assert.equal(r.production.length, 0);
+  assert.ok(r.totals.movements >= 3);
+  const empty = weeklyReport(s, "2020-01-06");
+  assert.equal(empty.totals.sales, 0);
+  assert.equal(empty.orders.created, 0);
+  assert.equal(empty.days.length, 7);
+});

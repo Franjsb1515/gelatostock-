@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.20.0 — 2026-09-11 · sesión 033
+
+Balance técnico del recetario: cada producto admite una ficha de composición (azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g; Inventario → Editar producto) y core/balance.ts calcula los porcentajes de la receta sobre la masa de ingredientes (kg y L 1:1, unidades fuera), comparados con rangos orientativos por familia (crema, sorbete, postre). Si falta alguna ficha lo dice y no marca rangos. Se calcula en el servidor y viaja con cada receta cuando el recetario está desbloqueado. Datos de ejemplo con fichas típicas para leche, nata, pistacho, chocolate y bebida de avena.
+
+Resumen semanal imprimible: pantalla «Semana» (core/report.ts, GET /api/report?week=) con producción, ventas y mermas por día y por producto, recepciones, pedidos creados/enviados/recibidos y gasto estimado, mensajes y productos bajo mínimo al cierre; navegación por semanas e «Imprimir» con el diálogo del sistema (sirve para PDF). Estilos de impresión sin barra lateral.
+
+Pruebas: 128. Informe reports/2026-09-11T10-38-53-475Z-balance-y-resumen-semanal.md.
+
 ## 0.19.1 — 2026-09-11 · sesión 032
 
 Guiño «arte + gelato» en el chat de IA local: src/ai-lore.cjs (texto propio: gelato frente a helado, sorbete, historia con sus atribuciones, Mallorca y Ca'n Joan de s'Aigo, Artello y el sabor Mediterraneo, equilibrio de una receta, maduración, pistacho de Bronte, vitrina). El chat lo usa por reglas cuando encaja mejor que la guía de la app, con el prefijo «Arte + gelato:», sin modelo y sin coste de memoria; sinónimos nuevos (origen/inventó → historia, ice cream → helado…). Pista discreta en el ejemplo del chat. Evaluación --chat ampliada a 19 preguntas: 19/19 (fuentes: {"guide":13,"model":2,"rule":1,"lore":3}).

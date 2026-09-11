@@ -70,7 +70,7 @@ function recipeBook() {
             )
             .join(
               "",
-            )}</tbody></table></div>${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
+            )}</tbody></table></div>${balanceBlock(r)}${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
         })
         .join("") ||
       `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
@@ -159,4 +159,25 @@ function salesSection() {
 }
 function ingredientRow(productId = "", qty = "") {
   return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+}
+
+// Technical balance computed by the server from the ingredient sheets (core/balance.ts).
+function balanceBlock(r) {
+  const b = r.balance;
+  if (!b || !b.mass) return "";
+  const statusLabel = {
+    ok: "en rango",
+    low: "bajo",
+    high: "alto",
+    info: "sin rango para esta familia",
+    unknown: "faltan fichas",
+  };
+  return `<div class="recipe-block balance"><div class="message-label">BALANCE TÉCNICO · sobre ${num(b.mass)} kg de ingredientes</div><div class="balance-grid">${b.flags
+    .map(
+      (f) =>
+        `<div class="balance-item ${f.status}"><span>${esc(f.label)}</span><strong>${num(f.value)} %</strong><small>${f.range ? `${f.range[0]}–${f.range[1]} % · ` : ""}${statusLabel[f.status]}</small></div>`,
+    )
+    .join(
+      "",
+    )}</div>${b.complete ? '<p class="fineprint">Calculado con las fichas de composición de los ingredientes (azúcares, grasa, sólidos por 100 g). Los rangos son orientativos para gelato artesanal.</p>' : `<p class="fineprint">Faltan fichas de composición: ${esc(b.missing.join(", "))} (cubierto el ${b.covered} % de la masa). Añádelas en Inventario → Editar producto.</p>`}</div>`;
 }

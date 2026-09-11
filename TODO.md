@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.19.1.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.20.0.
 
 ## Entregado y comprobado
 
@@ -50,7 +50,11 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Elegir la carpeta secundaria con un diálogo del sistema (hoy se escribe la ruta; requiere preload o IPC en Electron).
 - [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
 - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
-- [ ] Recetario: balance técnico del gelato (azúcares, grasa, sólidos) si el usuario aporta fichas reales; impresión de ficha.
+- [x] Recetario: balance técnico con fichas de composición por ingrediente (0.20.0); faltan las fichas reales del usuario.
+- [x] Resumen semanal imprimible (0.20.0).
+- [ ] Bloque 2: historial de precios por proveedor con aviso de subida; conteo de inventario por zonas con recordatorio.
+- [ ] Bloque 3: diálogo del sistema para carpetas; preparación de la versión Mac y medición de memoria de la IA allí.
+- [ ] Después: Compras y Mensajes al 100 % (objetivo principal del usuario).
 - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
 - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
 - [ ] IA: chat con el modelo 0.6B sigue siendo lento (10–25 s); valorar respuestas por reglas para las preguntas frecuentes de la guía.
