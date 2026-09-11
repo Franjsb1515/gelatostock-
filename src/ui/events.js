@@ -117,6 +117,30 @@ document.addEventListener("change", async (e) => {
     render();
     return;
   }
+  if (e.target.id === "count-zone") {
+    const rows = document.getElementById("count-rows");
+    if (rows) rows.innerHTML = countRows(e.target.value);
+    return;
+  }
+  if (e.target.id === "count-days") {
+    try {
+      applyEnvelope(
+        await request("/api/maintenance", {
+          type: "countDays",
+          days: Number(e.target.value),
+        }),
+      );
+      render();
+      toast(
+        countDays
+          ? "Recordatorio de conteo cada " + countDays + " días."
+          : "Recordatorio de conteo desactivado.",
+      );
+    } catch (err) {
+      toast(err.message);
+    }
+    return;
+  }
   if (e.target.id === "retention-days") {
     try {
       const data = await request("/api/maintenance", {

@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.21.0 — 2026-09-11 · sesión 034
+
+Historial de precios: cada cambio de precio en la ficha del producto se guarda en la tabla prices (SQLite user_version 4; de, a, fecha, proveedor, origen). Resumen avisa de las subidas de los últimos 30 días con el porcentaje; la ficha del proveedor muestra los últimos tres cambios; el resumen semanal lista los cambios de la semana.
+
+Conteo guiado por zonas: cada producto tiene una zona (vitrina, cámara, congelador, almacén, obrador, barra, otra; se asigna en Editar producto y al crear). En Inventario, «Hoja de conteo» lista los productos de la zona con el stock actual; al guardar, cada línea queda como un conteo (aunque no cambie) y el stock se ajusta (acción countSheet). Recordatorio configurable (Configuración → contar cada 3/7/14/30 días, o nunca): Resumen avisa de las zonas que llevan más tiempo sin contar por completo o que nunca se contaron, con acceso directo a la hoja. El cálculo (core/inventory.ts) usa el conteo más antiguo de la zona y viaja en el envelope (alerts), de modo que no depende del historial recortado en la interfaz.
+
+Pruebas: 131. Informe reports/2026-09-11T10-53-05-058Z-precios-y-conteo-por-zonas.md.
+
 ## 0.20.0 — 2026-09-11 · sesión 033
 
 Balance técnico del recetario: cada producto admite una ficha de composición (azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g; Inventario → Editar producto) y core/balance.ts calcula los porcentajes de la receta sobre la masa de ingredientes (kg y L 1:1, unidades fuera), comparados con rangos orientativos por familia (crema, sorbete, postre). Si falta alguna ficha lo dice y no marca rangos. Se calcula en el servidor y viaja con cada receta cuando el recetario está desbloqueado. Datos de ejemplo con fichas típicas para leche, nata, pistacho, chocolate y bebida de avena.

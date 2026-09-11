@@ -1,0 +1,969 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 2d1cb01..15b8d94 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.20.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.21.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 41dd1ea..40ab86c 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Registro de parches y sesiones
+ 
++## 0.21.0 — 2026-09-11 · sesión 034
++
++Historial de precios: cada cambio de precio en la ficha del producto se guarda en la tabla prices (SQLite user_version 4; de, a, fecha, proveedor, origen). Resumen avisa de las subidas de los últimos 30 días con el porcentaje; la ficha del proveedor muestra los últimos tres cambios; el resumen semanal lista los cambios de la semana.
++
++Conteo guiado por zonas: cada producto tiene una zona (vitrina, cámara, congelador, almacén, obrador, barra, otra; se asigna en Editar producto y al crear). En Inventario, «Hoja de conteo» lista los productos de la zona con el stock actual; al guardar, cada línea queda como un conteo (aunque no cambie) y el stock se ajusta (acción countSheet). Recordatorio configurable (Configuración → contar cada 3/7/14/30 días, o nunca): Resumen avisa de las zonas que llevan más tiempo sin contar por completo o que nunca se contaron, con acceso directo a la hoja. El cálculo (core/inventory.ts) usa el conteo más antiguo de la zona y viaja en el envelope (alerts), de modo que no depende del historial recortado en la interfaz.
++
++Pruebas: 131. Informe reports/2026-09-11T10-53-05-058Z-precios-y-conteo-por-zonas.md.
++
+ ## 0.20.0 — 2026-09-11 · sesión 033
+ 
+ Balance técnico del recetario: cada producto admite una ficha de composición (azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g; Inventario → Editar producto) y core/balance.ts calcula los porcentajes de la receta sobre la masa de ingredientes (kg y L 1:1, unidades fuera), comparados con rangos orientativos por familia (crema, sorbete, postre). Si falta alguna ficha lo dice y no marca rangos. Se calcula en el servidor y viaja con cada receta cuando el recetario está desbloqueado. Datos de ejemplo con fichas típicas para leche, nata, pistacho, chocolate y bebida de avena.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index fd9d0ad..2ed069d 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.20.0
++# Entrada para Claude · entrega vigente 0.21.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+diff --git a/README.md b/README.md
+index caf4db6..82346fe 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.20.0
++# GelatoStock · prototipo 0.21.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.20.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.21.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.20.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.21.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+@@ -179,3 +179,6 @@ En Mensajes se responde escribiendo en el propio mensaje (las respuestas rápida
+ 
+ ## Balance técnico y resumen semanal en 0.20.0
+ El recetario calcula azúcares, grasa, sólidos totales y sólidos lácteos no grasos de cada receta a partir de las fichas de composición de los ingredientes y los compara con rangos orientativos por familia. La pantalla Semana resume producción, ventas, mermas, recepciones, pedidos, mensajes y avisos de stock, e imprime o guarda en PDF.
++
++## Precios y conteo por zonas en 0.21.0
++Cada cambio de precio queda en un historial por producto y proveedor; Resumen avisa de las subidas del último mes. Los productos tienen zona de conteo y la hoja de conteo por zona ajusta el stock y deja constancia; Resumen recuerda qué zona toca contar según el plazo elegido.
+diff --git a/TODO.md b/TODO.md
+index 9adb7da..2d78b86 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.20.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.21.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -52,7 +52,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
+ - [x] Recetario: balance técnico con fichas de composición por ingrediente (0.20.0); faltan las fichas reales del usuario.
+ - [x] Resumen semanal imprimible (0.20.0).
+-- [ ] Bloque 2: historial de precios por proveedor con aviso de subida; conteo de inventario por zonas con recordatorio.
++- [x] Bloque 2: historial de precios con aviso de subida; conteo por zonas con recordatorio (0.21.0).
++- [ ] Precios: registrar también los cambios detectados en listas de precios (documentos) y mensajes «sube de precio» (hoy solo la ficha).
+ - [ ] Bloque 3: diálogo del sistema para carpetas; preparación de la versión Mac y medición de memoria de la IA allí.
+ - [ ] Después: Compras y Mensajes al 100 % (objetivo principal del usuario).
+ - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
+diff --git a/core/domain.ts b/core/domain.ts
+index 0648ad9..457a7df 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -25,6 +25,8 @@ export {
+ export { localDate } from "./messages";
+ export { recipeBalance, balanceRanges, balanceLabels } from "./balance";
+ export { weeklyReport, weekStart, weekBounds } from "./report";
++export { priceAlerts, countStatus, zoneLabels } from "./inventory";
++import { zoneLabels } from "./inventory";
+ export const round = (n: number) => Math.round(n * 1000) / 1000;
+ export function ensure(value: unknown, message: string): asserts value {
+   if (!value) throw Error(message);
+@@ -380,6 +382,24 @@ export function apply(state: State, input: unknown): State {
+       note = `Conteo de ${p.name}: ${p.stock} ${p.unit}. Motivo: ${a.reason}`;
+       break;
+     }
++    case "countSheet": {
++      // One count per line; an unchanged quantity still leaves a zero-delta count movement,
++      // which is what tells the zone reminder that the product was checked.
++      ensure(
++        new Set(a.lines.map((l) => l.product)).size === a.lines.length,
++        "Productos repetidos en la hoja.",
++      );
++      const label = zoneLabels[a.zone] ?? a.zone;
++      let changed = 0;
++      for (const l of a.lines) {
++        const p = item(s.products, l.product);
++        const delta = round(l.value - p.stock);
++        if (delta !== 0) changed++;
++        move(s, p.id, delta, "count", `Conteo de ${label}`);
++      }
++      note = `Conteo de ${label}: ${a.lines.length} productos revisados, ${changed} con diferencia.`;
++      break;
++    }
+     case "movement": {
+       const p = item(s.products, a.product);
+       move(s, p.id, a.kind === "entry" ? a.value : -a.value, a.kind, a.reason);
+@@ -407,6 +427,17 @@ export function apply(state: State, input: unknown): State {
+     }
+     case "editProduct": {
+       const p = item(s.products, a.product);
++      if (a.price !== p.price)
++        s.prices.push({
++          id: randomUUID(),
++          product: p.id,
++          supplier: a.supplier,
++          at: now(),
++          from: p.price,
++          to: a.price,
++          source: "edit",
++        });
++      if (a.zone) p.zone = a.zone;
+       Object.assign(p, {
+         name: a.name,
+         detail: a.detail,
+diff --git a/core/report.ts b/core/report.ts
+index 57c92b4..26e7ecb 100644
+--- a/core/report.ts
++++ b/core/report.ts
+@@ -27,6 +27,7 @@ export type WeeklyReport = {
+   orders: { created: number; sent: number; received: number; spent: number };
+   messages: { received: number; pending: number };
+   lowStock: { name: string; stock: number; min: number; unit: string }[];
++  priceChanges: { name: string; from: number; to: number; at: string }[];
+ };
+ export function weekStart(date: Date): string {
+   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+@@ -125,6 +126,14 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
+       (m) => m.interpretation?.needsReading && !m.reviewed,
+     ).length,
+   };
++  const priceChanges = s.prices
++    .filter((e) => inWeek(dayOf(e.at)))
++    .map((e) => ({
++      name: product(e.product)?.name ?? "",
++      from: e.from,
++      to: e.to,
++      at: e.at,
++    }));
+   const lowStock = s.products
+     .filter((p) => p.stock < p.min)
+     .map((p) => ({ name: p.name, stock: p.stock, min: p.min, unit: p.unit }));
+@@ -151,5 +160,6 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
+     orders,
+     messages,
+     lowStock,
++    priceChanges,
+   };
+ }
+diff --git a/core/schema.ts b/core/schema.ts
+index 9c7801c..e242071 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -26,9 +26,20 @@ const pct = z.number().min(0).max(100);
+ export const compositionSchema = z
+   .object({ sugars: pct, fat: pct, solids: pct, msnf: pct })
+   .partial();
++export const zones = z.enum([
++  "vitrina",
++  "camara",
++  "congelador",
++  "almacen",
++  "obrador",
++  "barra",
++  "otra",
++]);
+ export const productFields = {
+   name: text(100),
+   composition: compositionSchema.optional(),
++  // Where the product is counted; drives the guided count sheets.
++  zone: zones.default("almacen"),
+   detail: z.string().max(200).default(""),
+   category: z.enum(["Gelatería", "Cafetería", "Postres", "Envases"]),
+   unit: z.enum(["kg", "L", "ud"]),
+@@ -288,6 +299,21 @@ export const stateSchema = z.object({
+     )
+     .max(5000)
+     .default([]),
++  // Price history per product (cents per pack): every change of the card price, oldest first.
++  prices: z
++    .array(
++      z.object({
++        id: idSchema,
++        product: idSchema,
++        supplier: idSchema,
++        at,
++        from: cents,
++        to: cents,
++        source: z.enum(["edit", "document", "message"]).default("edit"),
++      }),
++    )
++    .max(100000)
++    .default([]),
+ });
+ export type State = z.infer<typeof stateSchema>;
+ export type Product = z.infer<typeof productSchema>;
+@@ -309,6 +335,7 @@ export const actionSchema = z.intersection(
+       type: z.literal("editProduct"),
+       product: idSchema,
+       composition: compositionSchema.optional(),
++      zone: zones.optional(),
+       name: text(100),
+       detail: z.string().max(200),
+       min: quantity,
+@@ -383,6 +410,15 @@ export const actionSchema = z.intersection(
+       remember: z.boolean().default(true),
+     }),
+     z.object({ type: z.literal("forgetLearned"), id: idSchema }),
++    // Guided count of one zone: every line is a counted quantity in the product's base unit.
++    z.object({
++      type: z.literal("countSheet"),
++      zone: zones,
++      lines: z
++        .array(z.object({ product: idSchema, value: quantity }))
++        .min(1)
++        .max(1000),
++    }),
+     z.object({ type: z.literal("decide"), id: idSchema, decision: text(300) }),
+     z.object({
+       type: z.literal("aiNote"),
+diff --git a/core/seed.ts b/core/seed.ts
+index 7279737..c62ae09 100644
+--- a/core/seed.ts
++++ b/core/seed.ts
+@@ -165,6 +165,19 @@ export function seed(): State {
+     p4: { sugars: 30, fat: 42, solids: 99, msnf: 0 },
+     p7: { sugars: 4, fat: 1.5, solids: 9, msnf: 0 },
+   };
++  // Where each demo product is counted (dairy in the cold room, dry goods in the store room).
++  const zonesById: Record<string, Product["zone"]> = {
++    p1: "barra",
++    p2: "camara",
++    p7: "camara",
++    p8: "camara",
++    p10: "camara",
++    p3: "almacen",
++    p4: "congelador",
++    p5: "almacen",
++    p6: "almacen",
++    p9: "almacen",
++  };
+   const products: Product[] = rows.map(
+     ([
+       id,
+@@ -186,6 +199,7 @@ export function seed(): State {
+       category,
+       unit,
+       composition: compositions[id],
++      zone: zonesById[id] ?? "almacen",
+       stock,
+       min,
+       target,
+@@ -285,5 +299,6 @@ export function seed(): State {
+     ],
+     productions: [],
+     learned: [],
++    prices: [],
+   };
+ }
+diff --git a/core/store.ts b/core/store.ts
+index 0893ef6..0643676 100644
+--- a/core/store.ts
++++ b/core/store.ts
+@@ -26,6 +26,7 @@ const entityTables = [
+   "recipes",
+   "productions",
+   "learned",
++  "prices",
+ ] as const;
+ type Table = (typeof entityTables)[number];
+ export class Store {
+@@ -54,7 +55,7 @@ export class Store {
+         this.db.prepare("PRAGMA user_version").get()?.user_version,
+       );
+       ensure(
+-        version <= 3,
++        version <= 4,
+         "La base de datos pertenece a una versión más nueva.",
+       );
+       this.db
+@@ -73,9 +74,10 @@ export class Store {
+    CREATE TABLE IF NOT EXISTS learned(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS recipes(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+    CREATE TABLE IF NOT EXISTS productions(id TEXT PRIMARY KEY,recipe TEXT NOT NULL REFERENCES recipes(id),status TEXT NOT NULL CHECK(status IN ('proposed','applied','discarded')),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
++   CREATE TABLE IF NOT EXISTS prices(id TEXT PRIMARY KEY,product TEXT NOT NULL REFERENCES products(id),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+    CREATE INDEX IF NOT EXISTS order_lines_product ON order_lines(product);
+    CREATE INDEX IF NOT EXISTS movements_product ON movements(product);
+-   PRAGMA user_version=3;`);
++   PRAGMA user_version=4;`);
+       ensure(
+         this.db.prepare("PRAGMA quick_check").get()?.quick_check === "ok",
+         "La base no pasó la comprobación de integridad.",
+@@ -268,6 +270,7 @@ export class Store {
+       recipes: this.jsonRows("recipes"),
+       productions: this.jsonRows("productions"),
+       learned: this.jsonRows("learned"),
++      prices: this.jsonRows("prices"),
+       processed: this.db
+         .prepare("SELECT id FROM operations ORDER BY position")
+         .all()
+@@ -396,6 +399,10 @@ export class Store {
+         status: s.productions[i]!.status,
+       })),
+       learned: basic(s.learned),
++      prices: basic(s.prices).map((r, i) => ({
++        ...r,
++        product: s.prices[i]!.product,
++      })),
+     };
+     try {
+       // Remove child rows before parent rows. Tables are a fixed internal allowlist.
+@@ -443,6 +450,7 @@ export class Store {
+       recipes,
+       productions,
+       learned,
++      prices,
+       processed,
+       ...meta
+     } = s;
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 70c8852..f56a59b 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -14,6 +14,8 @@ Lo importante de hoy: productos bajo mínimo, mensajes que debes leer, produccio
+ ## Inventario
+ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).
+ - Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.
++- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.
++- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.
+ - Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.
+ - Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.
+ 
+diff --git a/package.json b/package.json
+index fb402c2..25e51f3 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.20.0",
++  "version": "0.21.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 5fb6db0..d809421 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -60,6 +60,25 @@ const assert = require("node:assert/strict");
+       .getByRole("heading", { name: "Un buen día empieza en orden." })
+       .waitFor();
+     assert.equal(await window.title(), "GelatoStock · Tu negocio, en orden");
++    // Diagnóstico: quién llama a render y con qué página (se imprime solo si falla la IA).
++    await window.evaluate(() => {
++      window.__navLog = [];
++      const original = render;
++      render = function () {
++        window.__navLog.push(
++          new Date().toISOString().slice(11, 19) +
++            " " +
++            page +
++            " <- " +
++            (new Error().stack || "")
++              .split("\n")
++              .slice(2, 5)
++              .join(" <- ")
++              .replace(/https?:\/\/[^/]+\//g, ""),
++        );
++        return original.apply(this, arguments);
++      };
++    });
+     const requests = [];
+     window.on("request", (r) => requests.push(r.url()));
+     await window.route("**/*", (route) =>
+@@ -483,6 +502,12 @@ const assert = require("node:assert/strict");
+             (await window.locator("main").innerText()).slice(0, 700),
+           ),
+       );
++      console.log(
++        "RENDERS RECIENTES:\n" +
++          (await window.evaluate(() =>
++            (window.__navLog || []).slice(-15).join("\n"),
++          )),
++      );
+       throw e;
+     }
+     assert.ok(
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index 0de03dc..33a34bd 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -13,4 +13,5 @@ Respuestas de proveedores: reglas deterministas marcan en cada mensaje la catego
+ WhatsApp: se vincula por QR con el teléfono del negocio. Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.
+ Configuración: copias manuales y automática diaria (se conservan 30), restauración, exportación CSV, contraseña del recetario (con contraseña, Producción pide desbloqueo y dura 30 minutos), limpieza periódica del historial con días de retención, identidad del negocio (nombre, ciudad, lema) y lista de frases aprendidas que se pueden olvidar.
++Conteo por zonas: en Inventario, «Hoja de conteo» lista los productos de una zona (vitrina, cámara, congelador, almacén, obrador, barra) con su stock; la persona escribe lo contado y al guardar cada línea queda como conteo y el stock se ajusta; Resumen avisa de las zonas que llevan más días sin contar (Configuración → recordatorio de conteo). Precios: cada cambio de precio en la ficha del producto se guarda; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.
+ Unidades: gramos, kilos, mililitros, litros y unidades; las presentaciones (cajas, botellas) se convierten a la unidad base al recibir.`;
+diff --git a/src/server.cjs b/src/server.cjs
+index 66599b2..bcb9329 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -9,6 +9,8 @@ const {
+   recipeBalance,
+   weeklyReport,
+   weekStart,
++  priceAlerts,
++  countStatus,
+ } = require("../build/domain.js");
+ const { recognizeLocal } = require("./ocr.cjs");
+ const { WhatsAppConnection } = require("./whatsapp.cjs");
+@@ -132,6 +134,11 @@ function createApp({
+   ]);
+   // Weekly (or N days) cleanup of activity notes and WhatsApp conversations; movements stay.
+   const retentionDays = () => Number(store.setting("retention_days") || 0);
++  // Guided counts: a zone is due when its oldest count is older than this (0 = off).
++  const countDays = () => {
++    const v = store.setting("count_days");
++    return v === undefined ? 7 : Number(v);
++  };
+   const purgeNow = () => {
+     const days = retentionDays();
+     if (!(days > 0)) return { skipped: true };
+@@ -180,6 +187,11 @@ function createApp({
+     },
+     lock: lockInfo(),
+     retentionDays: retentionDays(),
++    countDays: countDays(),
++    alerts: {
++      prices: priceAlerts(state, 30),
++      counts: countStatus(state, countDays()),
++    },
+     ...extra,
+   });
+   const ai = new LocalAI();
+@@ -691,6 +703,14 @@ function createApp({
+             json(200, envelope(store.load()));
+             return;
+           }
++          if (data.type === "countDays") {
++            const days = Number(data.days);
++            if (![0, 3, 7, 14, 30].includes(days))
++              throw Error("Elige 0 (sin recordatorio), 3, 7, 14 o 30 días.");
++            store.setSetting("count_days", String(days));
++            json(200, envelope(store.load()));
++            return;
++          }
+           if (data.type === "retention") {
+             const days = Number(data.days);
+             if (![0, 7, 14, 30, 90].includes(days))
+diff --git a/src/styles.css b/src/styles.css
+index 9d776e4..782d38b 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3431,3 +3431,36 @@ dialog::backdrop {
+     background: #f3f3f3 !important;
+   }
+ }
++
++/* Historial de precios y hoja de conteo */
++.price-history {
++  margin-top: 8px;
++  display: grid;
++  gap: 4px;
++}
++.price-history > small {
++  color: var(--ink-muted, #5a6670);
++  font-weight: 600;
++  font-size: 12px;
++  letter-spacing: 0.04em;
++  text-transform: uppercase;
++}
++.price-change {
++  display: flex;
++  justify-content: space-between;
++  gap: 8px;
++  font-size: 13px;
++  flex-wrap: wrap;
++}
++.price-change.up strong {
++  color: var(--peach-dark, #a3512e);
++}
++.price-change.down strong {
++  color: var(--pistacho, #35604a);
++}
++.price-change small {
++  color: var(--ink-muted, #5a6670);
++}
++.count-table input {
++  width: 110px;
++}
+diff --git a/src/ui/actions-extended.js b/src/ui/actions-extended.js
+index 4a486fc..859231c 100644
+--- a/src/ui/actions-extended.js
++++ b/src/ui/actions-extended.js
+@@ -82,7 +82,7 @@ async function extendedAction(name, el) {
+     modal(
+       "Editar producto",
+       "La unidad base y el stock se conservan. Los pedidos existentes mantienen su presentación y precio.",
+-      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Unidades base por paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${["sugars", "fat", "solids", "msnf"].map((k) => field({ sugars: "Azúcares % (ficha)", fat: "Grasa % (ficha)", solids: "Sólidos totales % (ficha)", msnf: "Sólidos lácteos no grasos % (ficha)" }[k], "comp_" + k, p.composition?.[k] ?? "", "number", 'min="0" max="100" step="0.1" placeholder="opcional"')).join("")}${select(
++      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Unidades base por paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${select("Zona de conteo", "zone", Object.entries(zoneLabel), p.zone || "almacen")}${["sugars", "fat", "solids", "msnf"].map((k) => field({ sugars: "Azúcares % (ficha)", fat: "Grasa % (ficha)", solids: "Sólidos totales % (ficha)", msnf: "Sólidos lácteos no grasos % (ficha)" }[k], "comp_" + k, p.composition?.[k] ?? "", "number", 'min="0" max="100" step="0.1" placeholder="opcional"')).join("")}${select(
+         "Proveedor",
+         "supplier",
+         state.suppliers.map((s) => [s.id, s.name]),
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index e6b12da..0c15d77 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -492,7 +492,7 @@ async function action(name, el) {
+     modal(
+       "Nuevo producto",
+       "Definí su unidad base y cómo lo comprás.",
+-      `<div class="form-grid">${field("Nombre", "name", "", "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", "", "text", 'maxlength="200"')}${select(
++      `<div class="form-grid">${field("Nombre", "name", "", "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", "", "text", 'maxlength="200"')}${select("Zona de conteo", "zone", Object.entries(zoneLabel), "almacen")}${select(
+         "Categoría",
+         "category",
+         ["Gelatería", "Cafetería", "Postres", "Envases"].map((x) => [x, x]),
+@@ -1103,6 +1103,36 @@ async function action(name, el) {
+     }
+     return;
+   }
++  if (name === "countSheet") {
++    const zonesInUse = [
++      ...new Set(state.products.map((p) => p.zone || "almacen")),
++    ];
++    const due = (alerts?.counts || []).find(
++      (z) => z.due && zonesInUse.includes(z.zone),
++    );
++    const initial = el.dataset.zone || (due ? due.zone : zonesInUse[0]);
++    modal(
++      "Hoja de conteo por zona",
++      "Cuenta lo que hay en la zona y escribe cada cantidad en su unidad base. Al guardar, cada línea queda como un conteo (aunque no cambie) y el stock se ajusta.",
++      `<label class="field">Zona<select id="count-zone" name="zone">${zonesInUse.map((z) => `<option value="${z}" ${z === initial ? "selected" : ""}>${esc(zoneLabel[z] || z)}</option>`).join("")}</select></label><div id="count-rows">${countRows(initial)}</div>`,
++      async (f) => {
++        const zone = f.get("zone");
++        const lines = state.products
++          .filter((p) => (p.zone || "almacen") === zone)
++          .map((p) => ({
++            product: p.id,
++            value: Number(f.get("count_" + p.id)),
++          }))
++          .filter((l) => Number.isFinite(l.value));
++        return mutate(
++          { type: "countSheet", zone, lines },
++          "Conteo guardado y stock ajustado.",
++        );
++      },
++      "Guardar conteo",
++    );
++    return;
++  }
+   if (name === "weeklyPrev" || name === "weeklyNext") {
+     const start = weeklyWeek || (weeklyData && weeklyData.start);
+     if (!start) return;
+@@ -1194,3 +1224,16 @@ async function action(name, el) {
+     return;
+   }
+ }
++
++// Rows of the count sheet for one zone: current stock as the starting value.
++function countRows(zone) {
++  const items = state.products.filter((p) => (p.zone || "almacen") === zone);
++  if (!items.length)
++    return '<p class="muted">No hay productos en esta zona. Asigna la zona en Editar producto.</p>';
++  return `<div class="table-scroll"><table class="delivery-table count-table"><thead><tr><th>Producto</th><th>En la app</th><th>Contado</th></tr></thead><tbody>${items
++    .map(
++      (p) =>
++        `<tr><td><strong>${esc(p.name)}</strong><small>${esc(p.detail)}</small></td><td>${num(p.stock)} ${esc(p.unit)}</td><td><input class="inline-input" type="number" name="count_${esc(p.id)}" value="${p.stock}" min="0" max="1000000" step="${p.unit === "ud" ? "1" : "0.001"}" aria-label="Contado de ${esc(p.name)}"></td></tr>`,
++    )
++    .join("")}</tbody></table></div>`;
++}
+diff --git a/src/ui/core.js b/src/ui/core.js
+index f9c448b..04f4e62 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -7,6 +7,8 @@ let appVersion = "",
+   backupInfo = null,
+   historyInfo = null,
+   replyDrafts = {},
++  alerts = null,
++  countDays = 7,
+   weeklyData = null,
+   weeklyWeek = "",
+   weeklyBusy = false,
+@@ -200,6 +202,8 @@ function applyEnvelope(data) {
+   if (data.lock) lockInfo = data.lock;
+   if (data.history) historyInfo = data.history;
+   if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
++  if (data.countDays !== undefined) countDays = data.countDays;
++  if (data.alerts) alerts = data.alerts;
+   if (data.dataDir) dataDir = data.dataDir;
+   archiveWarning = data.archiveWarning;
+ }
+@@ -324,3 +328,13 @@ setInterval(refreshWhatsApp, 2000);
+ function businessName() {
+   return state?.business || "GelatoStock";
+ }
++
++const zoneLabel = {
++  vitrina: "Vitrina",
++  camara: "Cámara",
++  congelador: "Congelador",
++  almacen: "Almacén",
++  obrador: "Obrador",
++  barra: "Barra",
++  otra: "Otra zona",
++};
+diff --git a/src/ui/events.js b/src/ui/events.js
+index 1a46915..e028e70 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -117,6 +117,30 @@ document.addEventListener("change", async (e) => {
+     render();
+     return;
+   }
++  if (e.target.id === "count-zone") {
++    const rows = document.getElementById("count-rows");
++    if (rows) rows.innerHTML = countRows(e.target.value);
++    return;
++  }
++  if (e.target.id === "count-days") {
++    try {
++      applyEnvelope(
++        await request("/api/maintenance", {
++          type: "countDays",
++          days: Number(e.target.value),
++        }),
++      );
++      render();
++      toast(
++        countDays
++          ? "Recordatorio de conteo cada " + countDays + " días."
++          : "Recordatorio de conteo desactivado.",
++      );
++    } catch (err) {
++      toast(err.message);
++    }
++    return;
++  }
+   if (e.target.id === "retention-days") {
+     try {
+       const data = await request("/api/maintenance", {
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index ffec330..d30b4f9 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria» y escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views-weekly.js b/src/ui/views-weekly.js
+index bfe7567..9fb0a88 100644
+--- a/src/ui/views-weekly.js
++++ b/src/ui/views-weekly.js
+@@ -39,7 +39,7 @@ function weeklyPage() {
+         btn(icon("download") + " Imprimir", "printPage", "primary"),
+     ) +
+     (r
+-      ? `<article class="report panel"><header class="report-head"><div><span class="eyebrow">RESUMEN SEMANAL · ${esc(businessName())}</span><h2>Del ${date(r.start + "T12:00:00")} al ${date(r.end + "T12:00:00")}</h2></div><small>Generado el ${date(new Date().toISOString())} ${time(new Date().toISOString())}</small></header><div class="report-kpis"><div><strong>${num(r.totals.production)} kg</strong><span>producidos</span></div><div><strong>${num(r.totals.sales)} kg</strong><span>vendidos</span></div><div><strong>${num(r.totals.waste)} kg</strong><span>mermas</span></div><div><strong>${r.orders.created}</strong><span>pedidos creados · ${money(r.orders.spent)}</span></div><div><strong>${r.messages.received}</strong><span>mensajes · ${r.messages.pending} por leer</span></div></div><div class="table-scroll"><table class="report-table days"><thead><tr><th>Día</th><th>Producción</th><th>Ventas</th><th>Mermas</th></tr></thead><tbody>${r.days.map((d) => `<tr><td>${esc(dayName(d.date))}</td><td class="num">${num(d.production)} kg</td><td class="num">${num(d.sales)} kg</td><td class="num">${num(d.waste)} kg</td></tr>`).join("")}</tbody></table></div><div class="report-grid"><section><h3>Ventas por producto</h3>${lines(r.sales, "Sin ventas registradas esta semana.")}</section><section><h3>Mermas por producto</h3>${lines(r.waste, "Sin mermas registradas.")}</section><section><h3>Recepciones de proveedores</h3>${lines(r.receipts, "No llegó mercancía esta semana.")}</section><section><h3>Producciones aprobadas</h3>${r.production.length ? `<table class="report-table"><tbody>${r.production.map((p) => `<tr><td>${esc(dayName(p.date))} · ${esc(p.name)}</td><td class="num">${num(p.quantity)} kg</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Sin producciones aprobadas.</p>'}</section><section><h3>Compras</h3><p>${r.orders.created} pedidos creados (${money(r.orders.spent)} estimados) · ${r.orders.sent} enviados por WhatsApp · ${r.orders.received} recibidos por completo.</p></section><section><h3>Avisos al cierre de la semana</h3>${r.lowStock.length ? `<table class="report-table"><tbody>${r.lowStock.map((p) => `<tr><td>${esc(p.name)}</td><td class="num">${num(p.stock)} de ${num(p.min)} ${esc(p.unit)} mínimo</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Ningún producto bajo mínimo.</p>'}</section></div><p class="fineprint">${r.totals.movements} movimientos de inventario en la semana. Las cifras salen de los movimientos registrados en la app; lo que no se registró no aparece.</p></article>`
++      ? `<article class="report panel"><header class="report-head"><div><span class="eyebrow">RESUMEN SEMANAL · ${esc(businessName())}</span><h2>Del ${date(r.start + "T12:00:00")} al ${date(r.end + "T12:00:00")}</h2></div><small>Generado el ${date(new Date().toISOString())} ${time(new Date().toISOString())}</small></header><div class="report-kpis"><div><strong>${num(r.totals.production)} kg</strong><span>producidos</span></div><div><strong>${num(r.totals.sales)} kg</strong><span>vendidos</span></div><div><strong>${num(r.totals.waste)} kg</strong><span>mermas</span></div><div><strong>${r.orders.created}</strong><span>pedidos creados · ${money(r.orders.spent)}</span></div><div><strong>${r.messages.received}</strong><span>mensajes · ${r.messages.pending} por leer</span></div></div><div class="table-scroll"><table class="report-table days"><thead><tr><th>Día</th><th>Producción</th><th>Ventas</th><th>Mermas</th></tr></thead><tbody>${r.days.map((d) => `<tr><td>${esc(dayName(d.date))}</td><td class="num">${num(d.production)} kg</td><td class="num">${num(d.sales)} kg</td><td class="num">${num(d.waste)} kg</td></tr>`).join("")}</tbody></table></div><div class="report-grid"><section><h3>Ventas por producto</h3>${lines(r.sales, "Sin ventas registradas esta semana.")}</section><section><h3>Mermas por producto</h3>${lines(r.waste, "Sin mermas registradas.")}</section><section><h3>Recepciones de proveedores</h3>${lines(r.receipts, "No llegó mercancía esta semana.")}</section><section><h3>Producciones aprobadas</h3>${r.production.length ? `<table class="report-table"><tbody>${r.production.map((p) => `<tr><td>${esc(dayName(p.date))} · ${esc(p.name)}</td><td class="num">${num(p.quantity)} kg</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Sin producciones aprobadas.</p>'}</section><section><h3>Compras</h3>${r.priceChanges?.length ? `<p>${r.priceChanges.length} cambio${r.priceChanges.length === 1 ? "" : "s"} de precio: ${esc(r.priceChanges.map((c) => `${c.name} ${money(c.from)} → ${money(c.to)}`).join(", "))}.</p>` : ""}<p>${r.orders.created} pedidos creados (${money(r.orders.spent)} estimados) · ${r.orders.sent} enviados por WhatsApp · ${r.orders.received} recibidos por completo.</p></section><section><h3>Avisos al cierre de la semana</h3>${r.lowStock.length ? `<table class="report-table"><tbody>${r.lowStock.map((p) => `<tr><td>${esc(p.name)}</td><td class="num">${num(p.stock)} de ${num(p.min)} ${esc(p.unit)} mínimo</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Ningún producto bajo mínimo.</p>'}</section></div><p class="fineprint">${r.totals.movements} movimientos de inventario en la semana. Las cifras salen de los movimientos registrados en la app; lo que no se registró no aparece.</p></article>`
+       : '<div class="empty"><h3>Calculando la semana…</h3></div>')
+   );
+ }
+diff --git a/src/ui/views.js b/src/ui/views.js
+index a7abc6b..aae1cea 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -18,7 +18,7 @@ function home() {
+       btn(icon("photo") + " Cargar foto", "photo") +
+         btn(icon("plus") + " Registrar stock", "count", "primary"),
+     ) +
+-    `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> ARTE + GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepara la reposición y seguí con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
++    `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> ARTE + GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepara la reposición y sigue con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
+  ${homeNotices()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong><small>Todo tu inventario</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Precios de demostración</small></div></article></section>
+  <div class="dashboard-grid"><section class="panel"><div class="panel-heading"><div><h2>Un vistazo al inventario</h2><p>Los productos que necesitan atención.</p></div><button class="text-button" data-nav="stock">Ver inventario ${icon("arrow")}</button></div>${productTable(low().slice(0, 5), true)}</section><div class="right-stack"><section class="panel inbox-preview"><div class="panel-heading"><h2>Tu bandeja de entrada</h2><span class="count-bubble">${important.length}</span></div>${
+    important.length
+@@ -35,7 +35,7 @@ function home() {
+ }
+ function productTable(items, compact = false) {
+   return items.length
+-    ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th>${compact ? "" : "<th>Mín. / objetivo</th><th>Proveedor</th>"}<th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${items.map((p) => `<tr><td><div class="product-cell"><span class="product-icon ${p.category === "Gelatería" ? "sage" : p.category === "Cafetería" ? "sand" : p.category === "Postres" ? "rose" : "lavender"}">${icon(p.icon)}</span><div><strong>${esc(p.name)}</strong><small>${esc(p.detail)}</small></div></div></td><td><strong>${num(p.stock)} <span class="unit">${p.unit}</span></strong>${pending(p.id) ? `<small class="incoming">+ ${num(pending(p.id))} en pedido</small>` : ""}</td>${compact ? "" : `<td>${num(p.min)} / ${num(p.target)} ${p.unit}</td><td>${esc(supplier(p.supplier).name)}</td>`}<td>${p.stock < p.min ? pill("Stock bajo", "peach") : pill("En orden", "sage")}</td><td>${compact ? `<button class="icon-button bordered" data-add="${p.id}" aria-label="Añadir ${esc(p.name)} al carrito">${icon("plus")}</button>` : `<div class="row-actions"><button class="text-button" data-count="${p.id}">Contar</button><button class="text-button" data-action="editProduct" data-product="${p.id}">Editar</button></div>`}</td></tr>`).join("")}</tbody></table></div>`
++    ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th>${compact ? "" : "<th>Mín. / objetivo</th><th>Proveedor</th>"}<th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${items.map((p) => `<tr><td><div class="product-cell"><span class="product-icon ${p.category === "Gelatería" ? "sage" : p.category === "Cafetería" ? "sand" : p.category === "Postres" ? "rose" : "lavender"}">${icon(p.icon)}</span><div><strong>${esc(p.name)}</strong><small>${esc(p.detail)}${compact ? "" : " · " + esc(zoneLabel[p.zone || "almacen"])}</small></div></div></td><td><strong>${num(p.stock)} <span class="unit">${p.unit}</span></strong>${pending(p.id) ? `<small class="incoming">+ ${num(pending(p.id))} en pedido</small>` : ""}</td>${compact ? "" : `<td>${num(p.min)} / ${num(p.target)} ${p.unit}</td><td>${esc(supplier(p.supplier).name)}</td>`}<td>${p.stock < p.min ? pill("Stock bajo", "peach") : pill("En orden", "sage")}</td><td>${compact ? `<button class="icon-button bordered" data-add="${p.id}" aria-label="Añadir ${esc(p.name)} al carrito">${icon("plus")}</button>` : `<div class="row-actions"><button class="text-button" data-count="${p.id}">Contar</button><button class="text-button" data-action="editProduct" data-product="${p.id}">Editar</button></div>`}</td></tr>`).join("")}</tbody></table></div>`
+     : '<div class="empty">' +
+         icon("check") +
+         "<h3>Todo en orden</h3><p>No hay productos en esta selección.</p></div>";
+@@ -52,6 +52,7 @@ function stock() {
+       "Inventario",
+       "Cada ingrediente, cada envase y cada porción, en su lugar.",
+       btn(icon("plus") + " Entrada / salida", "movement", "primary") +
++        btn(icon("check") + " Hoja de conteo", "countSheet") +
+         btn(icon("photo") + " Cargar foto", "photo") +
+         btn(icon("plus") + " Nuevo producto", "product", "primary"),
+     ) +
+@@ -103,8 +104,27 @@ function homeNotices() {
+       : backupInfo.secondary?.error
+         ? backupInfo.secondary.error
+         : "";
+-  if (!read && !proposed && !soon.length && !backupWarning) return "";
+-  return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
++  const rises = alerts?.prices || [];
++  const dueZones = (alerts?.counts || []).filter((z) => z.due);
++  if (
++    !read &&
++    !proposed &&
++    !soon.length &&
++    !backupWarning &&
++    !rises.length &&
++    !dueZones.length
++  )
++    return "";
++  return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
++    rises.length
++      ? `<strong>${rises.length} subida${rises.length === 1 ? "" : "s"} de precio en 30 días</strong><span>${esc(
++          rises
++            .slice(0, 3)
++            .map((r) => `${r.name} +${num(r.pct)} % (${r.supplierName})`)
++            .join(", "),
++        )}${rises.length > 3 ? "…" : ""}. </span><button class="text-button" data-nav="suppliers">Ver proveedores ${icon("arrow")}</button>`
++      : ""
++  }${dueZones.length ? `<strong>Toca contar: ${esc(dueZones.map((z) => z.label + (z.ageDays === null ? " (nunca)" : " (hace " + z.ageDays + " días)")).join(", "))}</strong><span>Cuenta la zona con la hoja de conteo y el stock queda al día. </span><button class="text-button" data-action="countSheet">Abrir hoja de conteo ${icon("arrow")}</button>` : ""}${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
+ }
+ function suppliers() {
+   return (
+@@ -113,7 +133,28 @@ function suppliers() {
+       "Tus proveedores y sus productos, reunidos en un solo lugar.",
+       btn(icon("plus") + " Nuevo proveedor", "supplierEditor", "primary"),
+     ) +
+-    `<div class="supplier-grid">${state.suppliers.map((s) => `<article class="panel supplier-card"><span class="supplier-avatar large ${s.color}">${esc(s.initials)}</span><h2>${esc(s.name)}</h2><p>${esc(s.category)}</p><div class="supplier-info">${icon("clock")} ${esc(s.delivery)}</div><div class="supplier-info">${icon("box")} ${state.products.filter((p) => p.supplier === s.id).length} productos en catálogo</div>${s.web ? `<div class="supplier-info">${icon("store")} <a class="text-link" href="${esc(s.web)}" target="_blank" rel="noopener noreferrer">Web de compra</a></div>` : ""}<div class="supplier-card-footer">${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`).join("")}</div><div class="notice">${icon("store")}<div><strong>Compra en webs como Makro</strong><span>Guarda la web de compra en la ficha. Desde Compras podrás copiar la lista de ese proveedor y abrir su web; la compra la haces tú con tu cuenta y registras la entrega como siempre.</span></div></div>`
++    `<div class="supplier-grid">${state.suppliers
++      .map(
++        (s) =>
++          `<article class="panel supplier-card"><span class="supplier-avatar large ${s.color}">${esc(s.initials)}</span><h2>${esc(s.name)}</h2><p>${esc(s.category)}</p><div class="supplier-info">${icon("clock")} ${esc(s.delivery)}</div><div class="supplier-info">${icon("box")} ${state.products.filter((p) => p.supplier === s.id).length} productos en catálogo</div>${s.web ? `<div class="supplier-info">${icon("store")} <a class="text-link" href="${esc(s.web)}" target="_blank" rel="noopener noreferrer">Web de compra</a></div>` : ""}${(() => {
++            const changes = state.prices
++              .filter((e) => e.supplier === s.id)
++              .slice(-3)
++              .reverse();
++            return changes.length
++              ? `<div class="price-history"><small>Últimos cambios de precio</small>${changes
++                  .map((e) => {
++                    const p = product(e.product);
++                    const up = e.to > e.from;
++                    return `<div class="price-change ${up ? "up" : "down"}"><span>${esc(p ? p.name : "")}</span><strong>${money(e.from)} → ${money(e.to)}${e.from ? " (" + (up ? "+" : "") + num(Math.round(((e.to - e.from) / e.from) * 1000) / 10) + " %)" : ""}</strong><small>${date(e.at)}</small></div>`;
++                  })
++                  .join("")}</div>`
++              : "";
++          })()}<div class="supplier-card-footer">${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`,
++      )
++      .join(
++        "",
++      )}</div><div class="notice">${icon("store")}<div><strong>Compra en webs como Makro</strong><span>Guarda la web de compra en la ficha. Desde Compras podrás copiar la lista de ese proveedor y abrir su web; la compra la haces tú con tu cuenta y registras la entrega como siempre.</span></div></div>`
+   );
+ }
+ function activity() {
+@@ -193,7 +234,20 @@ function settings() {
+       )
+       .join(
+         "",
+-      )}</select></label><div class="setting-actions">${btn("Limpiar ahora", "purgeNow", "secondary", retentionDays ? "" : "disabled")}</div><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
++      )}</select></label><div class="setting-actions">${btn("Limpiar ahora", "purgeNow", "secondary", retentionDays ? "" : "disabled")}</div><h3 class="setting-subtitle">Recordatorio de conteo</h3><p class="fineprint">Resumen avisa cuando una zona lleva más días sin contar por completo.</p><label class="field">Contar cada<select id="count-days">${[
++      [0, "Sin recordatorio"],
++      [3, "3 días"],
++      [7, "7 días (semanal)"],
++      [14, "14 días"],
++      [30, "30 días"],
++    ]
++      .map(
++        ([v, l]) =>
++          `<option value="${v}" ${countDays === v ? "selected" : ""}>${l}</option>`,
++      )
++      .join(
++        "",
++      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
+       state.learned.length
+         ? state.learned
+             .slice(0, 30)
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index 741bdfa..9ca4e06 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -1083,3 +1083,105 @@ test("resumen semanal: ventas, mermas, producción, pedidos y avisos de la seman
+   assert.equal(empty.orders.created, 0);
+   assert.equal(empty.days.length, 7);
+ });
++
++test("historial de precios: editar el precio deja rastro y avisa de subidas recientes", () => {
++  const { priceAlerts } = require("../src/domain.cjs");
++  const base = {
++    type: "editProduct",
++    product: "p2",
++    name: "Leche entera",
++    detail: "",
++    min: 12,
++    target: 30,
++    pack: 6,
++    supplier: "s2",
++  };
++  let s = apply(seed(), { ...base, price: 690 });
++  assert.equal(s.prices.length, 0);
++  s = apply(s, { ...base, price: 760 });
++  assert.equal(s.prices.length, 1);
++  assert.equal(s.prices[0].from, 690);
++  assert.equal(s.prices[0].to, 760);
++  const alerts = priceAlerts(s, 30);
++  assert.equal(alerts.length, 1);
++  assert.equal(alerts[0].name, "Leche entera");
++  assert.equal(alerts[0].pct, 10.1);
++  s = apply(s, { ...base, price: 700 });
++  assert.equal(priceAlerts(s, 30).length, 0);
++  assert.equal(s.prices.length, 2);
++});
++test("conteo por zonas: la hoja ajusta el stock, deja conteos y el recordatorio sabe qué zona toca", () => {
++  const { countStatus } = require("../src/domain.cjs");
++  let s = seed();
++  const before = countStatus(s, 7);
++  assert.ok(before.every((z) => z.due && z.lastCount === null));
++  s = apply(s, {
++    type: "editProduct",
++    product: "p2",
++    name: "Leche entera",
++    detail: "",
++    min: 12,
++    target: 30,
++    pack: 6,
++    price: 690,
++    supplier: "s2",
++    zone: "camara",
++  });
++  s = apply(s, {
++    type: "editProduct",
++    product: "p10",
++    name: "Nata para montar",
++    detail: "",
++    min: 4,
++    target: 12,
++    pack: 1,
++    price: 320,
++    supplier: "s2",
++    zone: "camara",
++  });
++  const stockNata = s.products.find((p) => p.id === "p10").stock;
++  // The demo already places p7 and p8 in the cold room: they are counted as they stand.
++  const others = s.products
++    .filter(
++      (p) =>
++        (p.zone || "almacen") === "camara" && !["p2", "p10"].includes(p.id),
++    )
++    .map((p) => ({ product: p.id, value: p.stock }));
++  s = apply(s, {
++    type: "countSheet",
++    zone: "camara",
++    lines: [
++      { product: "p2", value: 5 },
++      { product: "p10", value: stockNata },
++      ...others,
++    ],
++  });
++  assert.equal(s.products.find((p) => p.id === "p2").stock, 5);
++  const counts = s.movements.filter((m) => m.kind === "count");
++  assert.equal(counts.length, 2 + others.length);
++  assert.ok(counts.every((m) => /Conteo de Cámara/.test(m.reason)));
++  assert.match(
++    s.activity[0].text,
++    new RegExp(2 + others.length + " productos revisados, 1 con diferencia"),
++  );
++  const camara = countStatus(s, 7).find((z) => z.zone === "camara");
++  assert.equal(camara.due, false);
++  assert.equal(camara.products, 2 + others.length);
++  assert.equal(camara.ageDays, 0);
++  // Ten days later the zone is due again; with the reminder off, nothing is due.
++  for (const m of s.movements)
++    if (m.kind === "count")
++      m.at = new Date(Date.now() - 10 * 86400000).toISOString();
++  assert.equal(countStatus(s, 7).find((z) => z.zone === "camara").due, true);
++  assert.ok(countStatus(s, 0).every((z) => !z.due));
++  assert.throws(() =>
++    apply(s, {
++      type: "countSheet",
++      zone: "camara",
++      lines: [
++        { product: "p2", value: 1 },
++        { product: "p2", value: 2 },
++      ],
++    }),
++  );
++});
+diff --git a/tests/store.test.cjs b/tests/store.test.cjs
+index 7570d7d..79ba526 100644
+--- a/tests/store.test.cjs
++++ b/tests/store.test.cjs
+@@ -401,7 +401,7 @@ test("recetas y producciones persisten en SQLite y sobreviven al reinicio", () =
+     assert.equal(again.movements.filter((m) => m.production).length, 2);
+     assert.equal(
+       Number(store.db.prepare("PRAGMA user_version").get().user_version),
+-      3,
++      4,
+     );
+   }));
+ 
+@@ -462,7 +462,7 @@ test("las frases aprendidas persisten y la base pasa a versión 3 sin perder dat
+     assert.equal(again.learned[0].category, "closed");
+     assert.equal(
+       Number(store.db.prepare("PRAGMA user_version").get().user_version),
+-      3,
++      4,
+     );
+   }));
+ 
+@@ -507,3 +507,32 @@ test("un PDF se almacena por huella, se sirve con su tipo y se archiva por prove
+       /PDF/,
+     );
+   }));
++
++test("historial de precios persiste en SQLite (user_version 4) y sobrevive a reabrir", () => {
++  const dir = fs.mkdtempSync(
++    path.join(path.resolve(__dirname, "../work"), "store-prices-"),
++  );
++  try {
++    let store = new Store(dir);
++    store.dispatch({
++      type: "editProduct",
++      product: "p2",
++      name: "Leche entera",
++      detail: "",
++      min: 12,
++      target: 30,
++      pack: 6,
++      price: 760,
++      supplier: "s2",
++    });
++    store.close();
++    store = new Store(dir);
++    const s = store.load();
++    assert.equal(s.prices.length, 1);
++    assert.equal(s.prices[0].to, 760);
++    assert.equal(store.db.prepare("PRAGMA user_version").get().user_version, 4);
++    store.close();
++  } finally {
++    fs.rmSync(dir, { recursive: true, force: true });
++  }
++});

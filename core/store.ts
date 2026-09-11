@@ -26,6 +26,7 @@ const entityTables = [
   "recipes",
   "productions",
   "learned",
+  "prices",
 ] as const;
 type Table = (typeof entityTables)[number];
 export class Store {
@@ -54,7 +55,7 @@ export class Store {
         this.db.prepare("PRAGMA user_version").get()?.user_version,
       );
       ensure(
-        version <= 3,
+        version <= 4,
         "La base de datos pertenece a una versión más nueva.",
       );
       this.db
@@ -73,9 +74,10 @@ export class Store {
    CREATE TABLE IF NOT EXISTS learned(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS recipes(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS productions(id TEXT PRIMARY KEY,recipe TEXT NOT NULL REFERENCES recipes(id),status TEXT NOT NULL CHECK(status IN ('proposed','applied','discarded')),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+   CREATE TABLE IF NOT EXISTS prices(id TEXT PRIMARY KEY,product TEXT NOT NULL REFERENCES products(id),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE INDEX IF NOT EXISTS order_lines_product ON order_lines(product);
    CREATE INDEX IF NOT EXISTS movements_product ON movements(product);
-   PRAGMA user_version=3;`);
+   PRAGMA user_version=4;`);
       ensure(
         this.db.prepare("PRAGMA quick_check").get()?.quick_check === "ok",
         "La base no pasó la comprobación de integridad.",
@@ -268,6 +270,7 @@ export class Store {
       recipes: this.jsonRows("recipes"),
       productions: this.jsonRows("productions"),
       learned: this.jsonRows("learned"),
+      prices: this.jsonRows("prices"),
       processed: this.db
         .prepare("SELECT id FROM operations ORDER BY position")
         .all()
@@ -396,6 +399,10 @@ export class Store {
         status: s.productions[i]!.status,
       })),
       learned: basic(s.learned),
+      prices: basic(s.prices).map((r, i) => ({
+        ...r,
+        product: s.prices[i]!.product,
+      })),
     };
     try {
       // Remove child rows before parent rows. Tables are a fixed internal allowlist.
@@ -443,6 +450,7 @@ export class Store {
       recipes,
       productions,
       learned,
+      prices,
       processed,
       ...meta
     } = s;

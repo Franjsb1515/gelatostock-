@@ -165,6 +165,19 @@ export function seed(): State {
     p4: { sugars: 30, fat: 42, solids: 99, msnf: 0 },
     p7: { sugars: 4, fat: 1.5, solids: 9, msnf: 0 },
   };
+  // Where each demo product is counted (dairy in the cold room, dry goods in the store room).
+  const zonesById: Record<string, Product["zone"]> = {
+    p1: "barra",
+    p2: "camara",
+    p7: "camara",
+    p8: "camara",
+    p10: "camara",
+    p3: "almacen",
+    p4: "congelador",
+    p5: "almacen",
+    p6: "almacen",
+    p9: "almacen",
+  };
   const products: Product[] = rows.map(
     ([
       id,
@@ -186,6 +199,7 @@ export function seed(): State {
       category,
       unit,
       composition: compositions[id],
+      zone: zonesById[id] ?? "almacen",
       stock,
       min,
       target,
@@ -285,5 +299,6 @@ export function seed(): State {
     ],
     productions: [],
     learned: [],
+    prices: [],
   };
 }

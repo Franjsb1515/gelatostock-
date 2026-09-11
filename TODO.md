@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.20.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.21.0.
 
 ## Entregado y comprobado
 
@@ -52,7 +52,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
 - [x] Recetario: balance técnico con fichas de composición por ingrediente (0.20.0); faltan las fichas reales del usuario.
 - [x] Resumen semanal imprimible (0.20.0).
-- [ ] Bloque 2: historial de precios por proveedor con aviso de subida; conteo de inventario por zonas con recordatorio.
+- [x] Bloque 2: historial de precios con aviso de subida; conteo por zonas con recordatorio (0.21.0).
+- [ ] Precios: registrar también los cambios detectados en listas de precios (documentos) y mensajes «sube de precio» (hoy solo la ficha).
 - [ ] Bloque 3: diálogo del sistema para carpetas; preparación de la versión Mac y medición de memoria de la IA allí.
 - [ ] Después: Compras y Mensajes al 100 % (objetivo principal del usuario).
 - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.

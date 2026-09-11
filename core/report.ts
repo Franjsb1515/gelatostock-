@@ -27,6 +27,7 @@ export type WeeklyReport = {
   orders: { created: number; sent: number; received: number; spent: number };
   messages: { received: number; pending: number };
   lowStock: { name: string; stock: number; min: number; unit: string }[];
+  priceChanges: { name: string; from: number; to: number; at: string }[];
 };
 export function weekStart(date: Date): string {
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -125,6 +126,14 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
       (m) => m.interpretation?.needsReading && !m.reviewed,
     ).length,
   };
+  const priceChanges = s.prices
+    .filter((e) => inWeek(dayOf(e.at)))
+    .map((e) => ({
+      name: product(e.product)?.name ?? "",
+      from: e.from,
+      to: e.to,
+      at: e.at,
+    }));
   const lowStock = s.products
     .filter((p) => p.stock < p.min)
     .map((p) => ({ name: p.name, stock: p.stock, min: p.min, unit: p.unit }));
@@ -151,5 +160,6 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
     orders,
     messages,
     lowStock,
+    priceChanges,
   };
 }

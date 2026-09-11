@@ -7,6 +7,8 @@ let appVersion = "",
   backupInfo = null,
   historyInfo = null,
   replyDrafts = {},
+  alerts = null,
+  countDays = 7,
   weeklyData = null,
   weeklyWeek = "",
   weeklyBusy = false,
@@ -200,6 +202,8 @@ function applyEnvelope(data) {
   if (data.lock) lockInfo = data.lock;
   if (data.history) historyInfo = data.history;
   if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
+  if (data.countDays !== undefined) countDays = data.countDays;
+  if (data.alerts) alerts = data.alerts;
   if (data.dataDir) dataDir = data.dataDir;
   archiveWarning = data.archiveWarning;
 }
@@ -324,3 +328,13 @@ setInterval(refreshWhatsApp, 2000);
 function businessName() {
   return state?.business || "GelatoStock";
 }
+
+const zoneLabel = {
+  vitrina: "Vitrina",
+  camara: "Cámara",
+  congelador: "Congelador",
+  almacen: "Almacén",
+  obrador: "Obrador",
+  barra: "Barra",
+  otra: "Otra zona",
+};

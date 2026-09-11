@@ -1083,3 +1083,105 @@ test("resumen semanal: ventas, mermas, producción, pedidos y avisos de la seman
   assert.equal(empty.orders.created, 0);
   assert.equal(empty.days.length, 7);
 });
+
+test("historial de precios: editar el precio deja rastro y avisa de subidas recientes", () => {
+  const { priceAlerts } = require("../src/domain.cjs");
+  const base = {
+    type: "editProduct",
+    product: "p2",
+    name: "Leche entera",
+    detail: "",
+    min: 12,
+    target: 30,
+    pack: 6,
+    supplier: "s2",
+  };
+  let s = apply(seed(), { ...base, price: 690 });
+  assert.equal(s.prices.length, 0);
+  s = apply(s, { ...base, price: 760 });
+  assert.equal(s.prices.length, 1);
+  assert.equal(s.prices[0].from, 690);
+  assert.equal(s.prices[0].to, 760);
+  const alerts = priceAlerts(s, 30);
+  assert.equal(alerts.length, 1);
+  assert.equal(alerts[0].name, "Leche entera");
+  assert.equal(alerts[0].pct, 10.1);
+  s = apply(s, { ...base, price: 700 });
+  assert.equal(priceAlerts(s, 30).length, 0);
+  assert.equal(s.prices.length, 2);
+});
+test("conteo por zonas: la hoja ajusta el stock, deja conteos y el recordatorio sabe qué zona toca", () => {
+  const { countStatus } = require("../src/domain.cjs");
+  let s = seed();
+  const before = countStatus(s, 7);
+  assert.ok(before.every((z) => z.due && z.lastCount === null));
+  s = apply(s, {
+    type: "editProduct",
+    product: "p2",
+    name: "Leche entera",
+    detail: "",
+    min: 12,
+    target: 30,
+    pack: 6,
+    price: 690,
+    supplier: "s2",
+    zone: "camara",
+  });
+  s = apply(s, {
+    type: "editProduct",
+    product: "p10",
+    name: "Nata para montar",
+    detail: "",
+    min: 4,
+    target: 12,
+    pack: 1,
+    price: 320,
+    supplier: "s2",
+    zone: "camara",
+  });
+  const stockNata = s.products.find((p) => p.id === "p10").stock;
+  // The demo already places p7 and p8 in the cold room: they are counted as they stand.
+  const others = s.products
+    .filter(
+      (p) =>
+        (p.zone || "almacen") === "camara" && !["p2", "p10"].includes(p.id),
+    )
+    .map((p) => ({ product: p.id, value: p.stock }));
+  s = apply(s, {
+    type: "countSheet",
+    zone: "camara",
+    lines: [
+      { product: "p2", value: 5 },
+      { product: "p10", value: stockNata },
+      ...others,
+    ],
+  });
+  assert.equal(s.products.find((p) => p.id === "p2").stock, 5);
+  const counts = s.movements.filter((m) => m.kind === "count");
+  assert.equal(counts.length, 2 + others.length);
+  assert.ok(counts.every((m) => /Conteo de Cámara/.test(m.reason)));
+  assert.match(
+    s.activity[0].text,
+    new RegExp(2 + others.length + " productos revisados, 1 con diferencia"),
+  );
+  const camara = countStatus(s, 7).find((z) => z.zone === "camara");
+  assert.equal(camara.due, false);
+  assert.equal(camara.products, 2 + others.length);
+  assert.equal(camara.ageDays, 0);
+  // Ten days later the zone is due again; with the reminder off, nothing is due.
+  for (const m of s.movements)
+    if (m.kind === "count")
+      m.at = new Date(Date.now() - 10 * 86400000).toISOString();
+  assert.equal(countStatus(s, 7).find((z) => z.zone === "camara").due, true);
+  assert.ok(countStatus(s, 0).every((z) => !z.due));
+  assert.throws(() =>
+    apply(s, {
+      type: "countSheet",
+      zone: "camara",
+      lines: [
+        { product: "p2", value: 1 },
+        { product: "p2", value: 2 },
+      ],
+    }),
+  );
+});

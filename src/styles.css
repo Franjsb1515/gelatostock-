@@ -3431,3 +3431,36 @@ dialog::backdrop {
     background: #f3f3f3 !important;
   }
 }
+
+/* Historial de precios y hoja de conteo */
+.price-history {
+  margin-top: 8px;
+  display: grid;
+  gap: 4px;
+}
+.price-history > small {
+  color: var(--ink-muted, #5a6670);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.price-change {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.price-change.up strong {
+  color: var(--peach-dark, #a3512e);
+}
+.price-change.down strong {
+  color: var(--pistacho, #35604a);
+}
+.price-change small {
+  color: var(--ink-muted, #5a6670);
+}
+.count-table input {
+  width: 110px;
+}

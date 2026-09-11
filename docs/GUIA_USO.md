@@ -14,6 +14,8 @@ Lo importante de hoy: productos bajo mínimo, mensajes que debes leer, produccio
 ## Inventario
 Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).
 - Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.
+- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.
+- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.
 - Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.
 - Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.
 

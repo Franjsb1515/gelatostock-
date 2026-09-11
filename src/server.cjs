@@ -9,6 +9,8 @@ const {
   recipeBalance,
   weeklyReport,
   weekStart,
+  priceAlerts,
+  countStatus,
 } = require("../build/domain.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
@@ -132,6 +134,11 @@ function createApp({
   ]);
   // Weekly (or N days) cleanup of activity notes and WhatsApp conversations; movements stay.
   const retentionDays = () => Number(store.setting("retention_days") || 0);
+  // Guided counts: a zone is due when its oldest count is older than this (0 = off).
+  const countDays = () => {
+    const v = store.setting("count_days");
+    return v === undefined ? 7 : Number(v);
+  };
   const purgeNow = () => {
     const days = retentionDays();
     if (!(days > 0)) return { skipped: true };
@@ -180,6 +187,11 @@ function createApp({
     },
     lock: lockInfo(),
     retentionDays: retentionDays(),
+    countDays: countDays(),
+    alerts: {
+      prices: priceAlerts(state, 30),
+      counts: countStatus(state, countDays()),
+    },
     ...extra,
   });
   const ai = new LocalAI();
@@ -688,6 +700,14 @@ function createApp({
             secondaryInfo.error = "";
             secondaryInfo.dir = dir;
             if (dir) copyToSecondary(store.backup());
+            json(200, envelope(store.load()));
+            return;
+          }
+          if (data.type === "countDays") {
+            const days = Number(data.days);
+            if (![0, 3, 7, 14, 30].includes(days))
+              throw Error("Elige 0 (sin recordatorio), 3, 7, 14 o 30 días.");
+            store.setSetting("count_days", String(days));
             json(200, envelope(store.load()));
             return;
           }

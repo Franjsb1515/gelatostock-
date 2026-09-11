@@ -26,9 +26,20 @@ const pct = z.number().min(0).max(100);
 export const compositionSchema = z
   .object({ sugars: pct, fat: pct, solids: pct, msnf: pct })
   .partial();
+export const zones = z.enum([
+  "vitrina",
+  "camara",
+  "congelador",
+  "almacen",
+  "obrador",
+  "barra",
+  "otra",
+]);
 export const productFields = {
   name: text(100),
   composition: compositionSchema.optional(),
+  // Where the product is counted; drives the guided count sheets.
+  zone: zones.default("almacen"),
   detail: z.string().max(200).default(""),
   category: z.enum(["Gelatería", "Cafetería", "Postres", "Envases"]),
   unit: z.enum(["kg", "L", "ud"]),
@@ -288,6 +299,21 @@ export const stateSchema = z.object({
     )
     .max(5000)
     .default([]),
+  // Price history per product (cents per pack): every change of the card price, oldest first.
+  prices: z
+    .array(
+      z.object({
+        id: idSchema,
+        product: idSchema,
+        supplier: idSchema,
+        at,
+        from: cents,
+        to: cents,
+        source: z.enum(["edit", "document", "message"]).default("edit"),
+      }),
+    )
+    .max(100000)
+    .default([]),
 });
 export type State = z.infer<typeof stateSchema>;
 export type Product = z.infer<typeof productSchema>;
@@ -309,6 +335,7 @@ export const actionSchema = z.intersection(
       type: z.literal("editProduct"),
       product: idSchema,
       composition: compositionSchema.optional(),
+      zone: zones.optional(),
       name: text(100),
       detail: z.string().max(200),
       min: quantity,
@@ -383,6 +410,15 @@ export const actionSchema = z.intersection(
       remember: z.boolean().default(true),
     }),
     z.object({ type: z.literal("forgetLearned"), id: idSchema }),
+    // Guided count of one zone: every line is a counted quantity in the product's base unit.
+    z.object({
+      type: z.literal("countSheet"),
+      zone: zones,
+      lines: z
+        .array(z.object({ product: idSchema, value: quantity }))
+        .min(1)
+        .max(1000),
+    }),
     z.object({ type: z.literal("decide"), id: idSchema, decision: text(300) }),
     z.object({
       type: z.literal("aiNote"),

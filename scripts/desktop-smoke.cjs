@@ -60,6 +60,25 @@ const assert = require("node:assert/strict");
       .getByRole("heading", { name: "Un buen día empieza en orden." })
       .waitFor();
     assert.equal(await window.title(), "GelatoStock · Tu negocio, en orden");
+    // Diagnóstico: quién llama a render y con qué página (se imprime solo si falla la IA).
+    await window.evaluate(() => {
+      window.__navLog = [];
+      const original = render;
+      render = function () {
+        window.__navLog.push(
+          new Date().toISOString().slice(11, 19) +
+            " " +
+            page +
+            " <- " +
+            (new Error().stack || "")
+              .split("\n")
+              .slice(2, 5)
+              .join(" <- ")
+              .replace(/https?:\/\/[^/]+\//g, ""),
+        );
+        return original.apply(this, arguments);
+      };
+    });
     const requests = [];
     window.on("request", (r) => requests.push(r.url()));
     await window.route("**/*", (route) =>
@@ -482,6 +501,12 @@ const assert = require("node:assert/strict");
           JSON.stringify(
             (await window.locator("main").innerText()).slice(0, 700),
           ),
+      );
+      console.log(
+        "RENDERS RECIENTES:\n" +
+          (await window.evaluate(() =>
+            (window.__navLog || []).slice(-15).join("\n"),
+          )),
       );
       throw e;
     }

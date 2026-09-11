@@ -492,7 +492,7 @@ async function action(name, el) {
     modal(
       "Nuevo producto",
       "Definí su unidad base y cómo lo comprás.",
-      `<div class="form-grid">${field("Nombre", "name", "", "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", "", "text", 'maxlength="200"')}${select(
+      `<div class="form-grid">${field("Nombre", "name", "", "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", "", "text", 'maxlength="200"')}${select("Zona de conteo", "zone", Object.entries(zoneLabel), "almacen")}${select(
         "Categoría",
         "category",
         ["Gelatería", "Cafetería", "Postres", "Envases"].map((x) => [x, x]),
@@ -1103,6 +1103,36 @@ async function action(name, el) {
     }
     return;
   }
+  if (name === "countSheet") {
+    const zonesInUse = [
+      ...new Set(state.products.map((p) => p.zone || "almacen")),
+    ];
+    const due = (alerts?.counts || []).find(
+      (z) => z.due && zonesInUse.includes(z.zone),
+    );
+    const initial = el.dataset.zone || (due ? due.zone : zonesInUse[0]);
+    modal(
+      "Hoja de conteo por zona",
+      "Cuenta lo que hay en la zona y escribe cada cantidad en su unidad base. Al guardar, cada línea queda como un conteo (aunque no cambie) y el stock se ajusta.",
+      `<label class="field">Zona<select id="count-zone" name="zone">${zonesInUse.map((z) => `<option value="${z}" ${z === initial ? "selected" : ""}>${esc(zoneLabel[z] || z)}</option>`).join("")}</select></label><div id="count-rows">${countRows(initial)}</div>`,
+      async (f) => {
+        const zone = f.get("zone");
+        const lines = state.products
+          .filter((p) => (p.zone || "almacen") === zone)
+          .map((p) => ({
+            product: p.id,
+            value: Number(f.get("count_" + p.id)),
+          }))
+          .filter((l) => Number.isFinite(l.value));
+        return mutate(
+          { type: "countSheet", zone, lines },
+          "Conteo guardado y stock ajustado.",
+        );
+      },
+      "Guardar conteo",
+    );
+    return;
+  }
   if (name === "weeklyPrev" || name === "weeklyNext") {
     const start = weeklyWeek || (weeklyData && weeklyData.start);
     if (!start) return;
@@ -1193,4 +1223,17 @@ async function action(name, el) {
     );
     return;
   }
+}
+
+// Rows of the count sheet for one zone: current stock as the starting value.
+function countRows(zone) {
+  const items = state.products.filter((p) => (p.zone || "almacen") === zone);
+  if (!items.length)
+    return '<p class="muted">No hay productos en esta zona. Asigna la zona en Editar producto.</p>';
+  return `<div class="table-scroll"><table class="delivery-table count-table"><thead><tr><th>Producto</th><th>En la app</th><th>Contado</th></tr></thead><tbody>${items
+    .map(
+      (p) =>
+        `<tr><td><strong>${esc(p.name)}</strong><small>${esc(p.detail)}</small></td><td>${num(p.stock)} ${esc(p.unit)}</td><td><input class="inline-input" type="number" name="count_${esc(p.id)}" value="${p.stock}" min="0" max="1000000" step="${p.unit === "ud" ? "1" : "0.001"}" aria-label="Contado de ${esc(p.name)}"></td></tr>`,
+    )
+    .join("")}</tbody></table></div>`;
 }

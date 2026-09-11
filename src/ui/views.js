@@ -18,7 +18,7 @@ function home() {
       btn(icon("photo") + " Cargar foto", "photo") +
         btn(icon("plus") + " Registrar stock", "count", "primary"),
     ) +
-    `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> ARTE + GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepara la reposición y seguí con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
+    `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> ARTE + GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepara la reposición y sigue con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
  ${homeNotices()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong><small>Todo tu inventario</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Precios de demostración</small></div></article></section>
  <div class="dashboard-grid"><section class="panel"><div class="panel-heading"><div><h2>Un vistazo al inventario</h2><p>Los productos que necesitan atención.</p></div><button class="text-button" data-nav="stock">Ver inventario ${icon("arrow")}</button></div>${productTable(low().slice(0, 5), true)}</section><div class="right-stack"><section class="panel inbox-preview"><div class="panel-heading"><h2>Tu bandeja de entrada</h2><span class="count-bubble">${important.length}</span></div>${
    important.length
@@ -35,7 +35,7 @@ function home() {
 }
 function productTable(items, compact = false) {
   return items.length
-    ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th>${compact ? "" : "<th>Mín. / objetivo</th><th>Proveedor</th>"}<th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${items.map((p) => `<tr><td><div class="product-cell"><span class="product-icon ${p.category === "Gelatería" ? "sage" : p.category === "Cafetería" ? "sand" : p.category === "Postres" ? "rose" : "lavender"}">${icon(p.icon)}</span><div><strong>${esc(p.name)}</strong><small>${esc(p.detail)}</small></div></div></td><td><strong>${num(p.stock)} <span class="unit">${p.unit}</span></strong>${pending(p.id) ? `<small class="incoming">+ ${num(pending(p.id))} en pedido</small>` : ""}</td>${compact ? "" : `<td>${num(p.min)} / ${num(p.target)} ${p.unit}</td><td>${esc(supplier(p.supplier).name)}</td>`}<td>${p.stock < p.min ? pill("Stock bajo", "peach") : pill("En orden", "sage")}</td><td>${compact ? `<button class="icon-button bordered" data-add="${p.id}" aria-label="Añadir ${esc(p.name)} al carrito">${icon("plus")}</button>` : `<div class="row-actions"><button class="text-button" data-count="${p.id}">Contar</button><button class="text-button" data-action="editProduct" data-product="${p.id}">Editar</button></div>`}</td></tr>`).join("")}</tbody></table></div>`
+    ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th>${compact ? "" : "<th>Mín. / objetivo</th><th>Proveedor</th>"}<th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${items.map((p) => `<tr><td><div class="product-cell"><span class="product-icon ${p.category === "Gelatería" ? "sage" : p.category === "Cafetería" ? "sand" : p.category === "Postres" ? "rose" : "lavender"}">${icon(p.icon)}</span><div><strong>${esc(p.name)}</strong><small>${esc(p.detail)}${compact ? "" : " · " + esc(zoneLabel[p.zone || "almacen"])}</small></div></div></td><td><strong>${num(p.stock)} <span class="unit">${p.unit}</span></strong>${pending(p.id) ? `<small class="incoming">+ ${num(pending(p.id))} en pedido</small>` : ""}</td>${compact ? "" : `<td>${num(p.min)} / ${num(p.target)} ${p.unit}</td><td>${esc(supplier(p.supplier).name)}</td>`}<td>${p.stock < p.min ? pill("Stock bajo", "peach") : pill("En orden", "sage")}</td><td>${compact ? `<button class="icon-button bordered" data-add="${p.id}" aria-label="Añadir ${esc(p.name)} al carrito">${icon("plus")}</button>` : `<div class="row-actions"><button class="text-button" data-count="${p.id}">Contar</button><button class="text-button" data-action="editProduct" data-product="${p.id}">Editar</button></div>`}</td></tr>`).join("")}</tbody></table></div>`
     : '<div class="empty">' +
         icon("check") +
         "<h3>Todo en orden</h3><p>No hay productos en esta selección.</p></div>";
@@ -52,6 +52,7 @@ function stock() {
       "Inventario",
       "Cada ingrediente, cada envase y cada porción, en su lugar.",
       btn(icon("plus") + " Entrada / salida", "movement", "primary") +
+        btn(icon("check") + " Hoja de conteo", "countSheet") +
         btn(icon("photo") + " Cargar foto", "photo") +
         btn(icon("plus") + " Nuevo producto", "product", "primary"),
     ) +
@@ -103,8 +104,27 @@ function homeNotices() {
       : backupInfo.secondary?.error
         ? backupInfo.secondary.error
         : "";
-  if (!read && !proposed && !soon.length && !backupWarning) return "";
-  return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
+  const rises = alerts?.prices || [];
+  const dueZones = (alerts?.counts || []).filter((z) => z.due);
+  if (
+    !read &&
+    !proposed &&
+    !soon.length &&
+    !backupWarning &&
+    !rises.length &&
+    !dueZones.length
+  )
+    return "";
+  return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
+    rises.length
+      ? `<strong>${rises.length} subida${rises.length === 1 ? "" : "s"} de precio en 30 días</strong><span>${esc(
+          rises
+            .slice(0, 3)
+            .map((r) => `${r.name} +${num(r.pct)} % (${r.supplierName})`)
+            .join(", "),
+        )}${rises.length > 3 ? "…" : ""}. </span><button class="text-button" data-nav="suppliers">Ver proveedores ${icon("arrow")}</button>`
+      : ""
+  }${dueZones.length ? `<strong>Toca contar: ${esc(dueZones.map((z) => z.label + (z.ageDays === null ? " (nunca)" : " (hace " + z.ageDays + " días)")).join(", "))}</strong><span>Cuenta la zona con la hoja de conteo y el stock queda al día. </span><button class="text-button" data-action="countSheet">Abrir hoja de conteo ${icon("arrow")}</button>` : ""}${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
 }
 function suppliers() {
   return (
@@ -113,7 +133,28 @@ function suppliers() {
       "Tus proveedores y sus productos, reunidos en un solo lugar.",
       btn(icon("plus") + " Nuevo proveedor", "supplierEditor", "primary"),
     ) +
-    `<div class="supplier-grid">${state.suppliers.map((s) => `<article class="panel supplier-card"><span class="supplier-avatar large ${s.color}">${esc(s.initials)}</span><h2>${esc(s.name)}</h2><p>${esc(s.category)}</p><div class="supplier-info">${icon("clock")} ${esc(s.delivery)}</div><div class="supplier-info">${icon("box")} ${state.products.filter((p) => p.supplier === s.id).length} productos en catálogo</div>${s.web ? `<div class="supplier-info">${icon("store")} <a class="text-link" href="${esc(s.web)}" target="_blank" rel="noopener noreferrer">Web de compra</a></div>` : ""}<div class="supplier-card-footer">${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`).join("")}</div><div class="notice">${icon("store")}<div><strong>Compra en webs como Makro</strong><span>Guarda la web de compra en la ficha. Desde Compras podrás copiar la lista de ese proveedor y abrir su web; la compra la haces tú con tu cuenta y registras la entrega como siempre.</span></div></div>`
+    `<div class="supplier-grid">${state.suppliers
+      .map(
+        (s) =>
+          `<article class="panel supplier-card"><span class="supplier-avatar large ${s.color}">${esc(s.initials)}</span><h2>${esc(s.name)}</h2><p>${esc(s.category)}</p><div class="supplier-info">${icon("clock")} ${esc(s.delivery)}</div><div class="supplier-info">${icon("box")} ${state.products.filter((p) => p.supplier === s.id).length} productos en catálogo</div>${s.web ? `<div class="supplier-info">${icon("store")} <a class="text-link" href="${esc(s.web)}" target="_blank" rel="noopener noreferrer">Web de compra</a></div>` : ""}${(() => {
+            const changes = state.prices
+              .filter((e) => e.supplier === s.id)
+              .slice(-3)
+              .reverse();
+            return changes.length
+              ? `<div class="price-history"><small>Últimos cambios de precio</small>${changes
+                  .map((e) => {
+                    const p = product(e.product);
+                    const up = e.to > e.from;
+                    return `<div class="price-change ${up ? "up" : "down"}"><span>${esc(p ? p.name : "")}</span><strong>${money(e.from)} → ${money(e.to)}${e.from ? " (" + (up ? "+" : "") + num(Math.round(((e.to - e.from) / e.from) * 1000) / 10) + " %)" : ""}</strong><small>${date(e.at)}</small></div>`;
+                  })
+                  .join("")}</div>`
+              : "";
+          })()}<div class="supplier-card-footer">${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`,
+      )
+      .join(
+        "",
+      )}</div><div class="notice">${icon("store")}<div><strong>Compra en webs como Makro</strong><span>Guarda la web de compra en la ficha. Desde Compras podrás copiar la lista de ese proveedor y abrir su web; la compra la haces tú con tu cuenta y registras la entrega como siempre.</span></div></div>`
   );
 }
 function activity() {
@@ -193,7 +234,20 @@ function settings() {
       )
       .join(
         "",
-      )}</select></label><div class="setting-actions">${btn("Limpiar ahora", "purgeNow", "secondary", retentionDays ? "" : "disabled")}</div><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
+      )}</select></label><div class="setting-actions">${btn("Limpiar ahora", "purgeNow", "secondary", retentionDays ? "" : "disabled")}</div><h3 class="setting-subtitle">Recordatorio de conteo</h3><p class="fineprint">Resumen avisa cuando una zona lleva más días sin contar por completo.</p><label class="field">Contar cada<select id="count-days">${[
+      [0, "Sin recordatorio"],
+      [3, "3 días"],
+      [7, "7 días (semanal)"],
+      [14, "14 días"],
+      [30, "30 días"],
+    ]
+      .map(
+        ([v, l]) =>
+          `<option value="${v}" ${countDays === v ? "selected" : ""}>${l}</option>`,
+      )
+      .join(
+        "",
+      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
       state.learned.length
         ? state.learned
             .slice(0, 30)

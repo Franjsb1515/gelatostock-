@@ -25,6 +25,8 @@ export {
 export { localDate } from "./messages";
 export { recipeBalance, balanceRanges, balanceLabels } from "./balance";
 export { weeklyReport, weekStart, weekBounds } from "./report";
+export { priceAlerts, countStatus, zoneLabels } from "./inventory";
+import { zoneLabels } from "./inventory";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
 export function ensure(value: unknown, message: string): asserts value {
   if (!value) throw Error(message);
@@ -380,6 +382,24 @@ export function apply(state: State, input: unknown): State {
       note = `Conteo de ${p.name}: ${p.stock} ${p.unit}. Motivo: ${a.reason}`;
       break;
     }
+    case "countSheet": {
+      // One count per line; an unchanged quantity still leaves a zero-delta count movement,
+      // which is what tells the zone reminder that the product was checked.
+      ensure(
+        new Set(a.lines.map((l) => l.product)).size === a.lines.length,
+        "Productos repetidos en la hoja.",
+      );
+      const label = zoneLabels[a.zone] ?? a.zone;
+      let changed = 0;
+      for (const l of a.lines) {
+        const p = item(s.products, l.product);
+        const delta = round(l.value - p.stock);
+        if (delta !== 0) changed++;
+        move(s, p.id, delta, "count", `Conteo de ${label}`);
+      }
+      note = `Conteo de ${label}: ${a.lines.length} productos revisados, ${changed} con diferencia.`;
+      break;
+    }
     case "movement": {
       const p = item(s.products, a.product);
       move(s, p.id, a.kind === "entry" ? a.value : -a.value, a.kind, a.reason);
@@ -407,6 +427,17 @@ export function apply(state: State, input: unknown): State {
     }
     case "editProduct": {
       const p = item(s.products, a.product);
+      if (a.price !== p.price)
+        s.prices.push({
+          id: randomUUID(),
+          product: p.id,
+          supplier: a.supplier,
+          at: now(),
+          from: p.price,
+          to: a.price,
+          source: "edit",
+        });
+      if (a.zone) p.zone = a.zone;
       Object.assign(p, {
         name: a.name,
         detail: a.detail,
