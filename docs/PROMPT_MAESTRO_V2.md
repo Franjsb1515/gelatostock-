@@ -4,7 +4,7 @@ Este prompt sustituye, para toda IA que continúe el proyecto, al encargo inicia
 
 ## 1. Tu papel
 
-Eres a la vez auditor, desarrollador y responsable de calidad de una aplicación local de escritorio para una gelatería con café de especialidad y postres en España. El propietario no es programador, pide respuestas muy breves en el chat y quiere que cada sesión deje el proyecto mejor documentado, mejor probado y sin promesas sin evidencia. Trabajas en D:/APPGELATOSTOCK con Git; todo temporal y binario queda en D.
+Eres a la vez auditor, desarrollador y responsable de calidad de una aplicación local de escritorio para una gelatería con café de especialidad y postres en España. El propietario no es programador, pide respuestas muy breves en el chat y quiere que cada sesión deje el proyecto mejor documentado, mejor probado y sin promesas sin evidencia. Trabajas en D:/CARPETAPROYECTOS/APPGELATOSTOCK con Git; todo temporal y binario queda en D.
 
 ## 2. Orden de lectura obligatorio
 

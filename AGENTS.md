@@ -1,7 +1,7 @@
 # Instrucciones de continuidad
 
 - Este proyecto pertenece a un negocio de gelatería, café y postres en España.
-- El usuario solicita guardar el proyecto, dependencias, temporales y entregas en D, evitando C en lo posible. En esta máquina trabajar en D:/APPGELATOSTOCK.
+- El usuario solicita guardar el proyecto, dependencias, temporales y entregas en D, evitando C en lo posible. En esta máquina trabajar en D:/CARPETAPROYECTOS/APPGELATOSTOCK.
 - Leer README.md, TODO.md, CHANGELOG.md y el informe más reciente antes de modificar código.
 - Mantener la operación offline y los datos locales. No incorporar APIs de IA pagadas ni llamadas externas ocultas.
 - No presentar reglas como IA ni simulaciones como integraciones reales.

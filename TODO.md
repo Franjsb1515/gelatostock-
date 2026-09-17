@@ -4,7 +4,7 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 
 ## Entregado y comprobado
 
-- [x] Código, dependencias, documentos y ejecutable dentro de D:/APPGELATOSTOCK.
+- [x] Código, dependencias, documentos y ejecutable dentro de D:/CARPETAPROYECTOS/APPGELATOSTOCK.
 - [x] Ventana de escritorio Windows con componentes incluidos.
 - [x] Inventario, conteo, búsqueda, categorías y alta de producto.
 - [x] Carrito, propuesta de reposición y pedidos por proveedor.
