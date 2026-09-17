@@ -1,0 +1,601 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index fe103bc..e931fb8 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.23.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.24.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index cdbfdf0..c87ec1b 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Registro de parches y sesiones
+ 
++## 0.24.0 — 2026-09-17 · sesión 037
++
++Cruceros en Palma. Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares y guarda un registro en data/cruceros.json: qué cruceros llegan y parten cada día, de dónde vienen y a dónde van, muelle, eslora, estado y pasajeros previstos (en tránsito, bajan, suben). Pantalla nueva «Cruceros» con el día elegido, los próximos 14 días y el registro de rutas con buscador y rutas más repetidas; aviso en Resumen cuando hoy hay cruceros en puerto; interruptor en Configuración. Las escalas pasadas se conservan (400 días); las futuras siguen la previsión y desaparecen si el puerto las anula. Sin internet se muestra lo último guardado con un aviso. La app solo lee y cita el origen de los datos.
++
++Proyecto trasladado a D:/CARPETAPROYECTOS/APPGELATOSTOCK (rutas de documentos y utilidades actualizadas).
++
++Pruebas: 138. Informe reports/2026-09-17T22-17-03-972Z-cruceros-palma.md.
++
+ ## 0.23.0 — 2026-09-11 · sesión 036
+ 
+ Compras y Mensajes, primera entrega hacia el 100 %. Las respuestas vinculadas a un pedido actúan sobre él: una confirmación o una fecha de entrega marcan el pedido como confirmado (confirmedAt) y fijan la fecha prevista; las cantidades y el stock nunca cambian solos. Desde el mensaje, la app propone acciones según la lectura: fijar la entrega que dice el proveedor, marcar confirmado, quitar del pedido el producto que no tiene (removeLine, solo si no se recibió nada de él y no es el único), cancelar si lo anula, y ver el pedido. En Control de entregas: «Confirmado por el proveedor el…», «Fijar fecha de entrega» y «Marcar confirmado».
+diff --git a/CLAUDE.md b/CLAUDE.md
+index d97a33d..cff1dee 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.23.0
++# Entrada para Claude · entrega vigente 0.24.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+@@ -17,6 +17,9 @@ Pruebas: npm test; npm run format:check; npm run package:win; npm run test:deskt
+ 
+ Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+ 
++## Punto de continuidad 0.24.0
++Lee reports/2026-09-17T22-17-03-972Z-cruceros-palma.md. El proyecto vive ahora en D:/CARPETAPROYECTOS/APPGELATOSTOCK. Cruceros: src/cruises.cjs (parseCalls puro, CruiseRegistry con fetcher inyectable, data/cruceros.json derivado), rutas GET/POST /api/cruises, ajuste cruises_off, envelope.cruises, src/ui/views-cruises.js. Es la única salida a internet además de WhatsApp: solo lectura, cuerpo fijo, respuesta tratada como no fiable, nunca automática bajo node:test ni con GELATO_CRUISES_AUTO=0 (la prueba de escritorio lo usa). El servicio del puerto no es una API documentada: las posiciones de columna están en COL; si cambian, corrige ahí y en tests/cruises.test.cjs. Citar siempre «Origen de los datos: Autoridad Portuaria de Baleares». La interfaz no admite estilos en línea (CSP): usa clases. Siguiente: Compras y Mensajes II (ver TODO).
++
+ ## Punto de continuidad 0.9.3
+ Lee reports/2026-09-08T18-40-07-473Z-diagnostico-whatsapp.md. Sesión 014: el usuario reportó que con QR conectado no llegaba nada en ninguna dirección (canal sin mensajes ni envíos). Se añadió resolución de remitentes LID, diagnóstico local del canal (data/whatsapp/diagnostico.log, visible en la app) y envío de prueba a chats autorizados. El registro real mostró recepción correcta (descartes por autorización de otra cuenta: cada cuenta vinculada tiene su lista) y envío silenciosamente fallido por chat inexistente para número@c.us; corregido resolviendo el id con getNumberId/LID y fallando de forma visible. Pendiente que el usuario repita la prueba.
+ 
+diff --git a/README.md b/README.md
+index 6381807..223a0ae 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.23.0
++# GelatoStock · prototipo 0.24.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.23.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.24.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.23.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.24.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+@@ -188,3 +188,6 @@ La app de escritorio abre el selector de carpetas del sistema para la copia secu
+ 
+ ## Compras y Mensajes I en 0.23.0
+ Las respuestas de los proveedores confirman pedidos y fijan fechas de entrega; desde cada mensaje se actúa sobre el pedido (fecha, confirmación, quitar producto, cancelar). Resumen recuerda pedidos sin enviar, sin respuesta o con entrega vencida. La plantilla del texto del pedido se edita en Configuración y, al autorizar el carrito con WhatsApp conectado, se pasa directamente al envío uno a uno.
++
++## Cruceros en Palma en 0.24.0
++Con internet, la pantalla «Cruceros» muestra qué barcos llegan y parten de Palma cada día, su ruta y sus pasajeros previstos, y guarda un registro de rutas. Origen de los datos: Autoridad Portuaria de Baleares. Es una consulta de solo lectura que se puede apagar en Configuración; sin internet se ve lo último guardado.
+diff --git a/TODO.md b/TODO.md
+index 5b3e586..5044b34 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.23.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.24.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -56,6 +56,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Bloque 3: diálogo del sistema para carpetas; preparación Mac (0.22.0).
+ - [ ] Mac: ejecutar docs/MAC.md en el equipo del usuario y enviar la salida de scripts/measure-ai-memory.cjs; adaptar la prueba de escritorio; nombre e icono del bundle; firma.
+ - [x] Compras y Mensajes I (0.23.0): confirmaciones y fechas desde respuestas, acciones sobre el pedido desde el mensaje, seguimiento, plantilla, envío tras autorizar.
++- [x] Cruceros en Palma (0.24.0): registro de escalas desde los datos abiertos de la APB, pantalla por día, 14 días, rutas y aviso en Resumen.
++- [ ] Cruceros, siguiente: cruzar pasajeros previstos con ventas reales para proponer producción en días de mucho barco; vigilar cambios de formato del servicio del puerto.
+ - [ ] Compras y Mensajes II: propuesta de sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic (mensaje de recordatorio al proveedor); catálogo/precios por proveedor desde listas de precios; prueba real del ciclo completo con los números del usuario.
+ - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
+ - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 49f4516..ac73e07 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -72,6 +72,9 @@ Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con lo
+ ## Semana
+ Resumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.
+ 
++## Cruceros
++Cuando hay internet, la app lee la previsión pública de escalas del puerto de Palma (origen de los datos: Autoridad Portuaria de Baleares). La pantalla muestra, para el día elegido, qué cruceros llegan, cuáles parten, de dónde vienen, a dónde van, su muelle y los pasajeros previstos; debajo, los próximos 14 días de un vistazo y el registro de rutas con buscador. Las escalas pasadas se conservan como registro; las futuras siguen la previsión del puerto y pueden cambiar. Resumen avisa si hoy hay cruceros en puerto. Sin internet se ve lo último guardado. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.
++
+ ## Actividad
+ Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.
+ 
+diff --git a/docs/IA_LOCAL_Y_SEGURIDAD.md b/docs/IA_LOCAL_Y_SEGURIDAD.md
+index bc558d9..1c0901b 100644
+--- a/docs/IA_LOCAL_Y_SEGURIDAD.md
++++ b/docs/IA_LOCAL_Y_SEGURIDAD.md
+@@ -90,3 +90,6 @@ Modelo: responde solo {"tipo"} con 24 tokens máximos; su «evidencia» nunca se
+ Chat de dudas: src/ai-guide.cjs elige hasta cuatro párrafos de la guía por coincidencia de raíces (con sinónimos) y mantiene el primero; el prompt pide «No lo sé: la guía de la app no lo cubre» cuando no procede. Evaluación tests/fixtures/ai-chat.json (16 preguntas con expresiones esperadas y prohibidas): 16/16 · 0.6 s por respuesta (reports/ai-chat-v0160.json). Respuestas de proveedores: modelo 7/12 · reglas 12/12 · 7.1 s (reports/ai-replies-v0160.json); las reglas de core/messages.ts siguen siendo la lectura principal.
+ 
+ Webs de compra: la ficha admite una URL https; el carrito genera una lista de texto y un enlace target=_blank. En Electron, setWindowOpenHandler abre con shell.openExternal solo URLs que empiezan por una web guardada en una ficha y deniega el resto; la app no introduce credenciales, no navega la web ni paga.
++
++## Consulta de cruceros (0.24.0)
++Primera salida a internet de la app aparte de WhatsApp. src/cruises.cjs abre una sesión anónima en el visor público de la Autoridad Portuaria de Baleares (posidoniaweb.portsdebalears.com, el mismo acceso que usa cualquier visitante de portsdebalears.com/es/buques-en-puerto) y descarga la previsión de atraques en JSON. No envía datos del negocio: el cuerpo de las peticiones es fijo. La respuesta se trata como no fiable: solo se conservan filas de cruceros de Palma con fechas válidas, los textos se limpian de etiquetas y caracteres de control, se recortan y la interfaz los escapa; las cifras se fuerzan a número. La consulta vive en el proceso del servidor local; la página sigue con connect-src 'self' y no habla con el puerto. Se apaga en Configuración (ajuste cruises_off) y con GELATO_CRUISES_AUTO=0; nunca se ejecuta sola bajo node:test. Condiciones de reutilización de la APB: uso comercial y no comercial permitido citando «Origen de los datos: Autoridad Portuaria de Baleares» y la fecha de actualización, sin sugerir patrocinio; la pantalla lo cita. El servicio no es una API documentada: si el puerto cambia el formato, la app muestra el error y conserva lo guardado.
+diff --git a/package.json b/package.json
+index 8d802d0..9e1d6ae 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.23.0",
++  "version": "0.24.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 5f94ef1..02e25b8 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -25,6 +25,8 @@ const assert = require("node:assert/strict");
+   const env = {
+     ...process.env,
+     GELATO_DATA_DIR: dir,
++    // La prueba no sale a internet: la consulta automática de cruceros queda apagada.
++    GELATO_CRUISES_AUTO: "0",
+     TEMP: path.join(root, "work"),
+     TMP: path.join(root, "work"),
+   };
+@@ -441,6 +443,17 @@ const assert = require("node:assert/strict");
+     console.log(
+       "PASS: recetario con ficha completa; escala a 6 kg muestra 3 L de leche sin tocar el stock.",
+     );
++    // Cruceros: la pantalla abre sin red, con registro vacío y el origen de los datos citado.
++    await window.getByRole("button", { name: "Cruceros", exact: true }).click();
++    await window.getByRole("heading", { name: "Próximos 14 días" }).waitFor();
++    assert.equal(await window.locator(".cruise-day").count(), 14);
++    assert.match(
++      await window.locator(".page-cruises .fineprint").innerText(),
++      /Autoridad Portuaria de Baleares/,
++    );
++    console.log(
++      "PASS: cruceros abre sin internet, con 14 días y el origen de los datos citado.",
++    );
+     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
+     await window
+       .getByRole("button", { name: "Simular mensaje", exact: true })
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index 08086ac..740a518 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -8,7 +8,7 @@ Copias: Configuración permite crear una copia con datos y fotos y restaurarla;
+ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español lee el texto y propone un proveedor existente. No extrae cantidades ni lee PDF.
+ IA local: reglas deterministas leen el título del documento (factura, proforma, abono, albarán, lista de precios, oferta) o reconocen un mensaje, y un modelo pequeño incluido en el equipo (Qwen3 0.6B) da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. El modelo propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+-Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
++Cruceros: con internet, la app lee la previsión pública de escalas de cruceros del puerto de Palma (Autoridad Portuaria de Baleares) y muestra qué barcos llegan y parten cada día, su ruta (de dónde vienen y a dónde van), muelle y pasajeros previstos, los próximos 14 días y un registro de rutas con buscador; Resumen avisa si hoy hay cruceros; se desactiva en Configuración → Cruceros en Palma; sin internet se ve lo último guardado; la app solo lee y no envía datos. Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+ Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se responde por WhatsApp escribiendo en el propio mensaje o con respuestas rápidas que rellenan el cuadro (se envía una sola vez al pulsar Enviar) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
+ WhatsApp: se vincula por QR con el teléfono del negocio. Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.
+diff --git a/src/index.html b/src/index.html
+index ae2a566..03365a5 100644
+--- a/src/index.html
++++ b/src/index.html
+@@ -32,6 +32,7 @@
+     <script src="/ui/views-documents.js" defer></script>
+     <script src="/ui/views-ai.js" defer></script>
+     <script src="/ui/views-weekly.js" defer></script>
++    <script src="/ui/views-cruises.js" defer></script>
+     <script src="/ui/forms.js" defer></script>
+     <script src="/ui/actions.js" defer></script>
+     <script src="/ui/events.js" defer></script>
+diff --git a/src/server.cjs b/src/server.cjs
+index 3468d17..1fc9a04 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -19,6 +19,7 @@ const { WhatsAppConnection } = require("./whatsapp.cjs");
+ const { LocalAI } = require("./ai.cjs");
+ const { appendLog } = require("./logs.cjs");
+ const { csvCell } = require("./csv.cjs");
++const { CruiseRegistry } = require("./cruises.cjs");
+ const version = require("../package.json").version;
+ const { Store } = require("../build/store.js");
+ function createApp({
+@@ -28,6 +29,10 @@ function createApp({
+   historyLimit = Number(process.env.GELATO_HISTORY_LIMIT) || 300,
+   // Pause between two orders of a batch send, so WhatsApp never sees a burst.
+   batchDelayMs = Number(process.env.GELATO_BATCH_DELAY_MS) || 4000,
++  // Cruise forecast: injectable for tests; the automatic refresh never runs under node:test.
++  cruiseFetcher,
++  cruiseAuto = !process.env.NODE_TEST_CONTEXT &&
++    process.env.GELATO_CRUISES_AUTO !== "0",
+ } = {}) {
+   const store = new Store(dataDir);
+   // Daily automatic copy (data + photos) with a bounded history of automatic files only.
+@@ -166,6 +171,27 @@ function createApp({
+   setTimeout(autoPurge, 5000).unref();
+   const purgeTimer = setInterval(autoPurge, 6 * 3600 * 1000);
+   purgeTimer.unref();
++  // Cruise calls at Palma (public open data). Read-only, optional, and the only outbound query.
++  const cruises = new CruiseRegistry(dataDir, {
++    ...(cruiseFetcher ? { fetcher: cruiseFetcher } : {}),
++    log: (line) =>
++      appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
++  });
++  const cruisesOn = () => store.setting("cruises_off") !== "1";
++  const autoCruises = () => {
++    if (cruisesOn() && cruises.stale(6)) cruises.refresh().catch(() => {});
++  };
++  let cruiseTimer = null;
++  if (cruiseAuto) {
++    setTimeout(autoCruises, 8000).unref();
++    cruiseTimer = setInterval(autoCruises, 3600 * 1000);
++    cruiseTimer.unref();
++  }
++  const cruiseInfo = () => ({
++    enabled: cruisesOn(),
++    updatedAt: cruises.data.updatedAt,
++    today: cruisesOn() ? cruises.today() : null,
++  });
+   // The UI receives only the newest rows of the two unbounded tables; totals travel apart.
+   const trimHistory = (state) => ({
+     ...state,
+@@ -193,6 +219,7 @@ function createApp({
+     retentionDays: retentionDays(),
+     countDays: countDays(),
+     orderTemplate: orderTemplate(),
++    cruises: cruiseInfo(),
+     alerts: {
+       prices: priceAlerts(state, 30),
+       counts: countStatus(state, countDays()),
+@@ -370,6 +397,10 @@ function createApp({
+       json(200, envelope(store.load()));
+       return;
+     }
++    if (u.pathname === "/api/cruises" && req.method === "GET") {
++      json(200, { enabled: cruisesOn(), auto: cruiseAuto, ...cruises.view() });
++      return;
++    }
+     if (u.pathname === "/api/report" && req.method === "GET") {
+       // Weekly summary from the full state; the UI only prints it.
+       const week = u.searchParams.get("week") || weekStart(new Date());
+@@ -413,6 +444,7 @@ function createApp({
+         "/api/ai/message",
+         "/api/action",
+         "/api/backup",
++        "/api/cruises",
+         "/api/export",
+         "/api/lock",
+         "/api/maintenance",
+@@ -721,6 +753,11 @@ function createApp({
+             json(200, envelope(store.load()));
+             return;
+           }
++          if (data.type === "cruises") {
++            store.setSetting("cruises_off", data.enabled ? undefined : "1");
++            json(200, envelope(store.load()));
++            return;
++          }
+           if (data.type === "countDays") {
+             const days = Number(data.days);
+             if (![0, 3, 7, 14, 30].includes(days))
+@@ -821,6 +858,14 @@ function createApp({
+           json(200, { files: files.map(([f]) => f) });
+           return;
+         }
++        if (u.pathname === "/api/cruises") {
++          if (!cruisesOn())
++            throw Error(
++              "La consulta de cruceros está desactivada en Configuración.",
++            );
++          json(200, { enabled: true, ...(await cruises.refresh()) });
++          return;
++        }
+         if (u.pathname === "/api/backup") {
+           const created = store.backup();
+           backupInfo.last = new Date().toISOString();
+@@ -887,6 +932,7 @@ function createApp({
+       "/ui/views-documents.js": "ui/views-documents.js",
+       "/ui/views-ai.js": "ui/views-ai.js",
+       "/ui/views-weekly.js": "ui/views-weekly.js",
++      "/ui/views-cruises.js": "ui/views-cruises.js",
+       "/ui/forms.js": "ui/forms.js",
+       "/ui/actions.js": "ui/actions.js",
+       "/ui/events.js": "ui/events.js",
+@@ -927,6 +973,7 @@ function createApp({
+     server.once("close", () => {
+       clearInterval(backupTimer);
+       clearInterval(purgeTimer);
++      if (cruiseTimer) clearInterval(cruiseTimer);
+       ai.cancel().catch(() => {});
+       store.close();
+       whatsapp.close().catch(() => {});
+diff --git a/src/styles.css b/src/styles.css
+index 4c26bd7..3b85c27 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3485,3 +3485,119 @@ dialog::backdrop {
+   padding: 10px 12px;
+   margin: 8px 0;
+ }
++
++/* Cruceros */
++.cruise-days {
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
++  gap: 10px;
++}
++.cruise-day {
++  display: flex;
++  flex-direction: column;
++  gap: 4px;
++  align-items: flex-start;
++  padding: 12px;
++  border: 1px solid var(--line);
++  border-radius: 14px;
++  background: var(--surface);
++  color: inherit;
++  font: inherit;
++  text-align: left;
++  cursor: pointer;
++}
++.cruise-day:hover,
++.cruise-day.active {
++  border-color: var(--accent);
++}
++.cruise-day.active {
++  box-shadow: inset 0 0 0 1px var(--accent);
++}
++.cruise-day span {
++  font-size: 12px;
++  text-transform: capitalize;
++  color: var(--ink-muted);
++}
++.cruise-day small {
++  font-size: 12px;
++  color: var(--ink-muted);
++}
++.cruise-bar {
++  display: block;
++  width: 100%;
++  height: 6px;
++  border-radius: 3px;
++  background: var(--line);
++  overflow: hidden;
++}
++.cruise-bar b {
++  display: block;
++  height: 100%;
++  background: var(--accent);
++}
++.cruise-bar b.w0 {
++  width: 0%;
++}
++.cruise-bar b.w1 {
++  width: 10%;
++}
++.cruise-bar b.w2 {
++  width: 20%;
++}
++.cruise-bar b.w3 {
++  width: 30%;
++}
++.cruise-bar b.w4 {
++  width: 40%;
++}
++.cruise-bar b.w5 {
++  width: 50%;
++}
++.cruise-bar b.w6 {
++  width: 60%;
++}
++.cruise-bar b.w7 {
++  width: 70%;
++}
++.cruise-bar b.w8 {
++  width: 80%;
++}
++.cruise-bar b.w9 {
++  width: 90%;
++}
++.cruise-bar b.w10 {
++  width: 100%;
++}
++.cruise-routes {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 6px;
++  margin: 0 0 12px;
++}
++.cruise-registry .table-scroll {
++  max-height: 420px;
++  overflow: auto;
++}
++.cruise-table th {
++  text-align: left;
++  font-size: 12px;
++  color: var(--ink-muted);
++}
++.check-row {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  font-weight: 600;
++}
++.page-cruises .panel > .report-kpis,
++.page-cruises .panel > .report-grid,
++.page-cruises .panel > .cruise-days,
++.page-cruises .panel > .cruise-routes,
++.page-cruises .panel > .cruise-registry,
++.page-cruises .panel > .fineprint {
++  margin: 0 var(--s-5) var(--s-5);
++}
++.page-cruises .panel-heading .field {
++  margin: 0;
++  min-width: 240px;
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index 8b88c62..f71bfbe 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -1230,6 +1230,21 @@ async function action(name, el) {
+     render();
+     return;
+   }
++  if (name === "cruisesRefresh") {
++    loadCruises(true);
++    return;
++  }
++  if (["cruisePrev", "cruiseNext", "cruiseToday", "cruiseDay"].includes(name)) {
++    const current = cruiseDay || todayLocal();
++    cruiseDay =
++      name === "cruiseToday"
++        ? ""
++        : name === "cruiseDay"
++          ? el.dataset.day
++          : shiftDay(current, name === "cruisePrev" ? -1 : 1);
++    render();
++    return;
++  }
+   if (name === "printPage") {
+     window.print();
+     return;
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 8c7523d..f725092 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -10,6 +10,7 @@ let appVersion = "",
+   alerts = null,
+   countDays = 7,
+   orderTemplate = "",
++  cruiseInfo = null,
+   weeklyData = null,
+   weeklyWeek = "",
+   weeklyBusy = false,
+@@ -83,6 +84,7 @@ const icons = {
+   search: '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>',
+   bell: '<path d="M5 17h14l-2-4V9a5 5 0 0 0-10 0v4Z M10 21h4"/>',
+   check: '<path d="m5 12 4 4L19 6"/>',
++  ship: '<path d="M3 17l2 4h14l2-4-9-3-9 3Z"/><path d="M6 15V9h12v6"/><path d="M10 9V5h4v4"/>',
+   coffee:
+     '<path d="M4 9h12v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4Z M16 10h2a3 3 0 0 1 0 6h-2 M7 3v3 M12 3v3"/>',
+   milk: '<path d="M8 3h8v4l2 3v11H6V10l2-3Z M8 7h8 M6 11h12"/>',
+@@ -206,6 +208,7 @@ function applyEnvelope(data) {
+   if (data.countDays !== undefined) countDays = data.countDays;
+   if (data.orderTemplate !== undefined) orderTemplate = data.orderTemplate;
+   if (data.alerts) alerts = data.alerts;
++  if (data.cruises) cruiseInfo = data.cruises;
+   if (data.dataDir) dataDir = data.dataDir;
+   archiveWarning = data.archiveWarning;
+ }
+@@ -232,6 +235,7 @@ const pageLabel = {
+   production: "Producción",
+   recipes: "Recetario",
+   weekly: "Resumen semanal",
++  cruises: "Cruceros",
+   documents: "Documentos",
+   guide: "Guía",
+ };
+@@ -280,6 +284,7 @@ function render() {
+     production,
+     recipes: recipeBook,
+     weekly: weeklyPage,
++    cruises: cruisePage,
+     documents,
+     guide: guidePage,
+   };
+@@ -297,6 +302,7 @@ function render() {
+       ["documents", "photo", "Documentos"],
+       ["activity", "clock", "Actividad"],
+       ["weekly", "check", "Semana"],
++      ["cruises", "ship", "Cruceros"],
+       ["ai", "leaf", "IA local"],
+       ["guide", "shield", "Guía"],
+     ]
+diff --git a/src/ui/events.js b/src/ui/events.js
+index e028e70..9ac21a3 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -122,6 +122,26 @@ document.addEventListener("change", async (e) => {
+     if (rows) rows.innerHTML = countRows(e.target.value);
+     return;
+   }
++  if (e.target.id === "cruises-enabled") {
++    try {
++      applyEnvelope(
++        await request("/api/maintenance", {
++          type: "cruises",
++          enabled: e.target.checked,
++        }),
++      );
++      cruiseData = null;
++      render();
++      toast(
++        e.target.checked
++          ? "Consulta de cruceros activada."
++          : "Consulta de cruceros desactivada: la app no sale a internet.",
++      );
++    } catch (err) {
++      toast(err.message);
++    }
++    return;
++  }
+   if (e.target.id === "count-days") {
+     try {
+       applyEnvelope(
+@@ -190,6 +210,14 @@ document.addEventListener("change", async (e) => {
+     );
+ });
+ document.addEventListener("input", (e) => {
++  if (e.target.id === "cruise-search") {
++    cruiseQuery = e.target.value;
++    const pos = e.target.selectionStart;
++    render();
++    $("#cruise-search").focus();
++    $("#cruise-search").setSelectionRange(pos, pos);
++    return;
++  }
+   if (e.target.id === "recipe-search") {
+     recipeQuery = e.target.value;
+     const pos = e.target.selectionStart;
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index 900139a..93b0370 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nCuando hay internet, la app lee la previsión pública de escalas del puerto de Palma (origen de los datos: Autoridad Portuaria de Baleares). La pantalla muestra, para el día elegido, qué cruceros llegan, cuáles parten, de dónde vienen, a dónde van, su muelle y los pasajeros previstos; debajo, los próximos 14 días de un vistazo y el registro de rutas con buscador. Las escalas pasadas se conservan como registro; las futuras siguen la previsión del puerto y pueden cambiar. Resumen avisa si hoy hay cruceros en puerto. Sin internet se ve lo último guardado. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views.js b/src/ui/views.js
+index 8dbf2c5..f3128d2 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -107,7 +107,10 @@ function homeNotices() {
+   const rises = alerts?.prices || [];
+   const dueZones = (alerts?.counts || []).filter((z) => z.due);
+   const follow = alerts?.orders || [];
++  const port = cruiseInfo?.enabled ? cruiseInfo.today : null;
++  const ships = port && port.inPort ? port : null;
+   if (
++    !ships &&
+     !read &&
+     !proposed &&
+     !soon.length &&
+@@ -117,7 +120,7 @@ function homeNotices() {
+     !follow.length
+   )
+     return "";
+-  return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
++  return `<div class="notice subtle home-notice">${icon("alert")}<div>${ships ? `<strong>Hoy ${ships.inPort === 1 ? "hay 1 crucero" : "hay " + ships.inPort + " cruceros"} en Palma · unos ${num(ships.passengers)} pasajeros</strong><span>${esc(ships.ships.slice(0, 4).join(", "))}${ships.ships.length > 4 ? "…" : ""}. Llegan ${ships.arrivals}, parten ${ships.departures}. </span><button class="text-button" data-nav="cruises">Ver cruceros ${icon("arrow")}</button>` : ""}${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
+     follow.length
+       ? `<strong>Pedidos que necesitan seguimiento</strong><span>${esc(follow.map((f) => f.text).join(" "))} </span><button class="text-button" data-nav="orders">Ver pedidos ${icon("arrow")}</button>`
+       : ""
+@@ -253,7 +256,7 @@ function settings() {
+       )
+       .join(
+         "",
+-      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
++      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Cruceros en Palma</h2><p>Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares (al abrir y cada pocas horas). Solo lee: no envía ningún dato tuyo. Sin internet muestra lo último guardado.</p><label class="check-row"><input type="checkbox" id="cruises-enabled" ${cruiseInfo?.enabled === false ? "" : "checked"}> Consultar los cruceros del puerto</label><p class="fineprint">${cruiseInfo?.updatedAt ? "Última actualización: " + date(cruiseInfo.updatedAt) + " " + time(cruiseInfo.updatedAt) + "." : "Todavía sin datos."} Registro en cruceros.json dentro de la carpeta de datos.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
+       state.learned.length
+         ? state.learned
+             .slice(0, 30)

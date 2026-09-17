@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.23.0
+# GelatoStock · prototipo 0.24.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.23.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.24.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.23.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.24.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué puedes probar
 
@@ -188,3 +188,6 @@ La app de escritorio abre el selector de carpetas del sistema para la copia secu
 
 ## Compras y Mensajes I en 0.23.0
 Las respuestas de los proveedores confirman pedidos y fijan fechas de entrega; desde cada mensaje se actúa sobre el pedido (fecha, confirmación, quitar producto, cancelar). Resumen recuerda pedidos sin enviar, sin respuesta o con entrega vencida. La plantilla del texto del pedido se edita en Configuración y, al autorizar el carrito con WhatsApp conectado, se pasa directamente al envío uno a uno.
+
+## Cruceros en Palma en 0.24.0
+Con internet, la pantalla «Cruceros» muestra qué barcos llegan y parten de Palma cada día, su ruta y sus pasajeros previstos, y guarda un registro de rutas. Origen de los datos: Autoridad Portuaria de Baleares. Es una consulta de solo lectura que se puede apagar en Configuración; sin internet se ve lo último guardado.

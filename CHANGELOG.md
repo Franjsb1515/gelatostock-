@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.24.0 — 2026-09-17 · sesión 037
+
+Cruceros en Palma. Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares y guarda un registro en data/cruceros.json: qué cruceros llegan y parten cada día, de dónde vienen y a dónde van, muelle, eslora, estado y pasajeros previstos (en tránsito, bajan, suben). Pantalla nueva «Cruceros» con el día elegido, los próximos 14 días y el registro de rutas con buscador y rutas más repetidas; aviso en Resumen cuando hoy hay cruceros en puerto; interruptor en Configuración. Las escalas pasadas se conservan (400 días); las futuras siguen la previsión y desaparecen si el puerto las anula. Sin internet se muestra lo último guardado con un aviso. La app solo lee y cita el origen de los datos.
+
+Proyecto trasladado a D:/CARPETAPROYECTOS/APPGELATOSTOCK (rutas de documentos y utilidades actualizadas).
+
+Pruebas: 138. Informe reports/2026-09-17T22-17-03-972Z-cruceros-palma.md.
+
 ## 0.23.0 — 2026-09-11 · sesión 036
 
 Compras y Mensajes, primera entrega hacia el 100 %. Las respuestas vinculadas a un pedido actúan sobre él: una confirmación o una fecha de entrega marcan el pedido como confirmado (confirmedAt) y fijan la fecha prevista; las cantidades y el stock nunca cambian solos. Desde el mensaje, la app propone acciones según la lectura: fijar la entrega que dice el proveedor, marcar confirmado, quitar del pedido el producto que no tiene (removeLine, solo si no se recibió nada de él y no es el único), cancelar si lo anula, y ver el pedido. En Control de entregas: «Confirmado por el proveedor el…», «Fijar fecha de entrega» y «Marcar confirmado».

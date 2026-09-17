@@ -107,7 +107,10 @@ function homeNotices() {
   const rises = alerts?.prices || [];
   const dueZones = (alerts?.counts || []).filter((z) => z.due);
   const follow = alerts?.orders || [];
+  const port = cruiseInfo?.enabled ? cruiseInfo.today : null;
+  const ships = port && port.inPort ? port : null;
   if (
+    !ships &&
     !read &&
     !proposed &&
     !soon.length &&
@@ -117,7 +120,7 @@ function homeNotices() {
     !follow.length
   )
     return "";
-  return `<div class="notice subtle home-notice">${icon("alert")}<div>${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
+  return `<div class="notice subtle home-notice">${icon("alert")}<div>${ships ? `<strong>Hoy ${ships.inPort === 1 ? "hay 1 crucero" : "hay " + ships.inPort + " cruceros"} en Palma · unos ${num(ships.passengers)} pasajeros</strong><span>${esc(ships.ships.slice(0, 4).join(", "))}${ships.ships.length > 4 ? "…" : ""}. Llegan ${ships.arrivals}, parten ${ships.departures}. </span><button class="text-button" data-nav="cruises">Ver cruceros ${icon("arrow")}</button>` : ""}${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
     follow.length
       ? `<strong>Pedidos que necesitan seguimiento</strong><span>${esc(follow.map((f) => f.text).join(" "))} </span><button class="text-button" data-nav="orders">Ver pedidos ${icon("arrow")}</button>`
       : ""
@@ -253,7 +256,7 @@ function settings() {
       )
       .join(
         "",
-      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
+      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Cruceros en Palma</h2><p>Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares (al abrir y cada pocas horas). Solo lee: no envía ningún dato tuyo. Sin internet muestra lo último guardado.</p><label class="check-row"><input type="checkbox" id="cruises-enabled" ${cruiseInfo?.enabled === false ? "" : "checked"}> Consultar los cruceros del puerto</label><p class="fineprint">${cruiseInfo?.updatedAt ? "Última actualización: " + date(cruiseInfo.updatedAt) + " " + time(cruiseInfo.updatedAt) + "." : "Todavía sin datos."} Registro en cruceros.json dentro de la carpeta de datos.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
       state.learned.length
         ? state.learned
             .slice(0, 30)

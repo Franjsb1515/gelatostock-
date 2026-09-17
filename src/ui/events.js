@@ -122,6 +122,26 @@ document.addEventListener("change", async (e) => {
     if (rows) rows.innerHTML = countRows(e.target.value);
     return;
   }
+  if (e.target.id === "cruises-enabled") {
+    try {
+      applyEnvelope(
+        await request("/api/maintenance", {
+          type: "cruises",
+          enabled: e.target.checked,
+        }),
+      );
+      cruiseData = null;
+      render();
+      toast(
+        e.target.checked
+          ? "Consulta de cruceros activada."
+          : "Consulta de cruceros desactivada: la app no sale a internet.",
+      );
+    } catch (err) {
+      toast(err.message);
+    }
+    return;
+  }
   if (e.target.id === "count-days") {
     try {
       applyEnvelope(
@@ -190,6 +210,14 @@ document.addEventListener("change", async (e) => {
     );
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "cruise-search") {
+    cruiseQuery = e.target.value;
+    const pos = e.target.selectionStart;
+    render();
+    $("#cruise-search").focus();
+    $("#cruise-search").setSelectionRange(pos, pos);
+    return;
+  }
   if (e.target.id === "recipe-search") {
     recipeQuery = e.target.value;
     const pos = e.target.selectionStart;

@@ -1230,6 +1230,21 @@ async function action(name, el) {
     render();
     return;
   }
+  if (name === "cruisesRefresh") {
+    loadCruises(true);
+    return;
+  }
+  if (["cruisePrev", "cruiseNext", "cruiseToday", "cruiseDay"].includes(name)) {
+    const current = cruiseDay || todayLocal();
+    cruiseDay =
+      name === "cruiseToday"
+        ? ""
+        : name === "cruiseDay"
+          ? el.dataset.day
+          : shiftDay(current, name === "cruisePrev" ? -1 : 1);
+    render();
+    return;
+  }
   if (name === "printPage") {
     window.print();
     return;

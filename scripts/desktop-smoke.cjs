@@ -25,6 +25,8 @@ const assert = require("node:assert/strict");
   const env = {
     ...process.env,
     GELATO_DATA_DIR: dir,
+    // La prueba no sale a internet: la consulta automática de cruceros queda apagada.
+    GELATO_CRUISES_AUTO: "0",
     TEMP: path.join(root, "work"),
     TMP: path.join(root, "work"),
   };
@@ -440,6 +442,17 @@ const assert = require("node:assert/strict");
     assert.equal(savedStock("p4"), chocolateAfter - 1.5);
     console.log(
       "PASS: recetario con ficha completa; escala a 6 kg muestra 3 L de leche sin tocar el stock.",
+    );
+    // Cruceros: la pantalla abre sin red, con registro vacío y el origen de los datos citado.
+    await window.getByRole("button", { name: "Cruceros", exact: true }).click();
+    await window.getByRole("heading", { name: "Próximos 14 días" }).waitFor();
+    assert.equal(await window.locator(".cruise-day").count(), 14);
+    assert.match(
+      await window.locator(".page-cruises .fineprint").innerText(),
+      /Autoridad Portuaria de Baleares/,
+    );
+    console.log(
+      "PASS: cruceros abre sin internet, con 14 días y el origen de los datos citado.",
     );
     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
     await window

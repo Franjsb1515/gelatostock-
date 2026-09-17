@@ -72,6 +72,9 @@ Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con lo
 ## Semana
 Resumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.
 
+## Cruceros
+Cuando hay internet, la app lee la previsión pública de escalas del puerto de Palma (origen de los datos: Autoridad Portuaria de Baleares). La pantalla muestra, para el día elegido, qué cruceros llegan, cuáles parten, de dónde vienen, a dónde van, su muelle y los pasajeros previstos; debajo, los próximos 14 días de un vistazo y el registro de rutas con buscador. Las escalas pasadas se conservan como registro; las futuras siguen la previsión del puerto y pueden cambiar. Resumen avisa si hoy hay cruceros en puerto. Sin internet se ve lo último guardado. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.
+
 ## Actividad
 Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.
 

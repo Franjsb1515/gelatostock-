@@ -10,6 +10,7 @@ let appVersion = "",
   alerts = null,
   countDays = 7,
   orderTemplate = "",
+  cruiseInfo = null,
   weeklyData = null,
   weeklyWeek = "",
   weeklyBusy = false,
@@ -83,6 +84,7 @@ const icons = {
   search: '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>',
   bell: '<path d="M5 17h14l-2-4V9a5 5 0 0 0-10 0v4Z M10 21h4"/>',
   check: '<path d="m5 12 4 4L19 6"/>',
+  ship: '<path d="M3 17l2 4h14l2-4-9-3-9 3Z"/><path d="M6 15V9h12v6"/><path d="M10 9V5h4v4"/>',
   coffee:
     '<path d="M4 9h12v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4Z M16 10h2a3 3 0 0 1 0 6h-2 M7 3v3 M12 3v3"/>',
   milk: '<path d="M8 3h8v4l2 3v11H6V10l2-3Z M8 7h8 M6 11h12"/>',
@@ -206,6 +208,7 @@ function applyEnvelope(data) {
   if (data.countDays !== undefined) countDays = data.countDays;
   if (data.orderTemplate !== undefined) orderTemplate = data.orderTemplate;
   if (data.alerts) alerts = data.alerts;
+  if (data.cruises) cruiseInfo = data.cruises;
   if (data.dataDir) dataDir = data.dataDir;
   archiveWarning = data.archiveWarning;
 }
@@ -232,6 +235,7 @@ const pageLabel = {
   production: "Producción",
   recipes: "Recetario",
   weekly: "Resumen semanal",
+  cruises: "Cruceros",
   documents: "Documentos",
   guide: "Guía",
 };
@@ -280,6 +284,7 @@ function render() {
     production,
     recipes: recipeBook,
     weekly: weeklyPage,
+    cruises: cruisePage,
     documents,
     guide: guidePage,
   };
@@ -297,6 +302,7 @@ function render() {
       ["documents", "photo", "Documentos"],
       ["activity", "clock", "Actividad"],
       ["weekly", "check", "Semana"],
+      ["cruises", "ship", "Cruceros"],
       ["ai", "leaf", "IA local"],
       ["guide", "shield", "Guía"],
     ]

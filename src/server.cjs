@@ -19,6 +19,7 @@ const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { LocalAI } = require("./ai.cjs");
 const { appendLog } = require("./logs.cjs");
 const { csvCell } = require("./csv.cjs");
+const { CruiseRegistry } = require("./cruises.cjs");
 const version = require("../package.json").version;
 const { Store } = require("../build/store.js");
 function createApp({
@@ -28,6 +29,10 @@ function createApp({
   historyLimit = Number(process.env.GELATO_HISTORY_LIMIT) || 300,
   // Pause between two orders of a batch send, so WhatsApp never sees a burst.
   batchDelayMs = Number(process.env.GELATO_BATCH_DELAY_MS) || 4000,
+  // Cruise forecast: injectable for tests; the automatic refresh never runs under node:test.
+  cruiseFetcher,
+  cruiseAuto = !process.env.NODE_TEST_CONTEXT &&
+    process.env.GELATO_CRUISES_AUTO !== "0",
 } = {}) {
   const store = new Store(dataDir);
   // Daily automatic copy (data + photos) with a bounded history of automatic files only.
@@ -166,6 +171,27 @@ function createApp({
   setTimeout(autoPurge, 5000).unref();
   const purgeTimer = setInterval(autoPurge, 6 * 3600 * 1000);
   purgeTimer.unref();
+  // Cruise calls at Palma (public open data). Read-only, optional, and the only outbound query.
+  const cruises = new CruiseRegistry(dataDir, {
+    ...(cruiseFetcher ? { fetcher: cruiseFetcher } : {}),
+    log: (line) =>
+      appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
+  });
+  const cruisesOn = () => store.setting("cruises_off") !== "1";
+  const autoCruises = () => {
+    if (cruisesOn() && cruises.stale(6)) cruises.refresh().catch(() => {});
+  };
+  let cruiseTimer = null;
+  if (cruiseAuto) {
+    setTimeout(autoCruises, 8000).unref();
+    cruiseTimer = setInterval(autoCruises, 3600 * 1000);
+    cruiseTimer.unref();
+  }
+  const cruiseInfo = () => ({
+    enabled: cruisesOn(),
+    updatedAt: cruises.data.updatedAt,
+    today: cruisesOn() ? cruises.today() : null,
+  });
   // The UI receives only the newest rows of the two unbounded tables; totals travel apart.
   const trimHistory = (state) => ({
     ...state,
@@ -193,6 +219,7 @@ function createApp({
     retentionDays: retentionDays(),
     countDays: countDays(),
     orderTemplate: orderTemplate(),
+    cruises: cruiseInfo(),
     alerts: {
       prices: priceAlerts(state, 30),
       counts: countStatus(state, countDays()),
@@ -370,6 +397,10 @@ function createApp({
       json(200, envelope(store.load()));
       return;
     }
+    if (u.pathname === "/api/cruises" && req.method === "GET") {
+      json(200, { enabled: cruisesOn(), auto: cruiseAuto, ...cruises.view() });
+      return;
+    }
     if (u.pathname === "/api/report" && req.method === "GET") {
       // Weekly summary from the full state; the UI only prints it.
       const week = u.searchParams.get("week") || weekStart(new Date());
@@ -413,6 +444,7 @@ function createApp({
         "/api/ai/message",
         "/api/action",
         "/api/backup",
+        "/api/cruises",
         "/api/export",
         "/api/lock",
         "/api/maintenance",
@@ -721,6 +753,11 @@ function createApp({
             json(200, envelope(store.load()));
             return;
           }
+          if (data.type === "cruises") {
+            store.setSetting("cruises_off", data.enabled ? undefined : "1");
+            json(200, envelope(store.load()));
+            return;
+          }
           if (data.type === "countDays") {
             const days = Number(data.days);
             if (![0, 3, 7, 14, 30].includes(days))
@@ -821,6 +858,14 @@ function createApp({
           json(200, { files: files.map(([f]) => f) });
           return;
         }
+        if (u.pathname === "/api/cruises") {
+          if (!cruisesOn())
+            throw Error(
+              "La consulta de cruceros está desactivada en Configuración.",
+            );
+          json(200, { enabled: true, ...(await cruises.refresh()) });
+          return;
+        }
         if (u.pathname === "/api/backup") {
           const created = store.backup();
           backupInfo.last = new Date().toISOString();
@@ -887,6 +932,7 @@ function createApp({
       "/ui/views-documents.js": "ui/views-documents.js",
       "/ui/views-ai.js": "ui/views-ai.js",
       "/ui/views-weekly.js": "ui/views-weekly.js",
+      "/ui/views-cruises.js": "ui/views-cruises.js",
       "/ui/forms.js": "ui/forms.js",
       "/ui/actions.js": "ui/actions.js",
       "/ui/events.js": "ui/events.js",
@@ -927,6 +973,7 @@ function createApp({
     server.once("close", () => {
       clearInterval(backupTimer);
       clearInterval(purgeTimer);
+      if (cruiseTimer) clearInterval(cruiseTimer);
       ai.cancel().catch(() => {});
       store.close();
       whatsapp.close().catch(() => {});

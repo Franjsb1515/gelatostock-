@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.23.0
+# Entrada para Claude · entrega vigente 0.24.0
 
 Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
 
@@ -16,6 +16,9 @@ WhatsApp: el usuario vinculó por QR y cambió entre sus dos números propios (2
 Pruebas: npm test; npm run format:check; npm run package:win; npm run test:desktop. Esta última incluye inferencia real y tarda más que unitarias. node scripts/evaluate-ai.cjs --quick para cambios en IA (modelo real, conserva pass:false). GELATO_TEST_QR=1 solo con prueba explícita. Usa fixtures en work/, nunca borres datos reales para probar. Mac no validado. Revisar seguridad, firma de paquetes, almacenamiento y rendimiento con hardware/documentos reales antes de producción.
 
 Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+
+## Punto de continuidad 0.24.0
+Lee reports/2026-09-17T22-17-03-972Z-cruceros-palma.md. El proyecto vive ahora en D:/CARPETAPROYECTOS/APPGELATOSTOCK. Cruceros: src/cruises.cjs (parseCalls puro, CruiseRegistry con fetcher inyectable, data/cruceros.json derivado), rutas GET/POST /api/cruises, ajuste cruises_off, envelope.cruises, src/ui/views-cruises.js. Es la única salida a internet además de WhatsApp: solo lectura, cuerpo fijo, respuesta tratada como no fiable, nunca automática bajo node:test ni con GELATO_CRUISES_AUTO=0 (la prueba de escritorio lo usa). El servicio del puerto no es una API documentada: las posiciones de columna están en COL; si cambian, corrige ahí y en tests/cruises.test.cjs. Citar siempre «Origen de los datos: Autoridad Portuaria de Baleares». La interfaz no admite estilos en línea (CSP): usa clases. Siguiente: Compras y Mensajes II (ver TODO).
 
 ## Punto de continuidad 0.9.3
 Lee reports/2026-09-08T18-40-07-473Z-diagnostico-whatsapp.md. Sesión 014: el usuario reportó que con QR conectado no llegaba nada en ninguna dirección (canal sin mensajes ni envíos). Se añadió resolución de remitentes LID, diagnóstico local del canal (data/whatsapp/diagnostico.log, visible en la app) y envío de prueba a chats autorizados. El registro real mostró recepción correcta (descartes por autorización de otra cuenta: cada cuenta vinculada tiene su lista) y envío silenciosamente fallido por chat inexistente para número@c.us; corregido resolviendo el id con getNumberId/LID y fallando de forma visible. Pendiente que el usuario repita la prueba.
