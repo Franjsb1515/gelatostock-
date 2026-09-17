@@ -443,16 +443,26 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: recetario con ficha completa; escala a 6 kg muestra 3 L de leche sin tocar el stock.",
     );
-    // Cruceros: la pantalla abre sin red, con registro vacío y el origen de los datos citado.
+    // Cruceros: sin red la pantalla abre, dice que faltan datos (no inventa nada) y cita la fuente.
     await window.getByRole("button", { name: "Cruceros", exact: true }).click();
-    await window.getByRole("heading", { name: "Próximos 14 días" }).waitFor();
-    assert.equal(await window.locator(".cruise-day").count(), 14);
+    await window.getByRole("heading", { name: /^Hoy · / }).waitFor();
+    assert.equal(await window.locator(".cruise-day").count(), 7);
     assert.match(
-      await window.locator(".page-cruises .fineprint").innerText(),
+      await window.locator(".cruise-sync").innerText(),
+      /Información pendiente de sincronización/,
+    );
+    assert.match(
+      await window.locator("#cruise-detail .empty").innerText(),
+      /pendiente de sincronización/,
+    );
+    await window.locator('[data-tab="calendar"]').click();
+    await window.locator(".cal-grid .cal-cell").first().waitFor();
+    assert.match(
+      await window.locator(".cruise-notes").innerText(),
       /Autoridad Portuaria de Baleares/,
     );
     console.log(
-      "PASS: cruceros abre sin internet, con 14 días y el origen de los datos citado.",
+      "PASS: cruceros abre sin internet: 7 días, calendario, datos pendientes sin inventar y fuente citada.",
     );
     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
     await window

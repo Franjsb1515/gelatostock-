@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.24.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.25.0.
 
 ## Entregado y comprobado
 
@@ -57,7 +57,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [ ] Mac: ejecutar docs/MAC.md en el equipo del usuario y enviar la salida de scripts/measure-ai-memory.cjs; adaptar la prueba de escritorio; nombre e icono del bundle; firma.
 - [x] Compras y Mensajes I (0.23.0): confirmaciones y fechas desde respuestas, acciones sobre el pedido desde el mensaje, seguimiento, plantilla, envío tras autorizar.
 - [x] Cruceros en Palma (0.24.0): registro de escalas desde los datos abiertos de la APB, pantalla por día, 14 días, rutas y aviso en Resumen.
-- [ ] Cruceros, siguiente: cruzar pasajeros previstos con ventas reales para proponer producción en días de mucho barco; vigilar cambios de formato del servicio del puerto.
+- [x] Cruceros como planificación (0.25.0): fuente oficial validada, registro SQLite con histórico desde 2014, panel, calendario, línea temporal, impacto potencial auditable, historial de cambios y ficha manual del barco.
+- [ ] Cruceros, siguiente: con varios meses de ventas registradas, comparar ventas por nivel de impacto (sin correlaciones hasta tener datos); restaurar cruceros-copia.sqlite desde la interfaz; adaptar la app entera a ventanas estrechas (la barra lateral no se pliega); clima, festivos y eventos de Palma como nuevos adaptadores.
 - [ ] Compras y Mensajes II: propuesta de sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic (mensaje de recordatorio al proveedor); catálogo/precios por proveedor desde listas de precios; prueba real del ciclo completo con los números del usuario.
 - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
 - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).

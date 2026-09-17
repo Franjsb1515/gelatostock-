@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.24.0
+# GelatoStock · prototipo 0.25.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.24.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.25.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.24.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.25.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué puedes probar
 
@@ -191,3 +191,6 @@ Las respuestas de los proveedores confirman pedidos y fijan fechas de entrega; d
 
 ## Cruceros en Palma en 0.24.0
 Con internet, la pantalla «Cruceros» muestra qué barcos llegan y parten de Palma cada día, su ruta y sus pasajeros previstos, y guarda un registro de rutas. Origen de los datos: Autoridad Portuaria de Baleares. Es una consulta de solo lectura que se puede apagar en Configuración; sin internet se ve lo último guardado.
+
+## Cruceros para planificar en 0.25.0
+«Cruceros» responde de un vistazo cuántos barcos hay hoy, a qué hora llegan y se van, cuántos coinciden a la vez y qué días vienen cargados, con datos oficiales de la Autoridad Portuaria de Baleares e histórico desde 2014. Nada se inventa: lo que el puerto no publica aparece como «No disponible», y el impacto potencial es un cálculo documentado de carga portuaria, no una previsión de clientes. Detalle técnico en docs/IA_LOCAL_Y_SEGURIDAD.md y en el informe de la sesión 038.

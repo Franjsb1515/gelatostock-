@@ -19,7 +19,8 @@ const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { LocalAI } = require("./ai.cjs");
 const { appendLog } = require("./logs.cjs");
 const { csvCell } = require("./csv.cjs");
-const { CruiseRegistry } = require("./cruises.cjs");
+const { CruiseService } = require("./cruises/service.cjs");
+const { defaultThresholds } = require("../build/cruises.js");
 const version = require("../package.json").version;
 const { Store } = require("../build/store.js");
 function createApp({
@@ -29,8 +30,8 @@ function createApp({
   historyLimit = Number(process.env.GELATO_HISTORY_LIMIT) || 300,
   // Pause between two orders of a batch send, so WhatsApp never sees a burst.
   batchDelayMs = Number(process.env.GELATO_BATCH_DELAY_MS) || 4000,
-  // Cruise forecast: injectable for tests; the automatic refresh never runs under node:test.
-  cruiseFetcher,
+  // Cruise source adapter: injectable for tests; the automatic sync never runs under node:test.
+  cruiseProvider,
   cruiseAuto = !process.env.NODE_TEST_CONTEXT &&
     process.env.GELATO_CRUISES_AUTO !== "0",
 } = {}) {
@@ -82,6 +83,18 @@ function createApp({
           fs.unlinkSync(path.join(backupDir, f));
         backupInfo.last = new Date().toISOString();
         copyToSecondary(created);
+        // The cruise registry rides along: one rolling copy here and in the secondary folder.
+        try {
+          const copy = cruises.repo.backupTo(backupDir);
+          const second = store.setting("backup_dir_secondary");
+          if (second)
+            fs.copyFileSync(copy, path.join(second, path.basename(copy)));
+        } catch (e) {
+          appendLog(
+            path.join(dataDir, "runtime", "logs", "cruceros.log"),
+            "copia del registro de cruceros: " + String(e?.message || e),
+          );
+        }
       } else {
         backupInfo.last = new Date(last).toISOString();
         copyToSecondary(path.join(backupDir, files[files.length - 1]));
@@ -172,26 +185,44 @@ function createApp({
   const purgeTimer = setInterval(autoPurge, 6 * 3600 * 1000);
   purgeTimer.unref();
   // Cruise calls at Palma (public open data). Read-only, optional, and the only outbound query.
-  const cruises = new CruiseRegistry(dataDir, {
-    ...(cruiseFetcher ? { fetcher: cruiseFetcher } : {}),
+  // Impact thresholds are the user's: stored as a setting, never hidden in code.
+  const cruiseThresholds = () => {
+    try {
+      const t = JSON.parse(store.setting("cruise_thresholds") || "null");
+      if (t && t.medium > 0 && t.high > t.medium && t.veryHigh > t.high)
+        return t;
+    } catch {
+      // A damaged setting falls back to the documented defaults.
+    }
+    return defaultThresholds;
+  };
+  const cruises = new CruiseService(dataDir, {
+    ...(cruiseProvider ? { provider: cruiseProvider } : {}),
+    thresholds: cruiseThresholds,
     log: (line) =>
       appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
   });
   const cruisesOn = () => store.setting("cruises_off") !== "1";
+  // The timer only asks «is it due?»: intervals and backoff live in the service.
   const autoCruises = () => {
-    if (cruisesOn() && cruises.stale(6)) cruises.refresh().catch(() => {});
+    if (cruisesOn()) cruises.tick().catch(() => {});
   };
   let cruiseTimer = null;
   if (cruiseAuto) {
     setTimeout(autoCruises, 8000).unref();
-    cruiseTimer = setInterval(autoCruises, 3600 * 1000);
+    cruiseTimer = setInterval(autoCruises, 10 * 60 * 1000);
     cruiseTimer.unref();
   }
-  const cruiseInfo = () => ({
-    enabled: cruisesOn(),
-    updatedAt: cruises.data.updatedAt,
-    today: cruisesOn() ? cruises.today() : null,
-  });
+  const cruiseInfo = () => {
+    if (!cruisesOn()) return { enabled: false, updatedAt: null, today: null };
+    const status = cruises.status();
+    return {
+      enabled: true,
+      updatedAt: status.updatedAt,
+      state: status.state,
+      today: status.updatedAt ? cruises.brief(cruises.dashboard().today) : null,
+    };
+  };
   // The UI receives only the newest rows of the two unbounded tables; totals travel apart.
   const trimHistory = (state) => ({
     ...state,
@@ -397,8 +428,53 @@ function createApp({
       json(200, envelope(store.load()));
       return;
     }
-    if (u.pathname === "/api/cruises" && req.method === "GET") {
-      json(200, { enabled: cruisesOn(), auto: cruiseAuto, ...cruises.view() });
+    if (u.pathname.startsWith("/api/cruises") && req.method === "GET") {
+      // Read-only views over the local registry; nothing here talks to the port.
+      try {
+        const q = (k) => u.searchParams.get(k) || "";
+        if (u.pathname === "/api/cruises")
+          json(200, {
+            enabled: cruisesOn(),
+            auto: cruiseAuto,
+            ...cruises.dashboard(),
+          });
+        else if (u.pathname === "/api/cruises/range")
+          json(200, cruises.range(q("from"), q("to")));
+        else if (u.pathname === "/api/cruises/day")
+          json(200, cruises.day(q("day")));
+        else if (u.pathname === "/api/cruises/call") {
+          const call = cruises.call(q("id").slice(0, 40));
+          if (call) json(200, call);
+          else json(404, { error: "Escala desconocida." });
+        } else if (u.pathname === "/api/cruises/search")
+          json(
+            200,
+            cruises.search({
+              q: q("q").slice(0, 60),
+              status: [
+                "Solicitado",
+                "Concedido",
+                "Iniciado",
+                "Finalizado",
+                "withdrawn",
+              ].includes(q("status"))
+                ? q("status")
+                : "",
+              from: /^\d{4}-\d{2}-\d{2}$/.test(q("from")) ? q("from") : "",
+              to: /^\d{4}-\d{2}-\d{2}$/.test(q("to")) ? q("to") : "",
+              limit: 100,
+              offset: Number(q("offset")) || 0,
+            }),
+          );
+        else if (u.pathname === "/api/cruises/syncs")
+          json(200, {
+            syncs: cruises.repo.lastSyncs(15),
+            status: cruises.status(),
+          });
+        else json(404, { error: "No encontrado." });
+      } catch (e) {
+        json(400, { error: String(e?.message || e) });
+      }
       return;
     }
     if (u.pathname === "/api/report" && req.method === "GET") {
@@ -408,10 +484,17 @@ function createApp({
         json(400, { error: "Semana inválida." });
         return;
       }
-      json(
-        200,
-        weeklyReport(store.load(), weekStart(new Date(week + "T12:00:00"))),
+      const report = weeklyReport(
+        store.load(),
+        weekStart(new Date(week + "T12:00:00")),
       );
+      // Cruise facts side by side with sales. No correlation is computed: there is no history yet.
+      json(200, {
+        ...report,
+        cruises: cruisesOn()
+          ? report.days.map((d) => cruises.brief(d.date))
+          : null,
+      });
       return;
     }
     if (u.pathname === "/api/history" && req.method === "GET") {
@@ -863,7 +946,41 @@ function createApp({
             throw Error(
               "La consulta de cruceros está desactivada en Configuración.",
             );
-          json(200, { enabled: true, ...(await cruises.refresh()) });
+          if (data.type === "ship") {
+            json(200, {
+              ship: cruises.setShipInfo(String(data.key || ""), data),
+            });
+            return;
+          }
+          if (data.type === "thresholds") {
+            const t = {
+              medium: Number(data.medium),
+              high: Number(data.high),
+              veryHigh: Number(data.veryHigh),
+            };
+            if (
+              !Object.values(t).every(
+                (n) => Number.isInteger(n) && n > 0 && n <= 100000,
+              ) ||
+              !(t.medium < t.high && t.high < t.veryHigh)
+            )
+              throw Error(
+                "Los umbrales deben ser enteros crecientes: medio < alto < muy alto.",
+              );
+            store.setSetting("cruise_thresholds", JSON.stringify(t));
+            json(200, {
+              enabled: true,
+              auto: cruiseAuto,
+              ...cruises.dashboard(),
+            });
+            return;
+          }
+          await cruises.sync("manual");
+          json(200, {
+            enabled: true,
+            auto: cruiseAuto,
+            ...cruises.dashboard(),
+          });
           return;
         }
         if (u.pathname === "/api/backup") {
@@ -974,6 +1091,7 @@ function createApp({
       clearInterval(backupTimer);
       clearInterval(purgeTimer);
       if (cruiseTimer) clearInterval(cruiseTimer);
+      cruises.close();
       ai.cancel().catch(() => {});
       store.close();
       whatsapp.close().catch(() => {});

@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.25.0 — 2026-09-18 · sesión 038
+
+Cruceros pasa de lista a herramienta de planificación, siguiendo el prompt maestro del usuario y su regla de no inventar datos. Núcleo nuevo core/cruises.ts (validación de la fuente, hora de Palma con cambios de hora, pasajeros declarados, tipo de escala, máxima simultaneidad, línea temporal e impacto potencial con fórmula documentada y umbrales del usuario). Arquitectura en tres piezas: adaptador de la fuente (src/cruises/provider-apb.cjs), registro SQLite propio data/cruceros.sqlite con barcos, escalas, historial de cambios y sincronizaciones (repository.cjs) y servicio con intervalos, espera tras fallos e importación del histórico oficial desde 2014 (service.cjs). Identificador oficial de escala estable: los cambios de horario o muelle actualizan la misma fila y quedan en el historial; una escala futura que desaparece se marca «Retirada de la previsión» y se restaura si vuelve; un mismo IMO con otro nombre es un solo barco. Interfaz: panel de hoy, mañana, 7 y 30 días, calendario mensual, detalle del día con línea temporal SVG y tarjetas por barco, registro con buscador, historial y origen de cada escala, ficha manual del barco (naviera y capacidad, con fuente obligatoria), estado de sincronización siempre visible y explicación de cómo leer los datos. Semana muestra los cruceros de cada día junto a las ventas, sin correlaciones. El registro viaja con la copia diaria.
+
+Corregido respecto a 0.24.0: «hoy» salía del reloj del equipo y no de Palma; «pasajeros aprox.» no decía que era un cálculo; las escalas de más de 400 días se borraban y las futuras anuladas desaparecían sin rastro; el identificador usaba el año de llegada en lugar del año oficial de la escala.
+
+Pruebas: 142. Informe reports/2026-09-17T23-07-26-548Z-cruceros-planificacion.md.
+
 ## 0.24.0 — 2026-09-17 · sesión 037
 
 Cruceros en Palma. Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares y guarda un registro en data/cruceros.json: qué cruceros llegan y parten cada día, de dónde vienen y a dónde van, muelle, eslora, estado y pasajeros previstos (en tránsito, bajan, suben). Pantalla nueva «Cruceros» con el día elegido, los próximos 14 días y el registro de rutas con buscador y rutas más repetidas; aviso en Resumen cuando hoy hay cruceros en puerto; interruptor en Configuración. Las escalas pasadas se conservan (400 días); las futuras siguen la previsión y desaparecen si el puerto las anula. Sin internet se muestra lo último guardado con un aviso. La app solo lee y cita el origen de los datos.

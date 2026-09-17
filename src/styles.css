@@ -3487,17 +3487,175 @@ dialog::backdrop {
 }
 
 /* Cruceros */
+.page-cruises .na,
+.na {
+  color: var(--ink-muted);
+  font-style: italic;
+  font-weight: 400;
+}
+.cruise-sync {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  margin: 0 0 var(--s-4);
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 13px;
+}
+.cruise-sync span {
+  color: var(--ink-muted);
+}
+.cruise-sync.sync-fresh {
+  border-left-color: var(--pistacho);
+}
+.cruise-sync.sync-syncing,
+.cruise-sync.sync-never {
+  border-left-color: var(--acero);
+}
+.cruise-sync.sync-stale {
+  border-left-color: var(--azafran);
+  background: var(--azafran-claro);
+}
+.cruise-sync.sync-error {
+  border-left-color: var(--rosa);
+  background: var(--rosa-claro);
+}
+.cruise-body {
+  padding: 0 var(--s-5) var(--s-5);
+}
+.cruise-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin: 0 var(--s-5) var(--s-4);
+}
+.cruise-body > .cruise-kpis {
+  margin: 0 0 var(--s-4);
+}
+.cruise-kpis > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  min-width: 0;
+}
+.cruise-kpis span {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.cruise-kpis strong {
+  font-size: 26px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.cruise-kpis strong.kpi-text {
+  font-size: 17px;
+  line-height: 1.25;
+}
+.cruise-kpis small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+.cruise-tomorrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: calc(100% - 2 * var(--s-5));
+  margin: 0 var(--s-5) var(--s-5);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cruise-tomorrow:hover,
+.cruise-tomorrow:focus-visible {
+  border-color: var(--accent);
+}
+.cruise-tomorrow svg {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+}
+.impact {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.impact-none,
+.impact-unknown {
+  background: var(--surface-2);
+  color: var(--ink-muted);
+  border-color: var(--line);
+}
+.impact-unknown {
+  border-style: dashed;
+}
+.impact-low {
+  background: var(--pistacho-suave);
+  color: var(--pistacho-oscuro);
+}
+.impact-medium {
+  background: var(--azafran-claro);
+  color: var(--azafran-texto);
+}
+.impact-high {
+  background: var(--rosa-claro);
+  color: var(--rosa-texto);
+}
+.impact-veryHigh {
+  background: var(--rosa-texto);
+  color: #fff;
+}
+.cruise-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cruise-tabs .tab {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cruise-tabs .tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
 .cruise-days {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 10px;
 }
 .cruise-day {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   align-items: flex-start;
-  padding: 12px;
+  padding: 14px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
@@ -3507,81 +3665,275 @@ dialog::backdrop {
   cursor: pointer;
 }
 .cruise-day:hover,
+.cruise-day:focus-visible,
 .cruise-day.active {
   border-color: var(--accent);
 }
 .cruise-day.active {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
-.cruise-day span {
+.cruise-day > span:first-child {
   font-size: 12px;
-  text-transform: capitalize;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--ink-muted);
+}
+.cruise-day strong {
+  font-size: 18px;
 }
 .cruise-day small {
   font-size: 12px;
   color: var(--ink-muted);
 }
-.cruise-bar {
-  display: block;
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--line);
+.cruise-day .impact {
+  margin-top: 4px;
+}
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.cal-nav h3 {
+  margin: 0;
+}
+.cal-nav h3::first-letter {
+  text-transform: uppercase;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.cal-head {
+  padding: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--ink-muted);
+}
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 78px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   overflow: hidden;
 }
-.cruise-bar b {
-  display: block;
-  height: 100%;
-  background: var(--accent);
+.cal-cell.cal-empty {
+  border: 0;
+  background: transparent;
+  cursor: default;
 }
-.cruise-bar b.w0 {
-  width: 0%;
+.cal-cell b {
+  font-size: 14px;
 }
-.cruise-bar b.w1 {
-  width: 10%;
+.cal-cell span {
+  font-size: 12px;
+  color: var(--ink-muted);
 }
-.cruise-bar b.w2 {
-  width: 20%;
+.cal-cell em {
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  text-transform: uppercase;
 }
-.cruise-bar b.w3 {
-  width: 30%;
+.cal-cell.today b {
+  text-decoration: underline;
 }
-.cruise-bar b.w4 {
-  width: 40%;
+.cal-cell.active,
+.cal-cell:hover,
+.cal-cell:focus-visible {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
-.cruise-bar b.w5 {
-  width: 50%;
+.cal-cell.level-low {
+  background: var(--pistacho-suave);
 }
-.cruise-bar b.w6 {
-  width: 60%;
+.cal-cell.level-medium {
+  background: var(--azafran-claro);
 }
-.cruise-bar b.w7 {
-  width: 70%;
+.cal-cell.level-high {
+  background: var(--rosa-claro);
 }
-.cruise-bar b.w8 {
-  width: 80%;
+.cal-cell.level-veryHigh {
+  background: var(--rosa-texto);
+  color: #fff;
 }
-.cruise-bar b.w9 {
-  width: 90%;
+.cal-cell.level-veryHigh span {
+  color: #fff;
 }
-.cruise-bar b.w10 {
-  width: 100%;
+.cal-cell.level-unknown {
+  border-style: dashed;
 }
-.cruise-routes {
+.cal-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 0 0 12px;
+  margin: 12px 0 0;
 }
-.cruise-registry .table-scroll {
-  max-height: 420px;
-  overflow: auto;
+.cruise-sub {
+  margin: var(--s-5) 0 var(--s-3);
+  font-size: 15px;
+}
+.cruise-timeline {
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+  display: block;
+}
+.cruise-timeline .tl-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.cruise-timeline .tl-hour {
+  font-size: 11px;
+  fill: var(--ink-muted);
+}
+.cruise-timeline .tl-ship {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.cruise-timeline .tl-bar {
+  fill: var(--pistacho);
+}
+.cruise-timeline .tl-time {
+  font-size: 11px;
+  font-weight: 600;
+  fill: #fff;
+  pointer-events: none;
+}
+.cruise-steps {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+.cruise-steps b {
+  display: inline-block;
+  min-width: 52px;
+}
+.cruise-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 12px;
+}
+.cruise-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  min-width: 0;
+}
+.cruise-card.withdrawn {
+  opacity: 0.75;
+  border-style: dashed;
+}
+.cruise-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cruise-card h3 {
+  margin: 0;
+  font-size: 17px;
+}
+.cruise-card header p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.cruise-card-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: flex-start;
+}
+.cruise-times {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.cruise-times > div {
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.cruise-times span,
+.cruise-times small {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.cruise-times strong {
+  font-size: 20px;
+}
+.cruise-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  margin: 0;
+}
+.cruise-facts dt {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+.cruise-facts dd {
+  margin: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.cruise-facts dd small {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.cruise-card footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.cruise-card footer small {
+  color: var(--ink-muted);
+}
+.cruise-card footer span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cruise-notes p {
+  max-width: 920px;
 }
 .cruise-table th {
   text-align: left;
   font-size: 12px;
   color: var(--ink-muted);
+}
+.cruise-table td small {
+  display: block;
 }
 .check-row {
   display: flex;
@@ -3589,15 +3941,22 @@ dialog::backdrop {
   gap: 8px;
   font-weight: 600;
 }
-.page-cruises .panel > .report-kpis,
-.page-cruises .panel > .report-grid,
-.page-cruises .panel > .cruise-days,
-.page-cruises .panel > .cruise-routes,
-.page-cruises .panel > .cruise-registry,
-.page-cruises .panel > .fineprint {
-  margin: 0 var(--s-5) var(--s-5);
-}
-.page-cruises .panel-heading .field {
-  margin: 0;
-  min-width: 240px;
+@media (max-width: 720px) {
+  .cruise-facts,
+  .cruise-times {
+    grid-template-columns: 1fr 1fr;
+  }
+  .cruise-cards {
+    grid-template-columns: 1fr;
+  }
+  .cal-cell {
+    min-height: 60px;
+    padding: 5px;
+  }
+  .cal-cell span {
+    font-size: 10px;
+  }
+  .cal-cell em {
+    display: none;
+  }
 }

@@ -1,0 +1,2621 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index e931fb8..57e54d2 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.24.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.25.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index c87ec1b..2941774 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Registro de parches y sesiones
+ 
++## 0.25.0 — 2026-09-18 · sesión 038
++
++Cruceros pasa de lista a herramienta de planificación, siguiendo el prompt maestro del usuario y su regla de no inventar datos. Núcleo nuevo core/cruises.ts (validación de la fuente, hora de Palma con cambios de hora, pasajeros declarados, tipo de escala, máxima simultaneidad, línea temporal e impacto potencial con fórmula documentada y umbrales del usuario). Arquitectura en tres piezas: adaptador de la fuente (src/cruises/provider-apb.cjs), registro SQLite propio data/cruceros.sqlite con barcos, escalas, historial de cambios y sincronizaciones (repository.cjs) y servicio con intervalos, espera tras fallos e importación del histórico oficial desde 2014 (service.cjs). Identificador oficial de escala estable: los cambios de horario o muelle actualizan la misma fila y quedan en el historial; una escala futura que desaparece se marca «Retirada de la previsión» y se restaura si vuelve; un mismo IMO con otro nombre es un solo barco. Interfaz: panel de hoy, mañana, 7 y 30 días, calendario mensual, detalle del día con línea temporal SVG y tarjetas por barco, registro con buscador, historial y origen de cada escala, ficha manual del barco (naviera y capacidad, con fuente obligatoria), estado de sincronización siempre visible y explicación de cómo leer los datos. Semana muestra los cruceros de cada día junto a las ventas, sin correlaciones. El registro viaja con la copia diaria.
++
++Corregido respecto a 0.24.0: «hoy» salía del reloj del equipo y no de Palma; «pasajeros aprox.» no decía que era un cálculo; las escalas de más de 400 días se borraban y las futuras anuladas desaparecían sin rastro; el identificador usaba el año de llegada en lugar del año oficial de la escala.
++
++Pruebas: 142. Informe reports/2026-09-17T23-07-26-548Z-cruceros-planificacion.md.
++
+ ## 0.24.0 — 2026-09-17 · sesión 037
+ 
+ Cruceros en Palma. Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares y guarda un registro en data/cruceros.json: qué cruceros llegan y parten cada día, de dónde vienen y a dónde van, muelle, eslora, estado y pasajeros previstos (en tránsito, bajan, suben). Pantalla nueva «Cruceros» con el día elegido, los próximos 14 días y el registro de rutas con buscador y rutas más repetidas; aviso en Resumen cuando hoy hay cruceros en puerto; interruptor en Configuración. Las escalas pasadas se conservan (400 días); las futuras siguen la previsión y desaparecen si el puerto las anula. Sin internet se muestra lo último guardado con un aviso. La app solo lee y cita el origen de los datos.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index cff1dee..354cbbc 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.24.0
++# Entrada para Claude · entrega vigente 0.25.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+@@ -17,6 +17,9 @@ Pruebas: npm test; npm run format:check; npm run package:win; npm run test:deskt
+ 
+ Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+ 
++## Punto de continuidad 0.25.0
++Lee reports/2026-09-17T23-07-26-548Z-cruceros-planificacion.md y el prompt del usuario para este módulo (regla de oro: no inventar datos). Cruceros: core/cruises.ts (todo lo puro: validación de filas de la APB con posiciones en COL, hora Europe/Madrid, daySummary, impacto), src/cruises/provider-apb.cjs (HTTP), repository.cjs (data/cruceros.sqlite: ships, calls, changes, syncs, meta) y service.cjs (sync, backoff, backfill, vistas). Sustituye a src/cruises.cjs y cruceros.json de 0.24.0. Garantías que no se degradan: null = «No disponible» y nunca se rellena; «pasajeros declarados» es DERIVADO (tránsito + máx(desembarque, embarque)) y no es capacidad ni clientes; naviera y capacidad solo manuales y con fuente; estados solo los de la fuente más «Retirada de la previsión» y «Salida prevista ya pasada», ambos derivados y rotulados; «hoy» y todas las horas son de Palma (el equipo de desarrollo está en UTC−3); una previsión vacía nunca retira escalas; el histórico no se borra. La fórmula del impacto está en impactLevel y en la propia pantalla: si cambia, cambian las dos y las pruebas. Pruebas con proveedor simulado (createApp({ cruiseProvider })); ninguna toca la red. Siguiente: Compras y Mensajes II (ver TODO).
++
+ ## Punto de continuidad 0.24.0
+ Lee reports/2026-09-17T22-17-03-972Z-cruceros-palma.md. El proyecto vive ahora en D:/CARPETAPROYECTOS/APPGELATOSTOCK. Cruceros: src/cruises.cjs (parseCalls puro, CruiseRegistry con fetcher inyectable, data/cruceros.json derivado), rutas GET/POST /api/cruises, ajuste cruises_off, envelope.cruises, src/ui/views-cruises.js. Es la única salida a internet además de WhatsApp: solo lectura, cuerpo fijo, respuesta tratada como no fiable, nunca automática bajo node:test ni con GELATO_CRUISES_AUTO=0 (la prueba de escritorio lo usa). El servicio del puerto no es una API documentada: las posiciones de columna están en COL; si cambian, corrige ahí y en tests/cruises.test.cjs. Citar siempre «Origen de los datos: Autoridad Portuaria de Baleares». La interfaz no admite estilos en línea (CSP): usa clases. Siguiente: Compras y Mensajes II (ver TODO).
+ 
+diff --git a/README.md b/README.md
+index 223a0ae..c57d932 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.24.0
++# GelatoStock · prototipo 0.25.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.24.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.25.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.24.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.25.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+@@ -191,3 +191,6 @@ Las respuestas de los proveedores confirman pedidos y fijan fechas de entrega; d
+ 
+ ## Cruceros en Palma en 0.24.0
+ Con internet, la pantalla «Cruceros» muestra qué barcos llegan y parten de Palma cada día, su ruta y sus pasajeros previstos, y guarda un registro de rutas. Origen de los datos: Autoridad Portuaria de Baleares. Es una consulta de solo lectura que se puede apagar en Configuración; sin internet se ve lo último guardado.
++
++## Cruceros para planificar en 0.25.0
++«Cruceros» responde de un vistazo cuántos barcos hay hoy, a qué hora llegan y se van, cuántos coinciden a la vez y qué días vienen cargados, con datos oficiales de la Autoridad Portuaria de Baleares e histórico desde 2014. Nada se inventa: lo que el puerto no publica aparece como «No disponible», y el impacto potencial es un cálculo documentado de carga portuaria, no una previsión de clientes. Detalle técnico en docs/IA_LOCAL_Y_SEGURIDAD.md y en el informe de la sesión 038.
+diff --git a/TODO.md b/TODO.md
+index 5044b34..bcabf74 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.24.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.25.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -57,7 +57,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [ ] Mac: ejecutar docs/MAC.md en el equipo del usuario y enviar la salida de scripts/measure-ai-memory.cjs; adaptar la prueba de escritorio; nombre e icono del bundle; firma.
+ - [x] Compras y Mensajes I (0.23.0): confirmaciones y fechas desde respuestas, acciones sobre el pedido desde el mensaje, seguimiento, plantilla, envío tras autorizar.
+ - [x] Cruceros en Palma (0.24.0): registro de escalas desde los datos abiertos de la APB, pantalla por día, 14 días, rutas y aviso en Resumen.
+-- [ ] Cruceros, siguiente: cruzar pasajeros previstos con ventas reales para proponer producción en días de mucho barco; vigilar cambios de formato del servicio del puerto.
++- [x] Cruceros como planificación (0.25.0): fuente oficial validada, registro SQLite con histórico desde 2014, panel, calendario, línea temporal, impacto potencial auditable, historial de cambios y ficha manual del barco.
++- [ ] Cruceros, siguiente: con varios meses de ventas registradas, comparar ventas por nivel de impacto (sin correlaciones hasta tener datos); restaurar cruceros-copia.sqlite desde la interfaz; adaptar la app entera a ventanas estrechas (la barra lateral no se pliega); clima, festivos y eventos de Palma como nuevos adaptadores.
+ - [ ] Compras y Mensajes II: propuesta de sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic (mensaje de recordatorio al proveedor); catálogo/precios por proveedor desde listas de precios; prueba real del ciclo completo con los números del usuario.
+ - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
+ - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index ac73e07..1049496 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -73,7 +73,7 @@ Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con lo
+ Resumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.
+ 
+ ## Cruceros
+-Cuando hay internet, la app lee la previsión pública de escalas del puerto de Palma (origen de los datos: Autoridad Portuaria de Baleares). La pantalla muestra, para el día elegido, qué cruceros llegan, cuáles parten, de dónde vienen, a dónde van, su muelle y los pasajeros previstos; debajo, los próximos 14 días de un vistazo y el registro de rutas con buscador. Las escalas pasadas se conservan como registro; las futuras siguen la previsión del puerto y pueden cambiar. Resumen avisa si hoy hay cruceros en puerto. Sin internet se ve lo último guardado. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.
++Herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.
+ 
+ ## Actividad
+ Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.
+diff --git a/docs/IA_LOCAL_Y_SEGURIDAD.md b/docs/IA_LOCAL_Y_SEGURIDAD.md
+index 1c0901b..3fd82cd 100644
+--- a/docs/IA_LOCAL_Y_SEGURIDAD.md
++++ b/docs/IA_LOCAL_Y_SEGURIDAD.md
+@@ -91,5 +91,5 @@ Chat de dudas: src/ai-guide.cjs elige hasta cuatro párrafos de la guía por coi
+ 
+ Webs de compra: la ficha admite una URL https; el carrito genera una lista de texto y un enlace target=_blank. En Electron, setWindowOpenHandler abre con shell.openExternal solo URLs que empiezan por una web guardada en una ficha y deniega el resto; la app no introduce credenciales, no navega la web ni paga.
+ 
+-## Consulta de cruceros (0.24.0)
+-Primera salida a internet de la app aparte de WhatsApp. src/cruises.cjs abre una sesión anónima en el visor público de la Autoridad Portuaria de Baleares (posidoniaweb.portsdebalears.com, el mismo acceso que usa cualquier visitante de portsdebalears.com/es/buques-en-puerto) y descarga la previsión de atraques en JSON. No envía datos del negocio: el cuerpo de las peticiones es fijo. La respuesta se trata como no fiable: solo se conservan filas de cruceros de Palma con fechas válidas, los textos se limpian de etiquetas y caracteres de control, se recortan y la interfaz los escapa; las cifras se fuerzan a número. La consulta vive en el proceso del servidor local; la página sigue con connect-src 'self' y no habla con el puerto. Se apaga en Configuración (ajuste cruises_off) y con GELATO_CRUISES_AUTO=0; nunca se ejecuta sola bajo node:test. Condiciones de reutilización de la APB: uso comercial y no comercial permitido citando «Origen de los datos: Autoridad Portuaria de Baleares» y la fecha de actualización, sin sugerir patrocinio; la pantalla lo cita. El servicio no es una API documentada: si el puerto cambia el formato, la app muestra el error y conserva lo guardado.
++## Consulta de cruceros (0.25.0)
++Única salida a internet de la app aparte de WhatsApp. src/cruises/provider-apb.cjs abre una sesión anónima en el visor público de la Autoridad Portuaria de Baleares (posidoniaweb.portsdebalears.com, el que enlaza su ficha de datos abiertos «Previsión de tráfico marítimo») y pide tres cosas: la previsión vigente, la hora de actualización de la fuente y el histórico de cruceros de Palma. Los cuerpos de las peticiones son fijos: no viaja ningún dato del negocio ni existen claves que proteger. La respuesta se trata como no fiable y se valida en core/cruises.ts antes de guardarse: solo cruceros de Palma, fechas que existen, salida posterior a la llegada, estancias de 30 días como máximo, cifras de pasajeros enteras entre 0 y 15.000 (lo demás queda en «no disponible»), textos sin etiquetas ni caracteres de control y recortados; la interfaz los escapa. Las filas rechazadas se cuentan y se anotan en el registro de sincronizaciones. La consulta vive en el proceso del servidor local; la página mantiene connect-src 'self' y nunca habla con el puerto. Frecuencia: 3 h con barcos hoy o mañana, 6 h con barcos en 7 días, 12 h en otro caso; tras un fallo espera 5 min, 15 min, 1 h y 3 h; un solo reintento por consulta y solo ante fallos de red; tiempo límite de 45 s; el histórico se importa una vez, por páginas y con pausas. Se apaga en Configuración (ajuste cruises_off) y con GELATO_CRUISES_AUTO=0; nunca se ejecuta sola bajo node:test. Las rutas /api/cruises* exigen la misma sesión y el mismo control de Origin que el resto; los parámetros se validan (días, intervalos de 100 días como máximo, estados de una lista cerrada). Condiciones de reutilización de la APB: uso comercial y no comercial citando «Origen de los datos: Autoridad Portuaria de Baleares» y la fecha de actualización, sin sugerir patrocinio; la pantalla lo cita. No es una API documentada: si el puerto cambia el formato, las filas se rechazan, la app muestra el error y conserva lo guardado.
+diff --git a/package.json b/package.json
+index 9e1d6ae..cccbf30 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.24.0",
++  "version": "0.25.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 02e25b8..5f714a0 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -443,16 +443,26 @@ const assert = require("node:assert/strict");
+     console.log(
+       "PASS: recetario con ficha completa; escala a 6 kg muestra 3 L de leche sin tocar el stock.",
+     );
+-    // Cruceros: la pantalla abre sin red, con registro vacío y el origen de los datos citado.
++    // Cruceros: sin red la pantalla abre, dice que faltan datos (no inventa nada) y cita la fuente.
+     await window.getByRole("button", { name: "Cruceros", exact: true }).click();
+-    await window.getByRole("heading", { name: "Próximos 14 días" }).waitFor();
+-    assert.equal(await window.locator(".cruise-day").count(), 14);
++    await window.getByRole("heading", { name: /^Hoy · / }).waitFor();
++    assert.equal(await window.locator(".cruise-day").count(), 7);
+     assert.match(
+-      await window.locator(".page-cruises .fineprint").innerText(),
++      await window.locator(".cruise-sync").innerText(),
++      /Información pendiente de sincronización/,
++    );
++    assert.match(
++      await window.locator("#cruise-detail .empty").innerText(),
++      /pendiente de sincronización/,
++    );
++    await window.locator('[data-tab="calendar"]').click();
++    await window.locator(".cal-grid .cal-cell").first().waitFor();
++    assert.match(
++      await window.locator(".cruise-notes").innerText(),
+       /Autoridad Portuaria de Baleares/,
+     );
+     console.log(
+-      "PASS: cruceros abre sin internet, con 14 días y el origen de los datos citado.",
++      "PASS: cruceros abre sin internet: 7 días, calendario, datos pendientes sin inventar y fuente citada.",
+     );
+     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
+     await window
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index 740a518..c65ff12 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -8,7 +8,7 @@ Copias: Configuración permite crear una copia con datos y fotos y restaurarla;
+ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español lee el texto y propone un proveedor existente. No extrae cantidades ni lee PDF.
+ IA local: reglas deterministas leen el título del documento (factura, proforma, abono, albarán, lista de precios, oferta) o reconocen un mensaje, y un modelo pequeño incluido en el equipo (Qwen3 0.6B) da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. El modelo propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+-Cruceros: con internet, la app lee la previsión pública de escalas de cruceros del puerto de Palma (Autoridad Portuaria de Baleares) y muestra qué barcos llegan y parten cada día, su ruta (de dónde vienen y a dónde van), muelle y pasajeros previstos, los próximos 14 días y un registro de rutas con buscador; Resumen avisa si hoy hay cruceros; se desactiva en Configuración → Cruceros en Palma; sin internet se ve lo último guardado; la app solo lee y no envía datos. Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
++Cruceros: herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares para el puerto de Palma; panel de hoy (cruceros, pasajeros declarados, mayor concentración, impacto potencial, próxima llegada), mañana, próximos 7 y 30 días, calendario mensual con histórico desde 2014 y registro con buscador; el detalle del día muestra la línea temporal de cruceros en puerto por hora, la máxima coincidencia y una tarjeta por barco con llegada, salida, duración, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales editables en Configuración, y mide carga portuaria, no clientes; lo que el puerto no publica (naviera, capacidad, terminal) sale como «No disponible» y naviera y capacidad se pueden anotar en la ficha del barco indicando la fuente; nada se inventa; las horas son las de Palma; una escala que desaparece queda como «Retirada de la previsión»; sin internet se ven los últimos datos; la consulta se desactiva en Configuración → Cruceros en Palma; la app solo lee y no envía datos. Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+ Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se responde por WhatsApp escribiendo en el propio mensaje o con respuestas rápidas que rellenan el cuadro (se envía una sola vez al pulsar Enviar) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
+ WhatsApp: se vincula por QR con el teléfono del negocio. Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.
+diff --git a/src/cruises.cjs b/src/cruises.cjs
+deleted file mode 100644
+index 1f833a6..0000000
+--- a/src/cruises.cjs
++++ /dev/null
+@@ -1,280 +0,0 @@
+-// Registro de escalas de cruceros en el puerto de Palma.
+-// Origen de los datos: Autoridad Portuaria de Baleares (previsión de tráfico, datos abiertos).
+-// Es la única consulta de la app a internet aparte de WhatsApp: solo lee datos públicos, no envía
+-// nada del negocio y se puede desactivar en Configuración. El archivo data/cruceros.json es un
+-// registro derivado: si se borra, se vuelve a llenar con la previsión vigente (no con el pasado).
+-const fs = require("node:fs");
+-const path = require("node:path");
+-
+-const BASE = "https://posidoniaweb.portsdebalears.com/gisweb_server";
+-const SOURCE = "Autoridad Portuaria de Baleares";
+-const KEEP_DAYS = 400;
+-
+-// Column positions of the public grid (modelo «buques» del visor de la APB).
+-const COL = {
+-  typeCode: 6,
+-  type: 7,
+-  imo: 8,
+-  ship: 9,
+-  fromCountry: 10,
+-  toCountry: 11,
+-  from: 12,
+-  to: 13,
+-  arrival: 14,
+-  departure: 15,
+-  berth: 17,
+-  agent: 18,
+-  gt: 19,
+-  call: 20,
+-  flag: 21,
+-  length: 22,
+-  ops: 30,
+-  qty: 32,
+-  port: 36,
+-  status: 37,
+-};
+-
+-const pad = (n) => String(n).padStart(2, "0");
+-const localDay = (d = new Date()) =>
+-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+-const addDays = (day, n) => {
+-  const [y, m, d] = day.split("-").map(Number);
+-  return localDay(new Date(y, m - 1, d + n, 12));
+-};
+-// "18/09/2026 04:00" (hora de Palma) → "2026-09-18T04:00". Sin zona: es hora local del puerto.
+-function parseStamp(text) {
+-  const m = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/.exec(
+-    String(text || ""),
+-  );
+-  return m ? `${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}` : "";
+-}
+-const clean = (v, max = 80) =>
+-  String(v ?? "")
+-    .replace(/<[^>]*>/g, " ")
+-    .replace(/\p{Cc}/gu, " ")
+-    .replace(/\s+/g, " ")
+-    .trim()
+-    .slice(0, max);
+-const title = (v) =>
+-  clean(v)
+-    .toLowerCase()
+-    .replace(/(^|[\s(\-/])(\p{L})/gu, (_, a, b) => a + b.toUpperCase());
+-const number = (v) => {
+-  const n = Number(v);
+-  return Number.isFinite(n) && n >= 0 ? n : 0;
+-};
+-
+-// Passenger operations arrive as parallel lists joined by <br/>.
+-function passengers(ops, qty) {
+-  const names = String(ops || "").split(/<br\s*\/?>/i);
+-  const amounts = String(qty || "").split(/<br\s*\/?>/i);
+-  const out = { disembark: 0, embark: 0, transit: 0 };
+-  names.forEach((name, i) => {
+-    const n = number(amounts[i]);
+-    if (/^desembar/i.test(name.trim())) out.disembark += n;
+-    else if (/^embar/i.test(name.trim())) out.embark += n;
+-    else if (/^tra[ns]*bordo|^tr[aá]nsito/i.test(name.trim())) out.transit += n;
+-  });
+-  return out;
+-}
+-
+-// Rows of the public grid → cruise calls at Palma, one per call (berth shifts are merged).
+-function parseCalls(payload) {
+-  const rows = Array.isArray(payload?.rows) ? payload.rows : [];
+-  const calls = new Map();
+-  for (const row of rows) {
+-    const c = row?.cell;
+-    if (!Array.isArray(c) || c.length < 38) continue;
+-    if (
+-      String(c[COL.typeCode]) !== "7" &&
+-      !/crucero/i.test(String(c[COL.type]))
+-    )
+-      continue;
+-    if (clean(c[COL.port]) !== "Palma") continue;
+-    const arrival = parseStamp(c[COL.arrival]);
+-    const departure = parseStamp(c[COL.departure]);
+-    const ship = clean(c[COL.ship]);
+-    if (!arrival || !departure || !ship || departure < arrival) continue;
+-    const id = `${arrival.slice(0, 4)}-${clean(c[COL.call], 12) || clean(c[COL.imo], 12)}`;
+-    const pax = passengers(c[COL.ops], c[COL.qty]);
+-    const prev = calls.get(id);
+-    if (prev) {
+-      // Same call, another berth: widen the stay and keep the larger passenger figures.
+-      if (arrival < prev.arrival) prev.arrival = arrival;
+-      if (departure > prev.departure) prev.departure = departure;
+-      for (const k of Object.keys(pax))
+-        prev.pax[k] = Math.max(prev.pax[k], pax[k]);
+-      continue;
+-    }
+-    calls.set(id, {
+-      id,
+-      ship,
+-      imo: clean(c[COL.imo], 12),
+-      from: title(c[COL.from]),
+-      fromCountry: title(c[COL.fromCountry]),
+-      to: title(c[COL.to]),
+-      toCountry: title(c[COL.toCountry]),
+-      arrival,
+-      departure,
+-      berth: clean(c[COL.berth], 100),
+-      agent: clean(c[COL.agent], 100),
+-      gt: number(c[COL.gt]),
+-      length: number(c[COL.length]),
+-      flag: title(c[COL.flag]),
+-      status: clean(c[COL.status], 20),
+-      pax,
+-    });
+-  }
+-  return [...calls.values()].sort((a, b) => a.arrival.localeCompare(b.arrival));
+-}
+-
+-// People aboard, roughly: those in transit plus the larger of who gets off and who gets on.
+-const aboard = (call) =>
+-  call.pax.transit + Math.max(call.pax.disembark, call.pax.embark);
+-
+-function daySummary(calls, day) {
+-  const arrivals = calls.filter((c) => c.arrival.slice(0, 10) === day);
+-  const departures = calls.filter((c) => c.departure.slice(0, 10) === day);
+-  const inPort = calls.filter(
+-    (c) => c.arrival.slice(0, 10) <= day && c.departure.slice(0, 10) >= day,
+-  );
+-  return {
+-    day,
+-    arrivals,
+-    departures,
+-    inPort,
+-    passengers: inPort.reduce((n, c) => n + aboard(c), 0),
+-  };
+-}
+-
+-// Anonymous session exactly as the public viewer opens it, then the grid as JSON.
+-async function fetchForecast({ fetchImpl = fetch, timeoutMs = 25000 } = {}) {
+-  const headers = {
+-    "User-Agent": "GelatoStock (consulta de datos abiertos de la APB)",
+-    "Content-Type": "application/x-www-form-urlencoded",
+-  };
+-  const login = await fetchImpl(BASE + "/login.do?metodo=login", {
+-    method: "POST",
+-    headers,
+-    body: "autpor=80",
+-    signal: AbortSignal.timeout(timeoutMs),
+-  });
+-  if (!login.ok)
+-    throw Error(
+-      "El puerto respondió " + login.status + " al abrir la consulta.",
+-    );
+-  const cookie = (login.headers.getSetCookie?.() || [])
+-    .map((c) => c.split(";")[0])
+-    .join("; ");
+-  const list = await fetchImpl(BASE + "/atraqueop.do?metodo=list", {
+-    method: "POST",
+-    headers: { ...headers, ...(cookie ? { Cookie: cookie } : {}) },
+-    body: "_search=false&rows=5000&page=1&sidx=fecatr&sord=asc",
+-    signal: AbortSignal.timeout(timeoutMs),
+-  });
+-  if (!list.ok)
+-    throw Error(
+-      "El puerto respondió " + list.status + " al pedir la previsión.",
+-    );
+-  const text = await list.text();
+-  if (text.length > 20_000_000)
+-    throw Error("Respuesta del puerto demasiado grande.");
+-  return JSON.parse(text);
+-}
+-
+-class CruiseRegistry {
+-  constructor(dataDir, { fetcher = fetchForecast, log = () => {} } = {}) {
+-    this.file = path.join(dataDir, "cruceros.json");
+-    this.fetcher = fetcher;
+-    this.log = log;
+-    this.busy = null;
+-    this.error = "";
+-    this.data = { updatedAt: null, calls: {} };
+-    try {
+-      const saved = JSON.parse(fs.readFileSync(this.file, "utf8"));
+-      if (saved && typeof saved.calls === "object")
+-        this.data = { updatedAt: saved.updatedAt || null, calls: saved.calls };
+-    } catch {
+-      // First run or unreadable file: the registry starts empty and refills on the next refresh.
+-    }
+-  }
+-  calls() {
+-    return Object.values(this.data.calls).sort((a, b) =>
+-      a.arrival.localeCompare(b.arrival),
+-    );
+-  }
+-  // Merge a fresh forecast: past calls stay as the registry, future ones follow the port's plan
+-  // (a future call that disappears from the forecast was cancelled and is removed).
+-  merge(fresh, now = new Date()) {
+-    const today = localDay(now);
+-    const limit = addDays(today, -KEEP_DAYS);
+-    const next = {};
+-    for (const c of Object.values(this.data.calls))
+-      if (c.departure.slice(0, 10) < today && c.departure.slice(0, 10) >= limit)
+-        next[c.id] = c;
+-    for (const c of fresh)
+-      if (c.departure.slice(0, 10) >= limit) next[c.id] = c;
+-    this.data = { updatedAt: now.toISOString(), calls: next };
+-    const tmp = this.file + ".tmp";
+-    fs.writeFileSync(tmp, JSON.stringify({ source: SOURCE, ...this.data }));
+-    fs.renameSync(tmp, this.file);
+-  }
+-  refresh() {
+-    if (this.busy) return this.busy;
+-    this.busy = (async () => {
+-      try {
+-        const fresh = parseCalls(await this.fetcher());
+-        this.merge(fresh);
+-        this.error = "";
+-        this.log(`cruceros: ${fresh.length} escalas en la previsión`);
+-      } catch (e) {
+-        this.error =
+-          e?.name === "TimeoutError" || e?.cause?.code
+-            ? "Sin conexión con el puerto. Se muestra lo último guardado."
+-            : String(e?.message || e).slice(0, 200);
+-        this.log("cruceros: " + this.error);
+-      } finally {
+-        this.busy = null;
+-      }
+-      return this.view();
+-    })();
+-    return this.busy;
+-  }
+-  stale(hours = 6) {
+-    return (
+-      !this.data.updatedAt ||
+-      Date.now() - Date.parse(this.data.updatedAt) > hours * 3600 * 1000
+-    );
+-  }
+-  today(now = new Date()) {
+-    const s = daySummary(this.calls(), localDay(now));
+-    return {
+-      arrivals: s.arrivals.length,
+-      departures: s.departures.length,
+-      inPort: s.inPort.length,
+-      passengers: s.passengers,
+-      ships: s.inPort.map((c) => c.ship),
+-    };
+-  }
+-  view() {
+-    return {
+-      source: SOURCE,
+-      updatedAt: this.data.updatedAt,
+-      error: this.error,
+-      busy: Boolean(this.busy),
+-      calls: this.calls(),
+-    };
+-  }
+-}
+-
+-module.exports = {
+-  CruiseRegistry,
+-  parseCalls,
+-  parseStamp,
+-  passengers,
+-  daySummary,
+-  aboard,
+-  fetchForecast,
+-  localDay,
+-  SOURCE,
+-};
+diff --git a/src/server.cjs b/src/server.cjs
+index 1fc9a04..45cb9eb 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -19,7 +19,8 @@ const { WhatsAppConnection } = require("./whatsapp.cjs");
+ const { LocalAI } = require("./ai.cjs");
+ const { appendLog } = require("./logs.cjs");
+ const { csvCell } = require("./csv.cjs");
+-const { CruiseRegistry } = require("./cruises.cjs");
++const { CruiseService } = require("./cruises/service.cjs");
++const { defaultThresholds } = require("../build/cruises.js");
+ const version = require("../package.json").version;
+ const { Store } = require("../build/store.js");
+ function createApp({
+@@ -29,8 +30,8 @@ function createApp({
+   historyLimit = Number(process.env.GELATO_HISTORY_LIMIT) || 300,
+   // Pause between two orders of a batch send, so WhatsApp never sees a burst.
+   batchDelayMs = Number(process.env.GELATO_BATCH_DELAY_MS) || 4000,
+-  // Cruise forecast: injectable for tests; the automatic refresh never runs under node:test.
+-  cruiseFetcher,
++  // Cruise source adapter: injectable for tests; the automatic sync never runs under node:test.
++  cruiseProvider,
+   cruiseAuto = !process.env.NODE_TEST_CONTEXT &&
+     process.env.GELATO_CRUISES_AUTO !== "0",
+ } = {}) {
+@@ -82,6 +83,18 @@ function createApp({
+           fs.unlinkSync(path.join(backupDir, f));
+         backupInfo.last = new Date().toISOString();
+         copyToSecondary(created);
++        // The cruise registry rides along: one rolling copy here and in the secondary folder.
++        try {
++          const copy = cruises.repo.backupTo(backupDir);
++          const second = store.setting("backup_dir_secondary");
++          if (second)
++            fs.copyFileSync(copy, path.join(second, path.basename(copy)));
++        } catch (e) {
++          appendLog(
++            path.join(dataDir, "runtime", "logs", "cruceros.log"),
++            "copia del registro de cruceros: " + String(e?.message || e),
++          );
++        }
+       } else {
+         backupInfo.last = new Date(last).toISOString();
+         copyToSecondary(path.join(backupDir, files[files.length - 1]));
+@@ -172,26 +185,44 @@ function createApp({
+   const purgeTimer = setInterval(autoPurge, 6 * 3600 * 1000);
+   purgeTimer.unref();
+   // Cruise calls at Palma (public open data). Read-only, optional, and the only outbound query.
+-  const cruises = new CruiseRegistry(dataDir, {
+-    ...(cruiseFetcher ? { fetcher: cruiseFetcher } : {}),
++  // Impact thresholds are the user's: stored as a setting, never hidden in code.
++  const cruiseThresholds = () => {
++    try {
++      const t = JSON.parse(store.setting("cruise_thresholds") || "null");
++      if (t && t.medium > 0 && t.high > t.medium && t.veryHigh > t.high)
++        return t;
++    } catch {
++      // A damaged setting falls back to the documented defaults.
++    }
++    return defaultThresholds;
++  };
++  const cruises = new CruiseService(dataDir, {
++    ...(cruiseProvider ? { provider: cruiseProvider } : {}),
++    thresholds: cruiseThresholds,
+     log: (line) =>
+       appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
+   });
+   const cruisesOn = () => store.setting("cruises_off") !== "1";
++  // The timer only asks «is it due?»: intervals and backoff live in the service.
+   const autoCruises = () => {
+-    if (cruisesOn() && cruises.stale(6)) cruises.refresh().catch(() => {});
++    if (cruisesOn()) cruises.tick().catch(() => {});
+   };
+   let cruiseTimer = null;
+   if (cruiseAuto) {
+     setTimeout(autoCruises, 8000).unref();
+-    cruiseTimer = setInterval(autoCruises, 3600 * 1000);
++    cruiseTimer = setInterval(autoCruises, 10 * 60 * 1000);
+     cruiseTimer.unref();
+   }
+-  const cruiseInfo = () => ({
+-    enabled: cruisesOn(),
+-    updatedAt: cruises.data.updatedAt,
+-    today: cruisesOn() ? cruises.today() : null,
+-  });
++  const cruiseInfo = () => {
++    if (!cruisesOn()) return { enabled: false, updatedAt: null, today: null };
++    const status = cruises.status();
++    return {
++      enabled: true,
++      updatedAt: status.updatedAt,
++      state: status.state,
++      today: status.updatedAt ? cruises.brief(cruises.dashboard().today) : null,
++    };
++  };
+   // The UI receives only the newest rows of the two unbounded tables; totals travel apart.
+   const trimHistory = (state) => ({
+     ...state,
+@@ -397,8 +428,53 @@ function createApp({
+       json(200, envelope(store.load()));
+       return;
+     }
+-    if (u.pathname === "/api/cruises" && req.method === "GET") {
+-      json(200, { enabled: cruisesOn(), auto: cruiseAuto, ...cruises.view() });
++    if (u.pathname.startsWith("/api/cruises") && req.method === "GET") {
++      // Read-only views over the local registry; nothing here talks to the port.
++      try {
++        const q = (k) => u.searchParams.get(k) || "";
++        if (u.pathname === "/api/cruises")
++          json(200, {
++            enabled: cruisesOn(),
++            auto: cruiseAuto,
++            ...cruises.dashboard(),
++          });
++        else if (u.pathname === "/api/cruises/range")
++          json(200, cruises.range(q("from"), q("to")));
++        else if (u.pathname === "/api/cruises/day")
++          json(200, cruises.day(q("day")));
++        else if (u.pathname === "/api/cruises/call") {
++          const call = cruises.call(q("id").slice(0, 40));
++          if (call) json(200, call);
++          else json(404, { error: "Escala desconocida." });
++        } else if (u.pathname === "/api/cruises/search")
++          json(
++            200,
++            cruises.search({
++              q: q("q").slice(0, 60),
++              status: [
++                "Solicitado",
++                "Concedido",
++                "Iniciado",
++                "Finalizado",
++                "withdrawn",
++              ].includes(q("status"))
++                ? q("status")
++                : "",
++              from: /^\d{4}-\d{2}-\d{2}$/.test(q("from")) ? q("from") : "",
++              to: /^\d{4}-\d{2}-\d{2}$/.test(q("to")) ? q("to") : "",
++              limit: 100,
++              offset: Number(q("offset")) || 0,
++            }),
++          );
++        else if (u.pathname === "/api/cruises/syncs")
++          json(200, {
++            syncs: cruises.repo.lastSyncs(15),
++            status: cruises.status(),
++          });
++        else json(404, { error: "No encontrado." });
++      } catch (e) {
++        json(400, { error: String(e?.message || e) });
++      }
+       return;
+     }
+     if (u.pathname === "/api/report" && req.method === "GET") {
+@@ -408,10 +484,17 @@ function createApp({
+         json(400, { error: "Semana inválida." });
+         return;
+       }
+-      json(
+-        200,
+-        weeklyReport(store.load(), weekStart(new Date(week + "T12:00:00"))),
++      const report = weeklyReport(
++        store.load(),
++        weekStart(new Date(week + "T12:00:00")),
+       );
++      // Cruise facts side by side with sales. No correlation is computed: there is no history yet.
++      json(200, {
++        ...report,
++        cruises: cruisesOn()
++          ? report.days.map((d) => cruises.brief(d.date))
++          : null,
++      });
+       return;
+     }
+     if (u.pathname === "/api/history" && req.method === "GET") {
+@@ -863,7 +946,41 @@ function createApp({
+             throw Error(
+               "La consulta de cruceros está desactivada en Configuración.",
+             );
+-          json(200, { enabled: true, ...(await cruises.refresh()) });
++          if (data.type === "ship") {
++            json(200, {
++              ship: cruises.setShipInfo(String(data.key || ""), data),
++            });
++            return;
++          }
++          if (data.type === "thresholds") {
++            const t = {
++              medium: Number(data.medium),
++              high: Number(data.high),
++              veryHigh: Number(data.veryHigh),
++            };
++            if (
++              !Object.values(t).every(
++                (n) => Number.isInteger(n) && n > 0 && n <= 100000,
++              ) ||
++              !(t.medium < t.high && t.high < t.veryHigh)
++            )
++              throw Error(
++                "Los umbrales deben ser enteros crecientes: medio < alto < muy alto.",
++              );
++            store.setSetting("cruise_thresholds", JSON.stringify(t));
++            json(200, {
++              enabled: true,
++              auto: cruiseAuto,
++              ...cruises.dashboard(),
++            });
++            return;
++          }
++          await cruises.sync("manual");
++          json(200, {
++            enabled: true,
++            auto: cruiseAuto,
++            ...cruises.dashboard(),
++          });
+           return;
+         }
+         if (u.pathname === "/api/backup") {
+@@ -974,6 +1091,7 @@ function createApp({
+       clearInterval(backupTimer);
+       clearInterval(purgeTimer);
+       if (cruiseTimer) clearInterval(cruiseTimer);
++      cruises.close();
+       ai.cancel().catch(() => {});
+       store.close();
+       whatsapp.close().catch(() => {});
+diff --git a/src/styles.css b/src/styles.css
+index 3b85c27..1138f2d 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3487,17 +3487,175 @@ dialog::backdrop {
+ }
+ 
+ /* Cruceros */
++.page-cruises .na,
++.na {
++  color: var(--ink-muted);
++  font-style: italic;
++  font-weight: 400;
++}
++.cruise-sync {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 4px 12px;
++  align-items: baseline;
++  margin: 0 0 var(--s-4);
++  padding: 10px 14px;
++  border: 1px solid var(--line);
++  border-left-width: 4px;
++  border-radius: 12px;
++  background: var(--surface);
++  font-size: 13px;
++}
++.cruise-sync span {
++  color: var(--ink-muted);
++}
++.cruise-sync.sync-fresh {
++  border-left-color: var(--pistacho);
++}
++.cruise-sync.sync-syncing,
++.cruise-sync.sync-never {
++  border-left-color: var(--acero);
++}
++.cruise-sync.sync-stale {
++  border-left-color: var(--azafran);
++  background: var(--azafran-claro);
++}
++.cruise-sync.sync-error {
++  border-left-color: var(--rosa);
++  background: var(--rosa-claro);
++}
++.cruise-body {
++  padding: 0 var(--s-5) var(--s-5);
++}
++.cruise-kpis {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
++  gap: 10px;
++  margin: 0 var(--s-5) var(--s-4);
++}
++.cruise-body > .cruise-kpis {
++  margin: 0 0 var(--s-4);
++}
++.cruise-kpis > div {
++  display: flex;
++  flex-direction: column;
++  gap: 4px;
++  padding: 14px;
++  border-radius: 14px;
++  background: var(--surface-2);
++  min-width: 0;
++}
++.cruise-kpis span {
++  font-size: 12px;
++  color: var(--ink-muted);
++}
++.cruise-kpis strong {
++  font-size: 26px;
++  line-height: 1.1;
++  color: var(--ink);
++}
++.cruise-kpis strong.kpi-text {
++  font-size: 17px;
++  line-height: 1.25;
++}
++.cruise-kpis small {
++  display: block;
++  font-size: 12px;
++  font-weight: 400;
++  color: var(--ink-muted);
++}
++.cruise-tomorrow {
++  display: flex;
++  flex-wrap: wrap;
++  align-items: center;
++  gap: 6px;
++  width: calc(100% - 2 * var(--s-5));
++  margin: 0 var(--s-5) var(--s-5);
++  padding: 12px 14px;
++  border: 1px solid var(--line);
++  border-radius: 12px;
++  background: var(--surface);
++  color: inherit;
++  font: inherit;
++  text-align: left;
++  cursor: pointer;
++}
++.cruise-tomorrow:hover,
++.cruise-tomorrow:focus-visible {
++  border-color: var(--accent);
++}
++.cruise-tomorrow svg {
++  width: 16px;
++  height: 16px;
++  margin-left: auto;
++}
++.impact {
++  display: inline-block;
++  padding: 3px 10px;
++  border-radius: 999px;
++  border: 1px solid transparent;
++  font-size: 12px;
++  font-weight: 700;
++  letter-spacing: 0.02em;
++  text-transform: uppercase;
++  white-space: nowrap;
++}
++.impact-none,
++.impact-unknown {
++  background: var(--surface-2);
++  color: var(--ink-muted);
++  border-color: var(--line);
++}
++.impact-unknown {
++  border-style: dashed;
++}
++.impact-low {
++  background: var(--pistacho-suave);
++  color: var(--pistacho-oscuro);
++}
++.impact-medium {
++  background: var(--azafran-claro);
++  color: var(--azafran-texto);
++}
++.impact-high {
++  background: var(--rosa-claro);
++  color: var(--rosa-texto);
++}
++.impact-veryHigh {
++  background: var(--rosa-texto);
++  color: #fff;
++}
++.cruise-tabs {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 6px;
++}
++.cruise-tabs .tab {
++  padding: 8px 14px;
++  border: 1px solid var(--line);
++  border-radius: 999px;
++  background: var(--surface);
++  color: inherit;
++  font: inherit;
++  font-weight: 600;
++  cursor: pointer;
++}
++.cruise-tabs .tab.active {
++  background: var(--accent);
++  border-color: var(--accent);
++  color: #fff;
++}
+ .cruise-days {
+   display: grid;
+-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
++  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+   gap: 10px;
+ }
+ .cruise-day {
+   display: flex;
+   flex-direction: column;
+-  gap: 4px;
++  gap: 5px;
+   align-items: flex-start;
+-  padding: 12px;
++  padding: 14px;
+   border: 1px solid var(--line);
+   border-radius: 14px;
+   background: var(--surface);
+@@ -3507,97 +3665,298 @@ dialog::backdrop {
+   cursor: pointer;
+ }
+ .cruise-day:hover,
++.cruise-day:focus-visible,
+ .cruise-day.active {
+   border-color: var(--accent);
+ }
+ .cruise-day.active {
+   box-shadow: inset 0 0 0 1px var(--accent);
+ }
+-.cruise-day span {
++.cruise-day > span:first-child {
+   font-size: 12px;
+-  text-transform: capitalize;
++  font-weight: 700;
++  text-transform: uppercase;
++  letter-spacing: 0.04em;
+   color: var(--ink-muted);
+ }
++.cruise-day strong {
++  font-size: 18px;
++}
+ .cruise-day small {
+   font-size: 12px;
+   color: var(--ink-muted);
+ }
+-.cruise-bar {
+-  display: block;
+-  width: 100%;
+-  height: 6px;
+-  border-radius: 3px;
+-  background: var(--line);
++.cruise-day .impact {
++  margin-top: 4px;
++}
++.cal-nav {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 10px;
++  margin-bottom: 12px;
++}
++.cal-nav h3 {
++  margin: 0;
++}
++.cal-nav h3::first-letter {
++  text-transform: uppercase;
++}
++.cal-grid {
++  display: grid;
++  grid-template-columns: repeat(7, minmax(0, 1fr));
++  gap: 6px;
++}
++.cal-head {
++  padding: 4px;
++  font-size: 12px;
++  font-weight: 700;
++  text-align: center;
++  color: var(--ink-muted);
++}
++.cal-cell {
++  display: flex;
++  flex-direction: column;
++  gap: 2px;
++  min-height: 78px;
++  padding: 8px;
++  border: 1px solid var(--line);
++  border-radius: 10px;
++  background: var(--surface);
++  color: inherit;
++  font: inherit;
++  text-align: left;
++  cursor: pointer;
+   overflow: hidden;
+ }
+-.cruise-bar b {
+-  display: block;
+-  height: 100%;
+-  background: var(--accent);
++.cal-cell.cal-empty {
++  border: 0;
++  background: transparent;
++  cursor: default;
++}
++.cal-cell b {
++  font-size: 14px;
++}
++.cal-cell span {
++  font-size: 12px;
++  color: var(--ink-muted);
+ }
+-.cruise-bar b.w0 {
+-  width: 0%;
++.cal-cell em {
++  font-size: 11px;
++  font-style: normal;
++  font-weight: 700;
++  text-transform: uppercase;
+ }
+-.cruise-bar b.w1 {
+-  width: 10%;
++.cal-cell.today b {
++  text-decoration: underline;
+ }
+-.cruise-bar b.w2 {
+-  width: 20%;
++.cal-cell.active,
++.cal-cell:hover,
++.cal-cell:focus-visible {
++  border-color: var(--accent);
++  box-shadow: inset 0 0 0 1px var(--accent);
+ }
+-.cruise-bar b.w3 {
+-  width: 30%;
++.cal-cell.level-low {
++  background: var(--pistacho-suave);
+ }
+-.cruise-bar b.w4 {
+-  width: 40%;
++.cal-cell.level-medium {
++  background: var(--azafran-claro);
+ }
+-.cruise-bar b.w5 {
+-  width: 50%;
++.cal-cell.level-high {
++  background: var(--rosa-claro);
++}
++.cal-cell.level-veryHigh {
++  background: var(--rosa-texto);
++  color: #fff;
+ }
+-.cruise-bar b.w6 {
+-  width: 60%;
++.cal-cell.level-veryHigh span {
++  color: #fff;
+ }
+-.cruise-bar b.w7 {
+-  width: 70%;
++.cal-cell.level-unknown {
++  border-style: dashed;
+ }
+-.cruise-bar b.w8 {
+-  width: 80%;
++.cal-legend {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 6px;
++  margin: 12px 0 0;
+ }
+-.cruise-bar b.w9 {
+-  width: 90%;
++.cruise-sub {
++  margin: var(--s-5) 0 var(--s-3);
++  font-size: 15px;
+ }
+-.cruise-bar b.w10 {
++.cruise-timeline {
+   width: 100%;
++  min-width: 640px;
++  height: auto;
++  display: block;
++}
++.cruise-timeline .tl-grid {
++  stroke: var(--line);
++  stroke-width: 1;
+ }
+-.cruise-routes {
++.cruise-timeline .tl-hour {
++  font-size: 11px;
++  fill: var(--ink-muted);
++}
++.cruise-timeline .tl-ship {
++  font-size: 12px;
++  font-weight: 700;
++  fill: var(--ink);
++}
++.cruise-timeline .tl-bar {
++  fill: var(--pistacho);
++}
++.cruise-timeline .tl-time {
++  font-size: 11px;
++  font-weight: 600;
++  fill: #fff;
++  pointer-events: none;
++}
++.cruise-steps {
++  margin: 10px 0 0;
++  padding: 0;
++  list-style: none;
++  display: grid;
++  gap: 4px;
++  font-size: 13px;
++}
++.cruise-steps b {
++  display: inline-block;
++  min-width: 52px;
++}
++.cruise-cards {
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
++  gap: 12px;
++}
++.cruise-card {
++  display: flex;
++  flex-direction: column;
++  gap: 12px;
++  padding: 16px;
++  border: 1px solid var(--line);
++  border-radius: 16px;
++  background: var(--surface);
++  min-width: 0;
++}
++.cruise-card.withdrawn {
++  opacity: 0.75;
++  border-style: dashed;
++}
++.cruise-card header {
++  display: flex;
++  justify-content: space-between;
++  gap: 10px;
++  flex-wrap: wrap;
++}
++.cruise-card h3 {
++  margin: 0;
++  font-size: 17px;
++}
++.cruise-card header p {
++  margin: 2px 0 0;
++  font-size: 13px;
++  color: var(--ink-muted);
++}
++.cruise-card-pills {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 4px;
++  align-items: flex-start;
++}
++.cruise-times {
++  display: grid;
++  grid-template-columns: repeat(3, minmax(0, 1fr));
++  gap: 8px;
++}
++.cruise-times > div {
++  padding: 10px;
++  border-radius: 12px;
++  background: var(--surface-2);
++}
++.cruise-times span,
++.cruise-times small {
++  display: block;
++  font-size: 12px;
++  color: var(--ink-muted);
++}
++.cruise-times strong {
++  font-size: 20px;
++}
++.cruise-facts {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: 8px 14px;
++  margin: 0;
++}
++.cruise-facts dt {
++  font-size: 11px;
++  font-weight: 700;
++  text-transform: uppercase;
++  letter-spacing: 0.04em;
++  color: var(--ink-muted);
++}
++.cruise-facts dd {
++  margin: 0;
++  font-size: 14px;
++  overflow-wrap: anywhere;
++}
++.cruise-facts dd small {
++  display: block;
++  font-size: 12px;
++  color: var(--ink-muted);
++}
++.cruise-card footer {
++  display: flex;
++  flex-wrap: wrap;
++  justify-content: space-between;
++  align-items: center;
++  gap: 8px;
++  padding-top: 10px;
++  border-top: 1px solid var(--line);
++}
++.cruise-card footer small {
++  color: var(--ink-muted);
++}
++.cruise-card footer span {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px;
+-  margin: 0 0 12px;
+ }
+-.cruise-registry .table-scroll {
+-  max-height: 420px;
+-  overflow: auto;
++.cruise-notes p {
++  max-width: 920px;
+ }
+ .cruise-table th {
+   text-align: left;
+   font-size: 12px;
+   color: var(--ink-muted);
+ }
++.cruise-table td small {
++  display: block;
++}
+ .check-row {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   font-weight: 600;
+ }
+-.page-cruises .panel > .report-kpis,
+-.page-cruises .panel > .report-grid,
+-.page-cruises .panel > .cruise-days,
+-.page-cruises .panel > .cruise-routes,
+-.page-cruises .panel > .cruise-registry,
+-.page-cruises .panel > .fineprint {
+-  margin: 0 var(--s-5) var(--s-5);
+-}
+-.page-cruises .panel-heading .field {
+-  margin: 0;
+-  min-width: 240px;
++@media (max-width: 720px) {
++  .cruise-facts,
++  .cruise-times {
++    grid-template-columns: 1fr 1fr;
++  }
++  .cruise-cards {
++    grid-template-columns: 1fr;
++  }
++  .cal-cell {
++    min-height: 60px;
++    padding: 5px;
++  }
++  .cal-cell span {
++    font-size: 10px;
++  }
++  .cal-cell em {
++    display: none;
++  }
+ }
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index f71bfbe..6b4cdf5 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -1231,20 +1231,177 @@ async function action(name, el) {
+     return;
+   }
+   if (name === "cruisesRefresh") {
+-    loadCruises(true);
++    loadCruises({ sync: true });
+     return;
+   }
+   if (["cruisePrev", "cruiseNext", "cruiseToday", "cruiseDay"].includes(name)) {
+-    const current = cruiseDay || todayLocal();
++    // Days are port days: «today» comes from the server (Europe/Madrid), not from this computer.
++    const current = cruiseDay || cruiseDash.today;
+     cruiseDay =
+       name === "cruiseToday"
+         ? ""
+         : name === "cruiseDay"
+           ? el.dataset.day
+-          : shiftDay(current, name === "cruisePrev" ? -1 : 1);
++          : cruiseShift(current, name === "cruisePrev" ? -1 : 1);
++    if (page !== "cruises") page = "cruises";
++    if (cruiseTab === "calendar" && cruiseDay)
++      cruiseMonth = cruiseDay.slice(0, 7);
++    await loadCruises();
++    if (name === "cruiseDay")
++      document
++        .getElementById("cruise-detail")
++        ?.scrollIntoView({ block: "start" });
++    return;
++  }
++  if (name === "cruiseTab") {
++    cruiseTab = el.dataset.tab;
++    cruiseFound = null;
++    if (cruiseTab === "calendar")
++      cruiseMonth = (cruiseDay || cruiseDash.today).slice(0, 7);
++    await loadCruises();
++    return;
++  }
++  if (name === "cruiseMonthPrev" || name === "cruiseMonthNext") {
++    const [y, m] = (cruiseMonth || cruiseDash.today.slice(0, 7))
++      .split("-")
++      .map(Number);
++    const x = new Date(
++      Date.UTC(y, m - 1 + (name === "cruiseMonthPrev" ? -1 : 1), 1),
++    );
++    cruiseMonth = x.toISOString().slice(0, 7);
++    await loadCruises();
++    return;
++  }
++  if (name === "cruiseMore") {
++    await searchCruises(cruiseFound.items.length);
+     render();
+     return;
+   }
++  if (name === "cruiseCall") {
++    const c = await request(
++      "/api/cruises/call?id=" + encodeURIComponent(el.dataset.id),
++    );
++    const line = (label, value) =>
++      `<tr><td>${label}</td><td>${value}</td></tr>`;
++    modal(
++      c.ship + " · historial y origen",
++      "De dónde sale cada dato de esta escala y qué ha cambiado desde que se anunció.",
++      `<table class="report-table"><tbody>${line("Identificador de escala", esc(c.id))}${line("Fuente", esc(c.source))}${line("Página de la fuente", esc(c.sourceUrl))}${line("Primera vez vista", esc(cruiseStamp(c.retrievedAt)))}${line("Última verificación", esc(cruiseStamp(c.lastVerifiedAt)))}${line("Previsión del puerto actualizada", c.sourceUpdatedAt ? esc(cruiseWall(c.sourceUpdatedAt)) : NA)}${line("Procedencia", c.origin === "history" ? "Histórico oficial (horas reales)" : "Previsión vigente")}${line("Horario previsto", c.scheduledArrival ? esc(cruiseWall(c.scheduledArrival)) + " → " + esc(cruiseWall(c.scheduledDeparture)) : NA)}</tbody></table><h3 class="cruise-sub">Cambios registrados</h3>${c.changes.length ? `<table class="report-table"><thead><tr><th>Cuándo</th><th>Dato</th><th>Antes</th><th>Después</th><th>Motivo</th></tr></thead><tbody>${c.changes.map((x) => `<tr><td>${esc(cruiseStamp(x.at))}</td><td>${esc(x.field)}</td><td>${esc(x.before || "—")}</td><td>${esc(x.after || "—")}</td><td>${esc(x.reason)}</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Sin cambios desde que se anunció.</p>'}`,
++      async () => true,
++      "Cerrar",
++    );
++    return;
++  }
++  if (name === "cruiseShip") {
++    const c = await request(
++      "/api/cruises/call?id=" + encodeURIComponent(el.dataset.id),
++    );
++    const s = c.shipInfo;
++    modal(
++      "Ficha de " + s.name,
++      "El puerto no publica la naviera ni la capacidad. Si las anotas, indica de dónde sale el dato: se mostrará como dato manual con su fuente. Déjalo vacío para que siga como «No disponible».",
++      field("Naviera", "line", s.line || "", "text", 'maxlength="80"') +
++        field(
++          "Capacidad habitual (pasajeros)",
++          "capacityStandard",
++          s.capacityStandard || "",
++          "number",
++          'min="1" max="12000" step="1"',
++        ) +
++        field(
++          "Capacidad máxima (pasajeros)",
++          "capacityMax",
++          s.capacityMax || "",
++          "number",
++          'min="1" max="12000" step="1"',
++        ) +
++        field(
++          "Tripulación",
++          "crew",
++          s.crew || "",
++          "number",
++          'min="1" max="5000" step="1"',
++        ) +
++        field(
++          "Fuente del dato",
++          "infoSource",
++          s.infoSource || "",
++          "text",
++          'maxlength="120" placeholder="Web de la naviera, ficha técnica…"',
++        ) +
++        `<p class="fineprint">IMO ${esc(s.imo || "no disponible")} · ${s.calls} escalas registradas en Palma.</p>`,
++      async (f) => {
++        const n = (k) => (f.get(k) ? Number(f.get(k)) : null);
++        await request("/api/cruises", {
++          type: "ship",
++          key: s.key,
++          line: f.get("line"),
++          capacityStandard: n("capacityStandard"),
++          capacityMax: n("capacityMax"),
++          crew: n("crew"),
++          infoSource: f.get("infoSource"),
++        });
++        await loadCruises();
++        toast("Ficha del barco guardada.");
++        return true;
++      },
++    );
++    return;
++  }
++  if (name === "cruiseSyncs") {
++    const r = await request("/api/cruises/syncs");
++    modal(
++      "Sincronizaciones con el puerto",
++      "Las últimas consultas: cuánto tardaron y qué trajeron.",
++      `<div class="table-scroll"><table class="report-table"><thead><tr><th>Cuándo</th><th>Tipo</th><th>Duración</th><th>Escalas</th><th>Nuevas</th><th>Cambiadas</th><th>Retiradas</th><th>Rechazadas</th><th>Resultado</th></tr></thead><tbody>${r.syncs.map((x) => `<tr><td>${esc(cruiseStamp(x.started_at))}</td><td>${esc(x.kind)}</td><td>${num(x.duration_ms / 1000)} s</td><td>${x.fetched}</td><td>${x.created}</td><td>${x.updated}</td><td>${x.withdrawn}</td><td>${x.rejected}</td><td>${esc(x.error || "Correcta")}${x.notes ? `<small class="muted">${esc(x.notes)}</small>` : ""}</td></tr>`).join("")}</tbody></table></div>`,
++      async () => true,
++      "Cerrar",
++    );
++    return;
++  }
++  if (name === "cruiseThresholds") {
++    const d = cruiseDash || (await request("/api/cruises"));
++    const t = d.thresholds;
++    modal(
++      "Umbrales del impacto potencial",
++      "Pasajeros declarados que coinciden a la vez en puerto. Por debajo del primero el día es Bajo. Ajústalos cuando conozcas cómo responde tu local.",
++      field(
++        "Medio a partir de",
++        "medium",
++        t.medium,
++        "number",
++        'min="1" max="100000" step="1" required',
++      ) +
++        field(
++          "Alto a partir de",
++          "high",
++          t.high,
++          "number",
++          'min="1" max="100000" step="1" required',
++        ) +
++        field(
++          "Muy alto a partir de",
++          "veryHigh",
++          t.veryHigh,
++          "number",
++          'min="1" max="100000" step="1" required',
++        ),
++      async (f) => {
++        cruiseDash = await request("/api/cruises", {
++          type: "thresholds",
++          medium: Number(f.get("medium")),
++          high: Number(f.get("high")),
++          veryHigh: Number(f.get("veryHigh")),
++        });
++        cruiseRange = null;
++        await loadCruises();
++        await reloadState();
++        toast("Umbrales guardados.");
++        return true;
++      },
++    );
++    return;
++  }
+   if (name === "printPage") {
+     window.print();
+     return;
+diff --git a/src/ui/events.js b/src/ui/events.js
+index 9ac21a3..5cf0a3c 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -122,6 +122,21 @@ document.addEventListener("change", async (e) => {
+     if (rows) rows.innerHTML = countRows(e.target.value);
+     return;
+   }
++  if (e.target.id === "cruise-status") {
++    cruiseStatus = e.target.value;
++    try {
++      await searchCruises();
++    } catch (err) {
++      toast(err.message);
++    }
++    render();
++    return;
++  }
++  if (e.target.id === "cruise-impact-only") {
++    cruiseImpactOnly = e.target.checked;
++    render();
++    return;
++  }
+   if (e.target.id === "cruises-enabled") {
+     try {
+       applyEnvelope(
+@@ -130,7 +145,7 @@ document.addEventListener("change", async (e) => {
+           enabled: e.target.checked,
+         }),
+       );
+-      cruiseData = null;
++      cruiseDash = null;
+       render();
+       toast(
+         e.target.checked
+@@ -213,9 +228,21 @@ document.addEventListener("input", (e) => {
+   if (e.target.id === "cruise-search") {
+     cruiseQuery = e.target.value;
+     const pos = e.target.selectionStart;
+-    render();
+-    $("#cruise-search").focus();
+-    $("#cruise-search").setSelectionRange(pos, pos);
++    clearTimeout(window.cruiseSearchTimer);
++    window.cruiseSearchTimer = setTimeout(async () => {
++      try {
++        await searchCruises();
++      } catch (err) {
++        toast(err.message);
++      }
++      if (page !== "cruises") return;
++      render();
++      const box = $("#cruise-search");
++      if (box) {
++        box.focus();
++        box.setSelectionRange(pos, pos);
++      }
++    }, 250);
+     return;
+   }
+   if (e.target.id === "recipe-search") {
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index 93b0370..4f72161 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nCuando hay internet, la app lee la previsión pública de escalas del puerto de Palma (origen de los datos: Autoridad Portuaria de Baleares). La pantalla muestra, para el día elegido, qué cruceros llegan, cuáles parten, de dónde vienen, a dónde van, su muelle y los pasajeros previstos; debajo, los próximos 14 días de un vistazo y el registro de rutas con buscador. Las escalas pasadas se conservan como registro; las futuras siguen la previsión del puerto y pueden cambiar. Resumen avisa si hoy hay cruceros en puerto. Sin internet se ve lo último guardado. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nHerramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views-cruises.js b/src/ui/views-cruises.js
+deleted file mode 100644
+index fa8598c..0000000
+--- a/src/ui/views-cruises.js
++++ /dev/null
+@@ -1,195 +0,0 @@
+-// Cruceros en el puerto de Palma: quién llega, quién parte y el registro de rutas.
+-// Origen de los datos: Autoridad Portuaria de Baleares (datos abiertos). Solo lectura.
+-// Los módulos de src/ui comparten el ámbito global y se cargan en orden desde index.html.
+-let cruiseData = null,
+-  cruiseBusy = false,
+-  cruiseDay = "",
+-  cruiseQuery = "";
+-async function loadCruises(refresh) {
+-  if (cruiseBusy) return;
+-  cruiseBusy = true;
+-  if (refresh && page === "cruises") render();
+-  try {
+-    if (!refresh) {
+-      cruiseData = await request("/api/cruises");
+-      // First visit with an empty or old registry: show what is saved, then ask the port once.
+-      const old =
+-        !cruiseData.updatedAt ||
+-        Date.now() - Date.parse(cruiseData.updatedAt) > 6 * 3600 * 1000;
+-      refresh =
+-        cruiseData.enabled && cruiseData.auto && old && !cruiseData.error;
+-      if (refresh && page === "cruises") render();
+-    }
+-    if (refresh) {
+-      cruiseData = await request("/api/cruises", {});
+-      reloadState().catch(() => {});
+-    }
+-  } catch (e) {
+-    toast(e.message);
+-  } finally {
+-    cruiseBusy = false;
+-    if (page === "cruises") render();
+-  }
+-}
+-function shiftDay(day, n) {
+-  const [y, m, d] = day.split("-").map(Number);
+-  const x = new Date(y, m - 1, d + n, 12);
+-  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+-}
+-const cruiseAboard = (c) =>
+-  c.pax.transit + Math.max(c.pax.disembark, c.pax.embark);
+-const cruiseDayLabel = (day, long) =>
+-  new Date(day + "T12:00:00").toLocaleDateString(
+-    "es-ES",
+-    long
+-      ? { weekday: "long", day: "numeric", month: "long" }
+-      : { weekday: "short", day: "numeric", month: "short" },
+-  );
+-function cruisePage() {
+-  if (!cruiseData && !cruiseBusy) loadCruises(false);
+-  const d = cruiseData;
+-  const today = todayLocal();
+-  const day = cruiseDay || today;
+-  const head = header(
+-    "El puerto, de un vistazo.",
+-    "Cruceros que llegan y parten de Palma, con su ruta y sus pasajeros previstos. Más barcos, más gente paseando: prepara vitrina y turnos.",
+-    btn("← Día anterior", "cruisePrev", "secondary") +
+-      btn("Hoy", "cruiseToday", "secondary", day === today ? "disabled" : "") +
+-      btn("Día siguiente →", "cruiseNext", "secondary") +
+-      btn(
+-        cruiseBusy ? "Consultando…" : icon("download") + " Actualizar ahora",
+-        "cruisesRefresh",
+-        "primary",
+-        cruiseBusy || (d && !d.enabled) ? "disabled" : "",
+-      ),
+-  );
+-  if (!d) return head + '<div class="empty"><h3>Cargando cruceros…</h3></div>';
+-  if (!d.enabled)
+-    return (
+-      head +
+-      `<div class="empty"><h3>La consulta de cruceros está desactivada</h3><p>Actívala en Configuración para que la app lea la previsión pública del puerto cuando haya internet.</p><button class="btn secondary" data-nav="settings">Ir a Configuración</button></div>`
+-    );
+-  const on = (c, field) => c[field].slice(0, 10) === day;
+-  const arrivals = d.calls.filter((c) => on(c, "arrival"));
+-  const departures = d.calls
+-    .filter((c) => on(c, "departure"))
+-    .sort((a, b) => a.departure.localeCompare(b.departure));
+-  const inPort = d.calls.filter(
+-    (c) => c.arrival.slice(0, 10) <= day && c.departure.slice(0, 10) >= day,
+-  );
+-  const people = inPort.reduce((n, c) => n + cruiseAboard(c), 0);
+-  const hour = (s) => s.slice(11, 16);
+-  const paxCell = (c) =>
+-    `${num(cruiseAboard(c))}<small class="muted">${num(c.pax.transit)} en tránsito, ${num(c.pax.disembark)} bajan, ${num(c.pax.embark)} suben</small>`;
+-  const shipCell = (c) =>
+-    `<strong>${esc(c.ship)}</strong><small class="muted">${num(c.length)} m${c.status ? " · " + esc(c.status) : ""}</small>`;
+-  const table = (rows, cols, empty) =>
+-    rows.length
+-      ? `<div class="table-scroll"><table class="report-table cruise-table"><thead><tr>${cols.map((c) => `<th>${c[0]}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr>${cols.map((c) => `<td>${c[1](r)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
+-      : `<p class="muted">${empty}</p>`;
+-  const next = [];
+-  for (let i = 0; i < 14; i++) {
+-    const x = shiftDay(today, i);
+-    const ships = d.calls.filter(
+-      (c) => c.arrival.slice(0, 10) <= x && c.departure.slice(0, 10) >= x,
+-    );
+-    next.push({
+-      day: x,
+-      ships,
+-      people: ships.reduce((n, c) => n + cruiseAboard(c), 0),
+-    });
+-  }
+-  const busiest = Math.max(1, ...next.map((n) => n.people));
+-  const q = cruiseQuery.trim().toLowerCase();
+-  const registry = d.calls
+-    .filter(
+-      (c) =>
+-        !q ||
+-        [c.ship, c.from, c.to, c.fromCountry, c.toCountry]
+-          .join(" ")
+-          .toLowerCase()
+-          .includes(q),
+-    )
+-    .sort((a, b) => b.arrival.localeCompare(a.arrival));
+-  // Most repeated routes of the registry: where the ships come from and where they go next.
+-  const routes = {};
+-  for (const c of d.calls) {
+-    const k = `${c.from} → Palma → ${c.to}`;
+-    routes[k] = (routes[k] || 0) + 1;
+-  }
+-  const topRoutes = Object.entries(routes)
+-    .sort((a, b) => b[1] - a[1])
+-    .slice(0, 8);
+-  return (
+-    head +
+-    (d.error
+-      ? `<div class="notice subtle">${icon("alert")}<div><strong>${esc(d.error)}</strong><span>${d.updatedAt ? "Datos guardados el " + date(d.updatedAt) + " a las " + time(d.updatedAt) + "." : "Todavía no hay datos guardados."}</span></div></div>`
+-      : "") +
+-    `<section class="panel"><div class="panel-heading"><div><h2>${esc(cruiseDayLabel(day, true))}${day === today ? " · hoy" : ""}</h2><p>Horas del puerto de Palma. Los pasajeros son la previsión declarada por cada barco.</p></div></div><div class="report-kpis"><div><strong>${arrivals.length}</strong><span>llegan</span></div><div><strong>${departures.length}</strong><span>parten</span></div><div><strong>${inPort.length}</strong><span>en puerto</span></div><div><strong>${num(people)}</strong><span>pasajeros aprox.</span></div></div><div class="report-grid"><section><h3>Llegan</h3>${table(
+-      arrivals,
+-      [
+-        ["Hora", (c) => hour(c.arrival)],
+-        ["Barco", shipCell],
+-        [
+-          "Viene de",
+-          (c) =>
+-            esc(c.from) +
+-            (c.fromCountry
+-              ? `<small class="muted">${esc(c.fromCountry)}</small>`
+-              : ""),
+-        ],
+-        ["Pasajeros", paxCell],
+-      ],
+-      "Ningún crucero llega este día.",
+-    )}</section><section><h3>Parten</h3>${table(
+-      departures,
+-      [
+-        ["Hora", (c) => hour(c.departure)],
+-        ["Barco", shipCell],
+-        [
+-          "Va a",
+-          (c) =>
+-            esc(c.to) +
+-            (c.toCountry
+-              ? `<small class="muted">${esc(c.toCountry)}</small>`
+-              : ""),
+-        ],
+-        ["Muelle", (c) => esc(c.berth.split(" (del")[0])],
+-      ],
+-      "Ningún crucero parte este día.",
+-    )}</section></div></section>` +
+-    `<section class="panel"><div class="panel-heading"><div><h2>Próximos 14 días</h2><p>Toca un día para ver su detalle.</p></div></div><div class="cruise-days">${next
+-      .map(
+-        (n) =>
+-          `<button class="cruise-day ${n.day === day ? "active" : ""}" data-action="cruiseDay" data-day="${n.day}"><span>${esc(cruiseDayLabel(n.day))}</span><strong>${n.ships.length} ${n.ships.length === 1 ? "barco" : "barcos"}</strong><i class="cruise-bar"><b class="w${Math.round((n.people / busiest) * 10)}"></b></i><small>${n.people ? num(n.people) + " pasajeros" : "sin cruceros"}</small></button>`,
+-      )
+-      .join("")}</div></section>` +
+-    `<section class="panel"><div class="panel-heading"><div><h2>Registro de rutas</h2><p>${d.calls.length} escalas guardadas. Las pasadas se conservan; las futuras siguen la previsión del puerto.</p></div><label class="field">Buscar en el registro<input type="search" id="cruise-search" placeholder="Barco o puerto" value="${esc(cruiseQuery)}"></label></div>${
+-      topRoutes.length
+-        ? `<p class="cruise-routes">${topRoutes.map(([k, n]) => `<span class="pill neutral">${esc(k)} · ${n}</span>`).join(" ")}</p>`
+-        : ""
+-    }<div class="cruise-registry">${table(
+-      registry.slice(0, 300),
+-      [
+-        [
+-          "Llegada",
+-          (c) =>
+-            esc(cruiseDayLabel(c.arrival.slice(0, 10))) + " " + hour(c.arrival),
+-        ],
+-        [
+-          "Salida",
+-          (c) =>
+-            esc(cruiseDayLabel(c.departure.slice(0, 10))) +
+-            " " +
+-            hour(c.departure),
+-        ],
+-        ["Barco", (c) => `<strong>${esc(c.ship)}</strong>`],
+-        ["Ruta", (c) => `${esc(c.from)} → Palma → ${esc(c.to)}`],
+-        ["Pasajeros", (c) => num(cruiseAboard(c))],
+-      ],
+-      q
+-        ? "Nada coincide con la búsqueda."
+-        : "El registro está vacío. Pulsa «Actualizar ahora» con internet.",
+-    )}</div><p class="fineprint">Origen de los datos: Autoridad Portuaria de Baleares${d.updatedAt ? " · última actualización: " + date(d.updatedAt) + " " + time(d.updatedAt) : ""}. Previsión sujeta a cambios del puerto; la app solo la lee y no envía ningún dato tuyo.</p></section>`
+-  );
+-}
+diff --git a/src/ui/views-weekly.js b/src/ui/views-weekly.js
+index 9fb0a88..9c3949a 100644
+--- a/src/ui/views-weekly.js
++++ b/src/ui/views-weekly.js
+@@ -18,6 +18,11 @@ function shiftWeek(start, days) {
+   const x = new Date(y, m - 1, d + days);
+   return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+ }
++// Cruise facts next to the sales of each day. Facts only: no correlation is claimed yet.
++function cruiseWeekCell(c) {
++  if (!c || !c.ships) return "—";
++  return `${c.ships} · ${c.passengers === null ? "pasajeros no disponibles" : num(c.passengers) + " pasajeros declarados"} · ${esc(c.impactLabel)}`;
++}
+ function weeklyPage() {
+   if (!weeklyData && !weeklyBusy) loadWeekly(weeklyWeek);
+   const r = weeklyData;
+@@ -39,7 +44,7 @@ function weeklyPage() {
+         btn(icon("download") + " Imprimir", "printPage", "primary"),
+     ) +
+     (r
+-      ? `<article class="report panel"><header class="report-head"><div><span class="eyebrow">RESUMEN SEMANAL · ${esc(businessName())}</span><h2>Del ${date(r.start + "T12:00:00")} al ${date(r.end + "T12:00:00")}</h2></div><small>Generado el ${date(new Date().toISOString())} ${time(new Date().toISOString())}</small></header><div class="report-kpis"><div><strong>${num(r.totals.production)} kg</strong><span>producidos</span></div><div><strong>${num(r.totals.sales)} kg</strong><span>vendidos</span></div><div><strong>${num(r.totals.waste)} kg</strong><span>mermas</span></div><div><strong>${r.orders.created}</strong><span>pedidos creados · ${money(r.orders.spent)}</span></div><div><strong>${r.messages.received}</strong><span>mensajes · ${r.messages.pending} por leer</span></div></div><div class="table-scroll"><table class="report-table days"><thead><tr><th>Día</th><th>Producción</th><th>Ventas</th><th>Mermas</th></tr></thead><tbody>${r.days.map((d) => `<tr><td>${esc(dayName(d.date))}</td><td class="num">${num(d.production)} kg</td><td class="num">${num(d.sales)} kg</td><td class="num">${num(d.waste)} kg</td></tr>`).join("")}</tbody></table></div><div class="report-grid"><section><h3>Ventas por producto</h3>${lines(r.sales, "Sin ventas registradas esta semana.")}</section><section><h3>Mermas por producto</h3>${lines(r.waste, "Sin mermas registradas.")}</section><section><h3>Recepciones de proveedores</h3>${lines(r.receipts, "No llegó mercancía esta semana.")}</section><section><h3>Producciones aprobadas</h3>${r.production.length ? `<table class="report-table"><tbody>${r.production.map((p) => `<tr><td>${esc(dayName(p.date))} · ${esc(p.name)}</td><td class="num">${num(p.quantity)} kg</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Sin producciones aprobadas.</p>'}</section><section><h3>Compras</h3>${r.priceChanges?.length ? `<p>${r.priceChanges.length} cambio${r.priceChanges.length === 1 ? "" : "s"} de precio: ${esc(r.priceChanges.map((c) => `${c.name} ${money(c.from)} → ${money(c.to)}`).join(", "))}.</p>` : ""}<p>${r.orders.created} pedidos creados (${money(r.orders.spent)} estimados) · ${r.orders.sent} enviados por WhatsApp · ${r.orders.received} recibidos por completo.</p></section><section><h3>Avisos al cierre de la semana</h3>${r.lowStock.length ? `<table class="report-table"><tbody>${r.lowStock.map((p) => `<tr><td>${esc(p.name)}</td><td class="num">${num(p.stock)} de ${num(p.min)} ${esc(p.unit)} mínimo</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Ningún producto bajo mínimo.</p>'}</section></div><p class="fineprint">${r.totals.movements} movimientos de inventario en la semana. Las cifras salen de los movimientos registrados en la app; lo que no se registró no aparece.</p></article>`
++      ? `<article class="report panel"><header class="report-head"><div><span class="eyebrow">RESUMEN SEMANAL · ${esc(businessName())}</span><h2>Del ${date(r.start + "T12:00:00")} al ${date(r.end + "T12:00:00")}</h2></div><small>Generado el ${date(new Date().toISOString())} ${time(new Date().toISOString())}</small></header><div class="report-kpis"><div><strong>${num(r.totals.production)} kg</strong><span>producidos</span></div><div><strong>${num(r.totals.sales)} kg</strong><span>vendidos</span></div><div><strong>${num(r.totals.waste)} kg</strong><span>mermas</span></div><div><strong>${r.orders.created}</strong><span>pedidos creados · ${money(r.orders.spent)}</span></div><div><strong>${r.messages.received}</strong><span>mensajes · ${r.messages.pending} por leer</span></div></div><div class="table-scroll"><table class="report-table days"><thead><tr><th>Día</th><th>Producción</th><th>Ventas</th><th>Mermas</th>${r.cruises ? "<th>Cruceros en Palma</th>" : ""}</tr></thead><tbody>${r.days.map((d) => `<tr><td>${esc(dayName(d.date))}</td><td class="num">${num(d.production)} kg</td><td class="num">${num(d.sales)} kg</td><td class="num">${num(d.waste)} kg</td>${r.cruises ? `<td>${cruiseWeekCell(r.cruises.find((c) => c.day === d.date))}</td>` : ""}</tr>`).join("")}</tbody></table></div><div class="report-grid"><section><h3>Ventas por producto</h3>${lines(r.sales, "Sin ventas registradas esta semana.")}</section><section><h3>Mermas por producto</h3>${lines(r.waste, "Sin mermas registradas.")}</section><section><h3>Recepciones de proveedores</h3>${lines(r.receipts, "No llegó mercancía esta semana.")}</section><section><h3>Producciones aprobadas</h3>${r.production.length ? `<table class="report-table"><tbody>${r.production.map((p) => `<tr><td>${esc(dayName(p.date))} · ${esc(p.name)}</td><td class="num">${num(p.quantity)} kg</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Sin producciones aprobadas.</p>'}</section><section><h3>Compras</h3>${r.priceChanges?.length ? `<p>${r.priceChanges.length} cambio${r.priceChanges.length === 1 ? "" : "s"} de precio: ${esc(r.priceChanges.map((c) => `${c.name} ${money(c.from)} → ${money(c.to)}`).join(", "))}.</p>` : ""}<p>${r.orders.created} pedidos creados (${money(r.orders.spent)} estimados) · ${r.orders.sent} enviados por WhatsApp · ${r.orders.received} recibidos por completo.</p></section><section><h3>Avisos al cierre de la semana</h3>${r.lowStock.length ? `<table class="report-table"><tbody>${r.lowStock.map((p) => `<tr><td>${esc(p.name)}</td><td class="num">${num(p.stock)} de ${num(p.min)} ${esc(p.unit)} mínimo</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Ningún producto bajo mínimo.</p>'}</section></div><p class="fineprint">${r.totals.movements} movimientos de inventario en la semana. Las cifras salen de los movimientos registrados en la app; lo que no se registró no aparece.</p></article>`
+       : '<div class="empty"><h3>Calculando la semana…</h3></div>')
+   );
+ }
+diff --git a/src/ui/views.js b/src/ui/views.js
+index f3128d2..cb6581d 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -108,7 +108,7 @@ function homeNotices() {
+   const dueZones = (alerts?.counts || []).filter((z) => z.due);
+   const follow = alerts?.orders || [];
+   const port = cruiseInfo?.enabled ? cruiseInfo.today : null;
+-  const ships = port && port.inPort ? port : null;
++  const ships = port && port.ships ? port : null;
+   if (
+     !ships &&
+     !read &&
+@@ -120,7 +120,7 @@ function homeNotices() {
+     !follow.length
+   )
+     return "";
+-  return `<div class="notice subtle home-notice">${icon("alert")}<div>${ships ? `<strong>Hoy ${ships.inPort === 1 ? "hay 1 crucero" : "hay " + ships.inPort + " cruceros"} en Palma · unos ${num(ships.passengers)} pasajeros</strong><span>${esc(ships.ships.slice(0, 4).join(", "))}${ships.ships.length > 4 ? "…" : ""}. Llegan ${ships.arrivals}, parten ${ships.departures}. </span><button class="text-button" data-nav="cruises">Ver cruceros ${icon("arrow")}</button>` : ""}${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
++  return `<div class="notice subtle home-notice">${icon("alert")}<div>${ships ? `<strong>Hoy ${ships.ships === 1 ? "hay 1 crucero" : "hay " + ships.ships + " cruceros"} en Palma · impacto potencial ${esc(ships.impactLabel.toLowerCase())}</strong><span>${esc(ships.names.slice(0, 4).join(", "))}${ships.names.length > 4 ? "…" : ""}. ${ships.passengers === null ? "Pasajeros declarados: no disponible" : num(ships.passengers) + " pasajeros declarados al puerto"}${ships.firstArrival ? ", primera llegada " + ships.firstArrival : ""}${ships.lastDeparture ? ", última salida " + ships.lastDeparture : ""}. </span><button class="text-button" data-nav="cruises">Ver cruceros ${icon("arrow")}</button>` : ""}${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
+     follow.length
+       ? `<strong>Pedidos que necesitan seguimiento</strong><span>${esc(follow.map((f) => f.text).join(" "))} </span><button class="text-button" data-nav="orders">Ver pedidos ${icon("arrow")}</button>`
+       : ""
+@@ -256,7 +256,7 @@ function settings() {
+       )
+       .join(
+         "",
+-      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Cruceros en Palma</h2><p>Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares (al abrir y cada pocas horas). Solo lee: no envía ningún dato tuyo. Sin internet muestra lo último guardado.</p><label class="check-row"><input type="checkbox" id="cruises-enabled" ${cruiseInfo?.enabled === false ? "" : "checked"}> Consultar los cruceros del puerto</label><p class="fineprint">${cruiseInfo?.updatedAt ? "Última actualización: " + date(cruiseInfo.updatedAt) + " " + time(cruiseInfo.updatedAt) + "." : "Todavía sin datos."} Registro en cruceros.json dentro de la carpeta de datos.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
++      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Cruceros en Palma</h2><p>Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares (al abrir y cada pocas horas). Solo lee: no envía ningún dato tuyo. Sin internet muestra lo último guardado.</p><label class="check-row"><input type="checkbox" id="cruises-enabled" ${cruiseInfo?.enabled === false ? "" : "checked"}> Consultar los cruceros del puerto</label><div class="setting-actions">${btn("Umbrales del impacto", "cruiseThresholds", "secondary", cruiseInfo?.enabled === false ? "disabled" : "")}</div><p class="fineprint">${cruiseInfo?.updatedAt ? "Última actualización: " + date(cruiseInfo.updatedAt) + " " + time(cruiseInfo.updatedAt) + "." : "Todavía sin datos."} Registro en cruceros.sqlite dentro de la carpeta de datos; el histórico no se borra.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
+       state.learned.length
+         ? state.learned
+             .slice(0, 30)
+diff --git a/tests/cruises.test.cjs b/tests/cruises.test.cjs
+index 2060d3f..31b9672 100644
+--- a/tests/cruises.test.cjs
++++ b/tests/cruises.test.cjs
+@@ -2,45 +2,41 @@ const test = require("node:test");
+ const assert = require("node:assert/strict");
+ const fs = require("node:fs");
+ const path = require("node:path");
+-const {
+-  CruiseRegistry,
+-  parseCalls,
+-  parseStamp,
+-  passengers,
+-  daySummary,
+-  aboard,
+-  localDay,
+-} = require("../src/cruises.cjs");
++const c = require("../build/cruises.js");
++const { CruiseService } = require("../src/cruises/service.cjs");
+ const { createApp } = require("../src/server.cjs");
+ 
+-// One row of the port's public grid, in its real column order (38 columns).
++// Una fila de la rejilla pública del puerto, en su orden real de columnas (38).
+ function row({
+   type = "7",
+   typeName = "Cruceros turísticos",
+   ship = "MSC GRANDIOSA",
++  imo = "9803613",
+   from = "CIVITAVECCHIA",
+   to = "BARCELONA",
+   arrival = "18/09/2026 08:00",
+   departure = "18/09/2026 21:00",
+   call = 1100,
++  year = 2026,
+   berth = "AMPLIACION MUELLE PONIENTE NORTE",
+   ops = "Trasbordo",
+   qty = "5000",
+   port = "Palma",
+   codatr = 1,
++  status = "Concedido",
+ } = {}) {
+   return {
+-    id: `80|P|P|2026|${call}|${codatr}`,
++    id: `80|P|P|${year}|${call}|${codatr}`,
+     cell: [
+       "80",
+       "80",
+       "P",
+-      2026,
++      year,
+       codatr,
+       "P",
+       type,
+       typeName,
+-      "9803613",
++      imo,
+       ship,
+       "ITALIA",
+       "ESPAÑA",
+@@ -69,140 +65,592 @@ function row({
+       "0",
+       "Sí",
+       port,
+-      "Concedido",
++      status,
+     ],
+   };
+ }
+-const dayStamp = (offset, hour) => {
+-  const d = new Date();
+-  d.setDate(d.getDate() + offset);
+-  const p = (n) => String(n).padStart(2, "0");
+-  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${hour}`;
+-};
++const calls = (...rows) => c.parseApbPayload({ rows }).calls;
+ const tmp = (name) => {
+   const root = path.resolve(__dirname, "../work");
+   fs.mkdirSync(root, { recursive: true });
+   return fs.mkdtempSync(path.join(root, name));
+ };
++// Fuente simulada: devuelve lo que diga la prueba y cuenta las consultas.
++function fakeProvider(state) {
++  return {
++    hits: 0,
++    async session() {
++      return "c=1";
++    },
++    async forecast() {
++      this.hits++;
++      if (state.fail) throw state.fail;
++      return {
++        payload: state.forecast,
++        sourceUpdatedAt: "18/09/2026 00:30",
++        cookie: "c=1",
++      };
++    },
++    async history() {
++      return state.history || { total: 1, records: 0, rows: [] };
++    },
++  };
++}
++const stamp = (day, time) =>
++  `${day.slice(8)}/${day.slice(5, 7)}/${day.slice(0, 4)} ${time}`;
++
++test("cruceros: la hora es siempre la de Palma, con verano, invierno y cambios de hora", () => {
++  assert.equal(c.parseStamp("18/09/2026 04:00"), "2026-09-18T04:00");
++  assert.equal(c.parseStamp("31/02/2026 04:00"), "", "fecha que no existe");
++  assert.equal(c.parseStamp("18/09/2026 25:00"), "");
++  assert.equal(c.parseStamp("mañana"), "");
++  // Verano UTC+2, invierno UTC+1: nunca se toma UTC por hora local.
++  assert.equal(
++    new Date(c.instantFromWall("2026-09-18T04:00")).toISOString(),
++    "2026-09-18T02:00:00.000Z",
++  );
++  assert.equal(
++    new Date(c.instantFromWall("2026-12-18T04:00")).toISOString(),
++    "2026-12-18T03:00:00.000Z",
++  );
++  assert.equal(
++    c.wallFromInstant(Date.parse("2026-09-17T22:30:00Z")),
++    "2026-09-18T00:30",
++  );
++  assert.equal(
++    c.portToday(new Date("2026-09-17T22:30:00Z")),
++    "2026-09-18",
++    "hoy es el día de Palma, no el del equipo",
++  );
++  // Noche del cambio de octubre (una hora más) y de marzo (una hora menos).
++  assert.equal(
++    c.stayMinutes({
++      arrival: "2026-10-24T22:00",
++      departure: "2026-10-25T06:00",
++    }),
++    540,
++  );
++  assert.equal(
++    c.stayMinutes({
++      arrival: "2026-03-28T22:00",
++      departure: "2026-03-29T06:00",
++    }),
++    420,
++  );
++  assert.equal(c.addDays("2026-12-31", 1), "2027-01-01");
++});
+ 
+-test("cruceros: fechas del puerto y pasajeros por operación", () => {
+-  assert.equal(parseStamp("18/09/2026 04:00"), "2026-09-18T04:00");
+-  assert.equal(parseStamp("mañana"), "");
++test("cruceros: pasajeros declarados, sin confundir «cero» con «no disponible»", () => {
+   assert.deepEqual(
+-    passengers("Desembarque<br/>Embarque<br/>Trasbordo", "1913<br/>2073<br/>5"),
+-    { disembark: 1913, embark: 2073, transit: 5 },
++    c.parsePassengers(
++      "Desembarque<br/>Embarque<br/>Trasbordo",
++      "1913<br/>2073<br/>5",
++    ),
++    {
++      disembark: 1913,
++      embark: 2073,
++      transit: 5,
++    },
+   );
+-  assert.deepEqual(passengers("Trasbordo", "no-es-número"), {
+-    disembark: 0,
+-    embark: 0,
+-    transit: 0,
+-  });
++  const nothing = c.parsePassengers("", "");
++  assert.deepEqual(nothing, { disembark: null, embark: null, transit: null });
++  assert.equal(c.declaredPassengers(nothing), null);
++  assert.equal(c.callType(nothing), null);
++  assert.equal(c.declaredPassengers(c.parsePassengers("Desembarque", "0")), 0);
++  assert.deepEqual(
++    c.parsePassengers("Trasbordo", "999999"),
++    nothing,
++    "cifra absurda: se descarta",
++  );
++  assert.deepEqual(c.parsePassengers("Trasbordo", "-4"), nothing);
++  assert.deepEqual(c.parsePassengers("Trasbordo", "muchos"), nothing);
++  assert.equal(
++    c.declaredPassengers({ disembark: 1913, embark: 2073, transit: 5 }),
++    2078,
++  );
++  assert.equal(
++    c.callType({ disembark: null, embark: null, transit: 5000 }),
++    "transit",
++  );
++  assert.equal(
++    c.callType({ disembark: 1400, embark: 1500, transit: null }),
++    "turnaround",
++  );
++  assert.equal(c.callType({ disembark: 7, embark: 1, transit: 599 }), "mixed");
+ });
+ 
+-test("cruceros: solo cruceros de Palma, una escala por barco y sin HTML", () => {
+-  const calls = parseCalls({
++test("cruceros: la respuesta externa se valida; la basura no entra", () => {
++  const parsed = c.parseApbPayload({
+     rows: [
+       row(),
+-      row({ codatr: 2, departure: "18/09/2026 23:00" }),
++      row({ codatr: 2, departure: "18/09/2026 23:00", berth: "OTRO MUELLE" }),
+       row({ type: "8", typeName: "Ferrys", ship: "CIUDAD DE PALMA", call: 2 }),
+-      row({ ship: "AIDA", call: 3, port: "Eivissa" }),
+-      row({ ship: "<img src=x onerror=alert(1)>COSTA", call: 4 }),
++      row({ ship: "AIDA", call: 3, port: "Alcúdia" }),
++      row({
++        ship: "<img src=x onerror=alert(1)>COSTA  pacifica",
++        imo: "9378498",
++        call: 4,
++      }),
+       row({ ship: "ROTO", call: 5, arrival: "sin fecha" }),
+-      { cell: ["corta"] },
++      row({
++        ship: "AL REVES",
++        call: 6,
++        arrival: "18/09/2026 20:00",
++        departure: "18/09/2026 08:00",
++      }),
++      row({ ship: "ETERNO", call: 7, departure: "18/12/2026 08:00" }),
++      row({ ship: "", call: 8 }),
++      { id: "x", cell: ["corta"] },
++      null,
+     ],
+   });
+-  assert.equal(calls.length, 2);
+-  const msc = calls.find((c) => c.ship === "MSC GRANDIOSA");
+-  assert.equal(msc.departure, "2026-09-18T23:00");
++  assert.equal(parsed.calls.length, 2);
++  assert.equal(parsed.rejected.length, 6);
++  assert.ok(parsed.rejected.some((r) => /fecha inválida/.test(r)));
++  assert.ok(parsed.rejected.some((r) => /anterior a la llegada/.test(r)));
++  assert.ok(parsed.rejected.some((r) => /más de 30 días/.test(r)));
++  assert.ok(parsed.rejected.some((r) => /sin barco/.test(r)));
++  const msc = parsed.calls.find((x) => x.ship === "MSC GRANDIOSA");
++  assert.equal(
++    msc.id,
++    "P-2026-1100",
++    "identificador oficial: puerto, año y número de escala",
++  );
++  assert.equal(
++    msc.departure,
++    "2026-09-18T23:00",
++    "dos atraques de una escala son una escala",
++  );
++  assert.match(msc.berth, /PONIENTE NORTE · OTRO MUELLE/);
+   assert.equal(msc.from, "Civitavecchia");
+-  assert.equal(msc.to, "Barcelona");
+-  assert.equal(aboard(msc), 5000);
+-  assert.ok(!calls.some((c) => c.ship.includes("<")));
+-  const day = daySummary(calls, "2026-09-18");
+-  assert.equal(day.arrivals.length, 2);
+-  assert.equal(day.departures.length, 2);
+-  assert.equal(day.passengers, 10000);
+-  assert.equal(daySummary(calls, "2026-09-19").inPort.length, 0);
+-  assert.deepEqual(parseCalls(null), []);
++  const costa = parsed.calls.find((x) => x.imo === "9378498");
++  assert.equal(
++    costa.ship,
++    "COSTA PACIFICA",
++    "sin HTML y con el nombre normalizado",
++  );
++  assert.deepEqual(c.parseApbPayload(null), {
++    calls: [],
++    rejected: ["respuesta sin filas"],
++    rows: 0,
++  });
++  assert.deepEqual(c.parseApbPayload({ rows: "no" }).calls, []);
++});
++
++test("cruceros: día normal, escala nocturna, simultaneidad e impacto auditable", () => {
++  const normal = calls(
++    row({ arrival: "18/09/2026 08:00", departure: "18/09/2026 18:00" }),
++  );
++  const s = c.daySummary(normal, "2026-09-18");
++  assert.equal(s.ships, 1);
++  assert.equal(s.firstArrival, "08:00");
++  assert.equal(s.lastDeparture, "18:00");
++  assert.deepEqual(
++    [s.peak.ships, s.peak.from, s.peak.to],
++    [1, "08:00", "18:00"],
++  );
++  assert.equal(c.stayMinutes(normal[0]), 600);
++  // Nocturno: llega a las 22:00 y sale a las 06:00 del día siguiente.
++  const night = calls(
++    row({ arrival: "18/09/2026 22:00", departure: "19/09/2026 06:00" }),
++  );
++  assert.equal(c.daySummary(night, "2026-09-18").ships, 1);
++  assert.equal(c.daySummary(night, "2026-09-18").departures, 0);
++  assert.equal(c.daySummary(night, "2026-09-19").ships, 1);
++  assert.equal(c.daySummary(night, "2026-09-19").arrivals, 0);
++  assert.equal(c.daySummary(night, "2026-09-20").ships, 0);
++  assert.deepEqual(
++    c
++      .dayBars(night, "2026-09-19")
++      .map((b) => [b.startMinute, b.endMinute, b.startsBefore]),
++    [[0, 360, true]],
++  );
++  assert.deepEqual(c.dayBars(night, "2026-09-18")[0].endMinute, 1440);
++  // Tres barcos: 06–18, 07–16 y 09–22. El pico es de 09:00 a 16:00.
++  const three = calls(
++    row({
++      ship: "AIDA",
++      imo: "1111111",
++      call: 1,
++      arrival: "18/09/2026 06:00",
++      departure: "18/09/2026 18:00",
++      qty: "2000",
++    }),
++    row({
++      ship: "NORWEGIAN",
++      imo: "2222222",
++      call: 2,
++      arrival: "18/09/2026 07:00",
++      departure: "18/09/2026 16:00",
++      qty: "2300",
++    }),
++    row({
++      ship: "MSC",
++      imo: "3333333",
++      call: 3,
++      arrival: "18/09/2026 09:00",
++      departure: "18/09/2026 22:00",
++      qty: "5000",
++    }),
++  );
++  const t = c.daySummary(three, "2026-09-18");
++  assert.deepEqual(
++    [t.peak.ships, t.peak.from, t.peak.to, t.peak.passengers],
++    [3, "09:00", "16:00", 9300],
++  );
++  assert.deepEqual(
++    [t.peakPassengers, t.peakPassengersFrom, t.peakPassengersTo],
++    [9300, "09:00", "16:00"],
++  );
++  assert.equal(t.passengers, 9300);
++  assert.equal(t.impact, "high");
++  assert.equal(
++    c.daySummary(three, "2026-09-18", {
++      medium: 100,
++      high: 200,
++      veryHigh: 9000,
++    }).impact,
++    "veryHigh",
++  );
++  assert.deepEqual(
++    c
++      .dayTimeline(three, "2026-09-18")
++      .map((x) => x.time + " " + x.ships.length),
++    ["06:00 1", "07:00 2", "09:00 3", "16:00 2", "18:00 1", "22:00 0"],
++  );
++  // Fórmula del impacto, caso a caso.
++  assert.equal(c.impactLevel(0, null), "none");
++  assert.equal(c.impactLevel(2, null), "unknown");
++  assert.equal(c.impactLevel(1, 2999), "low");
++  assert.equal(c.impactLevel(1, 3000), "medium");
++  assert.equal(c.impactLevel(1, 6000), "high");
++  assert.equal(c.impactLevel(1, 10000), "veryHigh");
++  // Datos faltantes: sin pasajeros, sin muelle, sin puerto anterior. Todo sigue funcionando.
++  const bare = calls(row({ ops: "", qty: "", berth: "", from: "", imo: "" }));
++  const b = c.daySummary(bare, "2026-09-18");
++  assert.deepEqual(
++    [b.ships, b.passengers, b.undeclared, b.impact],
++    [1, null, 1, "unknown"],
++  );
++  assert.equal(bare[0].berth, "");
++  assert.equal(c.daySummary([], "2026-09-18").impact, "none");
++  // Una escala retirada no cuenta.
++  assert.equal(
++    c.daySummary([{ ...normal[0], withdrawn: true }], "2026-09-18").ships,
++    0,
++  );
++});
++
++test("cruceros: estados solo los que la fuente permite afirmar, e integridad", () => {
++  const [call] = calls(row());
++  assert.equal(c.callStatus(call), "granted");
++  assert.equal(
++    c.callStatus({ ...call, sourceStatus: "Solicitado" }),
++    "requested",
++  );
++  assert.equal(c.callStatus({ ...call, sourceStatus: "Iniciado" }), "inPort");
++  assert.equal(
++    c.callStatus({ ...call, sourceStatus: "Finalizado" }, "2026-09-20T00:00"),
++    "finished",
++  );
++  assert.equal(
++    c.callStatus(call, "2026-09-20T00:00"),
++    "past",
++    "derivado y dicho como tal",
++  );
++  assert.equal(c.callStatus({ ...call, withdrawn: true }), "withdrawn");
++  assert.equal(c.callStatus({ ...call, sourceStatus: "Otro" }), "pending");
++  assert.deepEqual(
++    c.integrityIssues(
++      calls(row(), row({ ship: "OTRO", imo: "1234567", call: 9 })),
++    ),
++    [],
++  );
++  const dup = c.integrityIssues(calls(row(), row({ call: 1101 })));
++  assert.equal(dup.length, 1);
++  assert.match(dup[0], /se solapan/);
++  assert.equal(c.syncIntervalHours(calls(row()), "2026-09-18"), 3);
++  assert.equal(c.syncIntervalHours(calls(row()), "2026-09-13"), 6);
++  assert.equal(c.syncIntervalHours(calls(row()), "2026-08-01"), 12);
++  assert.equal(c.syncIntervalHours([], "2026-09-18"), 12);
++  assert.deepEqual(
++    [0, 1, 2, 3, 4, 9].map(c.backoffMinutes),
++    [0, 5, 15, 60, 180, 180],
++  );
+ });
+ 
+-test("cruceros: el registro conserva el pasado, sigue la previsión y aguanta sin internet", async () => {
++test("cruceros: cambios y retiradas actualizan la escala, sin duplicados ni pérdida de histórico", async () => {
+   const dir = tmp("cruises-");
++  const state = {};
++  let now = new Date("2026-09-10T08:00:00Z");
++  const service = new CruiseService(dir, {
++    provider: fakeProvider(state),
++    clock: () => now,
++  });
+   try {
+-    let payload = {
++    assert.equal(service.status().state, "never");
++    assert.equal(service.due(), true);
++    state.forecast = {
+       rows: [
++        row({ call: 1 }),
++        row({
++          ship: "SIRENA",
++          imo: "9187899",
++          call: 2,
++          arrival: "20/09/2026 07:00",
++          departure: "20/09/2026 15:00",
++          qty: "600",
++        }),
+         row({
+           ship: "AYER",
+-          call: 10,
+-          arrival: dayStamp(-1, "08:00"),
+-          departure: dayStamp(-1, "20:00"),
++          imo: "7654321",
++          call: 3,
++          arrival: "09/09/2026 08:00",
++          departure: "09/09/2026 20:00",
++          status: "Iniciado",
+         }),
++      ],
++    };
++    let status = await service.sync("manual");
++    assert.equal(status.state, "fresh");
++    assert.equal(status.totals.calls, 3);
++    assert.equal(status.sourceUpdatedAt, "2026-09-18T00:30");
++    assert.equal(service.due(), false, "recién consultado: no se insiste");
++    // Cambio de horario y de escritura del nombre; SIRENA desaparece; la de ayer ya no se publica.
++    now = new Date("2026-09-10T12:00:00Z");
++    state.forecast = {
++      rows: [
+         row({
+-          ship: "HOY",
+-          call: 11,
+-          arrival: dayStamp(0, "07:00"),
+-          departure: dayStamp(0, "19:00"),
++          call: 1,
++          ship: "Msc  Grandiosa",
++          arrival: "18/09/2026 10:00",
++          ops: "",
++          qty: "",
+         }),
++      ],
++    };
++    status = await service.sync("manual");
++    assert.equal(
++      status.totals.calls,
++      2,
++      "SIRENA retirada; la escala pasada se conserva",
++    );
++    assert.equal(
++      status.totals.ships,
++      3,
++      "mismo IMO con otro nombre: sigue siendo un barco",
++    );
++    const changed = service.call("P-2026-1");
++    assert.equal(changed.arrival, "2026-09-18T10:00");
++    assert.equal(
++      changed.declared,
++      5000,
++      "un dato declarado no se pierde porque la fuente lo omita después",
++    );
++    assert.deepEqual(
++      changed.changes.map((x) => [x.field, x.before, x.after]),
++      [["Llegada", "2026-09-18T08:00", "2026-09-18T10:00"]],
++    );
++    const gone = service.call("P-2026-2");
++    assert.equal(gone.status, "withdrawn");
++    assert.equal(gone.statusLabel, "Retirada de la previsión");
++    assert.equal(service.day("2026-09-20").summary.ships, 0);
++    assert.equal(service.day("2026-09-20").withdrawn.length, 1);
++    assert.equal(service.day("2026-09-18").calls[0].modified, true);
++    assert.equal(service.call("P-2026-3").status, "past");
++    // Vuelve a aparecer: se restaura la misma fila.
++    state.forecast.rows.push(
++      row({
++        ship: "SIRENA",
++        imo: "9187899",
++        call: 2,
++        arrival: "20/09/2026 07:00",
++        departure: "20/09/2026 15:00",
++        qty: "600",
++      }),
++    );
++    // El histórico confirma la escala de ayer con horas reales: no es un «cambio de horario».
++    state.history = {
++      total: 1,
++      records: 1,
++      rows: [
+         row({
+-          ship: "ANULADO",
+-          call: 12,
+-          arrival: dayStamp(3, "07:00"),
+-          departure: dayStamp(3, "19:00"),
++          ship: "AYER",
++          imo: "7654321",
++          call: 3,
++          arrival: "09/09/2026 08:12",
++          departure: "09/09/2026 19:48",
++          status: "Finalizado",
+         }),
+       ],
+     };
+-    const registry = new CruiseRegistry(dir, { fetcher: async () => payload });
+-    await registry.refresh();
+-    assert.equal(registry.calls().length, 3);
+-    assert.equal(registry.today().inPort, 1);
+-    assert.deepEqual(registry.today().ships, ["HOY"]);
+-    // The port drops yesterday's call and cancels a future one.
+-    payload = { rows: [payload.rows[1]] };
+-    await registry.refresh();
++    await service.sync("manual");
++    assert.equal(service.call("P-2026-2").status, "granted");
++    assert.equal(service.status().totals.calls, 3);
++    const done = service.call("P-2026-3");
++    assert.deepEqual(
++      [done.status, done.arrival, done.scheduledArrival],
++      ["finished", "2026-09-09T08:12", "2026-09-09T08:00"],
++    );
+     assert.deepEqual(
+-      registry.calls().map((c) => c.ship),
+-      ["AYER", "HOY"],
++      done.changes.map((x) => x.field),
++      ["Estado"],
++    );
++    // Previsión vacía o basura: error visible y ni una retirada.
++    state.forecast = { rows: [] };
++    status = await service.sync("manual");
++    assert.equal(status.state, "error");
++    assert.equal(status.totals.calls, 3);
++    state.forecast = "<html>mantenimiento</html>";
++    await service.sync("manual");
++    assert.equal(service.status().totals.calls, 3);
++    // Fuente caída: error, datos intactos y espera creciente.
++    state.fail = Object.assign(Error("fetch failed"), {
++      cause: { code: "ENOTFOUND" },
++    });
++    status = await service.sync("auto");
++    assert.equal(status.error, "Sin conexión con el puerto.");
++    assert.equal(status.label, "Error de sincronización");
++    assert.equal(service.day("2026-09-18").summary.ships, 1);
++    assert.equal(
++      service.due(),
++      false,
++      "tras fallar no se reintenta de inmediato",
++    );
++    now = new Date(now.getTime() + 61 * 60000);
++    assert.equal(
++      service.due(),
++      true,
++      "tres fallos: vuelve a tocar pasada una hora",
++    );
++    state.fail = null;
++    state.forecast = { rows: [row({ call: 1, arrival: "18/09/2026 10:00" })] };
++    assert.equal((await service.sync("auto")).state, "fresh");
++    now = new Date(now.getTime() + 40 * 3600000);
++    assert.equal(service.status().state, "stale", "datos viejos: se avisa");
++    // Ficha manual del barco: sin fuente no se guarda nada.
++    assert.throws(
++      () => service.setShipInfo("9803613", { line: "MSC Cruises" }),
++      /fuente/,
+     );
+-    // No connection: the error is visible and the saved registry stays.
+-    const offline = new CruiseRegistry(dir, {
+-      fetcher: async () => {
+-        throw Object.assign(Error("fetch failed"), {
+-          cause: { code: "ENOTFOUND" },
+-        });
+-      },
++    assert.throws(
++      () =>
++        service.setShipInfo("9803613", { capacityMax: -5, infoSource: "x" }),
++      /rango/,
++    );
++    service.setShipInfo("9803613", {
++      line: "MSC Cruises",
++      capacityStandard: 4842,
++      capacityMax: 6334,
++      infoSource: "Ficha técnica de la naviera",
+     });
+-    assert.equal(offline.calls().length, 2);
+-    const view = await offline.refresh();
+-    assert.match(view.error, /Sin conexión/);
+-    assert.equal(view.calls.length, 2);
+-    assert.equal(offline.stale(6), false);
+-    assert.equal(localDay(new Date(2026, 8, 5)), "2026-09-05");
++    const card = service.day("2026-09-18").calls[0];
++    assert.deepEqual(
++      [card.line, card.capacityMax, card.infoSource],
++      ["MSC Cruises", 6334, "Ficha técnica de la naviera"],
++    );
++    assert.equal(service.search({ q: "msc cruises" }).total, 1);
++    assert.equal(
++      service.search({ status: "withdrawn" }).total,
++      1,
++      "SIRENA falta en la última previsión: retirada otra vez, sin duplicarse",
++    );
++    assert.ok(service.repo.lastSyncs(20).length >= 6);
+   } finally {
++    service.close();
+     fs.rmSync(dir, { recursive: true, force: true });
+   }
+ });
+ 
+-test("cruceros: rutas del servidor con origen de datos, interruptor y sin red en pruebas", async () => {
++test("cruceros: el histórico oficial se importa por páginas y una sola vez", async () => {
++  const dir = tmp("cruises-his-");
++  const pages = {
++    1: {
++      total: 2,
++      records: 3,
++      rows: [
++        row({
++          call: 1,
++          year: 2025,
++          arrival: "18/09/2025 08:00",
++          departure: "18/09/2025 21:00",
++          status: "Finalizado",
++        }),
++        row({
++          call: 2,
++          year: 2025,
++          ship: "SIRENA",
++          imo: "9187899",
++          arrival: "17/09/2025 08:00",
++          departure: "17/09/2025 21:00",
++          status: "Finalizado",
++        }),
++      ],
++    },
++    2: {
++      total: 2,
++      records: 3,
++      rows: [
++        row({
++          call: 9,
++          year: 2014,
++          ship: "AIDAMAR",
++          imo: "9490052",
++          arrival: "03/01/2014 05:25",
++          departure: "03/01/2014 18:00",
++          ops: "",
++          qty: "",
++          status: "Finalizado",
++        }),
++      ],
++    },
++  };
++  const asked = [];
++  const provider = {
++    async session() {
++      return "c=1";
++    },
++    async history({ page }) {
++      asked.push(page);
++      return pages[page];
++    },
++  };
++  const service = new CruiseService(dir, { provider, historyPauseMs: 1 });
++  try {
++    await service.backfill();
++    assert.deepEqual(asked, [1, 2]);
++    assert.equal(service.status().history.done, true);
++    assert.equal(service.status().totals.first, "2014-01-03T05:25");
++    assert.equal(service.day("2014-01-03").calls[0].declared, null);
++    await service.backfill();
++    assert.deepEqual(asked, [1, 2], "no se vuelve a pedir");
++  } finally {
++    service.close();
++    fs.rmSync(dir, { recursive: true, force: true });
++  }
++});
++
++test("cruceros: rutas del servidor, permisos, umbrales e interruptor, sin red en pruebas", async () => {
+   const dir = tmp("cruises-http-");
++  const today = c.portToday();
++  const state = {
++    forecast: {
++      rows: [
++        row({
++          ship: "HOY",
++          imo: "5555555",
++          call: 11,
++          year: Number(today.slice(0, 4)),
++          arrival: stamp(today, "07:00"),
++          departure: stamp(today, "19:00"),
++        }),
++      ],
++    },
++  };
++  const provider = fakeProvider(state);
+   let app;
+-  let fetched = 0;
+   try {
+-    app = await createApp({
+-      dataDir: dir,
+-      cruiseFetcher: async () => {
+-        fetched++;
+-        return {
+-          rows: [
+-            row({
+-              ship: "HOY",
+-              call: 11,
+-              arrival: dayStamp(0, "07:00"),
+-              departure: dayStamp(0, "19:00"),
+-            }),
+-          ],
+-        };
+-      },
+-    });
++    app = await createApp({ dataDir: dir, cruiseProvider: provider });
+     const origin = new URL(app.url).origin;
+     const login = await fetch(app.url, { redirect: "manual" });
+     const cookie = login.headers.get("set-cookie").split(";")[0];
+@@ -211,6 +659,7 @@ test("cruceros: rutas del servidor con origen de datos, interruptor y sin red en
+       Origin: origin,
+       Cookie: cookie,
+     };
++    const get = async (url) => (await fetch(origin + url, { headers })).json();
+     const post = (url, body) =>
+       fetch(origin + url, {
+         method: "POST",
+@@ -218,11 +667,15 @@ test("cruceros: rutas del servidor con origen de datos, interruptor y sin red en
+         body: JSON.stringify(body),
+       });
+     assert.equal((await fetch(origin + "/api/cruises")).status, 403);
+-    let view = await (await fetch(origin + "/api/cruises", { headers })).json();
++    assert.equal(
++      (await fetch(origin + "/api/cruises/day?day=" + today)).status,
++      403,
++    );
++    let view = await get("/api/cruises");
+     assert.equal(view.enabled, true);
+-    assert.equal(view.calls.length, 0);
+-    assert.equal(fetched, 0, "nada sale a la red sin pedirlo");
+-    assert.equal(await post("/api/cruises", {}).then((r) => r.status), 200);
++    assert.equal(view.status.state, "never");
++    assert.equal(view.status.label, "Información pendiente de sincronización");
++    assert.equal(provider.hits, 0, "nada sale a la red sin pedirlo");
+     assert.equal(
+       (
+         await fetch(origin + "/api/cruises", {
+@@ -233,25 +686,99 @@ test("cruceros: rutas del servidor con origen de datos, interruptor y sin red en
+       ).status,
+       403,
+     );
+-    view = await (await fetch(origin + "/api/cruises", { headers })).json();
+-    assert.equal(view.calls.length, 1);
+-    assert.equal(view.source, "Autoridad Portuaria de Baleares");
+-    let state = await (await fetch(origin + "/api/state", { headers })).json();
+-    assert.equal(state.cruises.today.inPort, 1);
+-    assert.equal(state.cruises.today.passengers, 5000);
+-    // Switch off: no query, no summary.
++    view = await (await post("/api/cruises", { type: "sync" })).json();
++    assert.equal(view.status.state, "fresh");
++    assert.equal(view.status.source, "Autoridad Portuaria de Baleares");
++    assert.equal(view.todaySummary.ships, 1);
++    assert.equal(view.todaySummary.peakPassengers, 5000);
++    assert.equal(view.todaySummary.impactLabel, "Medio");
++    const day = await get("/api/cruises/day?day=" + today);
++    assert.equal(day.calls[0].ship, "HOY");
++    assert.equal(
++      day.calls[0].line,
++      null,
++      "la naviera no viene de la fuente: no disponible",
++    );
++    assert.equal(day.calls[0].source, "Autoridad Portuaria de Baleares");
++    assert.ok(day.calls[0].retrievedAt && day.calls[0].lastVerifiedAt);
++    assert.equal(
++      (await get(`/api/cruises/range?from=${today}&to=${c.addDays(today, 6)}`))
++        .days.length,
++      7,
++    );
++    assert.equal(
++      (
++        await fetch(
++          origin + "/api/cruises/range?from=2026-01-01&to=2027-01-01",
++          { headers },
++        )
++      ).status,
++      400,
++    );
++    assert.equal(
++      (await fetch(origin + "/api/cruises/day?day=../../x", { headers }))
++        .status,
++      400,
++    );
++    assert.equal(
++      (await fetch(origin + "/api/cruises/call?id=nada", { headers })).status,
++      404,
++    );
++    assert.equal((await get("/api/cruises/search?q=hoy")).total, 1);
++    assert.equal((await get("/api/cruises/syncs")).syncs.length, 1);
++    // Umbrales: del usuario, validados.
++    assert.equal(
++      (
++        await post("/api/cruises", {
++          type: "thresholds",
++          medium: 9,
++          high: 5,
++          veryHigh: 20,
++        })
++      ).status,
++      400,
++    );
++    view = await (
++      await post("/api/cruises", {
++        type: "thresholds",
++        medium: 1000,
++        high: 4000,
++        veryHigh: 8000,
++      })
++    ).json();
++    assert.equal(view.todaySummary.impactLabel, "Alto");
++    assert.deepEqual(view.thresholds, {
++      medium: 1000,
++      high: 4000,
++      veryHigh: 8000,
++    });
++    assert.equal(
++      (
++        await post("/api/cruises", {
++          type: "ship",
++          key: "5555555",
++          line: "Naviera X",
++        })
++      ).status,
++      400,
++    );
++    const state2 = await get("/api/state");
++    assert.equal(state2.cruises.today.ships, 1);
++    const report = await get("/api/report");
++    assert.equal(report.cruises.length, 7);
++    // Apagado: ni consulta ni resumen.
+     const off = await (
+       await post("/api/maintenance", { type: "cruises", enabled: false })
+     ).json();
+     assert.equal(off.cruises.enabled, false);
+     assert.equal(off.cruises.today, null);
+-    const refused = await post("/api/cruises", {});
+-    assert.equal(refused.status, 400);
+-    assert.equal(fetched, 1);
+-    const on = await (
+-      await post("/api/maintenance", { type: "cruises", enabled: true })
+-    ).json();
+-    assert.equal(on.cruises.enabled, true);
++    assert.equal((await post("/api/cruises", { type: "sync" })).status, 400);
++    assert.equal(provider.hits, 1);
++    assert.equal((await get("/api/report")).cruises, null);
++    assert.ok(
++      fs.existsSync(path.join(dir, "backups", "cruceros-copia.sqlite")),
++      "el registro de cruceros viaja con la copia diaria",
++    );
+   } finally {
+     if (app) await new Promise((r) => app.server.close(r));
+     fs.rmSync(dir, { recursive: true, force: true });

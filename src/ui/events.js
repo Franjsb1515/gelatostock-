@@ -122,6 +122,21 @@ document.addEventListener("change", async (e) => {
     if (rows) rows.innerHTML = countRows(e.target.value);
     return;
   }
+  if (e.target.id === "cruise-status") {
+    cruiseStatus = e.target.value;
+    try {
+      await searchCruises();
+    } catch (err) {
+      toast(err.message);
+    }
+    render();
+    return;
+  }
+  if (e.target.id === "cruise-impact-only") {
+    cruiseImpactOnly = e.target.checked;
+    render();
+    return;
+  }
   if (e.target.id === "cruises-enabled") {
     try {
       applyEnvelope(
@@ -130,7 +145,7 @@ document.addEventListener("change", async (e) => {
           enabled: e.target.checked,
         }),
       );
-      cruiseData = null;
+      cruiseDash = null;
       render();
       toast(
         e.target.checked
@@ -213,9 +228,21 @@ document.addEventListener("input", (e) => {
   if (e.target.id === "cruise-search") {
     cruiseQuery = e.target.value;
     const pos = e.target.selectionStart;
-    render();
-    $("#cruise-search").focus();
-    $("#cruise-search").setSelectionRange(pos, pos);
+    clearTimeout(window.cruiseSearchTimer);
+    window.cruiseSearchTimer = setTimeout(async () => {
+      try {
+        await searchCruises();
+      } catch (err) {
+        toast(err.message);
+      }
+      if (page !== "cruises") return;
+      render();
+      const box = $("#cruise-search");
+      if (box) {
+        box.focus();
+        box.setSelectionRange(pos, pos);
+      }
+    }, 250);
     return;
   }
   if (e.target.id === "recipe-search") {

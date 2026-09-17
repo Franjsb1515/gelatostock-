@@ -1231,18 +1231,175 @@ async function action(name, el) {
     return;
   }
   if (name === "cruisesRefresh") {
-    loadCruises(true);
+    loadCruises({ sync: true });
     return;
   }
   if (["cruisePrev", "cruiseNext", "cruiseToday", "cruiseDay"].includes(name)) {
-    const current = cruiseDay || todayLocal();
+    // Days are port days: «today» comes from the server (Europe/Madrid), not from this computer.
+    const current = cruiseDay || cruiseDash.today;
     cruiseDay =
       name === "cruiseToday"
         ? ""
         : name === "cruiseDay"
           ? el.dataset.day
-          : shiftDay(current, name === "cruisePrev" ? -1 : 1);
+          : cruiseShift(current, name === "cruisePrev" ? -1 : 1);
+    if (page !== "cruises") page = "cruises";
+    if (cruiseTab === "calendar" && cruiseDay)
+      cruiseMonth = cruiseDay.slice(0, 7);
+    await loadCruises();
+    if (name === "cruiseDay")
+      document
+        .getElementById("cruise-detail")
+        ?.scrollIntoView({ block: "start" });
+    return;
+  }
+  if (name === "cruiseTab") {
+    cruiseTab = el.dataset.tab;
+    cruiseFound = null;
+    if (cruiseTab === "calendar")
+      cruiseMonth = (cruiseDay || cruiseDash.today).slice(0, 7);
+    await loadCruises();
+    return;
+  }
+  if (name === "cruiseMonthPrev" || name === "cruiseMonthNext") {
+    const [y, m] = (cruiseMonth || cruiseDash.today.slice(0, 7))
+      .split("-")
+      .map(Number);
+    const x = new Date(
+      Date.UTC(y, m - 1 + (name === "cruiseMonthPrev" ? -1 : 1), 1),
+    );
+    cruiseMonth = x.toISOString().slice(0, 7);
+    await loadCruises();
+    return;
+  }
+  if (name === "cruiseMore") {
+    await searchCruises(cruiseFound.items.length);
     render();
+    return;
+  }
+  if (name === "cruiseCall") {
+    const c = await request(
+      "/api/cruises/call?id=" + encodeURIComponent(el.dataset.id),
+    );
+    const line = (label, value) =>
+      `<tr><td>${label}</td><td>${value}</td></tr>`;
+    modal(
+      c.ship + " · historial y origen",
+      "De dónde sale cada dato de esta escala y qué ha cambiado desde que se anunció.",
+      `<table class="report-table"><tbody>${line("Identificador de escala", esc(c.id))}${line("Fuente", esc(c.source))}${line("Página de la fuente", esc(c.sourceUrl))}${line("Primera vez vista", esc(cruiseStamp(c.retrievedAt)))}${line("Última verificación", esc(cruiseStamp(c.lastVerifiedAt)))}${line("Previsión del puerto actualizada", c.sourceUpdatedAt ? esc(cruiseWall(c.sourceUpdatedAt)) : NA)}${line("Procedencia", c.origin === "history" ? "Histórico oficial (horas reales)" : "Previsión vigente")}${line("Horario previsto", c.scheduledArrival ? esc(cruiseWall(c.scheduledArrival)) + " → " + esc(cruiseWall(c.scheduledDeparture)) : NA)}</tbody></table><h3 class="cruise-sub">Cambios registrados</h3>${c.changes.length ? `<table class="report-table"><thead><tr><th>Cuándo</th><th>Dato</th><th>Antes</th><th>Después</th><th>Motivo</th></tr></thead><tbody>${c.changes.map((x) => `<tr><td>${esc(cruiseStamp(x.at))}</td><td>${esc(x.field)}</td><td>${esc(x.before || "—")}</td><td>${esc(x.after || "—")}</td><td>${esc(x.reason)}</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Sin cambios desde que se anunció.</p>'}`,
+      async () => true,
+      "Cerrar",
+    );
+    return;
+  }
+  if (name === "cruiseShip") {
+    const c = await request(
+      "/api/cruises/call?id=" + encodeURIComponent(el.dataset.id),
+    );
+    const s = c.shipInfo;
+    modal(
+      "Ficha de " + s.name,
+      "El puerto no publica la naviera ni la capacidad. Si las anotas, indica de dónde sale el dato: se mostrará como dato manual con su fuente. Déjalo vacío para que siga como «No disponible».",
+      field("Naviera", "line", s.line || "", "text", 'maxlength="80"') +
+        field(
+          "Capacidad habitual (pasajeros)",
+          "capacityStandard",
+          s.capacityStandard || "",
+          "number",
+          'min="1" max="12000" step="1"',
+        ) +
+        field(
+          "Capacidad máxima (pasajeros)",
+          "capacityMax",
+          s.capacityMax || "",
+          "number",
+          'min="1" max="12000" step="1"',
+        ) +
+        field(
+          "Tripulación",
+          "crew",
+          s.crew || "",
+          "number",
+          'min="1" max="5000" step="1"',
+        ) +
+        field(
+          "Fuente del dato",
+          "infoSource",
+          s.infoSource || "",
+          "text",
+          'maxlength="120" placeholder="Web de la naviera, ficha técnica…"',
+        ) +
+        `<p class="fineprint">IMO ${esc(s.imo || "no disponible")} · ${s.calls} escalas registradas en Palma.</p>`,
+      async (f) => {
+        const n = (k) => (f.get(k) ? Number(f.get(k)) : null);
+        await request("/api/cruises", {
+          type: "ship",
+          key: s.key,
+          line: f.get("line"),
+          capacityStandard: n("capacityStandard"),
+          capacityMax: n("capacityMax"),
+          crew: n("crew"),
+          infoSource: f.get("infoSource"),
+        });
+        await loadCruises();
+        toast("Ficha del barco guardada.");
+        return true;
+      },
+    );
+    return;
+  }
+  if (name === "cruiseSyncs") {
+    const r = await request("/api/cruises/syncs");
+    modal(
+      "Sincronizaciones con el puerto",
+      "Las últimas consultas: cuánto tardaron y qué trajeron.",
+      `<div class="table-scroll"><table class="report-table"><thead><tr><th>Cuándo</th><th>Tipo</th><th>Duración</th><th>Escalas</th><th>Nuevas</th><th>Cambiadas</th><th>Retiradas</th><th>Rechazadas</th><th>Resultado</th></tr></thead><tbody>${r.syncs.map((x) => `<tr><td>${esc(cruiseStamp(x.started_at))}</td><td>${esc(x.kind)}</td><td>${num(x.duration_ms / 1000)} s</td><td>${x.fetched}</td><td>${x.created}</td><td>${x.updated}</td><td>${x.withdrawn}</td><td>${x.rejected}</td><td>${esc(x.error || "Correcta")}${x.notes ? `<small class="muted">${esc(x.notes)}</small>` : ""}</td></tr>`).join("")}</tbody></table></div>`,
+      async () => true,
+      "Cerrar",
+    );
+    return;
+  }
+  if (name === "cruiseThresholds") {
+    const d = cruiseDash || (await request("/api/cruises"));
+    const t = d.thresholds;
+    modal(
+      "Umbrales del impacto potencial",
+      "Pasajeros declarados que coinciden a la vez en puerto. Por debajo del primero el día es Bajo. Ajústalos cuando conozcas cómo responde tu local.",
+      field(
+        "Medio a partir de",
+        "medium",
+        t.medium,
+        "number",
+        'min="1" max="100000" step="1" required',
+      ) +
+        field(
+          "Alto a partir de",
+          "high",
+          t.high,
+          "number",
+          'min="1" max="100000" step="1" required',
+        ) +
+        field(
+          "Muy alto a partir de",
+          "veryHigh",
+          t.veryHigh,
+          "number",
+          'min="1" max="100000" step="1" required',
+        ),
+      async (f) => {
+        cruiseDash = await request("/api/cruises", {
+          type: "thresholds",
+          medium: Number(f.get("medium")),
+          high: Number(f.get("high")),
+          veryHigh: Number(f.get("veryHigh")),
+        });
+        cruiseRange = null;
+        await loadCruises();
+        await reloadState();
+        toast("Umbrales guardados.");
+        return true;
+      },
+    );
     return;
   }
   if (name === "printPage") {
