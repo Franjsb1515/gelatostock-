@@ -37,4 +37,4 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 ## Pruebas y cierre de sesión
 - `npm test` · `npm run format:check` · `npm run typecheck` · `npm run package:win` · `npm run test:desktop` (usa el modelo real; tarda varios minutos; si falla en `page.screenshot: Timeout`, la pantalla del equipo está suspendida: repite con el equipo activo).
 - Cierre: informe nuevo en reports/ + CHANGELOG + TODO + entrada en docs/CONTINUIDAD.md + pruebas reales + ejecutable reconstruido si cambió src/ + commit + ZIP (work/make-zip.cjs) sin datos, credenciales, node_modules ni binarios. Conserva los informes anteriores. No marques nada como probado en Mac desde Windows.
-- Pendiente y prioridades: TODO.md. Siguiente acordado: Ventas y mermas II (por decidir con el usuario) y Compras y Mensajes II.
+- Pendiente y prioridades: TODO.md. Siguiente acordado: fase 1 del plan vigente; después, Compras y Mensajes II.
