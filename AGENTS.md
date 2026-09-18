@@ -12,6 +12,7 @@
 - No modificar pruebas únicamente para ocultar un fallo; explicar cualquier cambio de expectativa.
 - Después de cambiar src/, reconstruir el ejecutable si se entrega al usuario. No dejar fuente y binario desfasados sin advertirlo.
 - Al final de cada sesión actualizar TODO.md y CHANGELOG.md; crear un informe en reports/ con resumen, archivos, pruebas, limitaciones y siguiente paso. Usar scripts/new-session.cjs como plantilla, completándola manualmente.
+- CLAUDE.md lleva solo reglas vigentes y mapa (se carga entero en cada sesión: mantenlo corto). El detalle de cada versión va a docs/CONTINUIDAD.md; TODO.md lleva solo lo pendiente, por áreas; lo hecho vive en CHANGELOG.md.
 - Conservar informes previos. El script crea también un diff de cambios sin commit cuando Git está disponible; no incluye archivos nuevos sin seguimiento ni sustituye un commit.
 - No marcar tareas probadas en Mac desde una ejecución en Windows.
 

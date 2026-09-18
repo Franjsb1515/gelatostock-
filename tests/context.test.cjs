@@ -315,7 +315,8 @@ test("contexto: servicio con fuentes simuladas, caídas, año sin publicar y eve
       "el año sin publicar no se repregunta antes de 7 días salvo que falte el actual",
     );
     // Un CSV que cambió de formato no borra los festivos buenos.
-    const other = new ContextService(tmp("context-bad-"), {
+    const otherDir = tmp("context-bad-");
+    const other = new ContextService(otherDir, {
       weather,
       holidays,
       clock: () => now,
@@ -325,6 +326,7 @@ test("contexto: servicio con fuentes simuladas, caídas, año sin publicar y eve
     const bad = await other.syncHolidays(2026);
     assert.match(bad.error, /formato no reconocido/);
     other.close();
+    fs.rmSync(otherDir, { recursive: true, force: true });
     assert.equal(
       service.range("2026-06-24", "2026-06-24").days["2026-06-24"].holidays[0]
         .name,

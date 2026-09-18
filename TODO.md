@@ -1,127 +1,68 @@
-# TODO — estado del prototipo
+# TODO — estado real de 0.27.0
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.27.0.
+Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
-## Entregado y comprobado
+Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él · **[decidir]** hay que acordarlo antes.
 
-- [x] Código, dependencias, documentos y ejecutable dentro de D:/CARPETAPROYECTOS/APPGELATOSTOCK.
-- [x] Ventana de escritorio Windows con componentes incluidos.
-- [x] Inventario, conteo, búsqueda, categorías y alta de producto.
-- [x] Carrito, propuesta de reposición y pedidos por proveedor.
-- [x] Envío simulado y recepción parcial con conversión de presentaciones.
-- [x] Mensajes de demostración, prioridades, revisión y asociación de pedido.
-- [x] Persistencia local y copias/restauración validadas por pruebas.
-- [x] Archivo manual de imágenes con proveedor, fecha y reclasificación.
-- [x] Carpetas automáticas y fichas/datos por proveedor; recuperación de archivo derivado.
-- [ ] Abrir la carpeta del proveedor desde la app (hoy se muestra la ruta).
-- [x] Limpieza periódica configurable de actividad y conversaciones; retención de copias automáticas.
-- [x] Recetario protegido con contraseña local (pantalla y acciones; no cifra el disco).
-- [x] Historial de actividad separado de los informes de desarrollo.
-- [x] Pruebas de dominio y servidor; prueba del ejecutable con reinicio.
-- [x] Revisión visual de resumen, compras y mensajes.
-- [x] Instrucciones de continuidad y reportes por sesión.
+## 1. Siguiente, en este orden
 
-## Antes de usar como sistema real
+- [ ] [decidir] Ventas y mermas II: ventas por formato (cucurucho, tarrina, litro) e importes; mermas de ingredientes con los mismos motivos; objetivo de merma con aviso; proponer producción a partir de ventas medias por día de la semana.
+- [ ] [app] Compras y Mensajes II (objetivo principal del usuario: ese apartado al 100 %): sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic; catálogo y precios por proveedor desde listas de precios.
+- [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
+
+## 2. Depende de ti
 
 - [ ] Confirmar productos, proveedores, recetas, unidades y sistema de ventas reales.
-- [ ] Revisar arquitectura completa con Claude (pendiente core/, servidor y WhatsApp).
-- [x] Auditoría 0.8.1 de la entrega 0.8.0: parche/commit, pruebas, código de IA y documentos de continuidad.
-- [x] Migrar JSON a SQLite con adjuntos separados, operaciones transaccionales y migración probada.
-- [x] Editar productos y proveedores; entradas/salidas/mermas y ajustes con motivos y reversión explícita (unidad base protegida).
-- [x] Cancelar pedidos pendientes sin alterar stock.
-- [x] Núcleo TypeScript estricto, validación de contratos y 110 pruebas automatizadas.
-- [x] Prueba automática de corte brusco del proceso con base íntegra (tests/store.test.cjs).
-- [ ] Prueba de disco lleno y validación del corte en el equipo real.
-- [ ] Autenticación y permisos por persona si la app la usan varias personas (hoy: una contraseña opcional para el recetario).
-- [x] Identidad visual propia para la propuesta (paleta Mediterraneo, inicio arte + gelato, nombre y lugar editables).
-- [x] Sistema de diseño con auditoría automática de contraste, tamaños, cortes y foco por teclado (work/design-capture.cjs, docs/DISENO_SISTEMA.md).
+- [ ] Fichas de composición reales de tus ingredientes (el balance técnico usa las de demostración).
+- [ ] Mac: ejecutar docs/MAC.md en tu equipo y enviar la salida de scripts/measure-ai-memory.cjs. De ahí salen: ajustar descarga e hilos de la IA, adaptar la prueba de escritorio, nombre e icono del bundle y firma.
+- [ ] Documentos y mensajes reales autorizados (anonimizados) para medir OCR, clasificación, lectura de respuestas y chat. Hoy todos los corpus son sintéticos y escritos por la misma sesión que las reglas.
 - [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia).
-- [x] Mensajes: conversación por proveedor, respuestas rápidas por WhatsApp, «qué hacer ahora» y «Decidir y cerrar» (0.15.0).
-- [x] Pantalla «Guía» dentro de la app generada desde docs/GUIA_USO.md (0.15.0).
-- [ ] Probar la respuesta rápida con los números propios del usuario (el envío está cubierto con cliente simulado; el flujo real de pedidos ya se probó en 0.9.3).
-- [ ] Plantillas de respuesta editables por el usuario (hoy son fijas por categoría).
-- [x] Compra en webs (Makro u otras): lista copiable por proveedor y apertura de la web guardada; sin automatizar la compra (0.16.0).
-- [x] Auditoría 0.17.0, puntos 1–5, 9 y 10 (0.17.1): dist limpio, paquete podado, fechas locales, CSV seguro, rotación de registros, tuteo, README.
-- [x] Auditoría 0.17.0, punto 7: historial paginado (0.18.0).
-- [x] Auditoría 0.17.0, punto 8: copia secundaria y aviso (0.18.0).
-- [x] Auditoría 0.17.0, punto 11: views.js partido, pruebas de Recetario y «Abrir», auditoría visual ampliada (0.18.0).
-- [x] Respuesta directa desde el mensaje y envío de pedidos por lotes uno a uno (0.19.0).
-- [ ] Probar el lote con los números propios del usuario (la prueba usa cliente simulado).
-- [ ] Auditoría 0.17.0, punto 6: medir memoria de la IA en el Mac antes de ajustar descarga e hilos.
-- [x] Recetario (0.17.0): familia, elaboración, alérgenos, porcentajes y escala por kilos.
-- [x] Recetario: balance técnico con fichas de composición por ingrediente (0.20.0); faltan las fichas reales del usuario.
-- [x] Resumen semanal imprimible (0.20.0).
-- [x] Bloque 2: historial de precios con aviso de subida; conteo por zonas con recordatorio (0.21.0).
-- [ ] Precios: registrar también los cambios detectados en listas de precios (documentos) y mensajes «sube de precio» (hoy solo la ficha).
-- [x] Bloque 3: diálogo del sistema para carpetas; preparación Mac (0.22.0).
-- [ ] Mac: ejecutar docs/MAC.md en el equipo del usuario y enviar la salida de scripts/measure-ai-memory.cjs; adaptar la prueba de escritorio; nombre e icono del bundle; firma.
-- [x] Compras y Mensajes I (0.23.0): confirmaciones y fechas desde respuestas, acciones sobre el pedido desde el mensaje, seguimiento, plantilla, envío tras autorizar.
-- [x] Cruceros en Palma (0.24.0): registro de escalas desde los datos abiertos de la APB, pantalla por día, 14 días, rutas y aviso en Resumen.
-- [x] Cruceros como planificación (0.25.0): fuente oficial validada, registro SQLite con histórico desde 2014, panel, calendario, línea temporal, impacto potencial auditable, historial de cambios y ficha manual del barco.
-- [x] Contexto del día (0.26.0): clima previsto, festivos oficiales, eventos propios, ventas por nivel de impacto y restauración del registro de cruceros.
-- [ ] Planificación, siguiente: con meses de ventas, estudiar ventas frente a clima y festivos además del impacto (siempre como hechos, sin predicción hasta poder validarla); observaciones meteorológicas reales si se consigue una fuente abierta (AEMET exige clave propia del usuario); adaptar la app entera a ventanas estrechas.
-- [x] Cierre del día (0.27.0): vendido o lo que queda, motivo de merma, deshacer un cierre, historial por día, motivo y producto.
-- [ ] Ventas y mermas, siguiente (a confirmar con el usuario): ventas por formato (cucurucho, tarrina, litro) e importes; mermas de ingredientes con los mismos motivos; objetivo de merma con aviso; proponer producción a partir de ventas medias por día de la semana.
-- [ ] Compras y Mensajes II: propuesta de sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic (mensaje de recordatorio al proveedor); catálogo/precios por proveedor desde listas de precios; prueba real del ciclo completo con los números del usuario.
-- [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
-- [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
-- [ ] IA: chat con el modelo 0.6B sigue siendo lento (10–25 s); valorar respuestas por reglas para las preguntas frecuentes de la guía.
-- [ ] Empaquetar, firmar y probar en el Mac real del usuario (modelo y RAM por confirmar).
-- [ ] Firmar la distribución Windows y crear instaladores/actualizaciones seguras.
+- [ ] Makro u otro proveedor web: aplazado por ti el 2026-09-09, sin cuenta todavía. No avanzar hasta que lo pidas; la web se puede guardar en la ficha del proveedor.
 
-## Funciones siguientes
+## 3. Compras, mensajes y WhatsApp
 
-- [x] OCR local español en fotos para proponer proveedor y conservar texto.
-- [x] Identificación común por nombre/alias, NIF y teléfono; propuesta en mensaje de prueba.
-- [x] Archivo de documentos por proveedor (fotos y PDF) con propuesta de proveedor, tipo y pedido, y vínculo confirmado por la persona.
-- [ ] Leer el texto de los PDF (hoy solo se archivan) y extraer cantidades y fecha del documento con revisión.
-- [ ] Evaluar OCR con facturas reales autorizadas y hardware Mac.
-- [x] Modelo Qwen3 0.6B Q4 incluido y gestionado dentro de la app Windows; lecturas revisables.
-- [ ] Medir consumo y calidad en 8 GB/Mac real y con documentos autorizados representativos.
-- [x] Control de entregas con cantidades por línea, entregas abiertas/cerradas y recepción guiada.
-- [x] Texto original mostrado sin explicaciones inventadas, límites de entrada/salida, cancelación y endpoints autenticados para IA.
-- [x] Doble lectura con abstención, contraste de encabezados y comprobación limitada de importes en céntimos.
-- [x] Resultado anterior retirado al cambiar texto o modo.
-- [ ] Reducir abstenciones legítimas: proforma de prueba discrepó entre lecturas; conservar revisión hasta validar mejoras. 0.8.1 reconoce etiquetas IVA 21%/Total a pagar en la suma; falta corpus real.
-- [x] Prompt maestro v2 y directriz de mejora continua para cualquier IA que continúe.
-- [x] Chat de dudas local con guía fija y texto del editor; sin acceso a datos ni acciones.
-- [x] Línea base de clasificación con 11 casos sintéticos (10/11, sin errores aceptados); repetirla ante cualquier cambio de prompt o modelo.
-- [x] Comparativa de modelos para respuestas de proveedor (0.6B Q4 55/80, 1.7B Q8 36/80 frente a reglas 80/80): reglas como lectura principal; no cambiar de modelo sin repetir reports/ai-replies-exp-*.
-- [ ] Evaluar el chat con preguntas reales del usuario; medir respuestas incorrectas o inventadas y ajustar la guía.
-- [ ] Chat con contexto de inventario/pedidos: solo tras definir qué datos se exponen y con pruebas de fuga.
-- [ ] Sandbox real del trabajador de IA: hoy solo se desactivan módulos de red de Node, no el proceso nativo.
-- [ ] Evaluación independiente de razonamiento/precisión con corpus real autorizado; no inferir certeza de la coincidencia.
-- [x] Correcciones aprobadas de lecturas de mensajes, recordadas y aplicadas a mensajes casi iguales (Configuración → Lo que la app ha aprendido).
-- [ ] Memoria de equivalencias de productos por proveedor (códigos de albarán → producto).
-- [x] Diseño de WhatsApp con chats autorizados: docs/WHATSAPP_PROVEEDORES.md.
-- [x] Usuario elige prueba QR para WhatsApp normal/Business, con cambio de sesión.
-- [x] QR experimental, cuentas separadas, permisos por cuenta e historial de cambio de número.
-- [x] Copia de WhatsApp sin credenciales.
-- [x] Vinculación por QR y cambio de número validados por el usuario con dos números propios (2026-09-08).
-- [x] Envío real de pedidos por WhatsApp con vista previa, confirmación y un envío por pedido; probado con cliente simulado.
-- [x] Envío y recepción reales comprobados con los dos números del usuario (2026-09-08 23:24–23:25): mensaje entregado y «Ok» importado.
-- [x] Respuestas de WhatsApp en la bandeja principal, vinculadas al pedido enviado a ese número (si es único) y entrega prevista en el pedido.
-- [x] Copia automática diaria con retención; errores no controlados registrados en archivo.
-- [x] Tipo de documento confirmado por la persona en cada foto (memoria de decisiones).
-- [ ] Memoria de equivalencias por proveedor (código de albarán → producto) consultada al leer documentos.
-- [x] Implementar recepción experimental de WhatsApp por eventos; QR real verificado. Envío añadido en 0.9.1 con confirmación explícita.
-- [x] Recuperación del historial reciente de chats autorizados al conectar y a demanda (solo texto); reconexión automática.
-- [ ] Recuperar adjuntos del historial y mensajes más antiguos que los cargados por WhatsApp Web.
-- [x] Mensajes llegados con la app cerrada: se recuperan del historial reciente al conectar (verificado con la sesión real).
-- [x] Reglas de relevancia por referencia exacta del mismo proveedor, independientes de prioridad; correcciones con motivo.
-- [x] Buscar mensajes sin tildes y filtrar por proveedor/estado.
-- [ ] Validar clasificación con mensajes reales anonimizados y contexto lingüístico más amplio.
-- [x] Notificaciones nativas de Windows al recibir un WhatsApp autorizado; conexión automática al abrir opcional.
-- [ ] Notificaciones para mensajes de demostración y para entregas previstas; opción de silenciarlas.
-- [ ] Integración comprobada con Makro España u otro proveedor real.
-- [x] Recetas y producción con consumo estimado aprobado por la persona, producto terminado y hoja diaria (docs/PRODUCCION_Y_RECETAS.md).
-- [x] Ventas y mermas diarias de producto terminado (Producción → Ventas y mermas del día).
+- [ ] Plantillas de respuesta editables (hoy son fijas por categoría).
+- [ ] Precios: registrar también los cambios detectados en listas de precios y en mensajes «sube de precio» (hoy solo al editar la ficha).
+- [ ] Lectura automática de respuestas de WhatsApp al importarlas, con aviso (hoy las reglas se aplican al abrir la bandeja).
+- [ ] Notificaciones para entregas previstas y mensajes de demostración; opción de silenciarlas.
+- [ ] Recuperar adjuntos del historial y mensajes más antiguos que los que carga WhatsApp Web.
+- [ ] Memoria de equivalencias por proveedor (código de albarán → producto), consultada al leer documentos.
+- [ ] Abrir la carpeta del proveedor desde la app (hoy se muestra la ruta).
+
+## 4. Documentos e IA local
+
+- [ ] Leer el texto de los PDF (hoy solo se archivan) y extraer cantidades y fecha con revisión.
+- [ ] Reducir abstenciones legítimas (la proforma de prueba discrepa entre lecturas); no tocar prompts sin repetir la evaluación de 11 casos.
+- [ ] Chat con contexto de inventario y pedidos: solo tras definir qué datos se exponen y con pruebas de fuga.
+- [ ] Sandbox real del trabajador de IA: hoy se desactivan módulos de red de Node, no el proceso nativo.
+
+## 5. Producción, ventas y planificación
+
 - [ ] Lotes y vencimientos; rendimientos por receta.
-- [x] Lectura por reglas de respuestas de proveedores (categoría, fecha resuelta, qué leer) y segunda lectura opcional con IA que solo anota.
-- [ ] Lectura automática de respuestas de WhatsApp importadas y aviso al recibirlas; hoy las reglas se aplican a los mensajes de la bandeja.
-- [ ] Validar categorías y fechas con respuestas reales de proveedores (corpus sintético de 120 mensajes en pruebas, 10 categorías; estimación de generalización en escenarios nuevos ~50 % antes de afinar, con el resto marcado para leer).
-- [ ] Sincronización entre lugares con resolución de conflictos y único envío por pedido.
+- [ ] Con meses de ventas registradas: ventas frente a clima y festivos además del impacto de cruceros, siempre como hechos y sin predicción hasta poder validarla.
+- [ ] Observaciones meteorológicas reales si aparece una fuente abierta (AEMET exige una clave propia del usuario).
+
+## 6. Antes de usarla como sistema real
+
+- [ ] Firmar la distribución de Windows y crear instalador y actualizaciones seguras.
+- [ ] Empaquetar, firmar y probar en el Mac real.
+- [ ] Prueba de disco lleno y validación del corte de corriente en el equipo real.
+- [ ] Autenticación y permisos por persona si la usan varias (hoy: una contraseña opcional para el recetario).
+- [ ] Revisión de arquitectura completa de core/, servidor y WhatsApp con ojos nuevos.
+- [ ] Adaptar la app entera a ventanas estrechas (la barra lateral no se pliega).
+- [ ] Sincronización entre lugares con resolución de conflictos y un único envío por pedido.
 
 ## Límites conocidos
 
-Una instancia de escritorio por perfil. SQLite detecta conflictos entre conexiones; no hay sincronización distribuida. Exportación JSON en memoria hasta 100 MB; fotos hasta 5 MB. Falta paginar el estado y probar gran volumen. Sin pagos ni sincronización; WhatsApp Web experimental requiere internet. El clasificador por palabras puede equivocarse: las etiquetas son revisables y no ejecutan compras. Las fotos no cambian stock.
+Una instancia de escritorio por perfil. SQLite detecta conflictos entre conexiones; no hay sincronización distribuida. Exportación JSON en memoria hasta 100 MB; fotos hasta 5 MB. El estado se envía recortado a la interfaz (300 movimientos y actividades, el resto bajo demanda), pero no se ha probado gran volumen. Sin pagos. WhatsApp Web es experimental y requiere internet; cruceros, clima y festivos también, y se apagan con un interruptor. Las lecturas por reglas y por modelo pueden equivocarse: son revisables y nunca ejecutan compras ni cambian stock. Las fotos no cambian stock.
+
+## Hecho, en una línea por bloque
+
+Detalle y pruebas de cada uno en CHANGELOG.md y en reports/.
+
+- 0.1–0.7: inventario, carrito, pedidos por proveedor, recepción parcial, bandeja de mensajes, fotos por proveedor con OCR, WhatsApp por QR, control de entregas, IA local Qwen3 0.6B.
+- 0.8–0.9: doble lectura con abstención, chat de dudas, SQLite con migración, recetas y producción, lectura de respuestas por reglas, envío real por WhatsApp con confirmación, diagnóstico del canal.
+- 0.10–0.14: ventas y mermas, avisos, historial, CSV, recetario protegido, limpieza periódica, aprendizaje por correcciones, identidad visual, documentos por proveedor, sistema de diseño.
+- 0.15–0.19: conversación por proveedor, decisiones, guía en la app, botones más y menos, compra en webs, IA con reglas primero, recetario completo, auditoría general y sus correcciones, copia secundaria, historial paginado, respuesta directa y envío por lotes, arte y gelato en el chat.
+- 0.20–0.23: balance técnico, resumen semanal, historial de precios, conteo por zonas, carpetas del sistema, preparación para Mac, Compras y Mensajes I.
+- 0.24–0.27: cruceros en Palma con datos oficiales e histórico desde 2014, impacto potencial auditable, clima, festivos y eventos, ventas por nivel de impacto, restauración del registro, cierre del día con motivos de merma.

@@ -1,5 +1,9 @@
 # Registro de parches y sesiones
 
+## Orden de documentos — 2026-09-18 · sesión 041 (sin cambio de versión)
+
+Sin cambios en la aplicación. TODO.md reescrito: solo lo pendiente (34 puntos sin duplicados, frente a 38 con tres repetidos y dos ya resueltos), por áreas y marcando qué depende del usuario; lo hecho, en una línea por bloque. CLAUDE.md reducido de 11,5 KB a 5,8 KB (reglas vigentes, mapa y garantías por módulo); los puntos de continuidad pasan íntegros a docs/CONTINUIDAD.md. README.md reescrito para describir la app de hoy; sus notas por versión pasan íntegras a docs/HISTORIA_VERSIONES.md. Corregidos dos datos desfasados: «pedidos todavía simulados» y «falta paginar el estado». work/: eliminadas 35 carpetas temporales de pruebas y capturas (149 MB) y archivados los guiones de un solo uso en work/archivo. tests/context.test.cjs ya no deja una carpeta temporal sin borrar.
+
 ## 0.27.0 — 2026-09-18 · sesión 040
 
 Cierre del día. La acción dailySales admite, por línea, lo vendido o lo que queda (remaining: la app calcula vendido = stock − merma − queda) y un motivo de merma de lista cerrada (core/sales.ts: fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, degustación o invitación, otro), que viaja en el texto del movimiento. Validación previa con mensajes claros (queda más de lo que había; vendido y merma superan el stock; las dos cosas a la vez). Acción nueva undoDailySales: compensa todas las ventas y mermas vivas de un día de negocio y conserva los originales. salesHistory y GET /api/sales: por día de negocio, totales, porcentaje de merma, mermas por motivo y por producto, sin contar lo deshecho. Interfaz nueva src/ui/views-sales.js: dos formas de apuntar, cálculo en vivo por fila, historial de 14 días a 12 meses, «Deshacer» y pista de cruceros para mañana.
