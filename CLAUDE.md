@@ -11,6 +11,13 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Nunca borres datos reales del usuario para probar (usa carpetas temporales en work/). Nunca cambies una prueba solo para que pase; explica cualquier cambio de expectativa.
 - Herramienta: los heredoc y `node -e` pierden las barras invertidas de las expresiones regulares. Para código con `\d`, `\.` o `\p{…}` usa Write o Edit. Los parches de sesión, de una sola pasada y con guardia de «ya aplicado».
 
+## Sesiones ligeras
+- Un encargo grande del usuario se condensa una vez en `docs/PLAN_*.md` (decisiones, fases, preguntas abiertas) y el original se archiva en `docs/origen/`. Después se trabaja desde el plan: no releas el original.
+- Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
+- Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
+- Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
+- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (siguiente: fase 1).
+
 ## WhatsApp (seguridad)
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
 

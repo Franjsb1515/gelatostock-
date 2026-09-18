@@ -1,5 +1,9 @@
 # Registro de parches y sesiones
 
+## Plan de producción, ventas, mermas y caja — 2026-09-18 · sesión 042 (sin cambio de versión)
+
+Sin cambios en la aplicación. El prompt maestro del usuario (541 líneas) queda archivado íntegro en docs/origen/ y condensado en docs/PLAN_PRODUCCION_VENTAS_CAJA.md: diez principios, tabla de decisiones contra la app real (mantener, mejorar, añadir, integrar, posponer, no añadir), cinco preguntas que solo puede responder el usuario, siete fases y el mapa de sus 18 criterios de aceptación. CLAUDE.md gana la sección «Sesiones ligeras» (condensar encargos grandes en un plan, una fase por sesión, un cierre por fase, leer solo lo necesario).
+
 ## Orden de documentos — 2026-09-18 · sesión 041 (sin cambio de versión)
 
 Sin cambios en la aplicación. TODO.md reescrito: solo lo pendiente (34 puntos sin duplicados, frente a 38 con tres repetidos y dos ya resueltos), por áreas y marcando qué depende del usuario; lo hecho, en una línea por bloque. CLAUDE.md reducido de 11,5 KB a 5,8 KB (reglas vigentes, mapa y garantías por módulo); los puntos de continuidad pasan íntegros a docs/CONTINUIDAD.md. README.md reescrito para describir la app de hoy; sus notas por versión pasan íntegras a docs/HISTORIA_VERSIONES.md. Corregidos dos datos desfasados: «pedidos todavía simulados» y «falta paginar el estado». work/: eliminadas 35 carpetas temporales de pruebas y capturas (149 MB) y archivados los guiones de un solo uso en work/archivo. tests/context.test.cjs ya no deja una carpeta temporal sin borrar.
