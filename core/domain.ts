@@ -33,7 +33,13 @@ export {
 } from "./orders";
 import { defaultOrderTemplate, renderOrderTemplate } from "./orders";
 import { zoneLabels } from "./inventory";
-import { wasteReasonText, wasteReasonLabels, closeMovements } from "./sales";
+import {
+  wasteReasonText,
+  wasteReasonLabels,
+  closeMovements,
+  closeLineOf,
+  undoneMovements,
+} from "./sales";
 export {
   salesHistory,
   wasteReasons,
@@ -329,7 +335,9 @@ export function validate(input: unknown): State {
     if (m.production)
       ensure(
         s.productions.some(
-          (p) => p.id === m.production && p.status === "applied",
+          // An annulled production keeps its original movements (compensated, never erased).
+          (p) =>
+            p.id === m.production && (p.status === "applied" || p.voidedAt),
         ),
         "Producción del movimiento inexistente.",
       );
@@ -970,6 +978,100 @@ export function apply(state: State, input: unknown): State {
           },
         );
       note = `Cierre del ${a.date} deshecho: ${moves.length} movimientos compensados; el stock vuelve a su sitio.`;
+      break;
+    }
+    case "voidProduction": {
+      const p = item(s.productions, a.id);
+      ensure(
+        p.status === "applied",
+        "Solo se anula una producción aprobada. Una propuesta se descarta.",
+      );
+      const undone = undoneMovements(s);
+      const moves = s.movements.filter(
+        (m) => m.production === p.id && !m.reverses && !undone.has(m.id),
+      );
+      // The finished product must still be there: what was already sold or wasted blocks it.
+      for (const m of moves.filter((x) => x.kind === "output")) {
+        const prod = item(s.products, m.product);
+        ensure(
+          prod.stock >= m.delta,
+          `No se puede anular: de esos ${m.delta} ${prod.unit} de ${prod.name} ya solo quedan ${prod.stock}. Parte se vendió o se tiró. Deshaz antes el cierre de ese día, o corrige la cantidad con una producción nueva.`,
+        );
+      }
+      const text = `Producción de ${p.quantity} kg de ${p.name} (${p.date}) anulada${a.reason ? ": " + a.reason : ""}`;
+      // Finished product out first, ingredients back after: no step leaves an impossible stock.
+      for (const m of [
+        ...moves.filter((x) => x.kind === "output"),
+        ...moves.filter((x) => x.kind !== "output"),
+      ])
+        move(s, m.product, -m.delta, "reversal", text, { reverses: m.id });
+      p.status = "discarded";
+      p.voidedAt = now();
+      if (a.reason) p.voidReason = a.reason;
+      if (a.redo)
+        s.productions.unshift({
+          id: randomUUID(),
+          recipe: p.recipe,
+          name: p.name,
+          quantity: p.quantity,
+          date: p.date,
+          at: now(),
+          status: "proposed",
+          lines: p.lines.map((l) => ({ ...l })),
+          ...(p.output ? { output: { ...p.output } } : {}),
+          note: p.note,
+        });
+      note =
+        `${text}. Los ingredientes vuelven al stock y el producto terminado sale; los movimientos originales se conservan.` +
+        (a.redo
+          ? " Queda una propuesta igual para corregirla y aprobarla de nuevo."
+          : "");
+      break;
+    }
+    case "undoCloseLine":
+    case "editCloseLine": {
+      const m = item(s.movements, a.id);
+      const line = closeLineOf(m);
+      ensure(
+        line && !m.reverses && !undoneMovements(s).has(m.id),
+        "Esa línea no pertenece a un cierre vigente.",
+      );
+      const prod = item(s.products, m.product);
+      const before = Math.abs(m.delta);
+      const what = line.kind === "sale" ? "Venta" : "Merma";
+      if (a.type === "undoCloseLine") {
+        move(
+          s,
+          m.product,
+          -m.delta,
+          "reversal",
+          `${what} del ${line.date} eliminada`,
+          { reverses: m.id },
+        );
+        note = `${what} eliminada: ${prod.name} ${before} ${prod.unit} del ${line.date}. Stock disponible: ${prod.stock} ${prod.unit}.`;
+        break;
+      }
+      ensure(
+        a.quantity <= round(prod.stock + before),
+        `${prod.name}: ${a.quantity} ${prod.unit} es más de lo que había (${round(prod.stock + before)} ${prod.unit}).`,
+      );
+      move(
+        s,
+        m.product,
+        -m.delta,
+        "reversal",
+        `${what} del ${line.date} corregida`,
+        { reverses: m.id },
+      );
+      // Same business day and, unless a new reason is given, the same reason as before.
+      const reason =
+        line.kind === "sale"
+          ? m.reason
+          : a.wasteReason
+            ? wasteReasonText(line.date, a.wasteReason)
+            : m.reason;
+      move(s, m.product, -a.quantity, m.kind, reason);
+      note = `${what} corregida: ${prod.name} de ${before} a ${a.quantity} ${prod.unit} (${line.date}). Stock disponible: ${prod.stock} ${prod.unit}.`;
       break;
     }
     case "discardProduction": {

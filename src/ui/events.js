@@ -108,6 +108,31 @@ document.addEventListener("input", (e) => {
   if (e.target.closest?.("[data-sales]")) updateSalesSummary();
 });
 document.addEventListener("change", async (e) => {
+  if (e.target.id === "sales-unit") {
+    salesUnit = e.target.value === "g" ? "g" : "kg";
+    try {
+      localStorage.setItem("gelato-sales-unit", salesUnit);
+    } catch {
+      // The choice simply does not persist.
+    }
+    render();
+    return;
+  }
+  if (e.target.id === "day-change-hour") {
+    try {
+      applyEnvelope(
+        await request("/api/maintenance", {
+          type: "dayChange",
+          hour: Number(e.target.value),
+        }),
+      );
+      render();
+      toast(`El día de negocio cambia a las ${dayChangeHour}:00.`);
+    } catch (err) {
+      toast(err.message);
+    }
+    return;
+  }
   if (e.target.id === "sales-days") {
     salesDays = Number(e.target.value) || 30;
     salesData = null;

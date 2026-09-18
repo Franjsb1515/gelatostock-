@@ -114,7 +114,7 @@ function production() {
         : '<div class="empty compact">No hay producciones pendientes. Registra una producción para ver el consumo estimado.</div>'
     }</section><section class="panel"><div class="panel-heading"><div><h2>Hoja diaria de producción</h2><p>Kilos producidos por día y por gelato, con el consumo aprobado.</p></div></div>${
       dates.length
-        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th></tr></thead><tbody>${dates
+        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th><th></th></tr></thead><tbody>${dates
             .map((d) =>
               byDate[d]
                 .map(
@@ -124,7 +124,7 @@ function production() {
                         .filter((l) => l.quantity)
                         .map(lineText)
                         .join(", ") || "Sin consumo"
-                    }</td></tr>`,
+                    }</td><td class="row-tools"><button class="text-link" data-action="fixProduction" data-id="${esc(p.id)}">Corregir</button> <button class="text-link" data-action="voidProduction" data-id="${esc(p.id)}">Anular</button></td></tr>`,
                 )
                 .join(""),
             )

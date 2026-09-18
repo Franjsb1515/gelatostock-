@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.28.0 — 2026-09-18 · sesión 043 · fase 1 del plan de producción y ventas
+
+Corregir sin miedo. Una producción aprobada se puede anular (los ingredientes vuelven, el producto terminado sale, los movimientos originales se conservan) o corregir (se anula y queda una propuesta igual para aprobarla bien); si parte ya se vendió o se tiró, la app lo impide y dice qué deshacer antes. Cada línea de un cierre (una venta o una merma) se corrige o se elimina por separado, con el stock y los totales del día recalculados desde la única fuente, los movimientos. Pesos en kilos o en gramos. Día de negocio con hora de cambio configurable (por defecto 5:00) para quien cierra de madrugada. Frases humanas tras cada corrección («Merma corregida: … de 0,25 a 0,15 kg. Stock disponible: …»). Los botones con aspecto de enlace dejan de verse como botones del sistema en toda la app.
+
+Pruebas: 156. Informe reports/2026-09-18T21-42-03-735Z-fase-1-corregir-sin-miedo.md.
+
 ## Plan de producción, ventas, mermas y caja — 2026-09-18 · sesión 042 (sin cambio de versión)
 
 Sin cambios en la aplicación. El prompt maestro del usuario (541 líneas) queda archivado íntegro en docs/origen/ y condensado en docs/PLAN_PRODUCCION_VENTAS_CAJA.md: diez principios, tabla de decisiones contra la app real (mantener, mejorar, añadir, integrar, posponer, no añadir), cinco preguntas que solo puede responder el usuario, siete fases y el mapa de sus 18 criterios de aceptación. CLAUDE.md gana la sección «Sesiones ligeras» (condensar encargos grandes en un plan, una fase por sesión, un cierre por fase, leer solo lo necesario).

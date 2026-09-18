@@ -248,7 +248,7 @@ async function action(name, el) {
       toast("Crea primero una receta.");
       return;
     }
-    const today = todayLocal();
+    const today = businessToday();
     modal(
       "Registrar producción",
       "La app calcula el consumo por receta. Nada cambia hasta que apruebes la propuesta.",
@@ -333,6 +333,100 @@ async function action(name, el) {
       // The choice simply does not persist.
     }
     render();
+    return;
+  }
+  if (name === "voidProduction" || name === "fixProduction") {
+    const p = state.productions.find((x) => x.id === el.dataset.id);
+    const fix = name === "fixProduction";
+    modal(
+      (fix ? "Corregir la producción de " : "Anular la producción de ") +
+        p.name,
+      fix
+        ? `Se anula la producción de ${num(p.quantity)} kg del ${date(p.date + "T12:00:00Z")} y queda una propuesta igual para que cambies lo que esté mal y la apruebes de nuevo. Los ingredientes vuelven al stock mientras tanto.`
+        : `Los ingredientes vuelven al stock y los ${num(p.output?.quantity ?? p.quantity)} kg de producto terminado salen. Úsalo si se registró dos veces o por error. Los movimientos originales se conservan en Actividad.`,
+      field(
+        "Motivo (opcional)",
+        "reason",
+        "",
+        "text",
+        'maxlength="200" placeholder="Duplicada, peso mal apuntado…"',
+      ),
+      async (f) => {
+        await mutate(
+          {
+            type: "voidProduction",
+            id: p.id,
+            reason: f.get("reason"),
+            redo: fix,
+          },
+          fix
+            ? "Producción anulada. Corrige la propuesta y apruébala."
+            : "Producción anulada. El stock volvió a su sitio.",
+        );
+        salesData = null;
+        render();
+        return true;
+      },
+      fix ? "Anular y corregir" : "Anular producción",
+    );
+    return;
+  }
+  if (name === "undoCloseLine") {
+    await mutate(
+      { type: "undoCloseLine", id: el.dataset.id },
+      "Línea eliminada. El stock volvió a su sitio.",
+    );
+    salesData = null;
+    render();
+    return;
+  }
+  if (name === "editCloseLine") {
+    const day = salesData?.days.find((d) => d.date === el.dataset.date);
+    const line = day?.lines.find((l) => l.id === el.dataset.id);
+    if (!line) return;
+    const shown =
+      salesUnit === "g" ? Math.round(line.quantity * 1000) : line.quantity;
+    modal(
+      `Corregir ${line.kind === "sale" ? "la venta" : "la merma"} de ${line.name}`,
+      `Día ${el.dataset.date}. Escribe el peso correcto en ${salesUnit === "g" ? "gramos" : "kilos"}; la app compensa la línea anterior y recalcula el stock y el día.`,
+      field(
+        "Peso correcto (" + salesUnit + ")",
+        "quantity",
+        shown,
+        "number",
+        unitAttrs().replace(
+          'min="0"',
+          salesUnit === "g" ? 'min="1"' : 'min="0.001"',
+        ) + " required",
+      ) +
+        (line.kind === "waste"
+          ? select(
+              "Motivo de la merma",
+              "wasteReason",
+              [
+                ["", "Dejar el que tenía: " + line.reason],
+                ...Object.entries(salesData.reasons),
+              ],
+              "",
+            )
+          : ""),
+      async (f) => {
+        await mutate(
+          {
+            type: "editCloseLine",
+            id: line.id,
+            quantity: toKg(Number(f.get("quantity"))),
+            ...(f.get("wasteReason")
+              ? { wasteReason: f.get("wasteReason") }
+              : {}),
+          },
+          "Línea corregida. Stock y día recalculados.",
+        );
+        salesData = null;
+        render();
+        return true;
+      },
+    );
     return;
   }
   if (name === "undoDailySales") {

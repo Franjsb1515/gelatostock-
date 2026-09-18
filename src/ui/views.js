@@ -243,7 +243,16 @@ function settings() {
       )
       .join(
         "",
-      )}</select></label><div class="setting-actions">${btn("Limpiar ahora", "purgeNow", "secondary", retentionDays ? "" : "disabled")}</div><h3 class="setting-subtitle">Recordatorio de conteo</h3><p class="fineprint">Resumen avisa cuando una zona lleva más días sin contar por completo.</p><label class="field">Contar cada<select id="count-days">${[
+      )}</select></label><div class="setting-actions">${btn("Limpiar ahora", "purgeNow", "secondary", retentionDays ? "" : "disabled")}</div><h3 class="setting-subtitle">Día de negocio</h3><p class="fineprint">Si cierras de madrugada, lo que apuntes antes de esta hora cuenta para el día anterior: abres el viernes y cierras el sábado a las 2:00, y sigue siendo viernes.</p><label class="field short">El día cambia a las<select id="day-change-hour">${[
+      0, 1, 2, 3, 4, 5, 6, 7, 8,
+    ]
+      .map(
+        (h) =>
+          `<option value="${h}" ${dayChangeHour === h ? "selected" : ""}>${h}:00${h === 0 ? " (medianoche)" : ""}</option>`,
+      )
+      .join(
+        "",
+      )}</select></label><h3 class="setting-subtitle">Recordatorio de conteo</h3><p class="fineprint">Resumen avisa cuando una zona lleva más días sin contar por completo.</p><label class="field">Contar cada<select id="count-days">${[
       [0, "Sin recordatorio"],
       [3, "3 días"],
       [7, "7 días (semanal)"],

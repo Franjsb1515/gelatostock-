@@ -439,7 +439,7 @@ const assert = require("node:assert/strict");
       .click();
     await waitStock(chocolateAfter - 1.5);
     await window
-      .getByRole("cell", { name: "Textura o cristalización" })
+      .getByRole("cell", { name: "Textura o cristalización", exact: true })
       .waitFor();
     // Deshacer el cierre devuelve el stock; luego se cierra apuntando lo vendido.
     await window
@@ -459,6 +459,26 @@ const assert = require("node:assert/strict");
       .getByRole("button", { name: "Registrar cierre", exact: true })
       .click();
     await waitStock(chocolateAfter - 1.5);
+    // Corregir una línea suelta en gramos (la balanza marcaba 400 g, no 500 g) y volver a dejarla.
+    await window.locator("#sales-unit").selectOption("g");
+    await window.locator('[data-action="editCloseLine"]').last().waitFor();
+    const fixWaste = async (grams, expected) => {
+      await window
+        .locator(
+          'tr.close-line:has-text("merma") [data-action="editCloseLine"]',
+        )
+        .first()
+        .click();
+      await window.locator('#modal input[name="quantity"]').fill(String(grams));
+      await window.locator('#modal button[type="submit"]').click();
+      await waitStock(expected);
+    };
+    await fixWaste(400, Math.round((chocolateAfter - 1.4) * 1000) / 1000);
+    await fixWaste(500, chocolateAfter - 1.5);
+    await window.locator("#sales-unit").selectOption("kg");
+    console.log(
+      "PASS: una merma se corrige en gramos (500 g a 400 g y vuelta) y el stock se recalcula solo.",
+    );
     console.log(
       "PASS: cierre del día pesando lo que queda (vendido calculado 1 kg, merma 0,5 kg con motivo), deshecho y repetido apuntando lo vendido.",
     );

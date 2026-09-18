@@ -4032,3 +4032,45 @@ dialog::backdrop {
 [data-sale-reason] {
   min-width: 200px;
 }
+.sales-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+}
+.row-tools {
+  white-space: nowrap;
+  text-align: right;
+}
+tr.close-line td {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  border-top: 0;
+}
+tr.close-line td:first-child {
+  padding-left: 22px;
+}
+tr.close-line small {
+  display: inline;
+  margin-left: 6px;
+  color: var(--ink-muted);
+}
+/* Link-like buttons: a <button class="text-link"> must not look like a system button. */
+button.text-link {
+  display: inline-flex;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+button.text-link:hover,
+button.text-link:focus-visible {
+  background: var(--pistacho-suave);
+  color: var(--pistacho-oscuro);
+}
+.sales-body .report-grid > section.sales-by-day {
+  grid-column: 1 / -1;
+}

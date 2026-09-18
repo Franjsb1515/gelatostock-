@@ -194,6 +194,9 @@ const productionSchema = z.object({
   lines: z.array(z.object({ product: idSchema, quantity })).max(100),
   output: z.object({ product: idSchema, quantity }).optional(),
   note: z.string().max(500).default(""),
+  // An applied production that was annulled: its movements were compensated, never erased.
+  voidedAt: at.optional(),
+  voidReason: z.string().max(200).optional(),
 });
 export const documentTypes = z.enum([
   "factura",
@@ -498,6 +501,23 @@ export const actionSchema = z.intersection(
         .max(500),
     }),
     z.object({ type: z.literal("undoDailySales"), date: documentDate }),
+    // Annul an applied production; with redo, a new proposal with the same data is left to fix.
+    z.object({
+      type: z.literal("voidProduction"),
+      id: idSchema,
+      reason: z.string().max(200).default(""),
+      redo: z.boolean().default(false),
+    }),
+    // One line of a day close (a sale or a waste): remove it, or change its weight and reason.
+    z.object({ type: z.literal("undoCloseLine"), id: idSchema }),
+    z.object({
+      type: z.literal("editCloseLine"),
+      id: idSchema,
+      quantity: quantity.refine((n) => n > 0),
+      wasteReason: z
+        .enum(["expiry", "texture", "display", "accident", "tasting", "other"])
+        .optional(),
+    }),
     z.object({
       type: z.literal("photoType"),
       id: idSchema,

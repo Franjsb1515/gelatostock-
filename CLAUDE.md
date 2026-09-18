@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.27.0
+# Entrada para Claude · entrega vigente 0.28.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -16,7 +16,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
-- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (siguiente: fase 1).
+- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (hecha la fase 1; siguiente: fase 2).
 
 ## WhatsApp (seguridad)
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
@@ -37,4 +37,4 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 ## Pruebas y cierre de sesión
 - `npm test` · `npm run format:check` · `npm run typecheck` · `npm run package:win` · `npm run test:desktop` (usa el modelo real; tarda varios minutos; si falla en `page.screenshot: Timeout`, la pantalla del equipo está suspendida: repite con el equipo activo).
 - Cierre: informe nuevo en reports/ + CHANGELOG + TODO + entrada en docs/CONTINUIDAD.md + pruebas reales + ejecutable reconstruido si cambió src/ + commit + ZIP (work/make-zip.cjs) sin datos, credenciales, node_modules ni binarios. Conserva los informes anteriores. No marques nada como probado en Mac desde Windows.
-- Pendiente y prioridades: TODO.md. Siguiente acordado: fase 1 del plan vigente; después, Compras y Mensajes II.
+- Pendiente y prioridades: TODO.md. Siguiente acordado: fase 2 del plan vigente; después, Compras y Mensajes II.

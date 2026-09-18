@@ -9,6 +9,7 @@ let appVersion = "",
   replyDrafts = {},
   alerts = null,
   countDays = 7,
+  dayChangeHour = 5,
   orderTemplate = "",
   cruiseInfo = null,
   weeklyData = null,
@@ -59,6 +60,11 @@ const money = (n) =>
 // Today's calendar date in local time (never toISOString, which is UTC).
 const todayLocal = () => {
   const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+// Business day: before the change hour (05:00 by default) the shop is still on yesterday.
+const businessToday = () => {
+  const d = new Date(Date.now() - dayChangeHour * 3600000);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 const num = (n) =>
@@ -206,6 +212,7 @@ function applyEnvelope(data) {
   if (data.history) historyInfo = data.history;
   if (data.retentionDays !== undefined) retentionDays = data.retentionDays;
   if (data.countDays !== undefined) countDays = data.countDays;
+  if (data.dayChangeHour !== undefined) dayChangeHour = data.dayChangeHour;
   if (data.orderTemplate !== undefined) orderTemplate = data.orderTemplate;
   if (data.alerts) alerts = data.alerts;
   if (data.cruises) cruiseInfo = data.cruises;

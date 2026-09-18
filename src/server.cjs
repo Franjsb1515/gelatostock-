@@ -165,7 +165,13 @@ function createApp({
     "produce",
     "applyProduction",
     "discardProduction",
+    "voidProduction",
   ]);
+  // Business day: a shop that closes at 2:00 is still living «yesterday» until this hour.
+  const dayChangeHour = () => {
+    const v = Number(store.setting("day_change_hour"));
+    return Number.isInteger(v) && v >= 0 && v <= 8 ? v : 5;
+  };
   // Weekly (or N days) cleanup of activity notes and WhatsApp conversations; movements stay.
   const retentionDays = () => Number(store.setting("retention_days") || 0);
   // Guided counts: a zone is due when its oldest count is older than this (0 = off).
@@ -273,6 +279,7 @@ function createApp({
     lock: lockInfo(),
     retentionDays: retentionDays(),
     countDays: countDays(),
+    dayChangeHour: dayChangeHour(),
     orderTemplate: orderTemplate(),
     cruises: cruiseInfo(),
     alerts: {
@@ -904,6 +911,14 @@ function createApp({
           }
           if (data.type === "cruises") {
             store.setSetting("cruises_off", data.enabled ? undefined : "1");
+            json(200, envelope(store.load()));
+            return;
+          }
+          if (data.type === "dayChange") {
+            const hour = Number(data.hour);
+            if (!Number.isInteger(hour) || hour < 0 || hour > 8)
+              throw Error("Elige una hora entre las 0:00 y las 8:00.");
+            store.setSetting("day_change_hour", String(hour));
             json(200, envelope(store.load()));
             return;
           }
