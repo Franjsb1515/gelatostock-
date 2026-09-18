@@ -21,6 +21,12 @@ const { appendLog } = require("./logs.cjs");
 const { csvCell } = require("./csv.cjs");
 const { CruiseService } = require("./cruises/service.cjs");
 const { defaultThresholds } = require("../build/cruises.js");
+const { ContextService } = require("./context/service.cjs");
+const {
+  salesByImpact,
+  dailySalesKg,
+  MIN_DAYS_PER_LEVEL,
+} = require("../build/context.js");
 const version = require("../package.json").version;
 const { Store } = require("../build/store.js");
 function createApp({
@@ -32,6 +38,8 @@ function createApp({
   batchDelayMs = Number(process.env.GELATO_BATCH_DELAY_MS) || 4000,
   // Cruise source adapter: injectable for tests; the automatic sync never runs under node:test.
   cruiseProvider,
+  // Weather and holiday adapters, injectable for tests ({ weather, holidays }).
+  contextProviders,
   cruiseAuto = !process.env.NODE_TEST_CONTEXT &&
     process.env.GELATO_CRUISES_AUTO !== "0",
 } = {}) {
@@ -85,10 +93,13 @@ function createApp({
         copyToSecondary(created);
         // The cruise registry rides along: one rolling copy here and in the secondary folder.
         try {
-          const copy = cruises.repo.backupTo(backupDir);
           const second = store.setting("backup_dir_secondary");
-          if (second)
-            fs.copyFileSync(copy, path.join(second, path.basename(copy)));
+          for (const copy of [
+            cruises.repo.backupTo(backupDir),
+            context.backupTo(backupDir),
+          ])
+            if (second)
+              fs.copyFileSync(copy, path.join(second, path.basename(copy)));
         } catch (e) {
           appendLog(
             path.join(dataDir, "runtime", "logs", "cruceros.log"),
@@ -203,9 +214,19 @@ function createApp({
       appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
   });
   const cruisesOn = () => store.setting("cruises_off") !== "1";
+  // Day context (weather forecast, official holidays, the user's own events). Same switch as the
+  // cruise query: one setting turns off every outbound read.
+  const context = new ContextService(dataDir, {
+    ...(contextProviders || {}),
+    log: (line) =>
+      appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
+  });
   // The timer only asks «is it due?»: intervals and backoff live in the service.
   const autoCruises = () => {
-    if (cruisesOn()) cruises.tick().catch(() => {});
+    if (cruisesOn()) {
+      cruises.tick().catch(() => {});
+      context.sync().catch(() => {});
+    }
   };
   let cruiseTimer = null;
   if (cruiseAuto) {
@@ -466,6 +487,26 @@ function createApp({
               offset: Number(q("offset")) || 0,
             }),
           );
+        else if (u.pathname === "/api/cruises/context")
+          json(200, context.range(q("from"), q("to")));
+        else if (u.pathname === "/api/cruises/sales") {
+          // Registered sales next to that day's impact level. Facts side by side, no correlation.
+          const sales = dailySalesKg(store.load().movements);
+          const days = [...sales.keys()].sort();
+          const rows = days.map((day) => ({
+            day,
+            salesKg: sales.get(day),
+            impact: cruises.brief(day).impact,
+          }));
+          json(200, {
+            minDays: MIN_DAYS_PER_LEVEL,
+            daysWithSales: rows.length,
+            first: days[0] || null,
+            last: days.at(-1) || null,
+            levels: salesByImpact(rows),
+          });
+        } else if (u.pathname === "/api/cruises/copy")
+          json(200, { copy: cruises.copyInfo(backupDir) });
         else if (u.pathname === "/api/cruises/syncs")
           json(200, {
             syncs: cruises.repo.lastSyncs(15),
@@ -493,6 +534,9 @@ function createApp({
         ...report,
         cruises: cruisesOn()
           ? report.days.map((d) => cruises.brief(d.date))
+          : null,
+        context: cruisesOn()
+          ? context.range(report.days[0].date, report.days.at(-1).date).days
           : null,
       });
       return;
@@ -975,7 +1019,30 @@ function createApp({
             });
             return;
           }
-          await cruises.sync("manual");
+          if (data.type === "event") {
+            context.addEvent(data);
+            json(200, { ok: true });
+            return;
+          }
+          if (data.type === "eventDelete") {
+            context.deleteEvent(data.id);
+            json(200, { ok: true });
+            return;
+          }
+          if (data.type === "restore") {
+            const info = cruises.restoreCopy(backupDir);
+            json(200, {
+              restored: info,
+              enabled: true,
+              auto: cruiseAuto,
+              ...cruises.dashboard(),
+            });
+            return;
+          }
+          await Promise.all([
+            cruises.sync("manual"),
+            context.sync({ force: true }),
+          ]);
           json(200, {
             enabled: true,
             auto: cruiseAuto,
@@ -1092,6 +1159,7 @@ function createApp({
       clearInterval(purgeTimer);
       if (cruiseTimer) clearInterval(cruiseTimer);
       cruises.close();
+      context.close();
       ai.cancel().catch(() => {});
       store.close();
       whatsapp.close().catch(() => {});

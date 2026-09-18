@@ -3960,3 +3960,34 @@ dialog::backdrop {
     display: none;
   }
 }
+.ctx-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.ctx {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.ctx-holiday {
+  background: var(--lavanda-claro);
+  color: var(--lavanda-texto);
+  border-color: transparent;
+}
+.ctx-event {
+  background: var(--arena-claro);
+  border-color: transparent;
+}
+.cal-mark {
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

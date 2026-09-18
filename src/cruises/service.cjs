@@ -26,6 +26,9 @@ const {
   SOURCE_NAME,
   SOURCE_URL,
 } = require("../../build/cruises.js");
+const fs = require("node:fs");
+const path = require("node:path");
+const { DatabaseSync } = require("node:sqlite");
 const { CruiseRepository } = require("./repository.cjs");
 const { ApbProvider } = require("./provider-apb.cjs");
 
@@ -390,6 +393,55 @@ class CruiseService {
       firstArrival: s.firstArrival,
       lastDeparture: s.lastDeparture,
     };
+  }
+  /** Qué hay en la copia diaria del registro (o null si no existe o no se puede leer). */
+  copyInfo(backupDir) {
+    const file = path.join(backupDir, "cruceros-copia.sqlite");
+    if (!fs.existsSync(file)) return null;
+    try {
+      const db = new DatabaseSync(file, { readOnly: true });
+      try {
+        return {
+          file,
+          modifiedAt: fs.statSync(file).mtime.toISOString(),
+          calls: db.prepare("SELECT COUNT(*) n FROM calls").get().n,
+          ships: db.prepare("SELECT COUNT(*) n FROM ships").get().n,
+        };
+      } finally {
+        db.close();
+      }
+    } catch {
+      return null;
+    }
+  }
+  /** Sustituye el registro por la copia. El registro actual queda guardado al lado, nunca se pierde. */
+  restoreCopy(backupDir) {
+    if (this.busy || this.backfilling)
+      throw Error("Hay una sincronización en curso. Espera a que termine.");
+    const info = this.copyInfo(backupDir);
+    if (!info)
+      throw Error("No hay una copia legible del registro de cruceros.");
+    if (!info.calls) throw Error("La copia está vacía: no se restaura.");
+    const current = this.repo.file;
+    this.repo.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+    this.repo.close();
+    try {
+      fs.copyFileSync(
+        current,
+        current.replace(/\.sqlite$/, "-antes-de-restaurar.sqlite"),
+      );
+      for (const extra of ["-wal", "-shm"])
+        fs.rmSync(current + extra, { force: true });
+      fs.copyFileSync(info.file, current);
+    } finally {
+      this.repo = new CruiseRepository(path.dirname(current));
+    }
+    this.log(
+      "cruceros: registro restaurado desde la copia (" +
+        info.calls +
+        " escalas)",
+    );
+    return info;
   }
   setShipInfo(key, input) {
     const int = (v, max) => {

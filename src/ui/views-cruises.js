@@ -9,6 +9,9 @@ let cruiseDash = null,
   cruiseRange = null,
   cruiseDetail = null,
   cruiseFound = null,
+  cruiseContext = {},
+  cruiseContextStatus = null,
+  cruiseSales = null,
   cruiseBusy = false,
   cruiseSyncing = false,
   cruiseTab = "week",
@@ -94,6 +97,26 @@ async function loadCruises({ sync = false } = {}) {
         "/api/cruises/day?day=" + (cruiseDay || cruiseDash.today),
       );
       if (cruiseTab === "registry") await searchCruises();
+      if (cruiseTab === "sales")
+        cruiseSales = await request("/api/cruises/sales");
+      // Day context (weather forecast, official holidays, own events) for what is on screen.
+      const selected = cruiseDay || cruiseDash.today;
+      const lo = [from, selected, cruiseDash.today].sort()[0];
+      const hi = [to, selected, cruiseShift(cruiseDash.today, 1)].sort().at(-1);
+      cruiseContext = {};
+      if (cruiseShift(lo, 100) >= hi) {
+        const ctx = await request(`/api/cruises/context?from=${lo}&to=${hi}`);
+        cruiseContext = ctx.days;
+        cruiseContextStatus = ctx.status;
+      } else
+        for (const [a, b] of [
+          [from, to],
+          [selected, selected],
+        ]) {
+          const ctx = await request(`/api/cruises/context?from=${a}&to=${b}`);
+          Object.assign(cruiseContext, ctx.days);
+          cruiseContextStatus = ctx.status;
+        }
     }
     if (sync) reloadState().catch(() => {});
   } catch (e) {
@@ -117,6 +140,70 @@ async function searchCruises(offset = 0) {
       : found;
 }
 
+// Context of a day in one short line: forecast, official holiday, own events. Missing = nothing.
+const tempText = (w) => `${Math.round(w.tMax)}° / ${Math.round(w.tMin)}°`;
+function cruiseContextLine(day) {
+  const c = cruiseContext[day];
+  if (!c) return "";
+  const parts = [];
+  if (c.weather)
+    parts.push(
+      `<span class="ctx ctx-weather">${esc(tempText(c.weather))}${c.weather.label ? " · " + esc(c.weather.label) : ""}${c.weather.precipMm ? " · " + cnum(c.weather.precipMm) + " mm" : ""}</span>`,
+    );
+  for (const h of c.holidays)
+    parts.push(`<span class="ctx ctx-holiday">Festivo: ${esc(h.name)}</span>`);
+  for (const e of c.events)
+    parts.push(`<span class="ctx ctx-event">Evento: ${esc(e.name)}</span>`);
+  return parts.length ? `<span class="ctx-line">${parts.join("")}</span>` : "";
+}
+function cruiseContextBlock(day) {
+  const c = cruiseContext[day] || { weather: null, holidays: [], events: [] };
+  const w = c.weather;
+  const weather = w
+    ? `<strong class="kpi-text">${esc(tempText(w))}${w.label ? " · " + esc(w.label) : ""}</strong><small>${w.precipMm === null ? "Lluvia: no disponible" : "Lluvia prevista: " + cnum(w.precipMm) + " mm"} · ${esc(w.kind)}${w.approximate ? ", orientativa" : ""} · consultada el ${esc(cruiseStamp(w.fetchedAt))}</small>`
+    : `<strong class="kpi-text">${NA}</strong><small>La previsión cubre unos 9 días desde hoy. No hay observaciones de días pasados.</small>`;
+  const holidays = c.holidays.length
+    ? c.holidays
+        .map(
+          (h) =>
+            `<strong class="kpi-text">${esc(h.name)}</strong><small>${h.scope === "local" ? "Fiesta local de Palma" : "Festivo en las Illes Balears"} · calendario oficial</small>`,
+        )
+        .join("")
+    : `<strong class="kpi-text">${cruiseContextStatus && !cruiseContextStatus.holidays.loaded && day.slice(0, 4) === String(cruiseContextStatus.holidays.year) ? NA : "No es festivo"}</strong><small>${cruiseContextStatus && !cruiseContextStatus.holidays.loaded ? "Calendario oficial todavía sin cargar" + (cruiseContextStatus.holidays.note ? ": " + esc(cruiseContextStatus.holidays.note) : "") : "Según el calendario laboral oficial"}</small>`;
+  const events = c.events.length
+    ? c.events
+        .map(
+          (e) =>
+            `<strong class="kpi-text">${esc(e.name)}</strong><small>${e.from === e.to ? "" : esc(cruiseShort(e.from)) + " – " + esc(cruiseShort(e.to)) + " · "}${esc(e.note || "anotado por ti")} <button class="text-link" data-action="cruiseEventDelete" data-id="${esc(e.id)}">Quitar</button></small>`,
+        )
+        .join("")
+    : `<strong class="kpi-text"><span class="na">Ninguno anotado</span></strong><small>Los eventos los anotas tú: Palma no publica una agenda reutilizable.</small>`;
+  return `<h3 class="cruise-sub">Contexto del día</h3><div class="cruise-kpis"><div><span>Clima previsto</span>${weather}</div><div><span>Festivo</span>${holidays}</div><div><span>Eventos</span>${events}<span>${btn("Añadir evento", "cruiseEventAdd", "secondary", `data-day="${esc(day)}"`)}</span></div></div>`;
+}
+function cruiseSalesView() {
+  const s = cruiseSales;
+  if (!s) return '<p class="muted">Calculando…</p>';
+  const labels = {
+    none: "Sin cruceros",
+    low: "Bajo",
+    medium: "Medio",
+    high: "Alto",
+    veryHigh: "Muy alto",
+    unknown: "No calculable",
+  };
+  return `<p>Kilos vendidos en los días con ventas registradas, agrupados por el impacto potencial de ese día. Son hechos puestos lado a lado: la app no calcula correlaciones ni predice ventas.</p>${
+    s.daysWithSales
+      ? `<div class="table-scroll"><table class="report-table cruise-table"><thead><tr><th>Impacto del día</th><th>Días con ventas</th><th>Media vendida</th><th>Mínimo – máximo</th><th>Lectura</th></tr></thead><tbody>${s.levels
+          .map(
+            (l) =>
+              `<tr><td><span class="impact impact-${esc(l.impact)}">${labels[l.impact]}</span></td><td>${l.days}</td><td>${l.days ? cnum(l.meanKg) + " kg" : "—"}</td><td>${l.days ? cnum(l.minKg) + " – " + cnum(l.maxKg) + " kg" : "—"}</td><td>${l.enough ? "Media con días suficientes" : l.days ? `Pocos días: faltan ${s.minDays - l.days} para que la media diga algo` : "Sin días todavía"}</td></tr>`,
+          )
+          .join(
+            "",
+          )}</tbody></table></div><p class="fineprint">${s.daysWithSales} días con ventas, del ${esc(cruiseDate(s.first, { day: "numeric", month: "long", year: "numeric" }))} al ${esc(cruiseDate(s.last, { day: "numeric", month: "long", year: "numeric" }))}. Solo cuentan los días con «Ventas y mermas del día» registradas: un día sin registro no distingue cerrado de no apuntado. Una media necesita al menos ${s.minDays} días de ese nivel.</p>`
+      : '<div class="empty compact">Todavía no hay ventas registradas. Apunta las ventas del día en Producción y aquí irán apareciendo junto al impacto de cada día.</div>'
+  }`;
+}
 function cruiseStatusStrip(d) {
   const s = d.status;
   const kind = cruiseSyncing ? "syncing" : s.state;
@@ -151,14 +238,14 @@ function cruiseDashboard(d) {
         : "0"
       : cnum(t.passengers) +
         (t.undeclared ? `<small>${t.undeclared} sin declarar</small>` : "");
-  return `<section class="panel cruise-today" aria-label="Resumen de hoy"><div class="panel-heading"><div><h2>Hoy · ${esc(cruiseLong(d.today))}</h2><p>${d.inPortNow.length ? "Ahora en puerto: " + esc(d.inPortNow.join(", ")) + "." : "Ahora mismo no hay cruceros en puerto."} Hora de Palma: ${esc(d.now.slice(11))}.</p></div></div><div class="cruise-kpis"><div><span>Cruceros hoy</span><strong>${t.ships}</strong><small>llegan ${t.arrivals} · parten ${t.departures}</small></div><div><span>Pasajeros declarados</span><strong>${pax}</strong><small>declarados al puerto, no clientes</small></div><div><span>Mayor concentración</span><strong class="kpi-text">${peak}</strong></div><div><span>Impacto potencial</span><strong class="kpi-text">${impactPill(t)}</strong><small>carga portuaria calculada</small></div><div><span>Próxima llegada</span><strong class="kpi-text">${next}</strong></div></div><button class="cruise-tomorrow" data-action="cruiseDay" data-day="${esc(m.day)}"><strong>Mañana</strong> · ${m.ships} ${m.ships === 1 ? "crucero" : "cruceros"}${m.ships ? " · " + (m.passengers === null ? "pasajeros no disponibles" : cnum(m.passengers) + " pasajeros declarados") + (m.firstArrival ? " · primera llegada " + m.firstArrival : "") : ""} · ${impactPill(m)} ${icon("arrow")}</button></section>`;
+  return `<section class="panel cruise-today" aria-label="Resumen de hoy"><div class="panel-heading"><div><h2>Hoy · ${esc(cruiseLong(d.today))}</h2><p>${d.inPortNow.length ? "Ahora en puerto: " + esc(d.inPortNow.join(", ")) + "." : "Ahora mismo no hay cruceros en puerto."} Hora de Palma: ${esc(d.now.slice(11))}.</p>${cruiseContextLine(d.today)}</div></div><div class="cruise-kpis"><div><span>Cruceros hoy</span><strong>${t.ships}</strong><small>llegan ${t.arrivals} · parten ${t.departures}</small></div><div><span>Pasajeros declarados</span><strong>${pax}</strong><small>declarados al puerto, no clientes</small></div><div><span>Mayor concentración</span><strong class="kpi-text">${peak}</strong></div><div><span>Impacto potencial</span><strong class="kpi-text">${impactPill(t)}</strong><small>carga portuaria calculada</small></div><div><span>Próxima llegada</span><strong class="kpi-text">${next}</strong></div></div><button class="cruise-tomorrow" data-action="cruiseDay" data-day="${esc(m.day)}"><strong>Mañana</strong> · ${m.ships} ${m.ships === 1 ? "crucero" : "cruceros"}${m.ships ? " · " + (m.passengers === null ? "pasajeros no disponibles" : cnum(m.passengers) + " pasajeros declarados") + (m.firstArrival ? " · primera llegada " + m.firstArrival : "") : ""} · ${impactPill(m)} ${icon("arrow")}</button></section>`;
 }
 function cruiseDayCard(s, selected) {
   return `<button class="cruise-day ${s.day === selected ? "active" : ""} level-${esc(s.impact)}" data-action="cruiseDay" data-day="${esc(s.day)}" aria-label="${esc(cruiseLong(s.day))}: ${s.ships} cruceros, impacto ${esc(s.impactLabel)}"><span>${esc(cruiseShort(s.day))}</span><strong>${s.ships} ${s.ships === 1 ? "crucero" : "cruceros"}</strong>${
     s.ships
       ? `<small>${s.passengers === null ? "Pasajeros: no disponible" : cnum(s.passengers) + " pasajeros declarados"}</small><small>${s.firstArrival ? "Primera llegada " + s.firstArrival : "Ya en puerto"} · ${s.lastDeparture ? "última salida " + s.lastDeparture : "sigue en puerto"}</small>`
       : "<small>Sin escalas registradas</small>"
-  }${impactPill(s)}</button>`;
+  }${cruiseContextLine(s.day)}${impactPill(s)}</button>`;
 }
 function cruiseCalendar(days, selected, today) {
   const month = days[0].day.slice(0, 7);
@@ -170,7 +257,7 @@ function cruiseCalendar(days, selected, today) {
     ),
     ...days.map(
       (s) =>
-        `<button class="cal-cell level-${esc(s.impact)} ${s.day === selected ? "active" : ""} ${s.day === today ? "today" : ""}" data-action="cruiseDay" data-day="${esc(s.day)}" aria-label="${esc(cruiseLong(s.day))}: ${s.ships} cruceros, impacto ${esc(s.impactLabel)}"><b>${Number(s.day.slice(8))}</b>${s.ships ? `<span>${s.ships} ${s.ships === 1 ? "crucero" : "cruceros"}</span><em>${esc(s.impactLabel)}</em>` : "<span>—</span>"}</button>`,
+        `<button class="cal-cell level-${esc(s.impact)} ${s.day === selected ? "active" : ""} ${s.day === today ? "today" : ""}" data-action="cruiseDay" data-day="${esc(s.day)}" aria-label="${esc(cruiseLong(s.day))}: ${s.ships} cruceros, impacto ${esc(s.impactLabel)}"><b>${Number(s.day.slice(8))}</b>${s.ships ? `<span>${s.ships} ${s.ships === 1 ? "crucero" : "cruceros"}</span><em>${esc(s.impactLabel)}</em>` : "<span>—</span>"}${cruiseContext[s.day]?.holidays.length ? '<i class="cal-mark">Festivo</i>' : ""}${cruiseContext[s.day]?.events.length ? '<i class="cal-mark">Evento</i>' : ""}</button>`,
     ),
   ].join("");
   return `<div class="cal-nav">${btn("← Mes anterior", "cruiseMonthPrev", "secondary")}<h3>${esc(cruiseDate(month + "-01", { month: "long", year: "numeric" }))}</h3>${btn("Mes siguiente →", "cruiseMonthNext", "secondary")}</div><div class="cal-grid"><div class="cal-head">L</div><div class="cal-head">M</div><div class="cal-head">X</div><div class="cal-head">J</div><div class="cal-head">V</div><div class="cal-head">S</div><div class="cal-head">D</div>${cells}</div><p class="cal-legend"><span class="impact impact-none">Sin cruceros</span><span class="impact impact-low">Bajo</span><span class="impact impact-medium">Medio</span><span class="impact impact-high">Alto</span><span class="impact impact-veryHigh">Muy alto</span><span class="impact impact-unknown">No calculable</span></p>`;
@@ -229,7 +316,7 @@ function cruiseDayDetail(detail, today) {
     cruiseDash.status.state === "never"
       ? "Información pendiente de sincronización."
       : "No hay escalas de cruceros registradas para este día.";
-  return `<section class="panel" id="cruise-detail"><div class="panel-heading"><div><h2>${esc(cruiseLong(s.day))}${s.day === today ? " · hoy" : ""}</h2><p>Detalle del día con horas del puerto de Palma.</p></div><div class="heading-actions">${btn("← Día anterior", "cruisePrev", "secondary")}${btn("Hoy", "cruiseToday", "secondary", s.day === today ? "disabled" : "")}${btn("Día siguiente →", "cruiseNext", "secondary")}</div></div><div class="cruise-body">${
+  return `<section class="panel" id="cruise-detail"><div class="panel-heading"><div><h2>${esc(cruiseLong(s.day))}${s.day === today ? " · hoy" : ""}</h2><p>Detalle del día con horas del puerto de Palma.</p></div><div class="heading-actions">${btn("← Día anterior", "cruisePrev", "secondary")}${btn("Hoy", "cruiseToday", "secondary", s.day === today ? "disabled" : "")}${btn("Día siguiente →", "cruiseNext", "secondary")}</div></div><div class="cruise-body">${cruiseContextBlock(s.day)}<h3 class="cruise-sub">Cruceros</h3>${
     s.ships
       ? `<div class="cruise-kpis">${fact("Cruceros", s.ships, `llegan ${s.arrivals} · parten ${s.departures}`)}${fact("Pasajeros declarados", paxText(s.passengers), s.undeclared ? s.undeclared + " barcos sin declarar" : "suma del día")}${fact("Primera llegada", s.firstArrival || "—")}${fact("Última salida", s.lastDeparture || "—")}${fact("Máxima coincidencia", `${s.peak.ships} ${s.peak.ships === 1 ? "crucero" : "cruceros"}`, `${s.peak.from} – ${s.peak.to}`)}${fact("Pasajeros a la vez", paxText(s.peakPassengers), s.peakPassengers === null ? "" : `${s.peakPassengersFrom} – ${s.peakPassengersTo}`)}${fact("Impacto potencial", impactPill(s), "no son clientes esperados")}</div><h3 class="cruise-sub">Cruceros en puerto por hora</h3>${cruiseTimelineSvg(detail)}<ol class="cruise-steps">${detail.timeline.map((t) => `<li><b>${esc(t.time)}</b> ${t.ships.length ? esc(t.ships.join(" + ")) : "puerto sin cruceros"}</li>`).join("")}</ol><h3 class="cruise-sub">Barcos</h3><div class="cruise-cards">${detail.calls.map(cruiseCard).join("")}</div>`
       : `<div class="empty compact">${empty}</div>`
@@ -287,6 +374,7 @@ function cruisePage() {
     ["month", "Próximos 30 días"],
     ["calendar", "Calendario"],
     ["registry", "Registro y búsqueda"],
+    ["sales", "Ventas e impacto"],
   ]
     .map(
       ([id, label]) =>
@@ -302,15 +390,17 @@ function cruisePage() {
     `<section class="panel"><div class="panel-heading"><div class="cruise-tabs" role="group" aria-label="Periodo">${tabs}</div>${cruiseTab === "week" || cruiseTab === "month" ? `<label class="check-row"><input type="checkbox" id="cruise-impact-only" ${cruiseImpactOnly ? "checked" : ""}> Solo impacto alto o muy alto</label>` : ""}</div><div class="cruise-body">${
       cruiseTab === "registry"
         ? cruiseRegistry()
-        : !cruiseRange
-          ? '<p class="muted">Cargando…</p>'
-          : cruiseTab === "calendar"
-            ? cruiseCalendar(cruiseRange.days, selected, d.today)
-            : days.length
-              ? `<div class="cruise-days">${days.map((s) => cruiseDayCard(s, selected)).join("")}</div>`
-              : '<p class="muted">Ningún día de este periodo alcanza impacto alto.</p>'
+        : cruiseTab === "sales"
+          ? cruiseSalesView()
+          : !cruiseRange
+            ? '<p class="muted">Cargando…</p>'
+            : cruiseTab === "calendar"
+              ? cruiseCalendar(cruiseRange.days, selected, d.today)
+              : days.length
+                ? `<div class="cruise-days">${days.map((s) => cruiseDayCard(s, selected)).join("")}</div>`
+                : '<p class="muted">Ningún día de este periodo alcanza impacto alto.</p>'
     }</div></section>` +
     (cruiseDetail ? cruiseDayDetail(cruiseDetail, d.today) : "") +
-    `<section class="panel"><div class="panel-heading"><div><h2>Cómo leer estos datos</h2><p>Nada de esta pantalla está inventado ni estimado por la app.</p></div></div><div class="cruise-body cruise-notes"><p><strong>Impacto potencial.</strong> Es la mayor suma de pasajeros declarados que coinciden a la vez en puerto ese día. Menos de ${cnum(t.medium)}: Bajo. Menos de ${cnum(t.high)}: Medio. Menos de ${cnum(t.veryHigh)}: Alto. A partir de ahí: Muy alto. Si ningún barco declara pasajeros: No calculable. Los umbrales se cambian en Configuración.</p><p><strong>Pasajeros declarados.</strong> Es lo que cada barco declara al puerto para esa escala: en tránsito más el mayor entre los que desembarcan y los que embarcan (la fuente llama «trasbordo» al tránsito). No es la capacidad del barco ni el número de personas que bajará a la ciudad.</p><p><strong>Lo que la fuente no publica</strong> aparece como «No disponible»: naviera, capacidad y terminal. Naviera y capacidad puedes anotarlas tú en la ficha del barco, indicando de dónde sale el dato.</p><p><strong>Estados.</strong> Son los del puerto: atraque solicitado, concedido, iniciado y finalizado. El puerto no publica retrasos ni cancelaciones; si una escala anunciada desaparece, se marca «Retirada de la previsión».</p><p class="fineprint">Origen de los datos: Autoridad Portuaria de Baleares. Registro: ${cnum(d.status.totals.calls)} escalas de ${cnum(d.status.totals.ships)} barcos${d.status.totals.first ? ", desde " + esc(cruiseDate(d.status.totals.first.slice(0, 10), { month: "long", year: "numeric" })) : ""}. ${h.done ? "Histórico oficial importado." : h.running ? "Importando el histórico oficial desde 2014 (página " + h.page + ")…" : "El histórico oficial desde 2014 se importa en segundo plano."} Consulta automática cada ${d.status.intervalHours} h según la cercanía de barcos. ${d.status.integrity.length ? "Avisos de integridad: " + esc(d.status.integrity.join("; ")) + "." : ""} ${btn("Ver sincronizaciones", "cruiseSyncs", "secondary")}</p></div></section>`
+    `<section class="panel"><div class="panel-heading"><div><h2>Cómo leer estos datos</h2><p>Nada de esta pantalla está inventado ni estimado por la app.</p></div></div><div class="cruise-body cruise-notes"><p><strong>Impacto potencial.</strong> Es la mayor suma de pasajeros declarados que coinciden a la vez en puerto ese día. Menos de ${cnum(t.medium)}: Bajo. Menos de ${cnum(t.high)}: Medio. Menos de ${cnum(t.veryHigh)}: Alto. A partir de ahí: Muy alto. Si ningún barco declara pasajeros: No calculable. Los umbrales se cambian en Configuración.</p><p><strong>Pasajeros declarados.</strong> Es lo que cada barco declara al puerto para esa escala: en tránsito más el mayor entre los que desembarcan y los que embarcan (la fuente llama «trasbordo» al tránsito). No es la capacidad del barco ni el número de personas que bajará a la ciudad.</p><p><strong>Lo que la fuente no publica</strong> aparece como «No disponible»: naviera, capacidad y terminal. Naviera y capacidad puedes anotarlas tú en la ficha del barco, indicando de dónde sale el dato.</p><p><strong>Estados.</strong> Son los del puerto: atraque solicitado, concedido, iniciado y finalizado. El puerto no publica retrasos ni cancelaciones; si una escala anunciada desaparece, se marca «Retirada de la previsión».</p><p><strong>Clima, festivos y eventos.</strong> El clima es la previsión de MET Norway para Palma (unos 9 días); de un día pasado solo se conserva la previsión que había, nunca una observación. Los festivos salen del calendario laboral oficial del Govern de les Illes Balears. Los eventos los anotas tú.${cruiseContextStatus ? ` ${cruiseContextStatus.weather.error ? "Clima: " + esc(cruiseContextStatus.weather.error) : cruiseContextStatus.weather.updatedAt ? "Clima consultado el " + esc(cruiseStamp(cruiseContextStatus.weather.updatedAt)) + "." : "Clima todavía sin consultar."} ${cruiseContextStatus.holidays.loaded ? "Festivos de " + cruiseContextStatus.holidays.year + " cargados." : "Festivos de " + cruiseContextStatus.holidays.year + " sin cargar" + (cruiseContextStatus.holidays.note ? ": " + esc(cruiseContextStatus.holidays.note) : "") + "."}` : ""}</p><p class="fineprint">Origen de los datos: Autoridad Portuaria de Baleares (cruceros), MET Norway, CC BY 4.0 (clima) y Govern de les Illes Balears (festivos). Registro: ${cnum(d.status.totals.calls)} escalas de ${cnum(d.status.totals.ships)} barcos${d.status.totals.first ? ", desde " + esc(cruiseDate(d.status.totals.first.slice(0, 10), { month: "long", year: "numeric" })) : ""}. ${h.done ? "Histórico oficial importado." : h.running ? "Importando el histórico oficial desde 2014 (página " + h.page + ")…" : "El histórico oficial desde 2014 se importa en segundo plano."} Consulta automática cada ${d.status.intervalHours} h según la cercanía de barcos. ${d.status.integrity.length ? "Avisos de integridad: " + esc(d.status.integrity.join("; ")) + "." : ""} ${btn("Ver sincronizaciones", "cruiseSyncs", "secondary")}</p></div></section>`
   );
 }

@@ -1348,6 +1348,65 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "cruiseEventAdd") {
+    const day = el.dataset.day;
+    modal(
+      "Añadir evento",
+      "Algo que puede mover gente ese día: una feria, un concierto, una fiesta de barrio. Es una nota tuya; la app no la saca de ninguna fuente.",
+      field("Nombre", "name", "", "text", 'maxlength="80" required') +
+        field("Desde", "from", day, "date", "required") +
+        field("Hasta", "to", day, "date", "required") +
+        field(
+          "Nota",
+          "note",
+          "",
+          "text",
+          'maxlength="200" placeholder="Lugar, horario…"',
+        ),
+      async (f) => {
+        await request("/api/cruises", {
+          type: "event",
+          name: f.get("name"),
+          from: f.get("from"),
+          to: f.get("to"),
+          note: f.get("note"),
+        });
+        await loadCruises();
+        toast("Evento anotado.");
+        return true;
+      },
+    );
+    return;
+  }
+  if (name === "cruiseEventDelete") {
+    await request("/api/cruises", { type: "eventDelete", id: el.dataset.id });
+    await loadCruises();
+    toast("Evento quitado.");
+    return;
+  }
+  if (name === "cruiseRestore") {
+    const r = await request("/api/cruises/copy");
+    if (!r.copy) {
+      toast(
+        "Todavía no hay copia del registro de cruceros. Se crea con la copia diaria.",
+      );
+      return;
+    }
+    modal(
+      "Restaurar el registro de cruceros",
+      `La copia es del ${cruiseStamp(r.copy.modifiedAt)} y contiene ${r.copy.calls} escalas de ${r.copy.ships} barcos. Sustituye al registro actual, que queda guardado al lado como «cruceros-antes-de-restaurar.sqlite». Las escalas posteriores a la copia vuelven en la siguiente consulta al puerto.`,
+      '<p class="fineprint">Úsalo si el registro se dañó o perdiste las fichas de barcos que habías anotado.</p>',
+      async () => {
+        cruiseDash = await request("/api/cruises", { type: "restore" });
+        cruiseRange = null;
+        await loadCruises();
+        toast("Registro de cruceros restaurado desde la copia.");
+        return true;
+      },
+      "Restaurar",
+    );
+    return;
+  }
   if (name === "cruiseSyncs") {
     const r = await request("/api/cruises/syncs");
     modal(

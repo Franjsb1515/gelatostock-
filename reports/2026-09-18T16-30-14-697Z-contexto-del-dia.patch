@@ -1,0 +1,701 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 57e54d2..22a8356 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.25.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.26.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 2941774..4e96276 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Registro de parches y sesiones
+ 
++## 0.26.0 — 2026-09-18 · sesión 039
++
++Pendientes recomendados de Cruceros. Contexto del día: clima previsto para Palma (MET Norway, CC BY 4.0), festivos del calendario laboral oficial del Govern de les Illes Balears (autonómicos y locales de Palma) y eventos anotados por el usuario, visibles en el panel de hoy, las tarjetas de día, el calendario y el detalle. «Ventas e impacto»: kilos vendidos por nivel de impacto (días, media, mínimo y máximo), con aviso cuando hay menos de 8 días de un nivel; sin correlaciones ni predicciones. Restauración del registro de cruceros desde la copia diaria, conservando el registro actual. El informe semanal lleva también el contexto de cada día. Nuevo core/context.ts, src/context/providers.cjs y service.cjs (data/contexto.sqlite, con su copia diaria).
++
++No hecho, con motivo: agenda automática de eventos (el Ajuntament de Palma no publica una agenda reutilizable; los eventos son manuales) y observaciones meteorológicas de días pasados (la fuente abierta solo da previsión; se conserva la previsión que había, rotulada así).
++
++Pruebas: 148. Informe reports/2026-09-18T16-30-14-697Z-contexto-del-dia.md.
++
+ ## 0.25.0 — 2026-09-18 · sesión 038
+ 
+ Cruceros pasa de lista a herramienta de planificación, siguiendo el prompt maestro del usuario y su regla de no inventar datos. Núcleo nuevo core/cruises.ts (validación de la fuente, hora de Palma con cambios de hora, pasajeros declarados, tipo de escala, máxima simultaneidad, línea temporal e impacto potencial con fórmula documentada y umbrales del usuario). Arquitectura en tres piezas: adaptador de la fuente (src/cruises/provider-apb.cjs), registro SQLite propio data/cruceros.sqlite con barcos, escalas, historial de cambios y sincronizaciones (repository.cjs) y servicio con intervalos, espera tras fallos e importación del histórico oficial desde 2014 (service.cjs). Identificador oficial de escala estable: los cambios de horario o muelle actualizan la misma fila y quedan en el historial; una escala futura que desaparece se marca «Retirada de la previsión» y se restaura si vuelve; un mismo IMO con otro nombre es un solo barco. Interfaz: panel de hoy, mañana, 7 y 30 días, calendario mensual, detalle del día con línea temporal SVG y tarjetas por barco, registro con buscador, historial y origen de cada escala, ficha manual del barco (naviera y capacidad, con fuente obligatoria), estado de sincronización siempre visible y explicación de cómo leer los datos. Semana muestra los cruceros de cada día junto a las ventas, sin correlaciones. El registro viaja con la copia diaria.
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 354cbbc..99247eb 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.25.0
++# Entrada para Claude · entrega vigente 0.26.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+@@ -17,6 +17,9 @@ Pruebas: npm test; npm run format:check; npm run package:win; npm run test:deskt
+ 
+ Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+ 
++## Punto de continuidad 0.26.0
++Lee reports/2026-09-18T16-30-14-697Z-contexto-del-dia.md. Contexto del día: core/context.ts (parseMetno por día de Palma, parseHolidayCsv del CSV catalán del Govern, salesByImpact y dailySalesKg), src/context/providers.cjs (MET Norway y CKAN de la CAIB) y src/context/service.cjs (data/contexto.sqlite: weather, holidays, events, meta). Mismo interruptor que cruceros (cruises_off) y mismas garantías: el clima de un día pasado es «previsión guardada», nunca observación; una previsión parcial no pisa una más completa del mismo día; lluvia sin dato = null, no 0; festivos solo del CSV oficial, y un CSV raro no borra los buenos; eventos solo manuales; «Ventas e impacto» no calcula correlaciones y exige 8 días por nivel (MIN_DAYS_PER_LEVEL) para dar una media por buena; una venta deshecha no cuenta. createApp({ cruiseProvider, contextProviders }) en pruebas: ninguna toca la red. Ojo de herramienta: los heredoc y node -e pierden las barras invertidas de las expresiones regulares; usa Write o Edit. Siguiente: mejora de ventas y mermas (el usuario quiere definirla) y Compras y Mensajes II.
++
+ ## Punto de continuidad 0.25.0
+ Lee reports/2026-09-17T23-07-26-548Z-cruceros-planificacion.md y el prompt del usuario para este módulo (regla de oro: no inventar datos). Cruceros: core/cruises.ts (todo lo puro: validación de filas de la APB con posiciones en COL, hora Europe/Madrid, daySummary, impacto), src/cruises/provider-apb.cjs (HTTP), repository.cjs (data/cruceros.sqlite: ships, calls, changes, syncs, meta) y service.cjs (sync, backoff, backfill, vistas). Sustituye a src/cruises.cjs y cruceros.json de 0.24.0. Garantías que no se degradan: null = «No disponible» y nunca se rellena; «pasajeros declarados» es DERIVADO (tránsito + máx(desembarque, embarque)) y no es capacidad ni clientes; naviera y capacidad solo manuales y con fuente; estados solo los de la fuente más «Retirada de la previsión» y «Salida prevista ya pasada», ambos derivados y rotulados; «hoy» y todas las horas son de Palma (el equipo de desarrollo está en UTC−3); una previsión vacía nunca retira escalas; el histórico no se borra. La fórmula del impacto está en impactLevel y en la propia pantalla: si cambia, cambian las dos y las pruebas. Pruebas con proveedor simulado (createApp({ cruiseProvider })); ninguna toca la red. Siguiente: Compras y Mensajes II (ver TODO).
+ 
+diff --git a/README.md b/README.md
+index c57d932..6b9e7ad 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.25.0
++# GelatoStock · prototipo 0.26.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.25.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.26.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.25.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.26.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+@@ -194,3 +194,6 @@ Con internet, la pantalla «Cruceros» muestra qué barcos llegan y parten de Pa
+ 
+ ## Cruceros para planificar en 0.25.0
+ «Cruceros» responde de un vistazo cuántos barcos hay hoy, a qué hora llegan y se van, cuántos coinciden a la vez y qué días vienen cargados, con datos oficiales de la Autoridad Portuaria de Baleares e histórico desde 2014. Nada se inventa: lo que el puerto no publica aparece como «No disponible», y el impacto potencial es un cálculo documentado de carga portuaria, no una previsión de clientes. Detalle técnico en docs/IA_LOCAL_Y_SEGURIDAD.md y en el informe de la sesión 038.
++
++## Contexto del día en 0.26.0
++Junto a los cruceros, cada día muestra el clima previsto (MET Norway), si es festivo según el calendario oficial balear y los eventos que anotes. «Ventas e impacto» compara los kilos vendidos por nivel de impacto sin calcular correlaciones. El registro de cruceros se puede restaurar desde la copia diaria.
+diff --git a/TODO.md b/TODO.md
+index bcabf74..dccf512 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.25.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.26.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -58,7 +58,9 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Compras y Mensajes I (0.23.0): confirmaciones y fechas desde respuestas, acciones sobre el pedido desde el mensaje, seguimiento, plantilla, envío tras autorizar.
+ - [x] Cruceros en Palma (0.24.0): registro de escalas desde los datos abiertos de la APB, pantalla por día, 14 días, rutas y aviso en Resumen.
+ - [x] Cruceros como planificación (0.25.0): fuente oficial validada, registro SQLite con histórico desde 2014, panel, calendario, línea temporal, impacto potencial auditable, historial de cambios y ficha manual del barco.
+-- [ ] Cruceros, siguiente: con varios meses de ventas registradas, comparar ventas por nivel de impacto (sin correlaciones hasta tener datos); restaurar cruceros-copia.sqlite desde la interfaz; adaptar la app entera a ventanas estrechas (la barra lateral no se pliega); clima, festivos y eventos de Palma como nuevos adaptadores.
++- [x] Contexto del día (0.26.0): clima previsto, festivos oficiales, eventos propios, ventas por nivel de impacto y restauración del registro de cruceros.
++- [ ] Planificación, siguiente: con meses de ventas, estudiar ventas frente a clima y festivos además del impacto (siempre como hechos, sin predicción hasta poder validarla); observaciones meteorológicas reales si se consigue una fuente abierta (AEMET exige clave propia del usuario); adaptar la app entera a ventanas estrechas.
++- [ ] Ventas y mermas: mejora pedida por el usuario el 2026-09-18, pendiente de definir con él.
+ - [ ] Compras y Mensajes II: propuesta de sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic (mensaje de recordatorio al proveedor); catálogo/precios por proveedor desde listas de precios; prueba real del ciclo completo con los números del usuario.
+ - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
+ - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 1049496..e422a28 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -73,7 +73,7 @@ Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con lo
+ Resumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.
+ 
+ ## Cruceros
+-Herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.
++Herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma. Contexto del día: cada día muestra además el clima previsto para Palma (MET Norway, unos 9 días; de un día pasado solo queda la previsión que había, nunca una observación), si es festivo según el calendario laboral oficial del Govern de les Illes Balears (autonómicos y los dos locales de Palma) y los eventos que anotes tú con «Añadir evento». La pestaña «Ventas e impacto» pone los kilos vendidos de cada día con ventas registradas junto al nivel de impacto de ese día: días, media, mínimo y máximo por nivel; con menos de 8 días de un nivel la app dice que la media todavía no es fiable; no calcula correlaciones ni predice ventas. En Configuración → Cruceros en Palma, «Restaurar copia del registro» recupera el registro de cruceros (y tus fichas de barcos) desde la copia diaria; el registro actual queda guardado al lado.
+ 
+ ## Actividad
+ Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.
+diff --git a/docs/IA_LOCAL_Y_SEGURIDAD.md b/docs/IA_LOCAL_Y_SEGURIDAD.md
+index 3fd82cd..7c04f8d 100644
+--- a/docs/IA_LOCAL_Y_SEGURIDAD.md
++++ b/docs/IA_LOCAL_Y_SEGURIDAD.md
+@@ -93,3 +93,6 @@ Webs de compra: la ficha admite una URL https; el carrito genera una lista de te
+ 
+ ## Consulta de cruceros (0.25.0)
+ Única salida a internet de la app aparte de WhatsApp. src/cruises/provider-apb.cjs abre una sesión anónima en el visor público de la Autoridad Portuaria de Baleares (posidoniaweb.portsdebalears.com, el que enlaza su ficha de datos abiertos «Previsión de tráfico marítimo») y pide tres cosas: la previsión vigente, la hora de actualización de la fuente y el histórico de cruceros de Palma. Los cuerpos de las peticiones son fijos: no viaja ningún dato del negocio ni existen claves que proteger. La respuesta se trata como no fiable y se valida en core/cruises.ts antes de guardarse: solo cruceros de Palma, fechas que existen, salida posterior a la llegada, estancias de 30 días como máximo, cifras de pasajeros enteras entre 0 y 15.000 (lo demás queda en «no disponible»), textos sin etiquetas ni caracteres de control y recortados; la interfaz los escapa. Las filas rechazadas se cuentan y se anotan en el registro de sincronizaciones. La consulta vive en el proceso del servidor local; la página mantiene connect-src 'self' y nunca habla con el puerto. Frecuencia: 3 h con barcos hoy o mañana, 6 h con barcos en 7 días, 12 h en otro caso; tras un fallo espera 5 min, 15 min, 1 h y 3 h; un solo reintento por consulta y solo ante fallos de red; tiempo límite de 45 s; el histórico se importa una vez, por páginas y con pausas. Se apaga en Configuración (ajuste cruises_off) y con GELATO_CRUISES_AUTO=0; nunca se ejecuta sola bajo node:test. Las rutas /api/cruises* exigen la misma sesión y el mismo control de Origin que el resto; los parámetros se validan (días, intervalos de 100 días como máximo, estados de una lista cerrada). Condiciones de reutilización de la APB: uso comercial y no comercial citando «Origen de los datos: Autoridad Portuaria de Baleares» y la fecha de actualización, sin sugerir patrocinio; la pantalla lo cita. No es una API documentada: si el puerto cambia el formato, las filas se rechazan, la app muestra el error y conserva lo guardado.
++
++## Clima y festivos (0.26.0)
++Dos lecturas más, con el mismo interruptor que los cruceros (ajuste cruises_off) y las mismas reglas: solo GET, sin cuerpo ni datos del negocio, respuesta no fiable validada en core/context.ts, nunca automáticas bajo node:test ni con GELATO_CRUISES_AUTO=0. Clima: api.met.no (MET Norway), datos CC BY 4.0 con uso comercial permitido y cita obligatoria; sus condiciones piden identificar la aplicación en el User-Agent (nombre, versión y finalidad; no se envía ningún correo ni dato personal) y no consultar de más: se respeta Expires, nunca antes de 3 h, If-Modified-Since, y 1 h de espera tras un fallo. Solo se envían las coordenadas públicas de Palma. Temperaturas fuera de −40…60 °C y lluvias fuera de 0…1000 mm se ignoran; un símbolo desconocido se muestra tal cual. Festivos: catálogo CKAN de datos abiertos del Govern de les Illes Balears, conjunto «Calendari Laboral General i Local Illes Balears <año>» (Creative Commons Attribution); solo se acepta un recurso CSV alojado en intranet.caib.es; una vez por año, y el año siguiente se busca desde octubre cada 7 días; un CSV con menos de 8 festivos para Palma se rechaza como formato desconocido y no borra lo guardado. Los eventos son texto del usuario, saneado y escapado. Base data/contexto.sqlite con copia diaria contexto-copia.sqlite. Restaurar el registro de cruceros: solo desde backups/cruceros-copia.sqlite, abierta en solo lectura para validarla, nunca con sincronización en curso, y conservando el registro actual como cruceros-antes-de-restaurar.sqlite.
+diff --git a/package.json b/package.json
+index cccbf30..8259c6e 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.25.0",
++  "version": "0.26.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index c65ff12..2686f5a 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -8,7 +8,7 @@ Copias: Configuración permite crear una copia con datos y fotos y restaurarla;
+ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español lee el texto y propone un proveedor existente. No extrae cantidades ni lee PDF.
+ IA local: reglas deterministas leen el título del documento (factura, proforma, abono, albarán, lista de precios, oferta) o reconocen un mensaje, y un modelo pequeño incluido en el equipo (Qwen3 0.6B) da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. El modelo propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+-Cruceros: herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares para el puerto de Palma; panel de hoy (cruceros, pasajeros declarados, mayor concentración, impacto potencial, próxima llegada), mañana, próximos 7 y 30 días, calendario mensual con histórico desde 2014 y registro con buscador; el detalle del día muestra la línea temporal de cruceros en puerto por hora, la máxima coincidencia y una tarjeta por barco con llegada, salida, duración, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales editables en Configuración, y mide carga portuaria, no clientes; lo que el puerto no publica (naviera, capacidad, terminal) sale como «No disponible» y naviera y capacidad se pueden anotar en la ficha del barco indicando la fuente; nada se inventa; las horas son las de Palma; una escala que desaparece queda como «Retirada de la previsión»; sin internet se ven los últimos datos; la consulta se desactiva en Configuración → Cruceros en Palma; la app solo lee y no envía datos. Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
++Cruceros: herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares para el puerto de Palma; panel de hoy (cruceros, pasajeros declarados, mayor concentración, impacto potencial, próxima llegada), mañana, próximos 7 y 30 días, calendario mensual con histórico desde 2014 y registro con buscador; el detalle del día muestra la línea temporal de cruceros en puerto por hora, la máxima coincidencia y una tarjeta por barco con llegada, salida, duración, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales editables en Configuración, y mide carga portuaria, no clientes; lo que el puerto no publica (naviera, capacidad, terminal) sale como «No disponible» y naviera y capacidad se pueden anotar en la ficha del barco indicando la fuente; nada se inventa; las horas son las de Palma; una escala que desaparece queda como «Retirada de la previsión»; sin internet se ven los últimos datos; la consulta se desactiva en Configuración → Cruceros en Palma; la app solo lee y no envía datos; cada día muestra también el clima previsto (MET Norway), si es festivo según el calendario oficial del Govern balear y los eventos que anota el usuario con «Añadir evento»; la pestaña «Ventas e impacto» compara los kilos vendidos por nivel de impacto sin calcular correlaciones y avisa cuando hay pocos días; «Restaurar copia del registro» en Configuración recupera el registro de cruceros desde la copia diaria. Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+ Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se responde por WhatsApp escribiendo en el propio mensaje o con respuestas rápidas que rellenan el cuadro (se envía una sola vez al pulsar Enviar) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
+ WhatsApp: se vincula por QR con el teléfono del negocio. Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.
+diff --git a/src/cruises/service.cjs b/src/cruises/service.cjs
+index 378e9a7..7302c78 100644
+--- a/src/cruises/service.cjs
++++ b/src/cruises/service.cjs
+@@ -26,6 +26,9 @@ const {
+   SOURCE_NAME,
+   SOURCE_URL,
+ } = require("../../build/cruises.js");
++const fs = require("node:fs");
++const path = require("node:path");
++const { DatabaseSync } = require("node:sqlite");
+ const { CruiseRepository } = require("./repository.cjs");
+ const { ApbProvider } = require("./provider-apb.cjs");
+ 
+@@ -391,6 +394,55 @@ class CruiseService {
+       lastDeparture: s.lastDeparture,
+     };
+   }
++  /** Qué hay en la copia diaria del registro (o null si no existe o no se puede leer). */
++  copyInfo(backupDir) {
++    const file = path.join(backupDir, "cruceros-copia.sqlite");
++    if (!fs.existsSync(file)) return null;
++    try {
++      const db = new DatabaseSync(file, { readOnly: true });
++      try {
++        return {
++          file,
++          modifiedAt: fs.statSync(file).mtime.toISOString(),
++          calls: db.prepare("SELECT COUNT(*) n FROM calls").get().n,
++          ships: db.prepare("SELECT COUNT(*) n FROM ships").get().n,
++        };
++      } finally {
++        db.close();
++      }
++    } catch {
++      return null;
++    }
++  }
++  /** Sustituye el registro por la copia. El registro actual queda guardado al lado, nunca se pierde. */
++  restoreCopy(backupDir) {
++    if (this.busy || this.backfilling)
++      throw Error("Hay una sincronización en curso. Espera a que termine.");
++    const info = this.copyInfo(backupDir);
++    if (!info)
++      throw Error("No hay una copia legible del registro de cruceros.");
++    if (!info.calls) throw Error("La copia está vacía: no se restaura.");
++    const current = this.repo.file;
++    this.repo.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
++    this.repo.close();
++    try {
++      fs.copyFileSync(
++        current,
++        current.replace(/\.sqlite$/, "-antes-de-restaurar.sqlite"),
++      );
++      for (const extra of ["-wal", "-shm"])
++        fs.rmSync(current + extra, { force: true });
++      fs.copyFileSync(info.file, current);
++    } finally {
++      this.repo = new CruiseRepository(path.dirname(current));
++    }
++    this.log(
++      "cruceros: registro restaurado desde la copia (" +
++        info.calls +
++        " escalas)",
++    );
++    return info;
++  }
+   setShipInfo(key, input) {
+     const int = (v, max) => {
+       if (v === "" || v === null || v === undefined) return null;
+diff --git a/src/server.cjs b/src/server.cjs
+index 45cb9eb..685b859 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -21,6 +21,12 @@ const { appendLog } = require("./logs.cjs");
+ const { csvCell } = require("./csv.cjs");
+ const { CruiseService } = require("./cruises/service.cjs");
+ const { defaultThresholds } = require("../build/cruises.js");
++const { ContextService } = require("./context/service.cjs");
++const {
++  salesByImpact,
++  dailySalesKg,
++  MIN_DAYS_PER_LEVEL,
++} = require("../build/context.js");
+ const version = require("../package.json").version;
+ const { Store } = require("../build/store.js");
+ function createApp({
+@@ -32,6 +38,8 @@ function createApp({
+   batchDelayMs = Number(process.env.GELATO_BATCH_DELAY_MS) || 4000,
+   // Cruise source adapter: injectable for tests; the automatic sync never runs under node:test.
+   cruiseProvider,
++  // Weather and holiday adapters, injectable for tests ({ weather, holidays }).
++  contextProviders,
+   cruiseAuto = !process.env.NODE_TEST_CONTEXT &&
+     process.env.GELATO_CRUISES_AUTO !== "0",
+ } = {}) {
+@@ -85,10 +93,13 @@ function createApp({
+         copyToSecondary(created);
+         // The cruise registry rides along: one rolling copy here and in the secondary folder.
+         try {
+-          const copy = cruises.repo.backupTo(backupDir);
+           const second = store.setting("backup_dir_secondary");
+-          if (second)
+-            fs.copyFileSync(copy, path.join(second, path.basename(copy)));
++          for (const copy of [
++            cruises.repo.backupTo(backupDir),
++            context.backupTo(backupDir),
++          ])
++            if (second)
++              fs.copyFileSync(copy, path.join(second, path.basename(copy)));
+         } catch (e) {
+           appendLog(
+             path.join(dataDir, "runtime", "logs", "cruceros.log"),
+@@ -203,9 +214,19 @@ function createApp({
+       appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
+   });
+   const cruisesOn = () => store.setting("cruises_off") !== "1";
++  // Day context (weather forecast, official holidays, the user's own events). Same switch as the
++  // cruise query: one setting turns off every outbound read.
++  const context = new ContextService(dataDir, {
++    ...(contextProviders || {}),
++    log: (line) =>
++      appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
++  });
+   // The timer only asks «is it due?»: intervals and backoff live in the service.
+   const autoCruises = () => {
+-    if (cruisesOn()) cruises.tick().catch(() => {});
++    if (cruisesOn()) {
++      cruises.tick().catch(() => {});
++      context.sync().catch(() => {});
++    }
+   };
+   let cruiseTimer = null;
+   if (cruiseAuto) {
+@@ -466,6 +487,26 @@ function createApp({
+               offset: Number(q("offset")) || 0,
+             }),
+           );
++        else if (u.pathname === "/api/cruises/context")
++          json(200, context.range(q("from"), q("to")));
++        else if (u.pathname === "/api/cruises/sales") {
++          // Registered sales next to that day's impact level. Facts side by side, no correlation.
++          const sales = dailySalesKg(store.load().movements);
++          const days = [...sales.keys()].sort();
++          const rows = days.map((day) => ({
++            day,
++            salesKg: sales.get(day),
++            impact: cruises.brief(day).impact,
++          }));
++          json(200, {
++            minDays: MIN_DAYS_PER_LEVEL,
++            daysWithSales: rows.length,
++            first: days[0] || null,
++            last: days.at(-1) || null,
++            levels: salesByImpact(rows),
++          });
++        } else if (u.pathname === "/api/cruises/copy")
++          json(200, { copy: cruises.copyInfo(backupDir) });
+         else if (u.pathname === "/api/cruises/syncs")
+           json(200, {
+             syncs: cruises.repo.lastSyncs(15),
+@@ -494,6 +535,9 @@ function createApp({
+         cruises: cruisesOn()
+           ? report.days.map((d) => cruises.brief(d.date))
+           : null,
++        context: cruisesOn()
++          ? context.range(report.days[0].date, report.days.at(-1).date).days
++          : null,
+       });
+       return;
+     }
+@@ -975,7 +1019,30 @@ function createApp({
+             });
+             return;
+           }
+-          await cruises.sync("manual");
++          if (data.type === "event") {
++            context.addEvent(data);
++            json(200, { ok: true });
++            return;
++          }
++          if (data.type === "eventDelete") {
++            context.deleteEvent(data.id);
++            json(200, { ok: true });
++            return;
++          }
++          if (data.type === "restore") {
++            const info = cruises.restoreCopy(backupDir);
++            json(200, {
++              restored: info,
++              enabled: true,
++              auto: cruiseAuto,
++              ...cruises.dashboard(),
++            });
++            return;
++          }
++          await Promise.all([
++            cruises.sync("manual"),
++            context.sync({ force: true }),
++          ]);
+           json(200, {
+             enabled: true,
+             auto: cruiseAuto,
+@@ -1092,6 +1159,7 @@ function createApp({
+       clearInterval(purgeTimer);
+       if (cruiseTimer) clearInterval(cruiseTimer);
+       cruises.close();
++      context.close();
+       ai.cancel().catch(() => {});
+       store.close();
+       whatsapp.close().catch(() => {});
+diff --git a/src/styles.css b/src/styles.css
+index 1138f2d..cc035df 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3960,3 +3960,34 @@ dialog::backdrop {
+     display: none;
+   }
+ }
++.ctx-line {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 4px;
++  margin-top: 2px;
++}
++.ctx {
++  padding: 2px 8px;
++  border-radius: 999px;
++  border: 1px solid var(--line);
++  background: var(--surface-2);
++  font-size: 12px;
++  font-weight: 600;
++  color: var(--ink-soft);
++}
++.ctx-holiday {
++  background: var(--lavanda-claro);
++  color: var(--lavanda-texto);
++  border-color: transparent;
++}
++.ctx-event {
++  background: var(--arena-claro);
++  border-color: transparent;
++}
++.cal-mark {
++  font-size: 10px;
++  font-style: normal;
++  font-weight: 700;
++  text-transform: uppercase;
++  letter-spacing: 0.03em;
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index 6b4cdf5..a29240c 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -1348,6 +1348,65 @@ async function action(name, el) {
+     );
+     return;
+   }
++  if (name === "cruiseEventAdd") {
++    const day = el.dataset.day;
++    modal(
++      "Añadir evento",
++      "Algo que puede mover gente ese día: una feria, un concierto, una fiesta de barrio. Es una nota tuya; la app no la saca de ninguna fuente.",
++      field("Nombre", "name", "", "text", 'maxlength="80" required') +
++        field("Desde", "from", day, "date", "required") +
++        field("Hasta", "to", day, "date", "required") +
++        field(
++          "Nota",
++          "note",
++          "",
++          "text",
++          'maxlength="200" placeholder="Lugar, horario…"',
++        ),
++      async (f) => {
++        await request("/api/cruises", {
++          type: "event",
++          name: f.get("name"),
++          from: f.get("from"),
++          to: f.get("to"),
++          note: f.get("note"),
++        });
++        await loadCruises();
++        toast("Evento anotado.");
++        return true;
++      },
++    );
++    return;
++  }
++  if (name === "cruiseEventDelete") {
++    await request("/api/cruises", { type: "eventDelete", id: el.dataset.id });
++    await loadCruises();
++    toast("Evento quitado.");
++    return;
++  }
++  if (name === "cruiseRestore") {
++    const r = await request("/api/cruises/copy");
++    if (!r.copy) {
++      toast(
++        "Todavía no hay copia del registro de cruceros. Se crea con la copia diaria.",
++      );
++      return;
++    }
++    modal(
++      "Restaurar el registro de cruceros",
++      `La copia es del ${cruiseStamp(r.copy.modifiedAt)} y contiene ${r.copy.calls} escalas de ${r.copy.ships} barcos. Sustituye al registro actual, que queda guardado al lado como «cruceros-antes-de-restaurar.sqlite». Las escalas posteriores a la copia vuelven en la siguiente consulta al puerto.`,
++      '<p class="fineprint">Úsalo si el registro se dañó o perdiste las fichas de barcos que habías anotado.</p>',
++      async () => {
++        cruiseDash = await request("/api/cruises", { type: "restore" });
++        cruiseRange = null;
++        await loadCruises();
++        toast("Registro de cruceros restaurado desde la copia.");
++        return true;
++      },
++      "Restaurar",
++    );
++    return;
++  }
+   if (name === "cruiseSyncs") {
+     const r = await request("/api/cruises/syncs");
+     modal(
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index 4f72161..0f4aefc 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nHerramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nHerramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma. Contexto del día: cada día muestra además el clima previsto para Palma (MET Norway, unos 9 días; de un día pasado solo queda la previsión que había, nunca una observación), si es festivo según el calendario laboral oficial del Govern de les Illes Balears (autonómicos y los dos locales de Palma) y los eventos que anotes tú con «Añadir evento». La pestaña «Ventas e impacto» pone los kilos vendidos de cada día con ventas registradas junto al nivel de impacto de ese día: días, media, mínimo y máximo por nivel; con menos de 8 días de un nivel la app dice que la media todavía no es fiable; no calcula correlaciones ni predice ventas. En Configuración → Cruceros en Palma, «Restaurar copia del registro» recupera el registro de cruceros (y tus fichas de barcos) desde la copia diaria; el registro actual queda guardado al lado.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views-cruises.js b/src/ui/views-cruises.js
+index 6f18176..07f32f0 100644
+--- a/src/ui/views-cruises.js
++++ b/src/ui/views-cruises.js
+@@ -9,6 +9,9 @@ let cruiseDash = null,
+   cruiseRange = null,
+   cruiseDetail = null,
+   cruiseFound = null,
++  cruiseContext = {},
++  cruiseContextStatus = null,
++  cruiseSales = null,
+   cruiseBusy = false,
+   cruiseSyncing = false,
+   cruiseTab = "week",
+@@ -94,6 +97,26 @@ async function loadCruises({ sync = false } = {}) {
+         "/api/cruises/day?day=" + (cruiseDay || cruiseDash.today),
+       );
+       if (cruiseTab === "registry") await searchCruises();
++      if (cruiseTab === "sales")
++        cruiseSales = await request("/api/cruises/sales");
++      // Day context (weather forecast, official holidays, own events) for what is on screen.
++      const selected = cruiseDay || cruiseDash.today;
++      const lo = [from, selected, cruiseDash.today].sort()[0];
++      const hi = [to, selected, cruiseShift(cruiseDash.today, 1)].sort().at(-1);
++      cruiseContext = {};
++      if (cruiseShift(lo, 100) >= hi) {
++        const ctx = await request(`/api/cruises/context?from=${lo}&to=${hi}`);
++        cruiseContext = ctx.days;
++        cruiseContextStatus = ctx.status;
++      } else
++        for (const [a, b] of [
++          [from, to],
++          [selected, selected],
++        ]) {
++          const ctx = await request(`/api/cruises/context?from=${a}&to=${b}`);
++          Object.assign(cruiseContext, ctx.days);
++          cruiseContextStatus = ctx.status;
++        }
+     }
+     if (sync) reloadState().catch(() => {});
+   } catch (e) {
+@@ -117,6 +140,70 @@ async function searchCruises(offset = 0) {
+       : found;
+ }
+ 
++// Context of a day in one short line: forecast, official holiday, own events. Missing = nothing.
++const tempText = (w) => `${Math.round(w.tMax)}° / ${Math.round(w.tMin)}°`;
++function cruiseContextLine(day) {
++  const c = cruiseContext[day];
++  if (!c) return "";
++  const parts = [];
++  if (c.weather)
++    parts.push(
++      `<span class="ctx ctx-weather">${esc(tempText(c.weather))}${c.weather.label ? " · " + esc(c.weather.label) : ""}${c.weather.precipMm ? " · " + cnum(c.weather.precipMm) + " mm" : ""}</span>`,
++    );
++  for (const h of c.holidays)
++    parts.push(`<span class="ctx ctx-holiday">Festivo: ${esc(h.name)}</span>`);
++  for (const e of c.events)
++    parts.push(`<span class="ctx ctx-event">Evento: ${esc(e.name)}</span>`);
++  return parts.length ? `<span class="ctx-line">${parts.join("")}</span>` : "";
++}
++function cruiseContextBlock(day) {
++  const c = cruiseContext[day] || { weather: null, holidays: [], events: [] };
++  const w = c.weather;
++  const weather = w
++    ? `<strong class="kpi-text">${esc(tempText(w))}${w.label ? " · " + esc(w.label) : ""}</strong><small>${w.precipMm === null ? "Lluvia: no disponible" : "Lluvia prevista: " + cnum(w.precipMm) + " mm"} · ${esc(w.kind)}${w.approximate ? ", orientativa" : ""} · consultada el ${esc(cruiseStamp(w.fetchedAt))}</small>`
++    : `<strong class="kpi-text">${NA}</strong><small>La previsión cubre unos 9 días desde hoy. No hay observaciones de días pasados.</small>`;
++  const holidays = c.holidays.length
++    ? c.holidays
++        .map(
++          (h) =>
++            `<strong class="kpi-text">${esc(h.name)}</strong><small>${h.scope === "local" ? "Fiesta local de Palma" : "Festivo en las Illes Balears"} · calendario oficial</small>`,
++        )
++        .join("")
++    : `<strong class="kpi-text">${cruiseContextStatus && !cruiseContextStatus.holidays.loaded && day.slice(0, 4) === String(cruiseContextStatus.holidays.year) ? NA : "No es festivo"}</strong><small>${cruiseContextStatus && !cruiseContextStatus.holidays.loaded ? "Calendario oficial todavía sin cargar" + (cruiseContextStatus.holidays.note ? ": " + esc(cruiseContextStatus.holidays.note) : "") : "Según el calendario laboral oficial"}</small>`;
++  const events = c.events.length
++    ? c.events
++        .map(
++          (e) =>
++            `<strong class="kpi-text">${esc(e.name)}</strong><small>${e.from === e.to ? "" : esc(cruiseShort(e.from)) + " – " + esc(cruiseShort(e.to)) + " · "}${esc(e.note || "anotado por ti")} <button class="text-link" data-action="cruiseEventDelete" data-id="${esc(e.id)}">Quitar</button></small>`,
++        )
++        .join("")
++    : `<strong class="kpi-text"><span class="na">Ninguno anotado</span></strong><small>Los eventos los anotas tú: Palma no publica una agenda reutilizable.</small>`;
++  return `<h3 class="cruise-sub">Contexto del día</h3><div class="cruise-kpis"><div><span>Clima previsto</span>${weather}</div><div><span>Festivo</span>${holidays}</div><div><span>Eventos</span>${events}<span>${btn("Añadir evento", "cruiseEventAdd", "secondary", `data-day="${esc(day)}"`)}</span></div></div>`;
++}
++function cruiseSalesView() {
++  const s = cruiseSales;
++  if (!s) return '<p class="muted">Calculando…</p>';
++  const labels = {
++    none: "Sin cruceros",
++    low: "Bajo",
++    medium: "Medio",
++    high: "Alto",
++    veryHigh: "Muy alto",
++    unknown: "No calculable",
++  };
++  return `<p>Kilos vendidos en los días con ventas registradas, agrupados por el impacto potencial de ese día. Son hechos puestos lado a lado: la app no calcula correlaciones ni predice ventas.</p>${
++    s.daysWithSales
++      ? `<div class="table-scroll"><table class="report-table cruise-table"><thead><tr><th>Impacto del día</th><th>Días con ventas</th><th>Media vendida</th><th>Mínimo – máximo</th><th>Lectura</th></tr></thead><tbody>${s.levels
++          .map(
++            (l) =>
++              `<tr><td><span class="impact impact-${esc(l.impact)}">${labels[l.impact]}</span></td><td>${l.days}</td><td>${l.days ? cnum(l.meanKg) + " kg" : "—"}</td><td>${l.days ? cnum(l.minKg) + " – " + cnum(l.maxKg) + " kg" : "—"}</td><td>${l.enough ? "Media con días suficientes" : l.days ? `Pocos días: faltan ${s.minDays - l.days} para que la media diga algo` : "Sin días todavía"}</td></tr>`,
++          )
++          .join(
++            "",
++          )}</tbody></table></div><p class="fineprint">${s.daysWithSales} días con ventas, del ${esc(cruiseDate(s.first, { day: "numeric", month: "long", year: "numeric" }))} al ${esc(cruiseDate(s.last, { day: "numeric", month: "long", year: "numeric" }))}. Solo cuentan los días con «Ventas y mermas del día» registradas: un día sin registro no distingue cerrado de no apuntado. Una media necesita al menos ${s.minDays} días de ese nivel.</p>`
++      : '<div class="empty compact">Todavía no hay ventas registradas. Apunta las ventas del día en Producción y aquí irán apareciendo junto al impacto de cada día.</div>'
++  }`;
++}
+ function cruiseStatusStrip(d) {
+   const s = d.status;
+   const kind = cruiseSyncing ? "syncing" : s.state;
+@@ -151,14 +238,14 @@ function cruiseDashboard(d) {
+         : "0"
+       : cnum(t.passengers) +
+         (t.undeclared ? `<small>${t.undeclared} sin declarar</small>` : "");
+-  return `<section class="panel cruise-today" aria-label="Resumen de hoy"><div class="panel-heading"><div><h2>Hoy · ${esc(cruiseLong(d.today))}</h2><p>${d.inPortNow.length ? "Ahora en puerto: " + esc(d.inPortNow.join(", ")) + "." : "Ahora mismo no hay cruceros en puerto."} Hora de Palma: ${esc(d.now.slice(11))}.</p></div></div><div class="cruise-kpis"><div><span>Cruceros hoy</span><strong>${t.ships}</strong><small>llegan ${t.arrivals} · parten ${t.departures}</small></div><div><span>Pasajeros declarados</span><strong>${pax}</strong><small>declarados al puerto, no clientes</small></div><div><span>Mayor concentración</span><strong class="kpi-text">${peak}</strong></div><div><span>Impacto potencial</span><strong class="kpi-text">${impactPill(t)}</strong><small>carga portuaria calculada</small></div><div><span>Próxima llegada</span><strong class="kpi-text">${next}</strong></div></div><button class="cruise-tomorrow" data-action="cruiseDay" data-day="${esc(m.day)}"><strong>Mañana</strong> · ${m.ships} ${m.ships === 1 ? "crucero" : "cruceros"}${m.ships ? " · " + (m.passengers === null ? "pasajeros no disponibles" : cnum(m.passengers) + " pasajeros declarados") + (m.firstArrival ? " · primera llegada " + m.firstArrival : "") : ""} · ${impactPill(m)} ${icon("arrow")}</button></section>`;
++  return `<section class="panel cruise-today" aria-label="Resumen de hoy"><div class="panel-heading"><div><h2>Hoy · ${esc(cruiseLong(d.today))}</h2><p>${d.inPortNow.length ? "Ahora en puerto: " + esc(d.inPortNow.join(", ")) + "." : "Ahora mismo no hay cruceros en puerto."} Hora de Palma: ${esc(d.now.slice(11))}.</p>${cruiseContextLine(d.today)}</div></div><div class="cruise-kpis"><div><span>Cruceros hoy</span><strong>${t.ships}</strong><small>llegan ${t.arrivals} · parten ${t.departures}</small></div><div><span>Pasajeros declarados</span><strong>${pax}</strong><small>declarados al puerto, no clientes</small></div><div><span>Mayor concentración</span><strong class="kpi-text">${peak}</strong></div><div><span>Impacto potencial</span><strong class="kpi-text">${impactPill(t)}</strong><small>carga portuaria calculada</small></div><div><span>Próxima llegada</span><strong class="kpi-text">${next}</strong></div></div><button class="cruise-tomorrow" data-action="cruiseDay" data-day="${esc(m.day)}"><strong>Mañana</strong> · ${m.ships} ${m.ships === 1 ? "crucero" : "cruceros"}${m.ships ? " · " + (m.passengers === null ? "pasajeros no disponibles" : cnum(m.passengers) + " pasajeros declarados") + (m.firstArrival ? " · primera llegada " + m.firstArrival : "") : ""} · ${impactPill(m)} ${icon("arrow")}</button></section>`;
+ }
+ function cruiseDayCard(s, selected) {
+   return `<button class="cruise-day ${s.day === selected ? "active" : ""} level-${esc(s.impact)}" data-action="cruiseDay" data-day="${esc(s.day)}" aria-label="${esc(cruiseLong(s.day))}: ${s.ships} cruceros, impacto ${esc(s.impactLabel)}"><span>${esc(cruiseShort(s.day))}</span><strong>${s.ships} ${s.ships === 1 ? "crucero" : "cruceros"}</strong>${
+     s.ships
+       ? `<small>${s.passengers === null ? "Pasajeros: no disponible" : cnum(s.passengers) + " pasajeros declarados"}</small><small>${s.firstArrival ? "Primera llegada " + s.firstArrival : "Ya en puerto"} · ${s.lastDeparture ? "última salida " + s.lastDeparture : "sigue en puerto"}</small>`
+       : "<small>Sin escalas registradas</small>"
+-  }${impactPill(s)}</button>`;
++  }${cruiseContextLine(s.day)}${impactPill(s)}</button>`;
+ }
+ function cruiseCalendar(days, selected, today) {
+   const month = days[0].day.slice(0, 7);
+@@ -170,7 +257,7 @@ function cruiseCalendar(days, selected, today) {
+     ),
+     ...days.map(
+       (s) =>
+-        `<button class="cal-cell level-${esc(s.impact)} ${s.day === selected ? "active" : ""} ${s.day === today ? "today" : ""}" data-action="cruiseDay" data-day="${esc(s.day)}" aria-label="${esc(cruiseLong(s.day))}: ${s.ships} cruceros, impacto ${esc(s.impactLabel)}"><b>${Number(s.day.slice(8))}</b>${s.ships ? `<span>${s.ships} ${s.ships === 1 ? "crucero" : "cruceros"}</span><em>${esc(s.impactLabel)}</em>` : "<span>—</span>"}</button>`,
++        `<button class="cal-cell level-${esc(s.impact)} ${s.day === selected ? "active" : ""} ${s.day === today ? "today" : ""}" data-action="cruiseDay" data-day="${esc(s.day)}" aria-label="${esc(cruiseLong(s.day))}: ${s.ships} cruceros, impacto ${esc(s.impactLabel)}"><b>${Number(s.day.slice(8))}</b>${s.ships ? `<span>${s.ships} ${s.ships === 1 ? "crucero" : "cruceros"}</span><em>${esc(s.impactLabel)}</em>` : "<span>—</span>"}${cruiseContext[s.day]?.holidays.length ? '<i class="cal-mark">Festivo</i>' : ""}${cruiseContext[s.day]?.events.length ? '<i class="cal-mark">Evento</i>' : ""}</button>`,
+     ),
+   ].join("");
+   return `<div class="cal-nav">${btn("← Mes anterior", "cruiseMonthPrev", "secondary")}<h3>${esc(cruiseDate(month + "-01", { month: "long", year: "numeric" }))}</h3>${btn("Mes siguiente →", "cruiseMonthNext", "secondary")}</div><div class="cal-grid"><div class="cal-head">L</div><div class="cal-head">M</div><div class="cal-head">X</div><div class="cal-head">J</div><div class="cal-head">V</div><div class="cal-head">S</div><div class="cal-head">D</div>${cells}</div><p class="cal-legend"><span class="impact impact-none">Sin cruceros</span><span class="impact impact-low">Bajo</span><span class="impact impact-medium">Medio</span><span class="impact impact-high">Alto</span><span class="impact impact-veryHigh">Muy alto</span><span class="impact impact-unknown">No calculable</span></p>`;
+@@ -229,7 +316,7 @@ function cruiseDayDetail(detail, today) {
+     cruiseDash.status.state === "never"
+       ? "Información pendiente de sincronización."
+       : "No hay escalas de cruceros registradas para este día.";
+-  return `<section class="panel" id="cruise-detail"><div class="panel-heading"><div><h2>${esc(cruiseLong(s.day))}${s.day === today ? " · hoy" : ""}</h2><p>Detalle del día con horas del puerto de Palma.</p></div><div class="heading-actions">${btn("← Día anterior", "cruisePrev", "secondary")}${btn("Hoy", "cruiseToday", "secondary", s.day === today ? "disabled" : "")}${btn("Día siguiente →", "cruiseNext", "secondary")}</div></div><div class="cruise-body">${
++  return `<section class="panel" id="cruise-detail"><div class="panel-heading"><div><h2>${esc(cruiseLong(s.day))}${s.day === today ? " · hoy" : ""}</h2><p>Detalle del día con horas del puerto de Palma.</p></div><div class="heading-actions">${btn("← Día anterior", "cruisePrev", "secondary")}${btn("Hoy", "cruiseToday", "secondary", s.day === today ? "disabled" : "")}${btn("Día siguiente →", "cruiseNext", "secondary")}</div></div><div class="cruise-body">${cruiseContextBlock(s.day)}<h3 class="cruise-sub">Cruceros</h3>${
+     s.ships
+       ? `<div class="cruise-kpis">${fact("Cruceros", s.ships, `llegan ${s.arrivals} · parten ${s.departures}`)}${fact("Pasajeros declarados", paxText(s.passengers), s.undeclared ? s.undeclared + " barcos sin declarar" : "suma del día")}${fact("Primera llegada", s.firstArrival || "—")}${fact("Última salida", s.lastDeparture || "—")}${fact("Máxima coincidencia", `${s.peak.ships} ${s.peak.ships === 1 ? "crucero" : "cruceros"}`, `${s.peak.from} – ${s.peak.to}`)}${fact("Pasajeros a la vez", paxText(s.peakPassengers), s.peakPassengers === null ? "" : `${s.peakPassengersFrom} – ${s.peakPassengersTo}`)}${fact("Impacto potencial", impactPill(s), "no son clientes esperados")}</div><h3 class="cruise-sub">Cruceros en puerto por hora</h3>${cruiseTimelineSvg(detail)}<ol class="cruise-steps">${detail.timeline.map((t) => `<li><b>${esc(t.time)}</b> ${t.ships.length ? esc(t.ships.join(" + ")) : "puerto sin cruceros"}</li>`).join("")}</ol><h3 class="cruise-sub">Barcos</h3><div class="cruise-cards">${detail.calls.map(cruiseCard).join("")}</div>`
+       : `<div class="empty compact">${empty}</div>`
+@@ -287,6 +374,7 @@ function cruisePage() {
+     ["month", "Próximos 30 días"],
+     ["calendar", "Calendario"],
+     ["registry", "Registro y búsqueda"],
++    ["sales", "Ventas e impacto"],
+   ]
+     .map(
+       ([id, label]) =>
+@@ -302,15 +390,17 @@ function cruisePage() {
+     `<section class="panel"><div class="panel-heading"><div class="cruise-tabs" role="group" aria-label="Periodo">${tabs}</div>${cruiseTab === "week" || cruiseTab === "month" ? `<label class="check-row"><input type="checkbox" id="cruise-impact-only" ${cruiseImpactOnly ? "checked" : ""}> Solo impacto alto o muy alto</label>` : ""}</div><div class="cruise-body">${
+       cruiseTab === "registry"
+         ? cruiseRegistry()
+-        : !cruiseRange
+-          ? '<p class="muted">Cargando…</p>'
+-          : cruiseTab === "calendar"
+-            ? cruiseCalendar(cruiseRange.days, selected, d.today)
+-            : days.length
+-              ? `<div class="cruise-days">${days.map((s) => cruiseDayCard(s, selected)).join("")}</div>`
+-              : '<p class="muted">Ningún día de este periodo alcanza impacto alto.</p>'
++        : cruiseTab === "sales"
++          ? cruiseSalesView()
++          : !cruiseRange
++            ? '<p class="muted">Cargando…</p>'
++            : cruiseTab === "calendar"
++              ? cruiseCalendar(cruiseRange.days, selected, d.today)
++              : days.length
++                ? `<div class="cruise-days">${days.map((s) => cruiseDayCard(s, selected)).join("")}</div>`
++                : '<p class="muted">Ningún día de este periodo alcanza impacto alto.</p>'
+     }</div></section>` +
+     (cruiseDetail ? cruiseDayDetail(cruiseDetail, d.today) : "") +
+-    `<section class="panel"><div class="panel-heading"><div><h2>Cómo leer estos datos</h2><p>Nada de esta pantalla está inventado ni estimado por la app.</p></div></div><div class="cruise-body cruise-notes"><p><strong>Impacto potencial.</strong> Es la mayor suma de pasajeros declarados que coinciden a la vez en puerto ese día. Menos de ${cnum(t.medium)}: Bajo. Menos de ${cnum(t.high)}: Medio. Menos de ${cnum(t.veryHigh)}: Alto. A partir de ahí: Muy alto. Si ningún barco declara pasajeros: No calculable. Los umbrales se cambian en Configuración.</p><p><strong>Pasajeros declarados.</strong> Es lo que cada barco declara al puerto para esa escala: en tránsito más el mayor entre los que desembarcan y los que embarcan (la fuente llama «trasbordo» al tránsito). No es la capacidad del barco ni el número de personas que bajará a la ciudad.</p><p><strong>Lo que la fuente no publica</strong> aparece como «No disponible»: naviera, capacidad y terminal. Naviera y capacidad puedes anotarlas tú en la ficha del barco, indicando de dónde sale el dato.</p><p><strong>Estados.</strong> Son los del puerto: atraque solicitado, concedido, iniciado y finalizado. El puerto no publica retrasos ni cancelaciones; si una escala anunciada desaparece, se marca «Retirada de la previsión».</p><p class="fineprint">Origen de los datos: Autoridad Portuaria de Baleares. Registro: ${cnum(d.status.totals.calls)} escalas de ${cnum(d.status.totals.ships)} barcos${d.status.totals.first ? ", desde " + esc(cruiseDate(d.status.totals.first.slice(0, 10), { month: "long", year: "numeric" })) : ""}. ${h.done ? "Histórico oficial importado." : h.running ? "Importando el histórico oficial desde 2014 (página " + h.page + ")…" : "El histórico oficial desde 2014 se importa en segundo plano."} Consulta automática cada ${d.status.intervalHours} h según la cercanía de barcos. ${d.status.integrity.length ? "Avisos de integridad: " + esc(d.status.integrity.join("; ")) + "." : ""} ${btn("Ver sincronizaciones", "cruiseSyncs", "secondary")}</p></div></section>`
++    `<section class="panel"><div class="panel-heading"><div><h2>Cómo leer estos datos</h2><p>Nada de esta pantalla está inventado ni estimado por la app.</p></div></div><div class="cruise-body cruise-notes"><p><strong>Impacto potencial.</strong> Es la mayor suma de pasajeros declarados que coinciden a la vez en puerto ese día. Menos de ${cnum(t.medium)}: Bajo. Menos de ${cnum(t.high)}: Medio. Menos de ${cnum(t.veryHigh)}: Alto. A partir de ahí: Muy alto. Si ningún barco declara pasajeros: No calculable. Los umbrales se cambian en Configuración.</p><p><strong>Pasajeros declarados.</strong> Es lo que cada barco declara al puerto para esa escala: en tránsito más el mayor entre los que desembarcan y los que embarcan (la fuente llama «trasbordo» al tránsito). No es la capacidad del barco ni el número de personas que bajará a la ciudad.</p><p><strong>Lo que la fuente no publica</strong> aparece como «No disponible»: naviera, capacidad y terminal. Naviera y capacidad puedes anotarlas tú en la ficha del barco, indicando de dónde sale el dato.</p><p><strong>Estados.</strong> Son los del puerto: atraque solicitado, concedido, iniciado y finalizado. El puerto no publica retrasos ni cancelaciones; si una escala anunciada desaparece, se marca «Retirada de la previsión».</p><p><strong>Clima, festivos y eventos.</strong> El clima es la previsión de MET Norway para Palma (unos 9 días); de un día pasado solo se conserva la previsión que había, nunca una observación. Los festivos salen del calendario laboral oficial del Govern de les Illes Balears. Los eventos los anotas tú.${cruiseContextStatus ? ` ${cruiseContextStatus.weather.error ? "Clima: " + esc(cruiseContextStatus.weather.error) : cruiseContextStatus.weather.updatedAt ? "Clima consultado el " + esc(cruiseStamp(cruiseContextStatus.weather.updatedAt)) + "." : "Clima todavía sin consultar."} ${cruiseContextStatus.holidays.loaded ? "Festivos de " + cruiseContextStatus.holidays.year + " cargados." : "Festivos de " + cruiseContextStatus.holidays.year + " sin cargar" + (cruiseContextStatus.holidays.note ? ": " + esc(cruiseContextStatus.holidays.note) : "") + "."}` : ""}</p><p class="fineprint">Origen de los datos: Autoridad Portuaria de Baleares (cruceros), MET Norway, CC BY 4.0 (clima) y Govern de les Illes Balears (festivos). Registro: ${cnum(d.status.totals.calls)} escalas de ${cnum(d.status.totals.ships)} barcos${d.status.totals.first ? ", desde " + esc(cruiseDate(d.status.totals.first.slice(0, 10), { month: "long", year: "numeric" })) : ""}. ${h.done ? "Histórico oficial importado." : h.running ? "Importando el histórico oficial desde 2014 (página " + h.page + ")…" : "El histórico oficial desde 2014 se importa en segundo plano."} Consulta automática cada ${d.status.intervalHours} h según la cercanía de barcos. ${d.status.integrity.length ? "Avisos de integridad: " + esc(d.status.integrity.join("; ")) + "." : ""} ${btn("Ver sincronizaciones", "cruiseSyncs", "secondary")}</p></div></section>`
+   );
+ }
+diff --git a/src/ui/views.js b/src/ui/views.js
+index cb6581d..077e6b9 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -256,7 +256,7 @@ function settings() {
+       )
+       .join(
+         "",
+-      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Cruceros en Palma</h2><p>Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares (al abrir y cada pocas horas). Solo lee: no envía ningún dato tuyo. Sin internet muestra lo último guardado.</p><label class="check-row"><input type="checkbox" id="cruises-enabled" ${cruiseInfo?.enabled === false ? "" : "checked"}> Consultar los cruceros del puerto</label><div class="setting-actions">${btn("Umbrales del impacto", "cruiseThresholds", "secondary", cruiseInfo?.enabled === false ? "disabled" : "")}</div><p class="fineprint">${cruiseInfo?.updatedAt ? "Última actualización: " + date(cruiseInfo.updatedAt) + " " + time(cruiseInfo.updatedAt) + "." : "Todavía sin datos."} Registro en cruceros.sqlite dentro de la carpeta de datos; el histórico no se borra.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
++      )}</select></label><p class="fineprint">La limpieza automática se ejecuta al abrir la app y cada seis horas. Antes existe siempre la copia automática diaria.</p></section><section class="panel settings-card"><h2>Cruceros en Palma</h2><p>Con internet, la app lee la previsión pública de escalas de la Autoridad Portuaria de Baleares (al abrir y cada pocas horas). Solo lee: no envía ningún dato tuyo. Sin internet muestra lo último guardado.</p><label class="check-row"><input type="checkbox" id="cruises-enabled" ${cruiseInfo?.enabled === false ? "" : "checked"}> Consultar los cruceros del puerto</label><div class="setting-actions">${btn("Umbrales del impacto", "cruiseThresholds", "secondary", cruiseInfo?.enabled === false ? "disabled" : "")}${btn("Restaurar copia del registro", "cruiseRestore", "secondary")}</div><p class="fineprint">${cruiseInfo?.updatedAt ? "Última actualización: " + date(cruiseInfo.updatedAt) + " " + time(cruiseInfo.updatedAt) + "." : "Todavía sin datos."} Registro en cruceros.sqlite dentro de la carpeta de datos; el histórico no se borra.</p></section><section class="panel settings-card"><h2>Lo que la app ha aprendido de tus correcciones</h2><p>Cuando corriges la lectura de un mensaje, la app recuerda la frase y aplica tu categoría a mensajes iguales o casi iguales. No entrena ningún modelo: son tus decisiones, y puedes olvidarlas aquí.</p>${
+       state.learned.length
+         ? state.learned
+             .slice(0, 30)
+diff --git a/tests/cruises.test.cjs b/tests/cruises.test.cjs
+index 31b9672..9b5989f 100644
+--- a/tests/cruises.test.cjs
++++ b/tests/cruises.test.cjs
+@@ -650,7 +650,24 @@ test("cruceros: rutas del servidor, permisos, umbrales e interruptor, sin red en
+   const provider = fakeProvider(state);
+   let app;
+   try {
+-    app = await createApp({ dataDir: dir, cruiseProvider: provider });
++    // The day-context sources are simulated too: no test ever touches the network.
++    const contextProviders = {
++      weather: {
++        async forecast() {
++          return { notModified: true, expires: "" };
++        },
++      },
++      holidays: {
++        async calendar() {
++          return { missing: true, reason: "prueba" };
++        },
++      },
++    };
++    app = await createApp({
++      dataDir: dir,
++      cruiseProvider: provider,
++      contextProviders,
++    });
+     const origin = new URL(app.url).origin;
+     const login = await fetch(app.url, { redirect: "manual" });
+     const cookie = login.headers.get("set-cookie").split(";")[0];

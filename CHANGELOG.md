@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.26.0 — 2026-09-18 · sesión 039
+
+Pendientes recomendados de Cruceros. Contexto del día: clima previsto para Palma (MET Norway, CC BY 4.0), festivos del calendario laboral oficial del Govern de les Illes Balears (autonómicos y locales de Palma) y eventos anotados por el usuario, visibles en el panel de hoy, las tarjetas de día, el calendario y el detalle. «Ventas e impacto»: kilos vendidos por nivel de impacto (días, media, mínimo y máximo), con aviso cuando hay menos de 8 días de un nivel; sin correlaciones ni predicciones. Restauración del registro de cruceros desde la copia diaria, conservando el registro actual. El informe semanal lleva también el contexto de cada día. Nuevo core/context.ts, src/context/providers.cjs y service.cjs (data/contexto.sqlite, con su copia diaria).
+
+No hecho, con motivo: agenda automática de eventos (el Ajuntament de Palma no publica una agenda reutilizable; los eventos son manuales) y observaciones meteorológicas de días pasados (la fuente abierta solo da previsión; se conserva la previsión que había, rotulada así).
+
+Pruebas: 148. Informe reports/2026-09-18T16-30-14-697Z-contexto-del-dia.md.
+
 ## 0.25.0 — 2026-09-18 · sesión 038
 
 Cruceros pasa de lista a herramienta de planificación, siguiendo el prompt maestro del usuario y su regla de no inventar datos. Núcleo nuevo core/cruises.ts (validación de la fuente, hora de Palma con cambios de hora, pasajeros declarados, tipo de escala, máxima simultaneidad, línea temporal e impacto potencial con fórmula documentada y umbrales del usuario). Arquitectura en tres piezas: adaptador de la fuente (src/cruises/provider-apb.cjs), registro SQLite propio data/cruceros.sqlite con barcos, escalas, historial de cambios y sincronizaciones (repository.cjs) y servicio con intervalos, espera tras fallos e importación del histórico oficial desde 2014 (service.cjs). Identificador oficial de escala estable: los cambios de horario o muelle actualizan la misma fila y quedan en el historial; una escala futura que desaparece se marca «Retirada de la previsión» y se restaura si vuelve; un mismo IMO con otro nombre es un solo barco. Interfaz: panel de hoy, mañana, 7 y 30 días, calendario mensual, detalle del día con línea temporal SVG y tarjetas por barco, registro con buscador, historial y origen de cada escala, ficha manual del barco (naviera y capacidad, con fuente obligatoria), estado de sincronización siempre visible y explicación de cómo leer los datos. Semana muestra los cruceros de cada día junto a las ventas, sin correlaciones. El registro viaja con la copia diaria.

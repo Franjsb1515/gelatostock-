@@ -650,7 +650,24 @@ test("cruceros: rutas del servidor, permisos, umbrales e interruptor, sin red en
   const provider = fakeProvider(state);
   let app;
   try {
-    app = await createApp({ dataDir: dir, cruiseProvider: provider });
+    // The day-context sources are simulated too: no test ever touches the network.
+    const contextProviders = {
+      weather: {
+        async forecast() {
+          return { notModified: true, expires: "" };
+        },
+      },
+      holidays: {
+        async calendar() {
+          return { missing: true, reason: "prueba" };
+        },
+      },
+    };
+    app = await createApp({
+      dataDir: dir,
+      cruiseProvider: provider,
+      contextProviders,
+    });
     const origin = new URL(app.url).origin;
     const login = await fetch(app.url, { redirect: "manual" });
     const cookie = login.headers.get("set-cookie").split(";")[0];
