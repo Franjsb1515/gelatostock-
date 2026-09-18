@@ -29,7 +29,7 @@ Documento de trabajo. Sustituye la lectura del prompt maestro del usuario del 20
 | Tipos de salida | «Degustación o invitación» cuenta hoy como merma | MEJORAR: separar merma real de cortesía, degustación y consumo interno | El porcentaje de merma técnica sale hoy inflado |
 | Pesos | Se escriben en kg con tres decimales | AÑADIR escribir en gramos (425 g) | Balanza; es barato y evita errores |
 | Coste de producción | Hay precio de compra por presentación y consumo aprobado por producción | AÑADIR coste de cada producción con instantánea | Se puede calcular sin pedir nada nuevo |
-| Precio de venta | No existe | AÑADIR valor comercial por kg de producto terminado, con historial | Sin él no hay «valor perdido» ni venta esperada (pregunta 1) |
+| Precio de venta | No existe | AÑADIR valor por kilo de cada gelato, que escribe el usuario, con historial | Sin él no hay «valor perdido» ni venta estimada. Formatos de venta: POSPONER |
 | Venta real | No hay TPV; solo kilos vendidos del cierre | AÑADIR importe real del día tecleado al cerrar | La app no debe convertirse en TPV (pregunta 2) |
 | Venta esperada | No existe | AÑADIR: kilos vendidos × valor comercial vigente ese día, con desglose explicable | Depende de las dos anteriores |
 | Caja | No existe | NO AÑADIR | El usuario no quiere llevar la caja aquí (2026-09-18) |
@@ -48,7 +48,7 @@ Documento de trabajo. Sustituye la lectura del prompt maestro del usuario del 20
 ## Respuestas del usuario (2026-09-18)
 
 - **Caja: no.** No quiere llevar la caja aquí. Quiere un estimado: cuánto debió vender, cuánto desperdició ese día y cuánto queda. La fase de caja se elimina.
-- **Precios: los pone él.** Vende cucurucho, tarrina y litro. La app controla por kilos producidos; los formatos (nombre, gramos y precio) los añade y cambia él cuando quiera. De cada formato sale un precio por kilo (DERIVADO: precio ÷ gramos × 1000). Para la venta estimada hace falta un precio por kilo de referencia: él elige cuál de sus formatos es la referencia, o escribe uno a mano. Se muestra además el intervalo entre su formato más barato y el más caro por kilo, para no dar por exacta una cifra que depende de la mezcla de formatos. Más adelante, más productos y herramientas.
+- **Valor por kilo, no formatos (aclarado el mismo día).** Por ahora la app se centra en los kilos de gelato producidos. Cada gelato (producto terminado) tiene un valor por kilo de gelato que escribe y cambia él, con historial e instantánea. Con ese valor se calcula cuánto vale lo producido, cuánto debió venderse y cuánto se perdió. No se cuentan cucuruchos, tarrinas ni litros, ni hay intervalos por mezcla de formatos: eso queda para más adelante, junto con otros productos y herramientas.
 - **Día de negocio por apertura, no por medianoche.** Abre el viernes a las 8:00 y puede cerrar el sábado a las 2:00: todo eso es viernes. Solución: un ajuste «el día cambia a las HH:00» (por defecto 05:00). Antes de esa hora, la fecha propuesta del cierre es la de ayer. El cierre ya viaja con su fecha de negocio, así que no hay que migrar nada.
 - **Invitaciones, degustación y consumo: una sola categoría.** No los distingue; lo revisa él. Basta con separar «merma» (con sus motivos) de «invitación o consumo», para que el porcentaje de merma sea de merma real.
 - **TPV: sin responder.** Se deja un campo opcional «venta real del día»: si lo rellena, la app enseña la diferencia con la estimada; si no, no molesta.
@@ -59,8 +59,8 @@ Cada fase: pruebas propias, guía actualizada, una sola versión y un solo cierr
 
 - [ ] **Fase 1 · Corregir sin miedo.** Anular y corregir una producción aplicada (compensa ingredientes y producto terminado; se bloquea con explicación si ya se vendió parte). Corregir o eliminar una línea suelta del cierre. Pesos en gramos o kilos. Frases humanas tras cada corrección. Una rutina central recalcula el día. Ajuste «el día cambia a las HH:00».
 - [ ] **Fase 2 · Merma frente a invitación o consumo.** Dos categorías; migración de lo ya registrado («Degustación o invitación» pasa a invitación o consumo); porcentaje de merma solo con merma real; historial, Semana y «Ventas e impacto» por categoría.
-- [ ] **Fase 3 · Formatos, coste y valor.** Formatos de venta editables (nombre, gramos, precio) con historial de precios e instantánea; precio por kilo de referencia; coste de cada producción con instantánea; merma e invitaciones en kilos, en coste y en valor perdido.
-- [ ] **Fase 4 · Cuánto debí vender.** Resumen del día en una pantalla: stock al empezar, producido, vendido estimado en kilos y en euros (con su intervalo), merma, invitaciones, lo que queda para mañana; desglose explicable; venta real opcional y su diferencia; confirmar el cierre con instantánea y reabrir con motivo.
+- [ ] **Fase 3 · Valor y coste del gelato.** Valor por kilo de cada gelato, editable, con historial e instantánea; coste de cada producción con instantánea (sale de los precios de compra y del consumo aprobado); producción, merma e invitaciones en kilos, en coste y en valor.
+- [ ] **Fase 4 · Cuánto debí vender.** Resumen del día en una pantalla: stock al empezar, producido, vendido estimado en kilos y en euros (kilos × valor por kilo vigente ese día), merma, invitaciones, lo que queda para mañana; desglose explicable; venta real opcional y su diferencia; confirmar el cierre con instantánea y reabrir con motivo.
 - [ ] **Fase 5 · Qué producir hoy y Resumen.** Recomendación por reglas (objetivo − stock, con la venta media reciente al lado) e indicadores del día en el inicio.
 - [ ] **Fase 6 · Repaso transversal.** Pequeñas mejoras de claridad en toda la app, con su pregunta de control: ¿la hace más clara, rápida, fiable o coherente sin perder identidad?
 
