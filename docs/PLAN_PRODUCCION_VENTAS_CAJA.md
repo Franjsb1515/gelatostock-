@@ -32,7 +32,7 @@ Documento de trabajo. Sustituye la lectura del prompt maestro del usuario del 20
 | Precio de venta | No existe | AÑADIR valor comercial por kg de producto terminado, con historial | Sin él no hay «valor perdido» ni venta esperada (pregunta 1) |
 | Venta real | No hay TPV; solo kilos vendidos del cierre | AÑADIR importe real del día tecleado al cerrar | La app no debe convertirse en TPV (pregunta 2) |
 | Venta esperada | No existe | AÑADIR: kilos vendidos × valor comercial vigente ese día, con desglose explicable | Depende de las dos anteriores |
-| Caja | No existe | AÑADIR mínimo: importes por medio de pago, efectivo esperado, contado y diferencia | Solo si el usuario la quiere aquí (pregunta 3) |
+| Caja | No existe | NO AÑADIR | El usuario no quiere llevar la caja aquí (2026-09-18) |
 | Cierre del día | Se registra y se deshace; no hay «día cerrado» | AÑADIR confirmar cierre con instantánea; después, reabrir con motivo | Su punto 14; la reapertura es la vía más simple y trazable |
 | Stock teórico frente a real | Conteo por zonas para ingredientes; el cierre «peso lo que queda» atribuye todo lo que falta a venta | MEJORAR: si hay venta real, la diferencia se enseña como diferencia | Hoy no puede distinguirse porque no hay venta real |
 | Qué producir | Mínimo y objetivo por producto; solo se usan para comprar | INTEGRAR: recomendación «producir X kg» para producto terminado | Regla explicable: objetivo − stock, con la venta media reciente al lado |
@@ -45,28 +45,25 @@ Documento de trabajo. Sustituye la lectura del prompt maestro del usuario del 20
 | Predicción de demanda con IA | No existe | NO AÑADIR | Lo prohíbe el prompt y nuestra regla de no inventar datos |
 | Librerías, rediseño, marca | — | NO TOCAR | Sus puntos 1.2 y 40 |
 
-## Preguntas que no se pueden responder leyendo el código
+## Respuestas del usuario (2026-09-18)
 
-1. **Precio de venta.** El gelato se vende por formatos (cucurucho, tarrina, litro). Para calcular venta esperada hace falta un valor por kilo de cada sabor o, mejor, tus formatos con su precio y sus gramos. ¿Cuáles son?
-2. **Venta real.** ¿Tienes TPV o caja registradora? Si es así, al cerrar teclearías el total del día (y, si quieres, por medio de pago) copiándolo de su informe.
-3. **Caja.** ¿Quieres llevar aquí el arqueo (fondo inicial, efectivo contado, diferencia) o ya lo haces en el TPV?
-4. **Fin del día.** ¿Cerráis siempre antes de medianoche?
-5. **Cortesías.** ¿Distingues invitación a clientes, degustación y consumo del equipo, o te basta «invitación» y «consumo interno»?
-
-Las fases 1 y 2 no dependen de estas respuestas.
+- **Caja: no.** No quiere llevar la caja aquí. Quiere un estimado: cuánto debió vender, cuánto desperdició ese día y cuánto queda. La fase de caja se elimina.
+- **Precios: los pone él.** Vende cucurucho, tarrina y litro. La app controla por kilos producidos; los formatos (nombre, gramos y precio) los añade y cambia él cuando quiera. De cada formato sale un precio por kilo (DERIVADO: precio ÷ gramos × 1000). Para la venta estimada hace falta un precio por kilo de referencia: él elige cuál de sus formatos es la referencia, o escribe uno a mano. Se muestra además el intervalo entre su formato más barato y el más caro por kilo, para no dar por exacta una cifra que depende de la mezcla de formatos. Más adelante, más productos y herramientas.
+- **Día de negocio por apertura, no por medianoche.** Abre el viernes a las 8:00 y puede cerrar el sábado a las 2:00: todo eso es viernes. Solución: un ajuste «el día cambia a las HH:00» (por defecto 05:00). Antes de esa hora, la fecha propuesta del cierre es la de ayer. El cierre ya viaja con su fecha de negocio, así que no hay que migrar nada.
+- **Invitaciones, degustación y consumo: una sola categoría.** No los distingue; lo revisa él. Basta con separar «merma» (con sus motivos) de «invitación o consumo», para que el porcentaje de merma sea de merma real.
+- **TPV: sin responder.** Se deja un campo opcional «venta real del día»: si lo rellena, la app enseña la diferencia con la estimada; si no, no molesta.
 
 ## Fases
 
 Cada fase: pruebas propias, guía actualizada, una sola versión y un solo cierre.
 
-- [ ] **Fase 1 · Corregir sin miedo.** Anular y corregir una producción aplicada (compensa ingredientes y producto terminado; se bloquea con explicación si ya se vendió parte). Corregir o eliminar una línea suelta del cierre. Pesos en gramos o kilos. Frases humanas tras cada corrección. Una rutina central recalcula el día.
-- [ ] **Fase 2 · Llamar a cada salida por su nombre.** Merma real, cortesía, degustación, consumo interno; migración de lo ya registrado («Degustación o invitación» pasa a cortesía); porcentaje de merma solo con merma real; informes y Semana por categoría.
-- [ ] **Fase 3 · Coste y valor.** Coste de cada producción con instantánea; valor comercial por kg con historial; merma en kilos, en coste y en valor perdido. Necesita la pregunta 1.
-- [ ] **Fase 4 · Venta esperada frente a real y cierre confirmado.** Importe real del día, desglose explicable de la diferencia, confirmar cierre con instantánea, reabrir con motivo. Necesita la pregunta 2.
-- [ ] **Fase 5 · Caja.** Medios de pago, efectivo esperado y contado, diferencia. Solo si la pregunta 3 es «sí».
-- [ ] **Fase 6 · Qué producir hoy y Resumen.** Recomendación por reglas e indicadores del día en el inicio.
-- [ ] **Fase 7 · Repaso transversal.** Pequeñas mejoras de claridad en toda la app, con su pregunta de control: ¿la hace más clara, rápida, fiable o coherente sin perder identidad?
+- [ ] **Fase 1 · Corregir sin miedo.** Anular y corregir una producción aplicada (compensa ingredientes y producto terminado; se bloquea con explicación si ya se vendió parte). Corregir o eliminar una línea suelta del cierre. Pesos en gramos o kilos. Frases humanas tras cada corrección. Una rutina central recalcula el día. Ajuste «el día cambia a las HH:00».
+- [ ] **Fase 2 · Merma frente a invitación o consumo.** Dos categorías; migración de lo ya registrado («Degustación o invitación» pasa a invitación o consumo); porcentaje de merma solo con merma real; historial, Semana y «Ventas e impacto» por categoría.
+- [ ] **Fase 3 · Formatos, coste y valor.** Formatos de venta editables (nombre, gramos, precio) con historial de precios e instantánea; precio por kilo de referencia; coste de cada producción con instantánea; merma e invitaciones en kilos, en coste y en valor perdido.
+- [ ] **Fase 4 · Cuánto debí vender.** Resumen del día en una pantalla: stock al empezar, producido, vendido estimado en kilos y en euros (con su intervalo), merma, invitaciones, lo que queda para mañana; desglose explicable; venta real opcional y su diferencia; confirmar el cierre con instantánea y reabrir con motivo.
+- [ ] **Fase 5 · Qué producir hoy y Resumen.** Recomendación por reglas (objetivo − stock, con la venta media reciente al lado) e indicadores del día en el inicio.
+- [ ] **Fase 6 · Repaso transversal.** Pequeñas mejoras de claridad en toda la app, con su pregunta de control: ¿la hace más clara, rápida, fiable o coherente sin perder identidad?
 
 ## Criterios de aceptación del usuario (sus 18 pasos) y dónde se cubren
 
-Stock al empezar (hoy) · qué producir (F6) · registrar producción (hoy) · corregirla y anularla (F1) · merma desde la balanza (F1) · editarla y eliminarla (F1) · descartar, regalar, consumir (F2) · sobrante a mañana (hoy, sin hacer nada) · stock y mínimo (hoy) · registrar ventas (hoy en kilos; importe en F4) · esperada frente a real y entender la diferencia (F4) · caja (F5) · cerrar el día (F4) · corregir después del cierre (F4) · consultar qué pasó (hoy, Actividad e historial).
+Stock al empezar (hoy) · qué producir (F5) · registrar producción (hoy) · corregirla y anularla (F1) · merma desde la balanza (F1) · editarla y eliminarla (F1) · descartar o invitar (F2) · sobrante a mañana (hoy, sin hacer nada) · stock y mínimo (hoy) · registrar ventas (hoy en kilos; importe estimado en F4) · cuánto debí vender y entender la diferencia (F4) · caja (descartada por el usuario) · cerrar el día (F4) · corregir después del cierre (F4) · consultar qué pasó (hoy, Actividad e historial).
