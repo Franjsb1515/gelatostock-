@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.28.0
+# Entrada para Claude · entrega vigente 0.29.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -16,7 +16,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
-- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (hecha la fase 1; siguiente: fase 2).
+- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (hechas las fases 1 y 2; siguiente: fase 3).
 
 ## WhatsApp (seguridad)
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
@@ -31,10 +31,10 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 - Stock: cantidades en unidad base, recepciones solo incrementales, presentaciones del pedido como instantánea. No mezclar kg, L y ud. Un movimiento compensado no cuenta en ningún informe.
 - IA local (Qwen3 0.6B Q4, elegido tras comparar variantes): solo propone etiquetas revisables; reglas primero; no ejecuta acciones; la evidencia que genera se descarta y se muestra el original. Doble lectura del mismo modelo, sin independencia estadística. Cambiar prompts exige repetir la evaluación de 11 casos (línea base 10/11, conserva pass:false). Las reglas leen las respuestas de proveedores mejor que los modelos (80/80 frente a 55/80): no sustituir sin cifras. Pesos fuera de las fuentes; scripts/package.cjs copia solo el modelo del manifiesto.
 - Mensajes: el aprendizaje por correcciones cambia la lectura, nunca la decisión. Una respuesta vinculada solo fija fecha prevista y confirmación del pedido; cantidades y stock no cambian solos.
-- Cierre del día: el día de negocio y el motivo viajan en el texto del movimiento («Venta del día AAAA-MM-DD», «Merma del día AAAA-MM-DD · Motivo»). Lo leen core/sales.ts, report.ts y context.ts: no cambies el formato sin migrarlos.
+- Cierre del día: el día de negocio y el motivo viajan en el texto del movimiento («Venta del día AAAA-MM-DD», «Merma del día AAAA-MM-DD · Motivo», «Invitación o consumo del día AAAA-MM-DD»). Todo se lee con closeLineOf de core/sales.ts (lo usan report.ts y el historial); context.ts lee las ventas. No cambies el formato sin migrarlos. El texto antiguo «· Degustación o invitación» se lee como invitación.
 - Cruceros, clima y festivos: única salida a internet además de WhatsApp; solo lectura, cuerpo fijo, respuesta no fiable y validada; un interruptor (cruises_off) y GELATO_CRUISES_AUTO=0; nunca automáticas bajo node:test; pruebas con `createApp({ cruiseProvider, contextProviders })`. «Hoy» y las horas son de Palma (este equipo está en UTC−3). Pasajeros declarados no es capacidad ni clientes. El impacto es una fórmula visible con umbrales del usuario. El clima de un día pasado es «previsión guardada». Citar siempre las fuentes (APB, MET Norway, Govern balear).
 
 ## Pruebas y cierre de sesión
 - `npm test` · `npm run format:check` · `npm run typecheck` · `npm run package:win` · `npm run test:desktop` (usa el modelo real; tarda varios minutos; si falla en `page.screenshot: Timeout`, la pantalla del equipo está suspendida: repite con el equipo activo).
 - Cierre: informe nuevo en reports/ + CHANGELOG + TODO + entrada en docs/CONTINUIDAD.md + pruebas reales + ejecutable reconstruido si cambió src/ + commit + ZIP (work/make-zip.cjs) sin datos, credenciales, node_modules ni binarios. Conserva los informes anteriores. No marques nada como probado en Mac desde Windows.
-- Pendiente y prioridades: TODO.md. Siguiente acordado: fase 2 del plan vigente; después, Compras y Mensajes II.
+- Pendiente y prioridades: TODO.md. Siguiente acordado: fase 3 del plan vigente; después, Compras y Mensajes II.

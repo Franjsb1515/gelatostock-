@@ -1,5 +1,11 @@
-// Ventas y mermas de producto terminado: motivos de merma e historial de cierres de día.
+// Ventas, mermas e invitaciones de producto terminado: categorías, motivos e historial de cierres.
 // Todo sale de los movimientos registrados; un movimiento deshecho (compensado) no cuenta.
+// Tres salidas distintas que nunca se mezclan:
+//   venta                 «Venta del día AAAA-MM-DD»                 (movimiento exit)
+//   merma                 «Merma del día AAAA-MM-DD · Motivo»        (movimiento waste)
+//   invitación o consumo  «Invitación o consumo del día AAAA-MM-DD»  (movimiento exit)
+// La merma es producto que se perdió; la invitación o el consumo del equipo es producto que se
+// aprovechó sin cobrarlo. El porcentaje de merma se calcula solo con merma.
 import type { State } from "./schema.js";
 
 export const wasteReasons = [
@@ -7,7 +13,6 @@ export const wasteReasons = [
   "texture",
   "display",
   "accident",
-  "tasting",
   "other",
 ] as const;
 export type WasteReason = (typeof wasteReasons)[number];
@@ -16,22 +21,29 @@ export const wasteReasonLabels: Record<WasteReason, string> = {
   texture: "Textura o cristalización",
   display: "Vitrina o temperatura",
   accident: "Caída o rotura",
-  tasting: "Degustación o invitación",
   other: "Otro motivo",
 };
+export const giftLabel = "Invitación o consumo";
+// Until 0.28.0 tastings were stored as a waste reason. Movements are never rewritten: readers
+// simply recognise that old text and count it where it belongs.
+const legacyGiftReason = "Degustación o invitación";
 const unknownReason = "Sin motivo";
 /** Texto del movimiento: «Merma del día AAAA-MM-DD · Motivo». El motivo es opcional. */
 export const wasteReasonText = (date: string, reason?: WasteReason): string =>
   `Merma del día ${date}` + (reason ? ` · ${wasteReasonLabels[reason]}` : "");
+export const giftText = (date: string): string =>
+  `${giftLabel} del día ${date}`;
 const salePattern = /^Venta del día (\d{4}-\d{2}-\d{2})/;
+const giftPattern = /^Invitación o consumo del día (\d{4}-\d{2}-\d{2})/;
 const wastePattern = /^Merma del día (\d{4}-\d{2}-\d{2})(?: · (.+))?$/;
 
-/** Una línea viva de un cierre: una venta o una merma, con su movimiento de origen. */
+export type CloseKind = "sale" | "waste" | "gift";
+/** Una línea viva de un cierre, con su movimiento de origen. */
 export type CloseLine = {
   id: string;
   product: string;
   name: string;
-  kind: "sale" | "waste";
+  kind: CloseKind;
   quantity: number;
   reason: string;
 };
@@ -40,7 +52,8 @@ export type DayClose = {
   lines: CloseLine[];
   sold: number;
   waste: number;
-  /** DERIVADO: merma / (vendido + merma), en %. null si no hubo ni venta ni merma. */
+  gift: number;
+  /** DERIVADO: merma / (vendido + merma + invitación), en %. null si no salió nada. */
   wastePct: number | null;
   products: number;
 };
@@ -48,90 +61,97 @@ export type SalesHistory = {
   from: string;
   to: string;
   days: DayClose[];
-  totals: { sold: number; waste: number; wastePct: number | null };
-  byProduct: { product: string; name: string; sold: number; waste: number }[];
+  totals: {
+    sold: number;
+    waste: number;
+    gift: number;
+    wastePct: number | null;
+  };
+  byProduct: {
+    product: string;
+    name: string;
+    sold: number;
+    waste: number;
+    gift: number;
+  }[];
   byReason: { reason: string; waste: number }[];
 };
 const round = (n: number): number => Math.round(n * 1000) / 1000;
-const pct = (waste: number, sold: number): number | null =>
-  waste + sold > 0 ? Math.round((waste / (waste + sold)) * 1000) / 10 : null;
+const pct = (waste: number, out: number): number | null =>
+  out > 0 ? Math.round((waste / out) * 1000) / 10 : null;
 /** Identificadores de movimientos que fueron compensados después. */
 export const undoneMovements = (s: State): Set<string> =>
   new Set(
     s.movements.map((m) => m.reverses).filter((id): id is string => !!id),
   );
-/** Día de negocio y tipo de un movimiento de cierre; null si el movimiento no es de un cierre. */
+/** Día de negocio y categoría de un movimiento de cierre; null si no es de un cierre. */
 export function closeLineOf(m: {
   kind: string;
   reason: string;
-}): { date: string; kind: "sale" | "waste"; reason: string } | null {
+}): { date: string; kind: CloseKind; reason: string } | null {
   if (m.kind === "exit") {
-    const date = salePattern.exec(m.reason)?.[1];
-    return date ? { date, kind: "sale", reason: "" } : null;
+    const sale = salePattern.exec(m.reason)?.[1];
+    if (sale) return { date: sale, kind: "sale", reason: "" };
+    const gift = giftPattern.exec(m.reason)?.[1];
+    return gift ? { date: gift, kind: "gift", reason: "" } : null;
   }
   if (m.kind === "waste") {
     const found = wastePattern.exec(m.reason);
-    return found?.[1]
-      ? { date: found[1], kind: "waste", reason: found[2] ?? unknownReason }
-      : null;
+    if (!found?.[1]) return null;
+    return found[2] === legacyGiftReason
+      ? { date: found[1], kind: "gift", reason: "" }
+      : { date: found[1], kind: "waste", reason: found[2] ?? unknownReason };
   }
   return null;
 }
 /** Movimientos vivos del cierre de un día (para deshacerlo o para saber si ya se cerró). */
 export function closeMovements(s: State, date: string): State["movements"] {
   const undone = undoneMovements(s);
-  return s.movements.filter((m) => {
-    if (undone.has(m.id) || m.reverses) return false;
-    if (m.kind === "exit") return salePattern.exec(m.reason)?.[1] === date;
-    if (m.kind === "waste") return wastePattern.exec(m.reason)?.[1] === date;
-    return false;
-  });
+  return s.movements.filter(
+    (m) => !undone.has(m.id) && !m.reverses && closeLineOf(m)?.date === date,
+  );
 }
 /** Historial de cierres entre dos días (incluidos), por día de negocio y no por hora de registro. */
 export function salesHistory(s: State, from: string, to: string): SalesHistory {
   const undone = undoneMovements(s);
+  type Sum = { sold: number; waste: number; gift: number };
   const days = new Map<
     string,
-    { sold: number; waste: number; products: Set<string>; lines: CloseLine[] }
+    Sum & { products: Set<string>; lines: CloseLine[] }
   >();
+  const products = new Map<string, Sum>();
+  const reasons = new Map<string, number>();
   const nameOf = (id: string): string =>
     s.products.find((x) => x.id === id)?.name ?? "Producto eliminado";
-  const products = new Map<string, { sold: number; waste: number }>();
-  const reasons = new Map<string, number>();
+  const field = { sale: "sold", waste: "waste", gift: "gift" } as const;
   for (const m of s.movements) {
     if (undone.has(m.id) || m.reverses) continue;
-    const sale = m.kind === "exit" ? salePattern.exec(m.reason) : null;
-    const waste = m.kind === "waste" ? wastePattern.exec(m.reason) : null;
-    const date = sale?.[1] ?? waste?.[1];
-    if (!date || date < from || date > to) continue;
+    const line = closeLineOf(m);
+    if (!line || line.date < from || line.date > to) continue;
     const qty = Math.abs(m.delta);
-    const day = days.get(date) ?? {
+    const day = days.get(line.date) ?? {
       sold: 0,
       waste: 0,
-      products: new Set(),
+      gift: 0,
+      products: new Set<string>(),
       lines: [],
     };
+    days.set(line.date, day);
+    day.products.add(m.product);
     day.lines.push({
       id: m.id,
       product: m.product,
       name: nameOf(m.product),
-      kind: sale ? "sale" : "waste",
+      kind: line.kind,
       quantity: qty,
-      reason: sale ? "" : (waste?.[2] ?? unknownReason),
+      reason: line.reason,
     });
-    days.set(date, day);
-    day.products.add(m.product);
-    const p = products.get(m.product) ?? { sold: 0, waste: 0 };
+    const p = products.get(m.product) ?? { sold: 0, waste: 0, gift: 0 };
     products.set(m.product, p);
-    if (sale) {
-      day.sold += qty;
-      p.sold += qty;
-    } else {
-      day.waste += qty;
-      p.waste += qty;
-      const reason = waste?.[2] ?? unknownReason;
-      reasons.set(reason, (reasons.get(reason) ?? 0) + qty);
-    }
+    day[field[line.kind]] += qty;
+    p[field[line.kind]] += qty;
+    if (line.kind === "waste")
+      reasons.set(line.reason, (reasons.get(line.reason) ?? 0) + qty);
   }
   const list: DayClose[] = [...days.entries()]
     .map(([date, d]) => ({
@@ -139,25 +159,28 @@ export function salesHistory(s: State, from: string, to: string): SalesHistory {
       lines: d.lines,
       sold: round(d.sold),
       waste: round(d.waste),
-      wastePct: pct(d.waste, d.sold),
+      gift: round(d.gift),
+      wastePct: pct(d.waste, d.sold + d.waste + d.gift),
       products: d.products.size,
     }))
     .sort((a, b) => b.date.localeCompare(a.date));
-  const sold = round(list.reduce((n, d) => n + d.sold, 0));
-  const waste = round(list.reduce((n, d) => n + d.waste, 0));
+  const total = (k: keyof Sum): number =>
+    round(list.reduce((n, d) => n + d[k], 0));
+  const sold = total("sold");
+  const waste = total("waste");
+  const gift = total("gift");
   return {
     from,
     to,
     days: list,
-    totals: { sold, waste, wastePct: pct(waste, sold) },
+    totals: { sold, waste, gift, wastePct: pct(waste, sold + waste + gift) },
     byProduct: [...products.entries()]
       .map(([product, v]) => ({
         product,
-        name:
-          s.products.find((x) => x.id === product)?.name ??
-          "Producto eliminado",
+        name: nameOf(product),
         sold: round(v.sold),
         waste: round(v.waste),
+        gift: round(v.gift),
       }))
       .sort((a, b) => b.sold - a.sold || b.waste - a.waste),
     byReason: [...reasons.entries()]

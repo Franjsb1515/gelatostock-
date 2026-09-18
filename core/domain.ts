@@ -36,12 +36,14 @@ import { zoneLabels } from "./inventory";
 import {
   wasteReasonText,
   wasteReasonLabels,
+  giftText,
   closeMovements,
   closeLineOf,
   undoneMovements,
 } from "./sales";
 export {
   salesHistory,
+  giftLabel,
   wasteReasons,
   wasteReasonLabels,
   closeMovements,
@@ -922,14 +924,15 @@ export function apply(state: State, input: unknown): State {
         const sold =
           l.remaining === undefined
             ? (l.sold ?? 0)
-            : Math.round((p.stock - l.waste - l.remaining) * 1000) / 1000;
+            : Math.round((p.stock - l.waste - l.gift - l.remaining) * 1000) /
+              1000;
         ensure(
           sold >= 0,
           `${p.name}: queda más de lo que había (${p.stock} ${p.unit}). Si se produjo más, aprueba antes esa producción.`,
         );
         ensure(
-          sold + l.waste <= p.stock,
-          `${p.name}: vendido y merma suman más que el stock (${p.stock} ${p.unit}).`,
+          sold + l.waste + l.gift <= p.stock,
+          `${p.name}: vendido, merma e invitación suman más que el stock (${p.stock} ${p.unit}).`,
         );
         if (sold) move(s, p.id, -sold, "exit", `Venta del día ${a.date}`);
         if (l.waste)
@@ -940,14 +943,15 @@ export function apply(state: State, input: unknown): State {
             "waste",
             wasteReasonText(a.date, l.wasteReason),
           );
-        if (sold || l.waste)
+        if (l.gift) move(s, p.id, -l.gift, "exit", giftText(a.date));
+        if (sold || l.waste || l.gift)
           done.push(
-            `${p.name}: ${sold ? "vendido " + sold + " " + p.unit : ""}${sold && l.waste ? ", " : ""}${l.waste ? "merma " + l.waste + " " + p.unit + (l.wasteReason ? " (" + wasteReasonLabels[l.wasteReason].toLowerCase() + ")" : "") : ""}`,
+            `${p.name}: ${sold ? "vendido " + sold + " " + p.unit : ""}${sold && l.waste ? ", " : ""}${l.waste ? "merma " + l.waste + " " + p.unit + (l.wasteReason ? " (" + wasteReasonLabels[l.wasteReason].toLowerCase() + ")" : "") : ""}${l.gift ? (sold || l.waste ? ", " : "") + "invitación o consumo " + l.gift + " " + p.unit : ""}`,
           );
       }
       ensure(
         done.length > 0,
-        "Indica al menos una cantidad vendida o de merma.",
+        "Indica al menos una cantidad vendida, de merma o de invitación.",
       );
       const short = s.products.filter(
         (x) => a.lines.some((l) => l.product === x.id) && x.stock < x.min,
@@ -1038,7 +1042,12 @@ export function apply(state: State, input: unknown): State {
       );
       const prod = item(s.products, m.product);
       const before = Math.abs(m.delta);
-      const what = line.kind === "sale" ? "Venta" : "Merma";
+      const what =
+        line.kind === "sale"
+          ? "Venta"
+          : line.kind === "waste"
+            ? "Merma"
+            : "Invitación o consumo";
       if (a.type === "undoCloseLine") {
         move(
           s,
@@ -1065,7 +1074,7 @@ export function apply(state: State, input: unknown): State {
       );
       // Same business day and, unless a new reason is given, the same reason as before.
       const reason =
-        line.kind === "sale"
+        line.kind !== "waste"
           ? m.reason
           : a.wasteReason
             ? wasteReasonText(line.date, a.wasteReason)

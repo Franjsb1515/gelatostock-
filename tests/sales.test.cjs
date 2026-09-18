@@ -81,26 +81,26 @@ test("cierre del día: deshacer compensa todo el día y el historial no cuenta l
   let s = close(seed(), "2026-09-08", [
     { product: "p4", sold: 1, waste: 0.5, wasteReason: "expiry" },
   ]);
-  s = close(s, "2026-09-09", [
-    { product: "p4", sold: 0.75, waste: 0.25, wasteReason: "tasting" },
-  ]);
+  s = close(s, "2026-09-09", [{ product: "p4", sold: 0.75, gift: 0.25 }]);
   s = close(s, "2026-09-09", [{ product: "p4", sold: 0.25 }]);
   let h = salesHistory(s, "2026-09-01", "2026-09-30");
   assert.deepEqual(
     h.days.map((d) => [d.date, d.sold, d.waste, d.wastePct]),
     [
-      ["2026-09-09", 1, 0.25, 20],
+      ["2026-09-09", 1, 0, 0],
       ["2026-09-08", 1, 0.5, 33.3],
     ],
   );
-  assert.deepEqual(h.totals, { sold: 2, waste: 0.75, wastePct: 27.3 });
-  assert.deepEqual(h.byReason, [
-    { reason: "Fin de vida útil", waste: 0.5 },
-    { reason: "Degustación o invitación", waste: 0.25 },
-  ]);
+  assert.deepEqual(h.totals, {
+    sold: 2,
+    waste: 0.5,
+    gift: 0.25,
+    wastePct: 18.2,
+  });
+  assert.deepEqual(h.byReason, [{ reason: "Fin de vida útil", waste: 0.5 }]);
   assert.deepEqual(
     h.byProduct.map((p) => [p.product, p.sold, p.waste]),
-    [["p4", 2, 0.75]],
+    [["p4", 2, 0.5]],
   );
   assert.equal(salesHistory(s, "2026-09-09", "2026-09-09").days.length, 1);
   // Deshacer el día 9: tres movimientos compensados, el stock vuelve y el día desaparece.
@@ -225,4 +225,94 @@ test("cierre del día: ruta del historial con permisos y motivos", async () => {
     if (app) await new Promise((r) => app.server.close(r));
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("fase 2: invitación o consumo sale del stock, pero no es merma ni venta", () => {
+  const base = stock(seed(), "p4");
+  let s = close(seed(), "2026-09-08", [
+    {
+      product: "p4",
+      sold: 0.8,
+      waste: 0.1,
+      wasteReason: "accident",
+      gift: 0.1,
+    },
+  ]);
+  assert.equal(stock(s, "p4"), Math.round((base - 1) * 1000) / 1000);
+  const gift = s.movements.find(
+    (m) => m.reason === "Invitación o consumo del día 2026-09-08",
+  );
+  assert.deepEqual([gift.kind, gift.delta], ["exit", -0.1]);
+  assert.match(s.activity[0].text, /invitación o consumo 0.1 kg/);
+  let day = salesHistory(s, "2026-09-08", "2026-09-08").days[0];
+  assert.deepEqual(
+    [day.sold, day.waste, day.gift, day.wastePct],
+    [0.8, 0.1, 0.1, 10],
+  );
+  assert.deepEqual(day.lines.map((l) => l.kind).sort(), [
+    "gift",
+    "sale",
+    "waste",
+  ]);
+  // Pesando lo que queda: lo invitado tampoco cuenta como vendido.
+  const left = stock(s, "p4");
+  s = close(s, "2026-09-09", [
+    { product: "p4", remaining: left - 1, waste: 0.2, gift: 0.3 },
+  ]);
+  day = salesHistory(s, "2026-09-09", "2026-09-09").days[0];
+  assert.deepEqual([day.sold, day.waste, day.gift], [0.5, 0.2, 0.3]);
+  // Solo invitación: es un cierre válido y no genera venta ni merma.
+  s = close(s, "2026-09-10", [{ product: "p4", gift: 0.05 }]);
+  day = salesHistory(s, "2026-09-10", "2026-09-10").days[0];
+  assert.deepEqual(
+    [day.sold, day.waste, day.gift, day.wastePct],
+    [0, 0, 0.05, 0],
+  );
+  // Se corrige y se elimina como cualquier otra línea.
+  s = apply(s, { type: "editCloseLine", id: day.lines[0].id, quantity: 0.08 });
+  day = salesHistory(s, "2026-09-10", "2026-09-10").days[0];
+  assert.equal(day.gift, 0.08);
+  assert.match(s.activity[0].text, /Invitación o consumo corregida/);
+  s = apply(s, { type: "undoCloseLine", id: day.lines[0].id });
+  assert.equal(salesHistory(s, "2026-09-10", "2026-09-10").days.length, 0);
+  assert.throws(
+    () =>
+      close(s, "2026-09-11", [{ product: "p4", sold: 1, waste: 1, gift: 99 }]),
+    /suman más que el stock/,
+  );
+  // La degustación ya no es un motivo de merma.
+  assert.throws(() =>
+    close(s, "2026-09-11", [
+      { product: "p4", waste: 0.1, wasteReason: "tasting" },
+    ]),
+  );
+  // La semana también las separa.
+  const week = weeklyReport(s, weekStart(new Date("2026-09-08T12:00:00")));
+  assert.deepEqual(
+    [week.totals.sales, week.totals.waste, week.totals.gifts],
+    [1.3, 0.3, 0.4],
+  );
+  assert.equal(week.days.find((d) => d.date === "2026-09-09").gift, 0.3);
+});
+
+test("fase 2: las degustaciones apuntadas antes como merma se leen como invitación, sin reescribir nada", () => {
+  let s = close(seed(), "2026-09-08", [
+    { product: "p4", sold: 1, waste: 0.25, wasteReason: "other" },
+  ]);
+  // Así quedaban guardadas hasta 0.28.0.
+  const old = structuredClone(s);
+  const m = old.movements.find((x) => x.kind === "waste");
+  m.reason = "Merma del día 2026-09-08 · Degustación o invitación";
+  const day = salesHistory(old, "2026-09-08", "2026-09-08").days[0];
+  assert.deepEqual(
+    [day.sold, day.waste, day.gift, day.wastePct],
+    [1, 0, 0.25, 0],
+  );
+  assert.deepEqual(salesHistory(old, "2026-09-08", "2026-09-08").byReason, []);
+  assert.equal(m.kind, "waste", "el movimiento original no se toca");
+  const week = weeklyReport(old, weekStart(new Date("2026-09-08T12:00:00")));
+  assert.deepEqual([week.totals.waste, week.totals.gifts], [0, 0.25]);
+  // Y se puede deshacer el día entero igual que siempre.
+  const undone = apply(old, { type: "undoDailySales", date: "2026-09-08" });
+  assert.equal(salesHistory(undone, "2026-09-08", "2026-09-08").days.length, 0);
 });

@@ -485,15 +485,10 @@ export const actionSchema = z.intersection(
             sold: quantity.optional(),
             remaining: quantity.optional(),
             waste: quantity.default(0),
+            // Given away or eaten by the team: leaves the stock, but it is not a loss.
+            gift: quantity.default(0),
             wasteReason: z
-              .enum([
-                "expiry",
-                "texture",
-                "display",
-                "accident",
-                "tasting",
-                "other",
-              ])
+              .enum(["expiry", "texture", "display", "accident", "other"])
               .optional(),
           }),
         )
@@ -515,7 +510,7 @@ export const actionSchema = z.intersection(
       id: idSchema,
       quantity: quantity.refine((n) => n > 0),
       wasteReason: z
-        .enum(["expiry", "texture", "display", "accident", "tasting", "other"])
+        .enum(["expiry", "texture", "display", "accident", "other"])
         .optional(),
     }),
     z.object({

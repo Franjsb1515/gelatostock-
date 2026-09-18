@@ -2,6 +2,7 @@
 // Days are local calendar days; a week runs Monday to Sunday.
 import type { State } from "./schema";
 import { localDate } from "./messages";
+import { closeLineOf } from "./sales";
 
 export type WeeklyLine = {
   product: string;
@@ -12,14 +13,23 @@ export type WeeklyLine = {
 export type WeeklyReport = {
   start: string;
   end: string;
-  days: { date: string; production: number; sales: number; waste: number }[];
+  days: {
+    date: string;
+    production: number;
+    sales: number;
+    waste: number;
+    gift: number;
+  }[];
   sales: WeeklyLine[];
   waste: WeeklyLine[];
+  /** Invitación o consumo: sale del stock, pero no es merma ni venta. */
+  gifts: WeeklyLine[];
   receipts: WeeklyLine[];
   production: { date: string; name: string; quantity: number }[];
   totals: {
     sales: number;
     waste: number;
+    gifts: number;
     production: number;
     receipts: number;
     movements: number;
@@ -59,6 +69,7 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
       production: 0,
       sales: 0,
       waste: 0,
+      gift: 0,
     });
   }
   const dayRow = (day: string) => days.find((x) => x.date === day);
@@ -71,6 +82,7 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
   };
   const sales: WeeklyLine[] = [],
     waste: WeeklyLine[] = [],
+    gifts: WeeklyLine[] = [],
     receipts: WeeklyLine[] = [];
   let movements = 0;
   // A compensated movement (and its compensation) is not a sale, a waste or a receipt.
@@ -78,16 +90,19 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
   for (const m of s.movements) {
     if (undone.has(m.id) || m.reverses) continue;
     // A day close belongs to its business day, even if it was typed in the next morning.
-    const day =
-      /^(?:Venta|Merma) del día (\d{4}-\d{2}-\d{2})/.exec(m.reason)?.[1] ??
-      dayOf(m.at);
+    const close = closeLineOf(m);
+    const day = close?.date ?? dayOf(m.at);
     if (!inWeek(day)) continue;
     movements++;
     const qty = Math.abs(m.delta);
-    if (m.kind === "exit" && /^Venta del día/.test(m.reason)) {
+    if (close?.kind === "sale") {
       add(sales, m.product, qty);
       const row = dayRow(day);
       if (row) row.sales += qty;
+    } else if (close?.kind === "gift") {
+      add(gifts, m.product, qty);
+      const row = dayRow(day);
+      if (row) row.gift += qty;
     } else if (m.kind === "waste") {
       add(waste, m.product, qty);
       const row = dayRow(day);
@@ -147,6 +162,7 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
     row.production = Math.round(row.production * 1000) / 1000;
     row.sales = Math.round(row.sales * 1000) / 1000;
     row.waste = Math.round(row.waste * 1000) / 1000;
+    row.gift = Math.round(row.gift * 1000) / 1000;
   }
   return {
     start: from,
@@ -154,11 +170,13 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
     days,
     sales,
     waste,
+    gifts,
     receipts,
     production,
     totals: {
       sales: sum(sales),
       waste: sum(waste),
+      gifts: sum(gifts),
       production: sum(production),
       receipts: sum(receipts),
       movements,

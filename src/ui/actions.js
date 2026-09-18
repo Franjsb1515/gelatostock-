@@ -387,7 +387,7 @@ async function action(name, el) {
     const shown =
       salesUnit === "g" ? Math.round(line.quantity * 1000) : line.quantity;
     modal(
-      `Corregir ${line.kind === "sale" ? "la venta" : "la merma"} de ${line.name}`,
+      `Corregir ${line.kind === "sale" ? "la venta" : line.kind === "gift" ? "la invitación o consumo" : "la merma"} de ${line.name}`,
       `Día ${el.dataset.date}. Escribe el peso correcto en ${salesUnit === "g" ? "gramos" : "kilos"}; la app compensa la línea anterior y recalcula el stock y el día.`,
       field(
         "Peso correcto (" + salesUnit + ")",
@@ -434,7 +434,7 @@ async function action(name, el) {
     const day = salesData?.days.find((d) => d.date === date);
     modal(
       "Deshacer el cierre del " + date,
-      `Se compensan todas las ventas y mermas de ese día (${day ? num(day.sold) + " kg vendidos y " + num(day.waste) + " kg de merma" : "ese cierre"}) y el stock vuelve a su sitio. Los movimientos originales se conservan en Actividad. Después puedes registrar el cierre correcto.`,
+      `Se compensan todas las ventas y mermas de ese día (${day ? num(day.sold) + " kg vendidos, " + num(day.waste) + " kg de merma y " + num(day.gift) + " kg de invitación o consumo" : "ese cierre"}) y el stock vuelve a su sitio. Los movimientos originales se conservan en Actividad. Después puedes registrar el cierre correcto.`,
       "",
       async () => {
         await mutate(

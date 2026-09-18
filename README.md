@@ -1,12 +1,12 @@
-# GelatoStock · prototipo 0.28.0
+# GelatoStock · prototipo 0.29.0
 
 Aplicación local de escritorio para una gelatería con café de especialidad y postres. Sirve para saber qué falta, pedirlo a los proveedores, entender lo que contestan y planificar el día. Es un prototipo para probar el circuito completo; todavía no es la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python ni navegador. Si Windows bloquea VBScript, abre `dist/GelatoStock-0.28.0-win32-x64/GelatoStock.exe`; en ese caso los datos se guardan junto al ejecutable.
+Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python ni navegador. Si Windows bloquea VBScript, abre `dist/GelatoStock-0.29.0-win32-x64/GelatoStock.exe`; en ese caso los datos se guardan junto al ejecutable.
 
-El acceso principal guarda datos, copias y perfil en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`, y los temporales en `work/`. No mover el ejecutable aislado: necesita el resto de su carpeta. Para llevarlo a otro Windows x64, copia toda la carpeta `dist/GelatoStock-0.28.0-win32-x64`. Arranca con datos de ejemplo salvo que restaures una copia. No sincroniza equipos.
+El acceso principal guarda datos, copias y perfil en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`, y los temporales en `work/`. No mover el ejecutable aislado: necesita el resto de su carpeta. Para llevarlo a otro Windows x64, copia toda la carpeta `dist/GelatoStock-0.29.0-win32-x64`. Arranca con datos de ejemplo salvo que restaures una copia. No sincroniza equipos.
 
 ## Qué hace hoy
 

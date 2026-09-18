@@ -453,8 +453,10 @@ const assert = require("node:assert/strict");
     await window
       .getByRole("button", { name: "Apunto lo vendido", exact: true })
       .click();
-    await saleRow.locator("[data-sale-input]").fill("1");
+    // 0,9 kg vendidos, 0,5 kg de merma y 0,1 kg de invitación: salen 1,5 kg, pero solo 0,5 son merma.
+    await saleRow.locator("[data-sale-input]").fill("0.9");
     await saleRow.locator("[data-sale-waste]").fill("0.5");
+    await saleRow.locator("[data-sale-gift]").fill("0.1");
     await window
       .getByRole("button", { name: "Registrar cierre", exact: true })
       .click();
@@ -480,7 +482,7 @@ const assert = require("node:assert/strict");
       "PASS: una merma se corrige en gramos (500 g a 400 g y vuelta) y el stock se recalcula solo.",
     );
     console.log(
-      "PASS: cierre del día pesando lo que queda (vendido calculado 1 kg, merma 0,5 kg con motivo), deshecho y repetido apuntando lo vendido.",
+      "PASS: cierre del día pesando lo que queda (vendido calculado 1 kg, merma 0,5 kg con motivo), deshecho y repetido apuntando lo vendido, con 0,1 kg de invitación aparte de la merma.",
     );
     // Recetario: escalar la receta de ejemplo a 6 kg solo en pantalla (nada cambia en el estado).
     await window

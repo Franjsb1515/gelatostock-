@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.29.0 — 2026-09-18 · sesión 044 · fase 2 del plan de producción y ventas
+
+Merma frente a invitación o consumo. El cierre del día tiene una columna propia para lo que se invita, se da a probar o consume el equipo: sale del stock, pero no es merma ni venta. El porcentaje de merma pasa a calcularse solo con merma real sobre todo lo que salió. Historial, líneas del cierre, resumen semanal y mensajes de Actividad separan las tres salidas. «Degustación o invitación» deja de ser un motivo de merma; lo ya apuntado así se lee como invitación sin reescribir ningún movimiento. Pesando lo que queda, lo invitado tampoco cuenta como vendido.
+
+Pruebas: 158. Informe reports/2026-09-18T21-52-07-524Z-fase-2-merma-e-invitacion.md.
+
 ## 0.28.0 — 2026-09-18 · sesión 043 · fase 1 del plan de producción y ventas
 
 Corregir sin miedo. Una producción aprobada se puede anular (los ingredientes vuelven, el producto terminado sale, los movimientos originales se conservan) o corregir (se anula y queda una propuesta igual para aprobarla bien); si parte ya se vendió o se tiró, la app lo impide y dice qué deshacer antes. Cada línea de un cierre (una venta o una merma) se corrige o se elimina por separado, con el stock y los totales del día recalculados desde la única fuente, los movimientos. Pesos en kilos o en gramos. Día de negocio con hora de cambio configurable (por defecto 5:00) para quien cierra de madrugada. Frases humanas tras cada corrección («Merma corregida: … de 0,25 a 0,15 kg. Stock disponible: …»). Los botones con aspecto de enlace dejan de verse como botones del sistema en toda la app.
