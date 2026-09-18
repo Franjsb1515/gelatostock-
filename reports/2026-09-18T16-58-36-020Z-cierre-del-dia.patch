@@ -1,0 +1,606 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 22a8356..1b4dffb 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.26.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.27.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 4e96276..e1e36af 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Registro de parches y sesiones
+ 
++## 0.27.0 — 2026-09-18 · sesión 040
++
++Cierre del día. La acción dailySales admite, por línea, lo vendido o lo que queda (remaining: la app calcula vendido = stock − merma − queda) y un motivo de merma de lista cerrada (core/sales.ts: fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, degustación o invitación, otro), que viaja en el texto del movimiento. Validación previa con mensajes claros (queda más de lo que había; vendido y merma superan el stock; las dos cosas a la vez). Acción nueva undoDailySales: compensa todas las ventas y mermas vivas de un día de negocio y conserva los originales. salesHistory y GET /api/sales: por día de negocio, totales, porcentaje de merma, mermas por motivo y por producto, sin contar lo deshecho. Interfaz nueva src/ui/views-sales.js: dos formas de apuntar, cálculo en vivo por fila, historial de 14 días a 12 meses, «Deshacer» y pista de cruceros para mañana.
++
++Corregido: el resumen semanal contaba ventas y mermas ya deshechas, y las asignaba al día en que se teclearon en lugar de a su día de negocio.
++
++Pruebas: 152. Informe reports/2026-09-18T16-58-36-020Z-cierre-del-dia.md.
++
+ ## 0.26.0 — 2026-09-18 · sesión 039
+ 
+ Pendientes recomendados de Cruceros. Contexto del día: clima previsto para Palma (MET Norway, CC BY 4.0), festivos del calendario laboral oficial del Govern de les Illes Balears (autonómicos y locales de Palma) y eventos anotados por el usuario, visibles en el panel de hoy, las tarjetas de día, el calendario y el detalle. «Ventas e impacto»: kilos vendidos por nivel de impacto (días, media, mínimo y máximo), con aviso cuando hay menos de 8 días de un nivel; sin correlaciones ni predicciones. Restauración del registro de cruceros desde la copia diaria, conservando el registro actual. El informe semanal lleva también el contexto de cada día. Nuevo core/context.ts, src/context/providers.cjs y service.cjs (data/contexto.sqlite, con su copia diaria).
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 99247eb..c29d8b0 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.26.0
++# Entrada para Claude · entrega vigente 0.27.0
+ 
+ Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
+ 
+@@ -17,6 +17,9 @@ Pruebas: npm test; npm run format:check; npm run package:win; npm run test:deskt
+ 
+ Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+ 
++## Punto de continuidad 0.27.0
++Lee reports/2026-09-18T16-58-36-020Z-cierre-del-dia.md. Cierre del día: core/sales.ts (motivos de merma, closeMovements, salesHistory), acción dailySales con sold o remaining y wasteReason, acción undoDailySales, GET /api/sales, src/ui/views-sales.js (la sección salió de views-production.js). El día de negocio y el motivo viajan en el texto del movimiento («Venta del día AAAA-MM-DD», «Merma del día AAAA-MM-DD · Motivo»): no cambies ese formato sin migrar core/sales.ts, core/report.ts y core/context.ts, que lo leen. Un movimiento compensado nunca cuenta en historial, semana ni «Ventas e impacto». El formulario recalcula sin redibujar (updateSalesSummary) para no perder el foco. Siguiente: confirmar con el usuario la segunda parte de ventas y mermas (ver TODO) y Compras y Mensajes II.
++
+ ## Punto de continuidad 0.26.0
+ Lee reports/2026-09-18T16-30-14-697Z-contexto-del-dia.md. Contexto del día: core/context.ts (parseMetno por día de Palma, parseHolidayCsv del CSV catalán del Govern, salesByImpact y dailySalesKg), src/context/providers.cjs (MET Norway y CKAN de la CAIB) y src/context/service.cjs (data/contexto.sqlite: weather, holidays, events, meta). Mismo interruptor que cruceros (cruises_off) y mismas garantías: el clima de un día pasado es «previsión guardada», nunca observación; una previsión parcial no pisa una más completa del mismo día; lluvia sin dato = null, no 0; festivos solo del CSV oficial, y un CSV raro no borra los buenos; eventos solo manuales; «Ventas e impacto» no calcula correlaciones y exige 8 días por nivel (MIN_DAYS_PER_LEVEL) para dar una media por buena; una venta deshecha no cuenta. createApp({ cruiseProvider, contextProviders }) en pruebas: ninguna toca la red. Ojo de herramienta: los heredoc y node -e pierden las barras invertidas de las expresiones regulares; usa Write o Edit. Siguiente: mejora de ventas y mermas (el usuario quiere definirla) y Compras y Mensajes II.
+ 
+diff --git a/README.md b/README.md
+index 6b9e7ad..5be67f5 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,14 @@
+-# GelatoStock · prototipo 0.26.0
++# GelatoStock · prototipo 0.27.0
+ 
+ Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.26.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.27.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+ 
+ El acceso principal guarda datos, copias y perfil del programa en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
+ 
+-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.26.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
++No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.27.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+ 
+ ## Qué puedes probar
+ 
+@@ -197,3 +197,6 @@ Con internet, la pantalla «Cruceros» muestra qué barcos llegan y parten de Pa
+ 
+ ## Contexto del día en 0.26.0
+ Junto a los cruceros, cada día muestra el clima previsto (MET Norway), si es festivo según el calendario oficial balear y los eventos que anotes. «Ventas e impacto» compara los kilos vendidos por nivel de impacto sin calcular correlaciones. El registro de cruceros se puede restaurar desde la copia diaria.
++
++## Cierre del día en 0.27.0
++En Producción, el cierre del día admite apuntar lo vendido o pesar lo que queda en cada cubeta; cada merma lleva su motivo y un cierre entero se puede deshacer. El historial muestra ventas, mermas y porcentaje de merma por día, por motivo y por producto.
+diff --git a/TODO.md b/TODO.md
+index dccf512..58f9e18 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,6 +1,6 @@
+ # TODO — estado del prototipo
+ 
+-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.26.0.
++La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.27.0.
+ 
+ ## Entregado y comprobado
+ 
+@@ -60,7 +60,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
+ - [x] Cruceros como planificación (0.25.0): fuente oficial validada, registro SQLite con histórico desde 2014, panel, calendario, línea temporal, impacto potencial auditable, historial de cambios y ficha manual del barco.
+ - [x] Contexto del día (0.26.0): clima previsto, festivos oficiales, eventos propios, ventas por nivel de impacto y restauración del registro de cruceros.
+ - [ ] Planificación, siguiente: con meses de ventas, estudiar ventas frente a clima y festivos además del impacto (siempre como hechos, sin predicción hasta poder validarla); observaciones meteorológicas reales si se consigue una fuente abierta (AEMET exige clave propia del usuario); adaptar la app entera a ventanas estrechas.
+-- [ ] Ventas y mermas: mejora pedida por el usuario el 2026-09-18, pendiente de definir con él.
++- [x] Cierre del día (0.27.0): vendido o lo que queda, motivo de merma, deshacer un cierre, historial por día, motivo y producto.
++- [ ] Ventas y mermas, siguiente (a confirmar con el usuario): ventas por formato (cucurucho, tarrina, litro) e importes; mermas de ingredientes con los mismos motivos; objetivo de merma con aviso; proponer producción a partir de ventas medias por día de la semana.
+ - [ ] Compras y Mensajes II: propuesta de sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic (mensaje de recordatorio al proveedor); catálogo/precios por proveedor desde listas de precios; prueba real del ciclo completo con los números del usuario.
+ - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
+ - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).
+diff --git a/core/domain.ts b/core/domain.ts
+index d473bdf..24c4cad 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -33,6 +33,13 @@ export {
+ } from "./orders";
+ import { defaultOrderTemplate, renderOrderTemplate } from "./orders";
+ import { zoneLabels } from "./inventory";
++import { wasteReasonText, wasteReasonLabels, closeMovements } from "./sales";
++export {
++  salesHistory,
++  wasteReasons,
++  wasteReasonLabels,
++  closeMovements,
++} from "./sales";
+ export const round = (n: number) => Math.round(n * 1000) / 1000;
+ export function ensure(value: unknown, message: string): asserts value {
+   if (!value) throw Error(message);
+@@ -899,12 +906,35 @@ export function apply(state: State, input: unknown): State {
+       const done: string[] = [];
+       for (const l of a.lines) {
+         const p = item(s.products, l.product);
+-        if (l.sold) move(s, p.id, -l.sold, "exit", `Venta del día ${a.date}`);
++        ensure(
++          l.sold === undefined || l.remaining === undefined,
++          `${p.name}: indica lo vendido o lo que queda, no las dos cosas.`,
++        );
++        // Closing by weighing the tub: what is missing and was not thrown away was sold.
++        const sold =
++          l.remaining === undefined
++            ? (l.sold ?? 0)
++            : Math.round((p.stock - l.waste - l.remaining) * 1000) / 1000;
++        ensure(
++          sold >= 0,
++          `${p.name}: queda más de lo que había (${p.stock} ${p.unit}). Si se produjo más, aprueba antes esa producción.`,
++        );
++        ensure(
++          sold + l.waste <= p.stock,
++          `${p.name}: vendido y merma suman más que el stock (${p.stock} ${p.unit}).`,
++        );
++        if (sold) move(s, p.id, -sold, "exit", `Venta del día ${a.date}`);
+         if (l.waste)
+-          move(s, p.id, -l.waste, "waste", `Merma del día ${a.date}`);
+-        if (l.sold || l.waste)
++          move(
++            s,
++            p.id,
++            -l.waste,
++            "waste",
++            wasteReasonText(a.date, l.wasteReason),
++          );
++        if (sold || l.waste)
+           done.push(
+-            `${p.name}: ${l.sold ? "vendido " + l.sold + " " + p.unit : ""}${l.sold && l.waste ? ", " : ""}${l.waste ? "merma " + l.waste + " " + p.unit : ""}`,
++            `${p.name}: ${sold ? "vendido " + sold + " " + p.unit : ""}${sold && l.waste ? ", " : ""}${l.waste ? "merma " + l.waste + " " + p.unit + (l.wasteReason ? " (" + wasteReasonLabels[l.wasteReason].toLowerCase() + ")" : "") : ""}`,
+           );
+       }
+       ensure(
+@@ -921,6 +951,27 @@ export function apply(state: State, input: unknown): State {
+           : "");
+       break;
+     }
++    case "undoDailySales": {
++      // The whole close of a day is compensated at once; the original movements stay on record.
++      const moves = closeMovements(s, a.date);
++      ensure(
++        moves.length > 0,
++        "Ese día no tiene ventas ni mermas por deshacer.",
++      );
++      for (const m of moves)
++        move(
++          s,
++          m.product,
++          -m.delta,
++          "reversal",
++          `Cierre del ${a.date} deshecho`,
++          {
++            reverses: m.id,
++          },
++        );
++      note = `Cierre del ${a.date} deshecho: ${moves.length} movimientos compensados; el stock vuelve a su sitio.`;
++      break;
++    }
+     case "discardProduction": {
+       const p = item(s.productions, a.id);
+       ensure(p.status === "proposed", "Esta producción ya se resolvió.");
+diff --git a/core/report.ts b/core/report.ts
+index 26e7ecb..a97d190 100644
+--- a/core/report.ts
++++ b/core/report.ts
+@@ -73,8 +73,14 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
+     waste: WeeklyLine[] = [],
+     receipts: WeeklyLine[] = [];
+   let movements = 0;
++  // A compensated movement (and its compensation) is not a sale, a waste or a receipt.
++  const undone = new Set(s.movements.map((m) => m.reverses).filter(Boolean));
+   for (const m of s.movements) {
+-    const day = dayOf(m.at);
++    if (undone.has(m.id) || m.reverses) continue;
++    // A day close belongs to its business day, even if it was typed in the next morning.
++    const day =
++      /^(?:Venta|Merma) del día (\d{4}-\d{2}-\d{2})/.exec(m.reason)?.[1] ??
++      dayOf(m.at);
+     if (!inWeek(day)) continue;
+     movements++;
+     const qty = Math.abs(m.delta);
+diff --git a/core/schema.ts b/core/schema.ts
+index f4bba1c..e24773d 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -475,10 +475,29 @@ export const actionSchema = z.intersection(
+       type: z.literal("dailySales"),
+       date: documentDate,
+       lines: z
+-        .array(z.object({ product: idSchema, sold: quantity, waste: quantity }))
++        .array(
++          z.object({
++            product: idSchema,
++            // Either what was sold, or what is left in the tub (then sold = stock − waste − left).
++            sold: quantity.optional(),
++            remaining: quantity.optional(),
++            waste: quantity.default(0),
++            wasteReason: z
++              .enum([
++                "expiry",
++                "texture",
++                "display",
++                "accident",
++                "tasting",
++                "other",
++              ])
++              .optional(),
++          }),
++        )
+         .min(1)
+         .max(500),
+     }),
++    z.object({ type: z.literal("undoDailySales"), date: documentDate }),
+     z.object({
+       type: z.literal("photoType"),
+       id: idSchema,
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index e422a28..211f4d0 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -26,6 +26,8 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación
+ - Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.
+ - Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).
+ 
++Cierre del día (en Producción): para cada producto terminado puedes apuntar lo vendido o, con «Peso lo que queda», escribir el peso que queda en la cubeta y la app calcula lo vendido (stock menos merma menos lo que queda). Cada merma admite un motivo: fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, degustación o invitación, u otro. La fila avisa al momento si algo no cuadra con el stock y el botón no se activa hasta que cuadre. Debajo, el historial de 14 días a 12 meses muestra por día de negocio lo vendido, la merma y el porcentaje de merma, las mermas por motivo y por producto. «Deshacer» compensa todas las ventas y mermas de ese día y devuelve el stock; los movimientos originales siguen en Actividad. Si hay datos de cruceros, el cierre recuerda cómo viene mañana.
++
+ ## Recetario
+ Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.
+ - Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.
+diff --git a/package.json b/package.json
+index 8259c6e..d8a21a8 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.26.0",
++  "version": "0.27.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index 5f714a0..1263dbe 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -415,16 +415,52 @@ const assert = require("node:assert/strict");
+       "PASS: producción de 4 kg: consumo estimado (2 L leche) corregido a 1,5 L y aprobado; terminado +4 kg; nada cambió antes de aprobar.",
+     );
+     const chocolateAfter = savedStock("p4");
+-    await window.locator('[data-sold="p4"]').fill("1");
+-    await window.locator('[data-waste="p4"]').fill("0.5");
++    // Cierre pesando lo que queda: la app calcula lo vendido; la merma lleva motivo.
++    const waitStock = async (value) => {
++      for (let i = 0; i < 50 && savedStock("p4") !== value; i++)
++        await new Promise((r) => setTimeout(r, 200));
++      assert.equal(savedStock("p4"), value);
++    };
++    const saleRow = window.locator('[data-sale-row="p4"]');
++    await window
++      .getByRole("button", { name: "Peso lo que queda", exact: true })
++      .click();
++    await saleRow.locator("[data-sale-waste]").fill("0.5");
++    await saleRow.locator("[data-sale-reason]").selectOption("texture");
++    await saleRow
++      .locator("[data-sale-input]")
++      .fill(String(chocolateAfter - 1.5));
++    assert.equal(
++      await saleRow.locator("[data-sale-computed]").innerText(),
++      "Vendido: 1 kg",
++    );
+     await window
+-      .getByRole("button", { name: "Registrar ventas y mermas", exact: true })
++      .getByRole("button", { name: "Registrar cierre", exact: true })
+       .click();
+-    for (let i = 0; i < 50 && savedStock("p4") !== chocolateAfter - 1.5; i++)
+-      await new Promise((r) => setTimeout(r, 200));
+-    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
++    await waitStock(chocolateAfter - 1.5);
++    await window
++      .getByRole("cell", { name: "Textura o cristalización" })
++      .waitFor();
++    // Deshacer el cierre devuelve el stock; luego se cierra apuntando lo vendido.
++    await window
++      .getByRole("button", { name: "Deshacer", exact: true })
++      .first()
++      .click();
++    await window
++      .getByRole("button", { name: "Deshacer cierre", exact: true })
++      .click();
++    await waitStock(chocolateAfter);
++    await window
++      .getByRole("button", { name: "Apunto lo vendido", exact: true })
++      .click();
++    await saleRow.locator("[data-sale-input]").fill("1");
++    await saleRow.locator("[data-sale-waste]").fill("0.5");
++    await window
++      .getByRole("button", { name: "Registrar cierre", exact: true })
++      .click();
++    await waitStock(chocolateAfter - 1.5);
+     console.log(
+-      "PASS: ventas y mermas del día descuentan producto terminado (1 kg vendido, 0,5 kg merma).",
++      "PASS: cierre del día pesando lo que queda (vendido calculado 1 kg, merma 0,5 kg con motivo), deshecho y repetido apuntando lo vendido.",
+     );
+     // Recetario: escalar la receta de ejemplo a 6 kg solo en pantalla (nada cambia en el estado).
+     await window
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index 2686f5a..961214f 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -8,7 +8,7 @@ Copias: Configuración permite crear una copia con datos y fotos y restaurarla;
+ Fotos: se guardan por proveedor y fecha del documento; el OCR local en español lee el texto y propone un proveedor existente. No extrae cantidades ni lee PDF.
+ IA local: reglas deterministas leen el título del documento (factura, proforma, abono, albarán, lista de precios, oferta) o reconocen un mensaje, y un modelo pequeño incluido en el equipo (Qwen3 0.6B) da una segunda opinión; cuando discrepan prevalecen las reglas y se avisa. El modelo propone el tipo de documento (factura, proforma, abono, albarán, lista de precios, oferta, mensaje) y muestra el inicio del texto original. Comprueba base + IVA = total cuando están etiquetados. No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.
+ El chat de dudas responde solo con esta guía y, si se marca, con el texto del editor. No consulta el inventario ni los pedidos guardados y no ejecuta acciones.
+-Cruceros: herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares para el puerto de Palma; panel de hoy (cruceros, pasajeros declarados, mayor concentración, impacto potencial, próxima llegada), mañana, próximos 7 y 30 días, calendario mensual con histórico desde 2014 y registro con buscador; el detalle del día muestra la línea temporal de cruceros en puerto por hora, la máxima coincidencia y una tarjeta por barco con llegada, salida, duración, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales editables en Configuración, y mide carga portuaria, no clientes; lo que el puerto no publica (naviera, capacidad, terminal) sale como «No disponible» y naviera y capacidad se pueden anotar en la ficha del barco indicando la fuente; nada se inventa; las horas son las de Palma; una escala que desaparece queda como «Retirada de la previsión»; sin internet se ven los últimos datos; la consulta se desactiva en Configuración → Cruceros en Palma; la app solo lee y no envía datos; cada día muestra también el clima previsto (MET Norway), si es festivo según el calendario oficial del Govern balear y los eventos que anota el usuario con «Añadir evento»; la pestaña «Ventas e impacto» compara los kilos vendidos por nivel de impacto sin calcular correlaciones y avisa cuando hay pocos días; «Restaurar copia del registro» en Configuración recupera el registro de cruceros desde la copia diaria. Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Ventas y mermas del día solo lista los productos terminados que genera alguna receta. Si un ingrediente queda bajo mínimo, la reposición lo propone.
++Cruceros: herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares para el puerto de Palma; panel de hoy (cruceros, pasajeros declarados, mayor concentración, impacto potencial, próxima llegada), mañana, próximos 7 y 30 días, calendario mensual con histórico desde 2014 y registro con buscador; el detalle del día muestra la línea temporal de cruceros en puerto por hora, la máxima coincidencia y una tarjeta por barco con llegada, salida, duración, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales editables en Configuración, y mide carga portuaria, no clientes; lo que el puerto no publica (naviera, capacidad, terminal) sale como «No disponible» y naviera y capacidad se pueden anotar en la ficha del barco indicando la fuente; nada se inventa; las horas son las de Palma; una escala que desaparece queda como «Retirada de la previsión»; sin internet se ven los últimos datos; la consulta se desactiva en Configuración → Cruceros en Palma; la app solo lee y no envía datos; cada día muestra también el clima previsto (MET Norway), si es festivo según el calendario oficial del Govern balear y los eventos que anota el usuario con «Añadir evento»; la pestaña «Ventas e impacto» compara los kilos vendidos por nivel de impacto sin calcular correlaciones y avisa cuando hay pocos días; «Restaurar copia del registro» en Configuración recupera el registro de cruceros desde la copia diaria. Semana: resumen semanal imprimible con producción, ventas, mermas, recepciones, pedidos, mensajes y productos bajo mínimo; se navega por semanas e «Imprimir» abre el diálogo del sistema (sirve para PDF). Recetario: pantalla con la ficha completa de cada receta, balance técnico (azúcares, grasa, sólidos y sólidos lácteos no grasos sobre la masa, comparado con rangos orientativos por familia, a partir de las fichas de composición de los ingredientes en Inventario → Editar producto) (familia: crema, sorbete, postre, base u otro; ingredientes con porcentaje sobre la masa; elaboración; alérgenos); «Calcular para X kg» escala las cantidades solo en pantalla; desde la ficha se produce, se duplica o se elimina. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente. Al registrar los kilos producidos de un gelato, la app calcula el consumo estimado por reglas; la persona lo revisa, corrige cantidades y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato. Cierre del día (en Producción): solo lista los productos terminados que genera alguna receta; se puede apuntar lo vendido o, con «Peso lo que queda», el peso que queda en la cubeta para que la app calcule lo vendido; cada merma admite un motivo (fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, degustación o invitación, otro); el historial muestra ventas, mermas y porcentaje de merma por día, por motivo y por producto; «Deshacer» compensa todo el cierre de un día y devuelve el stock. Si un ingrediente queda bajo mínimo, la reposición lo propone.
+ Respuestas de proveedores: reglas deterministas marcan en cada mensaje la categoría (falta de producto, cancelación, cambio, pregunta, fecha de entrega, confirmación) y si hay que leerlo; resuelven fechas como «el lunes» o «mañana». La IA local puede dar una segunda lectura opcional que solo anota una categoría. Nada de esto cambia pedidos ni stock. Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se responde por WhatsApp escribiendo en el propio mensaje o con respuestas rápidas que rellenan el cuadro (se envía una sola vez al pulsar Enviar) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.
+ WhatsApp: se vincula por QR con el teléfono del negocio. Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.
+ Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.
+diff --git a/src/index.html b/src/index.html
+index 03365a5..19d3cc0 100644
+--- a/src/index.html
++++ b/src/index.html
+@@ -31,6 +31,7 @@
+     <script src="/ui/views-messages.js" defer></script>
+     <script src="/ui/views-documents.js" defer></script>
+     <script src="/ui/views-ai.js" defer></script>
++    <script src="/ui/views-sales.js" defer></script>
+     <script src="/ui/views-weekly.js" defer></script>
+     <script src="/ui/views-cruises.js" defer></script>
+     <script src="/ui/forms.js" defer></script>
+diff --git a/src/server.cjs b/src/server.cjs
+index 685b859..f9cb0b8 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -13,6 +13,9 @@ const {
+   countStatus,
+   orderReminders,
+   defaultOrderTemplate,
++  salesHistory,
++  wasteReasonLabels,
++  localDate,
+ } = require("../build/domain.js");
+ const { recognizeLocal } = require("./ocr.cjs");
+ const { WhatsAppConnection } = require("./whatsapp.cjs");
+@@ -20,7 +23,7 @@ const { LocalAI } = require("./ai.cjs");
+ const { appendLog } = require("./logs.cjs");
+ const { csvCell } = require("./csv.cjs");
+ const { CruiseService } = require("./cruises/service.cjs");
+-const { defaultThresholds } = require("../build/cruises.js");
++const { defaultThresholds, addDays } = require("../build/cruises.js");
+ const { ContextService } = require("./context/service.cjs");
+ const {
+   salesByImpact,
+@@ -518,6 +521,25 @@ function createApp({
+       }
+       return;
+     }
++    if (u.pathname === "/api/sales" && req.method === "GET") {
++      // Day closes of finished product (sales and waste) from the full state, by business day.
++      const days = Math.min(
++        365,
++        Math.max(7, Number(u.searchParams.get("days")) || 30),
++      );
++      const to = localDate(new Date());
++      const start = new Date();
++      start.setDate(start.getDate() - (days - 1));
++      json(200, {
++        ...salesHistory(store.load(), localDate(start), to),
++        reasons: wasteReasonLabels,
++        tomorrow:
++          cruisesOn() && cruises.status().updatedAt
++            ? cruises.brief(addDays(cruises.dashboard().today, 1))
++            : null,
++      });
++      return;
++    }
+     if (u.pathname === "/api/report" && req.method === "GET") {
+       // Weekly summary from the full state; the UI only prints it.
+       const week = u.searchParams.get("week") || weekStart(new Date());
+@@ -1115,6 +1137,7 @@ function createApp({
+       "/ui/views-messages.js": "ui/views-messages.js",
+       "/ui/views-documents.js": "ui/views-documents.js",
+       "/ui/views-ai.js": "ui/views-ai.js",
++      "/ui/views-sales.js": "ui/views-sales.js",
+       "/ui/views-weekly.js": "ui/views-weekly.js",
+       "/ui/views-cruises.js": "ui/views-cruises.js",
+       "/ui/forms.js": "ui/forms.js",
+diff --git a/src/styles.css b/src/styles.css
+index cc035df..ae7af51 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -3991,3 +3991,44 @@ dialog::backdrop {
+   text-transform: uppercase;
+   letter-spacing: 0.03em;
+ }
++/* Cierre del día */
++.sales-body {
++  padding: 0 var(--s-5) var(--s-5);
++}
++.sales-body > .report-kpis {
++  margin-bottom: var(--s-4);
++}
++.sales-hint {
++  display: flex;
++  flex-wrap: wrap;
++  align-items: center;
++  gap: 6px;
++  margin: 0 0 var(--s-4);
++  padding: 10px 14px;
++  border-radius: 12px;
++  background: var(--surface-2);
++  font-size: 13px;
++}
++.sales-hint svg {
++  width: 16px;
++  height: 16px;
++}
++.sale-computed {
++  color: var(--ink-muted);
++  white-space: nowrap;
++}
++.sale-computed.bad {
++  color: var(--rosa-texto);
++  font-weight: 700;
++}
++.sales-summary {
++  margin-right: auto;
++  font-weight: 600;
++}
++.sales-scroll {
++  max-height: 360px;
++  overflow: auto;
++}
++[data-sale-reason] {
++  min-width: 200px;
++}
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index a29240c..30cc35e 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -304,27 +304,54 @@ async function action(name, el) {
+   }
+   if (name === "dailySales") {
+     const panel = el.closest("[data-sales]");
+-    const lines = [...panel.querySelectorAll("[data-sold]")]
+-      .map((i) => ({
+-        product: i.dataset.sold,
+-        sold: Number(i.value) || 0,
+-        waste:
+-          Number(
+-            panel.querySelector(`[data-waste="${i.dataset.sold}"]`)?.value,
+-          ) || 0,
+-      }))
+-      .filter((l) => l.sold || l.waste);
+-    if (!lines.length) {
+-      toast("Indica al menos una cantidad vendida o de merma.");
++    const form = readSalesForm(panel);
++    if (!form.lines.length) {
++      toast("Indica al menos una cantidad.");
++      return;
++    }
++    if (form.problems) {
++      toast("Revisa las filas marcadas: no cuadran con el stock.");
+       return;
+     }
+     await mutate(
+       {
+         type: "dailySales",
+         date: panel.querySelector("[data-sales-date]").value,
+-        lines,
++        lines: form.lines,
++      },
++      "Cierre del día registrado.",
++    );
++    salesData = null;
++    render();
++    return;
++  }
++  if (name === "salesMode") {
++    salesMode = el.dataset.mode === "remaining" ? "remaining" : "sold";
++    try {
++      localStorage.setItem("gelato-sales-mode", salesMode);
++    } catch {
++      // The choice simply does not persist.
++    }
++    render();
++    return;
++  }
++  if (name === "undoDailySales") {
++    const date = el.dataset.date;
++    const day = salesData?.days.find((d) => d.date === date);
++    modal(
++      "Deshacer el cierre del " + date,
++      `Se compensan todas las ventas y mermas de ese día (${day ? num(day.sold) + " kg vendidos y " + num(day.waste) + " kg de merma" : "ese cierre"}) y el stock vuelve a su sitio. Los movimientos originales se conservan en Actividad. Después puedes registrar el cierre correcto.`,
++      "",
++      async () => {
++        await mutate(
++          { type: "undoDailySales", date },
++          "Cierre deshecho. El stock volvió a su sitio.",
++        );
++        salesData = null;
++        render();
++        return true;
+       },
+-      "Ventas y mermas registradas.",
++      "Deshacer cierre",
+     );
+     return;
+   }
+diff --git a/src/ui/events.js b/src/ui/events.js
+index 5cf0a3c..01cb9ae 100644
+--- a/src/ui/events.js
++++ b/src/ui/events.js
+@@ -103,7 +103,21 @@ document.addEventListener("input", (e) => {
+     $("#ai-reading-result")?.remove();
+   }
+ });
++// Day close: every keystroke recomputes the row and the totals without redrawing the form.
++document.addEventListener("input", (e) => {
++  if (e.target.closest?.("[data-sales]")) updateSalesSummary();
++});
+ document.addEventListener("change", async (e) => {
++  if (e.target.id === "sales-days") {
++    salesDays = Number(e.target.value) || 30;
++    salesData = null;
++    render();
++    return;
++  }
++  if (e.target.closest?.("[data-sales]")) {
++    updateSalesSummary();
++    return;
++  }
+   if (e.target.id === "ai-mode") {
+     aiMode = e.target.value;
+     aiResult = null;
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index 0f4aefc..1d7c3f1 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nHerramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma. Contexto del día: cada día muestra además el clima previsto para Palma (MET Norway, unos 9 días; de un día pasado solo queda la previsión que había, nunca una observación), si es festivo según el calendario laboral oficial del Govern de les Illes Balears (autonómicos y los dos locales de Palma) y los eventos que anotes tú con «Añadir evento». La pestaña «Ventas e impacto» pone los kilos vendidos de cada día con ventas registradas junto al nivel de impacto de ese día: días, media, mínimo y máximo por nivel; con menos de 8 días de un nivel la app dice que la media todavía no es fiable; no calcula correlaciones ni predice ventas. En Configuración → Cruceros en Palma, «Restaurar copia del registro» recupera el registro de cruceros (y tus fichas de barcos) desde la copia diaria; el registro actual queda guardado al lado.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad base se conserva para no romper el historial.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\nCierre del día (en Producción): para cada producto terminado puedes apuntar lo vendido o, con «Peso lo que queda», escribir el peso que queda en la cubeta y la app calcula lo vendido (stock menos merma menos lo que queda). Cada merma admite un motivo: fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, degustación o invitación, u otro. La fila avisa al momento si algo no cuadra con el stock y el botón no se activa hasta que cuadre. Debajo, el historial de 14 días a 12 meses muestra por día de negocio lo vendido, la merma y el porcentaje de merma, las mermas por motivo y por producto. «Deshacer» compensa todas las ventas y mermas de ese día y devuelve el stock; los movimientos originales siguen en Actividad. Si hay datos de cruceros, el cierre recuerda cómo viene mañana.\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en unidad base. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nHerramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma. Contexto del día: cada día muestra además el clima previsto para Palma (MET Norway, unos 9 días; de un día pasado solo queda la previsión que había, nunca una observación), si es festivo según el calendario laboral oficial del Govern de les Illes Balears (autonómicos y los dos locales de Palma) y los eventos que anotes tú con «Añadir evento». La pestaña «Ventas e impacto» pone los kilos vendidos de cada día con ventas registradas junto al nivel de impacto de ese día: días, media, mínimo y máximo por nivel; con menos de 8 días de un nivel la app dice que la media todavía no es fiable; no calcula correlaciones ni predice ventas. En Configuración → Cruceros en Palma, «Restaurar copia del registro» recupera el registro de cruceros (y tus fichas de barcos) desde la copia diaria; el registro actual queda guardado al lado.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views-production.js b/src/ui/views-production.js
+index 7b16597..243831f 100644
+--- a/src/ui/views-production.js
++++ b/src/ui/views-production.js
+@@ -142,21 +142,6 @@ function production() {
+     }</div></section>${salesSection()}`
+   );
+ }
+-function salesSection() {
+-  // Only what a recipe produces counts as finished product; ingredients never appear here.
+-  const finished = state.products.filter(
+-    (p) => p.unit === "kg" && state.recipes.some((r) => r.product === p.id),
+-  );
+-  const today = todayLocal();
+-  return `<section class="panel" data-sales><div class="panel-heading"><div><h2>Ventas y mermas del día</h2><p>Kilos vendidos o desechados de producto terminado. Cada cantidad crea una salida o una merma trazable y reversible.</p></div></div><label class="field short">Día<input type="date" class="inline-input" data-sales-date value="${today}" max="${today}"></label><div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto terminado</th><th>Stock</th><th>Vendido (kg)</th><th>Merma (kg)</th></tr></thead><tbody>${finished
+-    .map(
+-      (p) =>
+-        `<tr><td><strong>${esc(p.name)}</strong></td><td>${num(p.stock)} kg</td><td><input type="number" class="inline-input" data-sold="${esc(p.id)}" min="0" max="1000000" step="0.001" placeholder="0" aria-label="Vendido de ${esc(p.name)}"></td><td><input type="number" class="inline-input" data-waste="${esc(p.id)}" min="0" max="1000000" step="0.001" placeholder="0" aria-label="Merma de ${esc(p.name)}"></td></tr>`,
+-    )
+-    .join(
+-      "",
+-    )}</tbody></table></div>${finished.length ? `<div class="row-actions">${btn(icon("check") + " Registrar ventas y mermas", "dailySales", "primary")}</div>` : '<p class="muted">No hay productos terminados: asigna un producto terminado (en kg) a una receta del recetario.</p>'}</section>`;
+-}
+ function ingredientRow(productId = "", qty = "") {
+   return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+ }
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index c45293d..a348091 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -696,7 +696,7 @@ test("ventas y mermas del día crean salidas trazables de producto terminado y a
+         date: "2026-09-08",
+         lines: [{ product: "p4", sold: 999, waste: 0 }],
+       }),
+-    /negativo/,
++    /más que el stock/,
+   );
+   assert.throws(
+     () =>

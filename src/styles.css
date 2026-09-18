@@ -3991,3 +3991,44 @@ dialog::backdrop {
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+/* Cierre del día */
+.sales-body {
+  padding: 0 var(--s-5) var(--s-5);
+}
+.sales-body > .report-kpis {
+  margin-bottom: var(--s-4);
+}
+.sales-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--s-4);
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: 13px;
+}
+.sales-hint svg {
+  width: 16px;
+  height: 16px;
+}
+.sale-computed {
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.sale-computed.bad {
+  color: var(--rosa-texto);
+  font-weight: 700;
+}
+.sales-summary {
+  margin-right: auto;
+  font-weight: 600;
+}
+.sales-scroll {
+  max-height: 360px;
+  overflow: auto;
+}
+[data-sale-reason] {
+  min-width: 200px;
+}

@@ -13,6 +13,9 @@ const {
   countStatus,
   orderReminders,
   defaultOrderTemplate,
+  salesHistory,
+  wasteReasonLabels,
+  localDate,
 } = require("../build/domain.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
@@ -20,7 +23,7 @@ const { LocalAI } = require("./ai.cjs");
 const { appendLog } = require("./logs.cjs");
 const { csvCell } = require("./csv.cjs");
 const { CruiseService } = require("./cruises/service.cjs");
-const { defaultThresholds } = require("../build/cruises.js");
+const { defaultThresholds, addDays } = require("../build/cruises.js");
 const { ContextService } = require("./context/service.cjs");
 const {
   salesByImpact,
@@ -516,6 +519,25 @@ function createApp({
       } catch (e) {
         json(400, { error: String(e?.message || e) });
       }
+      return;
+    }
+    if (u.pathname === "/api/sales" && req.method === "GET") {
+      // Day closes of finished product (sales and waste) from the full state, by business day.
+      const days = Math.min(
+        365,
+        Math.max(7, Number(u.searchParams.get("days")) || 30),
+      );
+      const to = localDate(new Date());
+      const start = new Date();
+      start.setDate(start.getDate() - (days - 1));
+      json(200, {
+        ...salesHistory(store.load(), localDate(start), to),
+        reasons: wasteReasonLabels,
+        tomorrow:
+          cruisesOn() && cruises.status().updatedAt
+            ? cruises.brief(addDays(cruises.dashboard().today, 1))
+            : null,
+      });
       return;
     }
     if (u.pathname === "/api/report" && req.method === "GET") {
@@ -1115,6 +1137,7 @@ function createApp({
       "/ui/views-messages.js": "ui/views-messages.js",
       "/ui/views-documents.js": "ui/views-documents.js",
       "/ui/views-ai.js": "ui/views-ai.js",
+      "/ui/views-sales.js": "ui/views-sales.js",
       "/ui/views-weekly.js": "ui/views-weekly.js",
       "/ui/views-cruises.js": "ui/views-cruises.js",
       "/ui/forms.js": "ui/forms.js",

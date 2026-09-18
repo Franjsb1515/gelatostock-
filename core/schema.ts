@@ -475,10 +475,29 @@ export const actionSchema = z.intersection(
       type: z.literal("dailySales"),
       date: documentDate,
       lines: z
-        .array(z.object({ product: idSchema, sold: quantity, waste: quantity }))
+        .array(
+          z.object({
+            product: idSchema,
+            // Either what was sold, or what is left in the tub (then sold = stock − waste − left).
+            sold: quantity.optional(),
+            remaining: quantity.optional(),
+            waste: quantity.default(0),
+            wasteReason: z
+              .enum([
+                "expiry",
+                "texture",
+                "display",
+                "accident",
+                "tasting",
+                "other",
+              ])
+              .optional(),
+          }),
+        )
         .min(1)
         .max(500),
     }),
+    z.object({ type: z.literal("undoDailySales"), date: documentDate }),
     z.object({
       type: z.literal("photoType"),
       id: idSchema,

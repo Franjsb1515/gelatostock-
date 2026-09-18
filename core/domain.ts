@@ -33,6 +33,13 @@ export {
 } from "./orders";
 import { defaultOrderTemplate, renderOrderTemplate } from "./orders";
 import { zoneLabels } from "./inventory";
+import { wasteReasonText, wasteReasonLabels, closeMovements } from "./sales";
+export {
+  salesHistory,
+  wasteReasons,
+  wasteReasonLabels,
+  closeMovements,
+} from "./sales";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
 export function ensure(value: unknown, message: string): asserts value {
   if (!value) throw Error(message);
@@ -899,12 +906,35 @@ export function apply(state: State, input: unknown): State {
       const done: string[] = [];
       for (const l of a.lines) {
         const p = item(s.products, l.product);
-        if (l.sold) move(s, p.id, -l.sold, "exit", `Venta del día ${a.date}`);
+        ensure(
+          l.sold === undefined || l.remaining === undefined,
+          `${p.name}: indica lo vendido o lo que queda, no las dos cosas.`,
+        );
+        // Closing by weighing the tub: what is missing and was not thrown away was sold.
+        const sold =
+          l.remaining === undefined
+            ? (l.sold ?? 0)
+            : Math.round((p.stock - l.waste - l.remaining) * 1000) / 1000;
+        ensure(
+          sold >= 0,
+          `${p.name}: queda más de lo que había (${p.stock} ${p.unit}). Si se produjo más, aprueba antes esa producción.`,
+        );
+        ensure(
+          sold + l.waste <= p.stock,
+          `${p.name}: vendido y merma suman más que el stock (${p.stock} ${p.unit}).`,
+        );
+        if (sold) move(s, p.id, -sold, "exit", `Venta del día ${a.date}`);
         if (l.waste)
-          move(s, p.id, -l.waste, "waste", `Merma del día ${a.date}`);
-        if (l.sold || l.waste)
+          move(
+            s,
+            p.id,
+            -l.waste,
+            "waste",
+            wasteReasonText(a.date, l.wasteReason),
+          );
+        if (sold || l.waste)
           done.push(
-            `${p.name}: ${l.sold ? "vendido " + l.sold + " " + p.unit : ""}${l.sold && l.waste ? ", " : ""}${l.waste ? "merma " + l.waste + " " + p.unit : ""}`,
+            `${p.name}: ${sold ? "vendido " + sold + " " + p.unit : ""}${sold && l.waste ? ", " : ""}${l.waste ? "merma " + l.waste + " " + p.unit + (l.wasteReason ? " (" + wasteReasonLabels[l.wasteReason].toLowerCase() + ")" : "") : ""}`,
           );
       }
       ensure(
@@ -919,6 +949,27 @@ export function apply(state: State, input: unknown): State {
         (short.length
           ? ` Por debajo del mínimo: ${short.map((x) => x.name).join(", ")}.`
           : "");
+      break;
+    }
+    case "undoDailySales": {
+      // The whole close of a day is compensated at once; the original movements stay on record.
+      const moves = closeMovements(s, a.date);
+      ensure(
+        moves.length > 0,
+        "Ese día no tiene ventas ni mermas por deshacer.",
+      );
+      for (const m of moves)
+        move(
+          s,
+          m.product,
+          -m.delta,
+          "reversal",
+          `Cierre del ${a.date} deshecho`,
+          {
+            reverses: m.id,
+          },
+        );
+      note = `Cierre del ${a.date} deshecho: ${moves.length} movimientos compensados; el stock vuelve a su sitio.`;
       break;
     }
     case "discardProduction": {

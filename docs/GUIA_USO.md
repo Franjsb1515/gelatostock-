@@ -26,6 +26,8 @@ Cada producto tiene unidad base (kg, L o ud), mínimo, objetivo y presentación 
 - Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.
 - Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).
 
+Cierre del día (en Producción): para cada producto terminado puedes apuntar lo vendido o, con «Peso lo que queda», escribir el peso que queda en la cubeta y la app calcula lo vendido (stock menos merma menos lo que queda). Cada merma admite un motivo: fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, degustación o invitación, u otro. La fila avisa al momento si algo no cuadra con el stock y el botón no se activa hasta que cuadre. Debajo, el historial de 14 días a 12 meses muestra por día de negocio lo vendido, la merma y el porcentaje de merma, las mermas por motivo y por producto. «Deshacer» compensa todas las ventas y mermas de ese día y devuelve el stock; los movimientos originales siguen en Actividad. Si hay datos de cruceros, el cierre recuerda cómo viene mañana.
+
 ## Recetario
 Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.
 - Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.

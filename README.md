@@ -1,14 +1,14 @@
-# GelatoStock · prototipo 0.26.0
+# GelatoStock · prototipo 0.27.0
 
 Aplicación local de escritorio para gelatería, café de especialidad y postres. Esta entrega permite probar el circuito; no es aún la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.26.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
+Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python, navegador ni conexión para usar el ejecutable ya generado. Si Windows bloquea VBScript, puedes abrir `dist/GelatoStock-0.27.0-win32-x64/GelatoStock.exe` directamente; en ese caso los datos se guardan dentro de esa carpeta portátil.
 
 El acceso principal guarda datos, copias y perfil del programa en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`. Temporales de los procesos lanzados desde el acceso: `work/`. No se ha configurado almacenamiento del proyecto en C. Windows puede generar sus propios registros del sistema fuera del control de la app.
 
-No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.26.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
+No mover el ejecutable aislado: necesita el resto de archivos de su carpeta. Para copiarlo a otro Windows x64, copiar toda la carpeta `dist/GelatoStock-0.27.0-win32-x64` a una ubicación donde el usuario pueda escribir. Arranca con ejemplos nuevos, salvo que se restaure una copia. No sincroniza equipos.
 
 ## Qué puedes probar
 
@@ -197,3 +197,6 @@ Con internet, la pantalla «Cruceros» muestra qué barcos llegan y parten de Pa
 
 ## Contexto del día en 0.26.0
 Junto a los cruceros, cada día muestra el clima previsto (MET Norway), si es festivo según el calendario oficial balear y los eventos que anotes. «Ventas e impacto» compara los kilos vendidos por nivel de impacto sin calcular correlaciones. El registro de cruceros se puede restaurar desde la copia diaria.
+
+## Cierre del día en 0.27.0
+En Producción, el cierre del día admite apuntar lo vendido o pesar lo que queda en cada cubeta; cada merma lleva su motivo y un cierre entero se puede deshacer. El historial muestra ventas, mermas y porcentaje de merma por día, por motivo y por producto.

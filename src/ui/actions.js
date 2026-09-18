@@ -304,27 +304,54 @@ async function action(name, el) {
   }
   if (name === "dailySales") {
     const panel = el.closest("[data-sales]");
-    const lines = [...panel.querySelectorAll("[data-sold]")]
-      .map((i) => ({
-        product: i.dataset.sold,
-        sold: Number(i.value) || 0,
-        waste:
-          Number(
-            panel.querySelector(`[data-waste="${i.dataset.sold}"]`)?.value,
-          ) || 0,
-      }))
-      .filter((l) => l.sold || l.waste);
-    if (!lines.length) {
-      toast("Indica al menos una cantidad vendida o de merma.");
+    const form = readSalesForm(panel);
+    if (!form.lines.length) {
+      toast("Indica al menos una cantidad.");
+      return;
+    }
+    if (form.problems) {
+      toast("Revisa las filas marcadas: no cuadran con el stock.");
       return;
     }
     await mutate(
       {
         type: "dailySales",
         date: panel.querySelector("[data-sales-date]").value,
-        lines,
+        lines: form.lines,
       },
-      "Ventas y mermas registradas.",
+      "Cierre del día registrado.",
+    );
+    salesData = null;
+    render();
+    return;
+  }
+  if (name === "salesMode") {
+    salesMode = el.dataset.mode === "remaining" ? "remaining" : "sold";
+    try {
+      localStorage.setItem("gelato-sales-mode", salesMode);
+    } catch {
+      // The choice simply does not persist.
+    }
+    render();
+    return;
+  }
+  if (name === "undoDailySales") {
+    const date = el.dataset.date;
+    const day = salesData?.days.find((d) => d.date === date);
+    modal(
+      "Deshacer el cierre del " + date,
+      `Se compensan todas las ventas y mermas de ese día (${day ? num(day.sold) + " kg vendidos y " + num(day.waste) + " kg de merma" : "ese cierre"}) y el stock vuelve a su sitio. Los movimientos originales se conservan en Actividad. Después puedes registrar el cierre correcto.`,
+      "",
+      async () => {
+        await mutate(
+          { type: "undoDailySales", date },
+          "Cierre deshecho. El stock volvió a su sitio.",
+        );
+        salesData = null;
+        render();
+        return true;
+      },
+      "Deshacer cierre",
     );
     return;
   }

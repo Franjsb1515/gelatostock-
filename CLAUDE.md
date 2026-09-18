@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.26.0
+# Entrada para Claude · entrega vigente 0.27.0
 
 Lee docs/PROMPT_MAESTRO_V2.md (prompt operativo), AGENTS.md, README.md, TODO.md, el último informe de reports/ y docs/IA_LOCAL_Y_SEGURIDAD.md. El usuario solicita revisión y mejoras justificadas, manteniendo trabajo en D y funcionamiento local. Ejecuta pruebas antes de proponer reescrituras.
 
@@ -16,6 +16,9 @@ WhatsApp: el usuario vinculó por QR y cambió entre sus dos números propios (2
 Pruebas: npm test; npm run format:check; npm run package:win; npm run test:desktop. Esta última incluye inferencia real y tarda más que unitarias. node scripts/evaluate-ai.cjs --quick para cambios en IA (modelo real, conserva pass:false). GELATO_TEST_QR=1 solo con prueba explícita. Usa fixtures en work/, nunca borres datos reales para probar. Mac no validado. Revisar seguridad, firma de paquetes, almacenamiento y rendimiento con hardware/documentos reales antes de producción.
 
 Cierre de sesión: informe nuevo + CHANGELOG + TODO + pruebas reales + reconstrucción del ejecutable si cambió src. Conservar informes anteriores y entregar ZIP sin datos, credenciales, node_modules ni binarios.
+
+## Punto de continuidad 0.27.0
+Lee reports/2026-09-18T16-58-36-020Z-cierre-del-dia.md. Cierre del día: core/sales.ts (motivos de merma, closeMovements, salesHistory), acción dailySales con sold o remaining y wasteReason, acción undoDailySales, GET /api/sales, src/ui/views-sales.js (la sección salió de views-production.js). El día de negocio y el motivo viajan en el texto del movimiento («Venta del día AAAA-MM-DD», «Merma del día AAAA-MM-DD · Motivo»): no cambies ese formato sin migrar core/sales.ts, core/report.ts y core/context.ts, que lo leen. Un movimiento compensado nunca cuenta en historial, semana ni «Ventas e impacto». El formulario recalcula sin redibujar (updateSalesSummary) para no perder el foco. Siguiente: confirmar con el usuario la segunda parte de ventas y mermas (ver TODO) y Compras y Mensajes II.
 
 ## Punto de continuidad 0.26.0
 Lee reports/2026-09-18T16-30-14-697Z-contexto-del-dia.md. Contexto del día: core/context.ts (parseMetno por día de Palma, parseHolidayCsv del CSV catalán del Govern, salesByImpact y dailySalesKg), src/context/providers.cjs (MET Norway y CKAN de la CAIB) y src/context/service.cjs (data/contexto.sqlite: weather, holidays, events, meta). Mismo interruptor que cruceros (cruises_off) y mismas garantías: el clima de un día pasado es «previsión guardada», nunca observación; una previsión parcial no pisa una más completa del mismo día; lluvia sin dato = null, no 0; festivos solo del CSV oficial, y un CSV raro no borra los buenos; eventos solo manuales; «Ventas e impacto» no calcula correlaciones y exige 8 días por nivel (MIN_DAYS_PER_LEVEL) para dar una media por buena; una venta deshecha no cuenta. createApp({ cruiseProvider, contextProviders }) en pruebas: ninguna toca la red. Ojo de herramienta: los heredoc y node -e pierden las barras invertidas de las expresiones regulares; usa Write o Edit. Siguiente: mejora de ventas y mermas (el usuario quiere definirla) y Compras y Mensajes II.

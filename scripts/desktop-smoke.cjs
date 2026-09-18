@@ -415,16 +415,52 @@ const assert = require("node:assert/strict");
       "PASS: producción de 4 kg: consumo estimado (2 L leche) corregido a 1,5 L y aprobado; terminado +4 kg; nada cambió antes de aprobar.",
     );
     const chocolateAfter = savedStock("p4");
-    await window.locator('[data-sold="p4"]').fill("1");
-    await window.locator('[data-waste="p4"]').fill("0.5");
+    // Cierre pesando lo que queda: la app calcula lo vendido; la merma lleva motivo.
+    const waitStock = async (value) => {
+      for (let i = 0; i < 50 && savedStock("p4") !== value; i++)
+        await new Promise((r) => setTimeout(r, 200));
+      assert.equal(savedStock("p4"), value);
+    };
+    const saleRow = window.locator('[data-sale-row="p4"]');
     await window
-      .getByRole("button", { name: "Registrar ventas y mermas", exact: true })
+      .getByRole("button", { name: "Peso lo que queda", exact: true })
       .click();
-    for (let i = 0; i < 50 && savedStock("p4") !== chocolateAfter - 1.5; i++)
-      await new Promise((r) => setTimeout(r, 200));
-    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
+    await saleRow.locator("[data-sale-waste]").fill("0.5");
+    await saleRow.locator("[data-sale-reason]").selectOption("texture");
+    await saleRow
+      .locator("[data-sale-input]")
+      .fill(String(chocolateAfter - 1.5));
+    assert.equal(
+      await saleRow.locator("[data-sale-computed]").innerText(),
+      "Vendido: 1 kg",
+    );
+    await window
+      .getByRole("button", { name: "Registrar cierre", exact: true })
+      .click();
+    await waitStock(chocolateAfter - 1.5);
+    await window
+      .getByRole("cell", { name: "Textura o cristalización" })
+      .waitFor();
+    // Deshacer el cierre devuelve el stock; luego se cierra apuntando lo vendido.
+    await window
+      .getByRole("button", { name: "Deshacer", exact: true })
+      .first()
+      .click();
+    await window
+      .getByRole("button", { name: "Deshacer cierre", exact: true })
+      .click();
+    await waitStock(chocolateAfter);
+    await window
+      .getByRole("button", { name: "Apunto lo vendido", exact: true })
+      .click();
+    await saleRow.locator("[data-sale-input]").fill("1");
+    await saleRow.locator("[data-sale-waste]").fill("0.5");
+    await window
+      .getByRole("button", { name: "Registrar cierre", exact: true })
+      .click();
+    await waitStock(chocolateAfter - 1.5);
     console.log(
-      "PASS: ventas y mermas del día descuentan producto terminado (1 kg vendido, 0,5 kg merma).",
+      "PASS: cierre del día pesando lo que queda (vendido calculado 1 kg, merma 0,5 kg con motivo), deshecho y repetido apuntando lo vendido.",
     );
     // Recetario: escalar la receta de ejemplo a 6 kg solo en pantalla (nada cambia en el estado).
     await window

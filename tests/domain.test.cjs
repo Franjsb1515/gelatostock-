@@ -696,7 +696,7 @@ test("ventas y mermas del día crean salidas trazables de producto terminado y a
         date: "2026-09-08",
         lines: [{ product: "p4", sold: 999, waste: 0 }],
       }),
-    /negativo/,
+    /más que el stock/,
   );
   assert.throws(
     () =>

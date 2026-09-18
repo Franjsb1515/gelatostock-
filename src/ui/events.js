@@ -103,7 +103,21 @@ document.addEventListener("input", (e) => {
     $("#ai-reading-result")?.remove();
   }
 });
+// Day close: every keystroke recomputes the row and the totals without redrawing the form.
+document.addEventListener("input", (e) => {
+  if (e.target.closest?.("[data-sales]")) updateSalesSummary();
+});
 document.addEventListener("change", async (e) => {
+  if (e.target.id === "sales-days") {
+    salesDays = Number(e.target.value) || 30;
+    salesData = null;
+    render();
+    return;
+  }
+  if (e.target.closest?.("[data-sales]")) {
+    updateSalesSummary();
+    return;
+  }
   if (e.target.id === "ai-mode") {
     aiMode = e.target.value;
     aiResult = null;

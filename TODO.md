@@ -1,6 +1,6 @@
 # TODO — estado del prototipo
 
-La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.26.0.
+La especificación completa permanece en docs/TODO.md. Este archivo indica el estado real de 0.27.0.
 
 ## Entregado y comprobado
 
@@ -60,7 +60,8 @@ La especificación completa permanece en docs/TODO.md. Este archivo indica el es
 - [x] Cruceros como planificación (0.25.0): fuente oficial validada, registro SQLite con histórico desde 2014, panel, calendario, línea temporal, impacto potencial auditable, historial de cambios y ficha manual del barco.
 - [x] Contexto del día (0.26.0): clima previsto, festivos oficiales, eventos propios, ventas por nivel de impacto y restauración del registro de cruceros.
 - [ ] Planificación, siguiente: con meses de ventas, estudiar ventas frente a clima y festivos además del impacto (siempre como hechos, sin predicción hasta poder validarla); observaciones meteorológicas reales si se consigue una fuente abierta (AEMET exige clave propia del usuario); adaptar la app entera a ventanas estrechas.
-- [ ] Ventas y mermas: mejora pedida por el usuario el 2026-09-18, pendiente de definir con él.
+- [x] Cierre del día (0.27.0): vendido o lo que queda, motivo de merma, deshacer un cierre, historial por día, motivo y producto.
+- [ ] Ventas y mermas, siguiente (a confirmar con el usuario): ventas por formato (cucurucho, tarrina, litro) e importes; mermas de ingredientes con los mismos motivos; objetivo de merma con aviso; proponer producción a partir de ventas medias por día de la semana.
 - [ ] Compras y Mensajes II: propuesta de sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic (mensaje de recordatorio al proveedor); catálogo/precios por proveedor desde listas de precios; prueba real del ciclo completo con los números del usuario.
 - [ ] Makro: aplazado por el usuario (2026-09-09), sin cuenta todavía. No avanzar más hasta que lo pida; la función queda disponible guardando la web en la ficha.
 - [ ] IA: medir con documentos y mensajes reales del negocio (los corpus son sintéticos y escritos por la misma sesión que las reglas).

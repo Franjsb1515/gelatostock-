@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.27.0 — 2026-09-18 · sesión 040
+
+Cierre del día. La acción dailySales admite, por línea, lo vendido o lo que queda (remaining: la app calcula vendido = stock − merma − queda) y un motivo de merma de lista cerrada (core/sales.ts: fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, degustación o invitación, otro), que viaja en el texto del movimiento. Validación previa con mensajes claros (queda más de lo que había; vendido y merma superan el stock; las dos cosas a la vez). Acción nueva undoDailySales: compensa todas las ventas y mermas vivas de un día de negocio y conserva los originales. salesHistory y GET /api/sales: por día de negocio, totales, porcentaje de merma, mermas por motivo y por producto, sin contar lo deshecho. Interfaz nueva src/ui/views-sales.js: dos formas de apuntar, cálculo en vivo por fila, historial de 14 días a 12 meses, «Deshacer» y pista de cruceros para mañana.
+
+Corregido: el resumen semanal contaba ventas y mermas ya deshechas, y las asignaba al día en que se teclearon en lugar de a su día de negocio.
+
+Pruebas: 152. Informe reports/2026-09-18T16-58-36-020Z-cierre-del-dia.md.
+
 ## 0.26.0 — 2026-09-18 · sesión 039
 
 Pendientes recomendados de Cruceros. Contexto del día: clima previsto para Palma (MET Norway, CC BY 4.0), festivos del calendario laboral oficial del Govern de les Illes Balears (autonómicos y locales de Palma) y eventos anotados por el usuario, visibles en el panel de hoy, las tarjetas de día, el calendario y el detalle. «Ventas e impacto»: kilos vendidos por nivel de impacto (días, media, mínimo y máximo), con aviso cuando hay menos de 8 días de un nivel; sin correlaciones ni predicciones. Restauración del registro de cruceros desde la copia diaria, conservando el registro actual. El informe semanal lleva también el contexto de cada día. Nuevo core/context.ts, src/context/providers.cjs y service.cjs (data/contexto.sqlite, con su copia diaria).

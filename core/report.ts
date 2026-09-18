@@ -73,8 +73,14 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
     waste: WeeklyLine[] = [],
     receipts: WeeklyLine[] = [];
   let movements = 0;
+  // A compensated movement (and its compensation) is not a sale, a waste or a receipt.
+  const undone = new Set(s.movements.map((m) => m.reverses).filter(Boolean));
   for (const m of s.movements) {
-    const day = dayOf(m.at);
+    if (undone.has(m.id) || m.reverses) continue;
+    // A day close belongs to its business day, even if it was typed in the next morning.
+    const day =
+      /^(?:Venta|Merma) del día (\d{4}-\d{2}-\d{2})/.exec(m.reason)?.[1] ??
+      dayOf(m.at);
     if (!inWeek(day)) continue;
     movements++;
     const qty = Math.abs(m.delta);
