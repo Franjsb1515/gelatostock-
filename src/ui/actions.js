@@ -335,6 +335,49 @@ async function action(name, el) {
     render();
     return;
   }
+  if (name === "setSaleValue" || name === "setManualCost") {
+    const r = state.recipes.find((x) => x.id === el.dataset.id);
+    const sale = name === "setSaleValue";
+    const today = businessToday();
+    const current = sale
+      ? (r.saleValues || []).filter((v) => v.from <= today).pop()?.cents
+      : r.cost?.manual;
+    modal(
+      (sale ? "Valor de venta de " : "Coste a mano de ") + r.name,
+      sale
+        ? "Euros por kilo de gelato vendido. Vale desde hoy; los días anteriores conservan el valor que tenían."
+        : "Euros por kilo. Mientras exista, manda sobre el coste calculado y se rotula «escrito a mano». Déjalo vacío para quitarlo y volver al calculado. Las producciones ya aprobadas conservan su coste.",
+      field(
+        sale ? "Valor de venta (€ por kilo)" : "Coste (€ por kilo)",
+        "euros",
+        current ? (current / 100).toFixed(2) : "",
+        "number",
+        `min="0.01" max="100000" step="0.01" ${sale ? "required" : ""}`,
+      ),
+      async (f) => {
+        const cents = Math.round(Number(f.get("euros")) * 100);
+        if (!sale && !cents && !r.cost?.manual) return true;
+        await mutate(
+          sale
+            ? { type: "setSaleValue", recipe: r.id, cents, from: today }
+            : {
+                type: "setManualCost",
+                recipe: r.id,
+                ...(cents ? { cents } : {}),
+              },
+          sale
+            ? "Valor de venta guardado."
+            : cents
+              ? "Coste a mano guardado."
+              : "Coste a mano quitado.",
+        );
+        salesData = null;
+        render();
+        return true;
+      },
+    );
+    return;
+  }
   if (name === "voidProduction" || name === "fixProduction") {
     const p = state.productions.find((x) => x.id === el.dataset.id);
     const fix = name === "fixProduction";

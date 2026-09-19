@@ -14,6 +14,8 @@ const {
   orderReminders,
   defaultOrderTemplate,
   salesHistory,
+  valueReport,
+  recipeCost,
   wasteReasonLabels,
   localDate,
 } = require("../build/domain.js");
@@ -147,6 +149,8 @@ function createApp({
           recipes: state.recipes.map((r) => ({
             ...r,
             balance: recipeBalance(state, r),
+            // Cost per kilo with its formula (core/value.ts); the sale value is typed by the person.
+            cost: recipeCost(state, r),
           })),
         }
       : {
@@ -166,6 +170,8 @@ function createApp({
     "applyProduction",
     "discardProduction",
     "voidProduction",
+    "setSaleValue",
+    "setManualCost",
   ]);
   // Business day: a shop that closes at 2:00 is still living «yesterday» until this hour.
   const dayChangeHour = () => {
@@ -537,8 +543,11 @@ function createApp({
       const to = localDate(new Date());
       const start = new Date();
       start.setDate(start.getDate() - (days - 1));
+      const full = store.load();
       json(200, {
-        ...salesHistory(store.load(), localDate(start), to),
+        ...salesHistory(full, localDate(start), to),
+        // Two separate reports (sale and cost) over the same days; never added together.
+        value: valueReport(full, localDate(start), to),
         reasons: wasteReasonLabels,
         tomorrow:
           cruisesOn() && cruises.status().updatedAt
@@ -1112,7 +1121,7 @@ function createApp({
             throw Error("Falta la versión o el identificador de la operación.");
           if (lockedActions.has(String(data.type)) && !unlocked())
             throw Error(
-              "Recetas protegidas: desbloqueá el recetario con la contraseña.",
+              "Recetas protegidas: desbloquea el recetario con la contraseña.",
             );
           store.dispatch(data);
         }

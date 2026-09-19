@@ -48,6 +48,16 @@ export {
   wasteReasonLabels,
   closeMovements,
 } from "./sales";
+import { productionCost, recipeCost, saleValueOn } from "./value";
+export {
+  recipeCost,
+  productionCost,
+  saleValueOn,
+  costPerKgOn,
+  valueReport,
+} from "./value";
+const eur = (cents: number): string =>
+  (cents / 100).toFixed(2).replace(".", ",") + " €";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
 export function ensure(value: unknown, message: string): asserts value {
   if (!value) throw Error(message);
@@ -796,7 +806,7 @@ export function apply(state: State, input: unknown): State {
         ensure(p.unit === "kg", "El producto terminado debe medirse en kg.");
       }
       if (id) Object.assign(item(s.recipes, id), fields);
-      else s.recipes.push({ id: randomUUID(), ...fields });
+      else s.recipes.push({ id: randomUUID(), ...fields, saleValues: [] });
       note = `Receta guardada: ${fields.name} (rinde ${fields.yield} kg).`;
       break;
     }
@@ -814,6 +824,40 @@ export function apply(state: State, input: unknown): State {
       s.business = a.name;
       s.place = a.place;
       note = `Identidad del negocio actualizada: ${a.name}${a.place ? " · " + a.place : ""}.`;
+      break;
+    }
+    case "setSaleValue": {
+      const r = item(s.recipes, a.recipe);
+      ensure(
+        r.product,
+        "Asigna primero un producto terminado a la receta: el valor se aplica a sus kilos.",
+      );
+      const owner = s.recipes.find(
+        (x) => x.product === r.product && x.saleValues.length,
+      );
+      ensure(
+        !owner || owner.id === r.id,
+        `El valor de este producto terminado ya se lleva en la receta «${owner?.name}».`,
+      );
+      const before = saleValueOn(s, r.product, a.from);
+      r.saleValues = [
+        ...r.saleValues.filter((v) => v.from !== a.from),
+        { from: a.from, cents: a.cents, at: now() },
+      ].sort((x, y) => x.from.localeCompare(y.from));
+      note = `Valor de venta de ${r.name}: ${eur(a.cents)} por kilo desde el ${a.from}${before !== null && before !== a.cents ? ` (antes ${eur(before)})` : ""}. Los días anteriores conservan el valor que tenían.`;
+      break;
+    }
+    case "setManualCost": {
+      const r = item(s.recipes, a.recipe);
+      if (a.cents === undefined) {
+        ensure(r.manualCost, "Esta receta no tiene coste escrito a mano.");
+        delete r.manualCost;
+        const c = recipeCost(s, r);
+        note = `Coste a mano de ${r.name} quitado. Coste calculado: ${c.calculated === null ? "no disponible (faltan precios de compra)" : eur(c.calculated) + " por kilo"}.`;
+      } else {
+        r.manualCost = { cents: a.cents, at: now() };
+        note = `Coste de ${r.name} escrito a mano: ${eur(a.cents)} por kilo. Las producciones ya aprobadas conservan el coste que tenían.`;
+      }
       break;
     }
     case "deleteRecipe": {
@@ -875,6 +919,11 @@ export function apply(state: State, input: unknown): State {
       if (p.output && a.output !== undefined) p.output.quantity = a.output;
       p.note = a.note;
       p.status = "applied";
+      // Snapshot with today's purchase prices and the approved consumption; later price changes
+      // never rewrite it.
+      const cost = productionCost(s, r, p);
+      if (cost) p.cost = cost;
+      else delete p.cost;
       const consumed: string[] = [];
       for (const l of p.lines) {
         if (!l.quantity) continue;

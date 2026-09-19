@@ -188,5 +188,15 @@
     "forbid": [
       "no lo sé"
     ]
+  },
+  {
+    "id": "valor_venta",
+    "question": "¿Dónde escribo el valor de venta por kilo de un gelato?",
+    "expect": [
+      "recetario|receta"
+    ],
+    "forbid": [
+      "no lo sé"
+    ]
   }
 ]

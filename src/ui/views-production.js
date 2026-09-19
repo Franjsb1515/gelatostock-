@@ -70,7 +70,7 @@ function recipeBook() {
             )
             .join(
               "",
-            )}</tbody></table></div>${balanceBlock(r)}${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
+            )}</tbody></table></div>${valueBlock(r)}${balanceBlock(r)}${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
         })
         .join("") ||
       `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
@@ -114,7 +114,7 @@ function production() {
         : '<div class="empty compact">No hay producciones pendientes. Registra una producción para ver el consumo estimado.</div>'
     }</section><section class="panel"><div class="panel-heading"><div><h2>Hoja diaria de producción</h2><p>Kilos producidos por día y por gelato, con el consumo aprobado.</p></div></div>${
       dates.length
-        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th><th></th></tr></thead><tbody>${dates
+        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th><th>Coste</th><th></th></tr></thead><tbody>${dates
             .map((d) =>
               byDate[d]
                 .map(
@@ -124,7 +124,7 @@ function production() {
                         .filter((l) => l.quantity)
                         .map(lineText)
                         .join(", ") || "Sin consumo"
-                    }</td><td class="row-tools"><button class="text-link" data-action="fixProduction" data-id="${esc(p.id)}">Corregir</button> <button class="text-link" data-action="voidProduction" data-id="${esc(p.id)}">Anular</button></td></tr>`,
+                    }</td><td class="num">${productionCostCell(p)}</td><td class="row-tools"><button class="text-link" data-action="fixProduction" data-id="${esc(p.id)}">Corregir</button> <button class="text-link" data-action="voidProduction" data-id="${esc(p.id)}">Anular</button></td></tr>`,
                 )
                 .join(""),
             )
@@ -144,6 +144,36 @@ function production() {
 }
 function ingredientRow(productId = "", qty = "") {
   return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+}
+
+const productionCostCell = (p) =>
+  p.cost
+    ? `${money(p.cost.cents)}<small>${p.cost.source === "manual" ? "escrito a mano" : "calculado"}</small>`
+    : "<small>No disponible</small>";
+// Sale value (typed by the person, with history) and cost per kilo (calculated or typed by hand).
+// Two figures that are never mixed; the formula of the calculated cost is always on screen.
+function valueBlock(r) {
+  const c = r.cost;
+  if (!c) return "";
+  const today = businessToday();
+  const values = r.saleValues || [];
+  const current = values.filter((v) => v.from <= today).pop();
+  const others = values.filter((v) => v !== current);
+  const day = (d) => date(d + "T12:00:00Z");
+  const sale = !r.product
+    ? '<p class="muted">Asigna un producto terminado a la receta para ponerle valor de venta.</p>'
+    : `<p><strong>${current ? money(current.cents) + " por kilo" : "No disponible"}</strong> <small>${current ? "escrito por ti · vigente desde el " + esc(day(current.from)) : "todavía no lo has escrito"}</small> <button class="text-link" data-action="setSaleValue" data-id="${esc(r.id)}">${current ? "Cambiar" : "Escribir valor"}</button></p>${others.length ? `<p class="fineprint">Historial: ${others.map((v) => "desde el " + esc(day(v.from)) + ", " + money(v.cents)).join(" · ")}. Cada día conserva el valor que tenía.</p>` : ""}`;
+  const formula = c.lines
+    .map(
+      (l) =>
+        `${esc(l.name)} ${num(l.quantity)} ${esc(l.unit)} × ${l.unitCents === null ? "sin precio" : money(l.unitCents) + "/" + esc(l.unit)}${l.cents === null ? "" : " = " + money(l.cents)}`,
+    )
+    .join(" · ");
+  const calculated =
+    c.calculated === null
+      ? `No disponible: falta el precio de compra de ${esc(c.missing.join(", ")) || "los ingredientes"}.`
+      : `${money(c.calculated)} por kilo = (${formula}) ÷ ${num(r.yield)} kg de rendimiento.`;
+  return `<div class="recipe-block" data-value="sale"><div class="message-label">VALOR DE VENTA POR KILO</div>${sale}</div><div class="recipe-block" data-value="cost"><div class="message-label">COSTE POR KILO</div><p><strong>${c.perKg === null ? "No disponible" : money(c.perKg) + " por kilo"}</strong> <small>${c.source === "manual" ? "escrito a mano" : c.source === "calculated" ? "calculado con los precios de compra" : "faltan precios de compra"}</small> <button class="text-link" data-action="setManualCost" data-id="${esc(r.id)}">${c.manual === null ? "Escribir a mano" : "Cambiar o quitar"}</button></p><p class="fineprint">Calculado: ${calculated}</p></div>`;
 }
 
 // Technical balance computed by the server from the ingredient sheets (core/balance.ts).

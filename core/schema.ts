@@ -182,7 +182,20 @@ export const recipeFields = {
   allergens: z.string().max(300).default(""),
   note: z.string().max(500).default(""),
 };
-const recipeSchema = z.object({ id: idSchema, ...recipeFields });
+// Sale value per kilo of the finished gelato, written by the person. A history: the value of a
+// business day is the entry with the latest "from" on or before it, so the past never changes.
+const saleValueSchema = z.object({
+  from: documentDate,
+  cents: cents.refine((n) => n > 0),
+  at,
+});
+const recipeSchema = z.object({
+  id: idSchema,
+  ...recipeFields,
+  saleValues: z.array(saleValueSchema).max(1000).default([]),
+  // Cost per kilo written by hand; while it exists it rules over the calculated one.
+  manualCost: z.object({ cents: cents.refine((n) => n > 0), at }).optional(),
+});
 const productionSchema = z.object({
   id: idSchema,
   recipe: idSchema,
@@ -197,6 +210,10 @@ const productionSchema = z.object({
   // An applied production that was annulled: its movements were compensated, never erased.
   voidedAt: at.optional(),
   voidReason: z.string().max(200).optional(),
+  // Snapshot of the cost when it was approved (cents for the whole batch). Absent: not available.
+  cost: z
+    .object({ cents, source: z.enum(["calculated", "manual"]) })
+    .optional(),
 });
 export const documentTypes = z.enum([
   "factura",
@@ -450,6 +467,19 @@ export const actionSchema = z.intersection(
       ...recipeFields,
     }),
     z.object({ type: z.literal("deleteRecipe"), id: idSchema }),
+    // Sale value per kilo of a recipe's gelato from a business day on (same day: replaces it).
+    z.object({
+      type: z.literal("setSaleValue"),
+      recipe: idSchema,
+      cents: cents.refine((n) => n > 0),
+      from: documentDate,
+    }),
+    // Cost per kilo written by hand; without cents it is removed and the calculated one returns.
+    z.object({
+      type: z.literal("setManualCost"),
+      recipe: idSchema,
+      cents: cents.refine((n) => n > 0).optional(),
+    }),
     z.object({
       type: z.literal("business"),
       name: text(80),

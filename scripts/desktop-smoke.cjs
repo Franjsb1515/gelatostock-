@@ -501,6 +501,40 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: recetario con ficha completa; escala a 6 kg muestra 3 L de leche sin tocar el stock.",
     );
+    // Valor y coste: el coste sale calculado con su fórmula; el valor de venta se escribe a mano
+    // y el informe de venta valora el cierre de hoy (0,9 kg vendidos y 0,5 kg de merma).
+    assert.match(
+      await window.locator('[data-value="cost"]').first().innerText(),
+      /calculado con los precios de compra[\s\S]*Calculado: .*÷ 1 kg/,
+    );
+    await window.locator('[data-action="setSaleValue"]').first().click();
+    await window.locator('#modal input[name="euros"]').fill("100");
+    await window.locator('#modal button[type="submit"]').click();
+    await window
+      .locator('[data-value="sale"]', { hasText: "100,00 € por kilo" })
+      .first()
+      .waitFor();
+    await window
+      .getByRole("button", { name: "Producción", exact: true })
+      .click();
+    const saleReport = window.locator(
+      '[data-value-report="sale"] .report-kpis',
+    );
+    await saleReport.waitFor();
+    assert.match(
+      (await saleReport.innerText()).replace(/\s+/g, " "),
+      /90,00 € venta estimada 50,00 € venta perdida por merma 10,00 € valor invitado/,
+    );
+    assert.doesNotMatch(
+      await window
+        .locator('[data-value-report="cost"] .report-kpis')
+        .innerText(),
+      /No disponible/,
+    );
+    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
+    console.log(
+      "PASS: valor de venta de 100 €/kg escrito en la receta; coste calculado con fórmula; informe de venta 90 € estimados y 50 € perdidos por merma, separado del de coste.",
+    );
     // Cruceros: sin red la pantalla abre, dice que faltan datos (no inventa nada) y cita la fuente.
     await window.getByRole("button", { name: "Cruceros", exact: true }).click();
     await window.getByRole("heading", { name: /^Hoy · / }).waitFor();

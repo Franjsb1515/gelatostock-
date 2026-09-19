@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.30.0 — 2026-09-19 · sesión 045 · fase 3 del plan de producción y ventas
+
+Valor y coste del gelato. Cada receta con producto terminado tiene un valor de venta por kilo escrito por el usuario, con historial por fecha (cambiarlo hoy no toca los días pasados), y un coste por kilo calculado con los precios de compra y la fórmula a la vista, o escrito a mano y rotulado así. Cada producción guarda su coste al aprobarla. Dos informes separados en Producción, venta y coste, que nunca se mezclan; lo que no se puede calcular sale como «No disponible» y anula su total. El ejemplo del usuario (50 y 100 €/kg: 80 € de venta, 20 € de venta perdida, 10 € de coste perdido) es una prueba. De paso: las acciones nuevas respetan el candado del recetario y se corrige un «desbloqueá» del servidor.
+
+Pruebas: 164. Informe reports/2026-09-19T16-12-47-768Z-fase-3-valor-y-coste.md.
+
 ## 0.29.0 — 2026-09-18 · sesión 044 · fase 2 del plan de producción y ventas
 
 Merma frente a invitación o consumo. El cierre del día tiene una columna propia para lo que se invita, se da a probar o consume el equipo: sale del stock, pero no es merma ni venta. El porcentaje de merma pasa a calcularse solo con merma real sobre todo lo que salió. Historial, líneas del cierre, resumen semanal y mensajes de Actividad separan las tres salidas. «Degustación o invitación» deja de ser un motivo de merma; lo ya apuntado así se lee como invitación sin reescribir ningún movimiento. Pesando lo que queda, lo invitado tampoco cuenta como vendido.

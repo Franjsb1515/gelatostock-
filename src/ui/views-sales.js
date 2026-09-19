@@ -183,5 +183,39 @@ function salesHistoryPanel() {
           )
           .join("")}</tbody></table></section></div>`
       : '<div class="empty compact">Todavía no hay cierres en este periodo. Registra el primero arriba.</div>'
-  }</div></section>`;
+  }</div></section>${valuePanels()}`;
+}
+// Two separate reports over the same days: sale (kilos × sale value of each day) and cost
+// (kilos × cost per kilo). They are never added or subtracted; null is «No disponible».
+function valuePanels() {
+  const v = salesData?.value;
+  if (!v || !v.rows.length) return "";
+  const na = "<small>No disponible</small>";
+  const cell = (n) => (n === null ? na : money(n));
+  const cols = ["produced", "sold", "waste", "gift"];
+  const table = (pick, perKg, label) =>
+    `<div class="table-scroll"><table class="report-table"><thead><tr><th>Gelato</th><th>${label}</th><th>Producido</th><th>Vendido</th><th>Merma</th><th>Invitación o consumo</th></tr></thead><tbody>${v.rows
+      .map(
+        (r) =>
+          `<tr><td>${esc(r.name)}<small>${num(r.kg.produced)} kg producidos · ${num(r.kg.sold)} vendidos · ${num(r.kg.waste)} de merma · ${num(r.kg.gift)} de invitación</small></td><td class="num">${perKg(r)}</td>${cols.map((k) => `<td class="num">${cell(pick(r)[k])}</td>`).join("")}</tr>`,
+      )
+      .join(
+        "",
+      )}<tr><td><strong>Total</strong></td><td></td>${cols.map((k) => `<td class="num"><strong>${cell(pick(v)[k])}</strong></td>`).join("")}</tr></tbody></table></div>`;
+  const missing = (list, what) =>
+    list.length
+      ? `<p class="fineprint">No disponible para ${esc(list.join(", "))}: ${what} Un total incompleto no se rellena con estimaciones.</p>`
+      : "";
+  return `<section class="panel" data-value-report="sale"><div class="panel-heading"><div><h2>Informe de venta · últimos ${salesDays} días</h2><p>Kilos × el valor de venta por kilo que tenía cada gelato ese día (lo escribes tú en su receta). «Vendido» es lo que debió entrar; «Merma» e «Invitación» son venta que no entró. Aquí no hay costes.</p></div></div><div class="sales-body"><div class="report-kpis"><div><strong>${cell(v.sale.sold)}</strong><span>venta estimada</span></div><div><strong>${cell(v.sale.waste)}</strong><span>venta perdida por merma</span></div><div><strong>${cell(v.sale.gift)}</strong><span>valor invitado o consumido</span></div><div><strong>${cell(v.sale.produced)}</strong><span>valor de lo producido</span></div></div>${table(
+    (r) => r.sale,
+    (r) => (r.saleValue === null ? na : money(r.saleValue) + "/kg"),
+    "Valor hoy",
+  )}${missing(v.missingValue, "escribe su valor de venta por kilo en el recetario.")}</div></section><section class="panel" data-value-report="cost"><div class="panel-heading"><div><h2>Informe de coste · últimos ${salesDays} días</h2><p>Lo producido lleva el coste guardado al aprobar cada producción; lo demás, kilos × el coste por kilo de la última producción hasta ese día. Aquí no hay ventas, ni se resta de ellas.</p></div></div><div class="sales-body"><div class="report-kpis"><div><strong>${cell(v.cost.produced)}</strong><span>coste de lo producido</span></div><div><strong>${cell(v.cost.waste)}</strong><span>coste perdido por merma</span></div><div><strong>${cell(v.cost.gift)}</strong><span>coste de invitación o consumo</span></div><div><strong>${cell(v.cost.sold)}</strong><span>coste de lo vendido</span></div></div>${table(
+    (r) => r.cost,
+    (r) =>
+      r.costPerKg === null
+        ? na
+        : `${money(r.costPerKg)}/kg<small>${r.costSource === "manual" ? "escrito a mano" : "calculado"}</small>`,
+    "Coste hoy",
+  )}${missing(v.missingCost, "falta algún precio de compra; complétalo en Inventario o escribe el coste a mano en la receta.")}</div></section>`;
 }
