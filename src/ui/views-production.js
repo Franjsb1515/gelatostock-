@@ -96,7 +96,7 @@ function production() {
       btn(icon("plus") + " Nueva receta", "recipeEditor") +
         btn(icon("plus") + " Registrar producción", "produce", "primary"),
     ) +
-    `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta, no por IA</strong><span>La app propone el consumo de ingredientes y los kilos de gelato hecho. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div><section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Aprobar crea movimientos de salida por producción y la entrada del producto terminado.</p></div></div>${
+    `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta, no por IA</strong><span>La app propone el consumo de ingredientes y los kilos de gelato hecho. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div>${planPanel()}<section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Aprobar crea movimientos de salida por producción y la entrada del gelato hecho en el stock.</p></div></div>${
       proposed.length
         ? proposed
             .map(
@@ -146,6 +146,24 @@ function ingredientRow(productId = "", qty = "") {
   return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
 }
 
+// «Qué producir hoy»: goal − stock per gelato, a rule the person can check by eye. The recent
+// average sale sits beside it as a fact; nothing here is a forecast.
+function planPanel() {
+  const plan = planData;
+  if (!plan) return "";
+  if (!plan.rows.length) return "";
+  const na = "<small>No disponible</small>";
+  const day = (d) => date(d + "T12:00:00Z");
+  const missing = plan.rows.filter((r) => r.suggest);
+  return `<section class="panel" data-plan><div class="panel-heading"><div><h2>Qué producir hoy</h2><p>Lo que falta para llegar a los kilos que quieres tener de cada gelato: objetivo − lo que hay. Al lado, lo que se vendió de media; es un dato, no una previsión.</p></div></div><div class="sales-body"><div class="table-scroll"><table class="report-table"><thead><tr><th>Gelato</th><th>Hay</th><th>Quiero tener</th><th>Falta</th><th>Venta media al día</th><th>Lo que hay da para</th><th></th></tr></thead><tbody>${plan.rows
+    .map(
+      (r) =>
+        `<tr><td>${esc(r.name)}</td><td class="num">${num(r.stock)} kg</td><td class="num">${r.target ? num(r.target) + " kg" : "<small>Sin escribir</small>"} <button class="text-link" data-action="setGoal" data-id="${esc(r.product)}">${r.target ? "Cambiar" : "Escribir"}</button></td><td class="num">${r.suggest === null ? "—" : r.suggest ? "<strong>" + num(r.suggest) + " kg</strong>" : "Nada"}</td><td class="num">${r.avgSold === null ? na : num(r.avgSold) + " kg"}</td><td class="num">${r.coverDays === null ? "—" : num(r.coverDays) + " días"}</td><td class="row-tools">${r.suggest ? `<button class="text-link" data-action="produce" data-recipe="${esc(r.recipe)}" data-quantity="${r.suggest}">Producir ${num(r.suggest)} kg</button>` : ""}</td></tr>`,
+    )
+    .join(
+      "",
+    )}</tbody></table></div><p class="fineprint">${missing.length ? "Falta = quiero tener − hay." : "Ningún gelato con objetivo está por debajo de lo que quieres tener."} Venta media = kilos vendidos del ${esc(day(plan.from))} al ${esc(day(plan.to))} ÷ ${plan.closeDays} ${plan.closeDays === 1 ? "día" : "días"} con cierre registrado${plan.closeDays ? "" : " (todavía ninguno: No disponible)"}. «Da para» = lo que hay ÷ venta media.</p></div></section>`;
+}
 const productionCostCell = (p) =>
   p.cost
     ? `${money(p.cost.cents)}<small>${p.cost.source === "manual" ? "escrito a mano" : "calculado"}</small>`

@@ -528,6 +528,12 @@ export const actionSchema = z.intersection(
       ...recipeFields,
     }),
     z.object({ type: z.literal("deleteRecipe"), id: idSchema }),
+    // Kilos of a house-made gelato the person wants to have; drives «qué producir hoy».
+    z.object({
+      type: z.literal("setGoal"),
+      product: idSchema,
+      target: quantity,
+    }),
     // Sale value per kilo of a recipe's gelato from a business day on (same day: replaces it).
     z.object({
       type: z.literal("setSaleValue"),

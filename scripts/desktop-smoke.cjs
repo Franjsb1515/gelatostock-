@@ -562,6 +562,35 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: resumen del día con 90 € de venta estimada; cierre confirmado con venta real de 95 € (+5 €), día congelado sin herramientas de corrección y reabierto con motivo.",
     );
+    // Qué producir hoy: objetivo − stock, por la interfaz; y los indicadores del día en el inicio.
+    const planPanel = window.locator("[data-plan]");
+    await planPanel.locator('[data-action="setGoal"]').first().click();
+    await window
+      .locator('#modal input[name="target"]')
+      .fill(String(savedStock("p4") + 2));
+    await window.locator('#modal button[type="submit"]').click();
+    await window
+      .locator("[data-plan]", { hasText: "Producir 2 kg" })
+      .first()
+      .waitFor();
+    await planPanel.locator('[data-action="produce"]').first().click();
+    assert.equal(
+      await window.locator('#modal input[name="quantity"]').inputValue(),
+      "2",
+    );
+    await window.locator('#modal [data-action="close"]').first().click();
+    await window.getByRole("button", { name: "Resumen", exact: true }).click();
+    assert.match(
+      (await window.locator("[data-home-day]").innerText()).replace(
+        /\s+/g,
+        " ",
+      ),
+      /Producido hoy 4 kg .* Venta estimada de hoy 90,00 € .* Merma de hoy 0,5 kg/,
+    );
+    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
+    console.log(
+      "PASS: «Qué producir hoy» propone objetivo − stock (2 kg) y abre la producción con esos kilos; el inicio muestra producido, venta estimada y merma del día.",
+    );
     // Cruceros: sin red la pantalla abre, dice que faltan datos (no inventa nada) y cita la fuente.
     await window.getByRole("button", { name: "Cruceros", exact: true }).click();
     await window.getByRole("heading", { name: /^Hoy · / }).waitFor();

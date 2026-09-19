@@ -58,6 +58,7 @@ export {
 } from "./value";
 import { computeDay, dayCloseId, isDayClosed } from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
+export { productionPlan, todayBrief, businessDay } from "./plan";
 const eur = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",") + " €";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
@@ -897,6 +898,19 @@ export function apply(state: State, input: unknown): State {
         { from: a.from, cents: a.cents, at: now() },
       ].sort((x, y) => x.from.localeCompare(y.from));
       note = `Valor de venta de ${r.name}: ${eur(a.cents)} por kilo desde el ${a.from}${before !== null && before !== a.cents ? ` (antes ${eur(before)})` : ""}. Los días anteriores conservan el valor que tenían.`;
+      break;
+    }
+    case "setGoal": {
+      const p = item(s.products, a.product);
+      ensure(
+        s.recipes.some((r) => r.product === p.id),
+        "El objetivo de producción es para los gelatos de tus recetas.",
+      );
+      const before = p.target;
+      p.target = a.target;
+      // The purchase minimum can never sit above the goal (validate enforces it).
+      if (p.min > p.target) p.min = p.target;
+      note = `Objetivo de ${p.name}: tener ${a.target} kg${before ? ` (antes ${before} kg)` : ""}. «Qué producir hoy» propone lo que falte hasta ahí.`;
       break;
     }
     case "setManualCost": {

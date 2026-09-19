@@ -8,7 +8,9 @@ let salesUnit = "kg",
   salesDays = 30,
   // Day summary («cuánto debí vender»): reloaded together with the sales history.
   dayDate = "",
-  dayData = null;
+  dayData = null,
+  // «Qué producir hoy» (core/plan.ts), reloaded with the rest.
+  planData = null;
 try {
   salesMode =
     localStorage.getItem("gelato-sales-mode") === "remaining"
@@ -32,10 +34,12 @@ async function loadSales() {
   salesBusy = true;
   try {
     dayDate ||= businessToday();
-    const [sales, day] = await Promise.all([
+    const [sales, day, plan] = await Promise.all([
       request("/api/sales?days=" + salesDays),
       request("/api/day?date=" + dayDate),
+      request("/api/plan"),
     ]);
+    planData = plan;
     dayData = day;
     salesData = sales;
   } catch (e) {

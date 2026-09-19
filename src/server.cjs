@@ -16,6 +16,9 @@ const {
   salesHistory,
   valueReport,
   daySummary,
+  productionPlan,
+  todayBrief,
+  businessDay,
   recipeCost,
   wasteReasonLabels,
   localDate,
@@ -293,6 +296,8 @@ function createApp({
       prices: priceAlerts(state, 30),
       counts: countStatus(state, countDays()),
       orders: orderReminders(state),
+      // Facts of the business day for the home screen (core/plan.ts); no forecast.
+      day: todayBrief(state, new Date(), dayChangeHour()),
     },
     ...extra,
   });
@@ -555,6 +560,14 @@ function createApp({
             ? cruises.brief(addDays(cruises.dashboard().today, 1))
             : null,
       });
+      return;
+    }
+    if (u.pathname === "/api/plan" && req.method === "GET") {
+      // «Qué producir hoy»: goal − stock per gelato, with the recent average sale beside it.
+      json(
+        200,
+        productionPlan(store.load(), businessDay(new Date(), dayChangeHour())),
+      );
       return;
     }
     if (u.pathname === "/api/day" && req.method === "GET") {

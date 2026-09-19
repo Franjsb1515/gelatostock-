@@ -218,5 +218,15 @@
     "forbid": [
       "no lo sé"
     ]
+  },
+  {
+    "id": "que_producir",
+    "question": "¿Cómo sé cuántos kilos producir hoy de cada gelato?",
+    "expect": [
+      "falta|quiere tener|quieres tener"
+    ],
+    "forbid": [
+      "no lo sé"
+    ]
   }
 ]

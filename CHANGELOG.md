@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.32.0 — 2026-09-19 · sesión 045 · fase 5 del plan de producción y ventas
+
+Qué producir hoy y Resumen. En Producción, una tabla por gelato con lo que hay, los kilos que el usuario quiere tener (los escribe ahí mismo), lo que falta y un botón que abre la producción con esos kilos; al lado, la venta media de los 14 días anteriores y para cuántos días da el stock, como hechos con su fórmula. El inicio muestra lo producido, la venta estimada, la merma y lo que queda del día, qué falta producir y si ayer quedó sin confirmar.
+
+Pruebas: 174. Informe reports/2026-09-19T18-30-44-856Z-fase-5-que-producir-hoy.md.
+
 ## 0.31.1 — 2026-09-19 · sesión 045 · corrección tras el primer uso real
 
 El usuario no podía escribir el valor de venta de su gelato ni registrar ventas y mermas: su receta no tenía «producto terminado», un concepto que la app exigía unir a mano y no explicaba. Ahora una receta nueva da de alta sola su gelato en stock, y una receta antigua se activa con un botón desde su ficha o desde el cierre del día. La expresión «producto terminado» desaparece de las pantallas.

@@ -19,7 +19,7 @@ function home() {
         btn(icon("plus") + " Registrar stock", "count", "primary"),
     ) +
     `<section class="hero"><div class="hero-copy"><span class="hero-label"><i class="dot"></i> ARTE + GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.<br>Prepara la reposición y sigue con tu día.` : "Tu inventario está por encima de los mínimos.<br>Todo listo para seguir con tu día."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest", "cream")}</div><div class="hero-art" aria-hidden="true"><span class="art-orbit"></span><span class="art-dot"></span><div class="scoop scoop-one"></div><div class="scoop scoop-two"></div><div class="scoop scoop-three"></div><div class="gelato-cup"><span>g.</span></div><span class="art-caption">un poco de orden,<br>mucho gelato.</span></div></section>
- ${homeNotices()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong><small>Todo tu inventario</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Precios de demostración</small></div></article></section>
+ ${homeNotices()}${homeDay()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong><small>Todo tu inventario</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Precios de demostración</small></div></article></section>
  <div class="dashboard-grid"><section class="panel"><div class="panel-heading"><div><h2>Un vistazo al inventario</h2><p>Los productos que necesitan atención.</p></div><button class="text-button" data-nav="stock">Ver inventario ${icon("arrow")}</button></div>${productTable(low().slice(0, 5), true)}</section><div class="right-stack"><section class="panel inbox-preview"><div class="panel-heading"><h2>Tu bandeja de entrada</h2><span class="count-bubble">${important.length}</span></div>${
    important.length
      ? important
@@ -85,6 +85,32 @@ const toRead = () =>
   state.messages.filter((m) => m.interpretation?.needsReading && !m.reviewed);
 const proposedProductions = () =>
   state.productions.filter((p) => p.status === "proposed");
+// The business day at a glance (core/plan.ts): facts from the ledger, nothing forecast.
+function homeDay() {
+  const d = alerts?.day;
+  if (!d) return "";
+  const t = d.totals;
+  const busy = t.produced || t.sold || t.waste || t.gift;
+  if (!busy && !d.toProduce.length && !d.yesterdayPending) return "";
+  const cents = (n) => (n === null ? "No disponible" : money(n));
+  const dayName = (x) => date(x + "T12:00:00Z");
+  const produce = d.toProduce.length
+    ? `<strong>Qué producir hoy</strong><span>${esc(
+        d.toProduce
+          .slice(0, 4)
+          .map((r) => r.name + " " + num(r.suggest) + " kg")
+          .join(", "),
+      )}${d.toProduce.length > 4 ? "…" : ""}: lo que falta para los kilos que quieres tener. </span><button class="text-button" data-nav="production">Ir a Producción ${icon("arrow")}</button>`
+    : "";
+  const pending = d.yesterdayPending
+    ? `<strong>El ${esc(dayName(d.yesterdayPending))} quedó sin confirmar</strong><span>Tiene producción o ventas apuntadas, pero su cierre no está confirmado. </span><button class="text-button" data-action="openDay" data-date="${esc(d.yesterdayPending)}">Revisarlo ${icon("arrow")}</button>`
+    : "";
+  return `${produce || pending ? `<div class="notice subtle home-notice">${icon("cake")}<div>${pending}${produce}</div></div>` : ""}${
+    busy
+      ? `<section class="stats" data-home-day><article class="stat"><span class="stat-icon sage">${icon("cake")}</span><div><p>Producido hoy</p><strong>${num(t.produced)} kg</strong><small>${esc(dayName(d.date))}${d.closed ? " · día cerrado" : ""}</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Venta estimada de hoy</p><strong class="money-value">${cents(t.soldCents)}</strong><small>${t.soldCents === null ? "Falta escribir el valor de venta en el Recetario" : num(t.sold) + " kg × valor de venta"}</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Merma de hoy</p><strong>${num(t.waste)} kg</strong><small>${t.waste ? cents(t.wasteCents) + " de venta perdida" : "Sin merma apuntada"}</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("box")}</span><div><p>Gelato que queda</p><strong>${num(t.remaining)} kg</strong><small>Para mañana</small></div></article></section>`
+      : ""
+  }`;
+}
 function homeNotices() {
   const read = toRead().length,
     proposed = proposedProductions().length;

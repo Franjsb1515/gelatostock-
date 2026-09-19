@@ -284,7 +284,8 @@ async function action(name, el) {
         stepperField(
           "Kilos producidos",
           "quantity",
-          1,
+          // «Qué producir hoy» opens this with the kilos that are missing for the goal.
+          Number(el.dataset.quantity) || 1,
           'min="0.001" max="1000000" step="0.001" required',
           "0.5",
         ) +
@@ -359,6 +360,37 @@ async function action(name, el) {
       // The choice simply does not persist.
     }
     render();
+    return;
+  }
+  if (name === "openDay") {
+    // From the home notice: Producción, with the day summary on that day.
+    dayDate = el.dataset.date;
+    salesData = null;
+    nav("production");
+    return;
+  }
+  if (name === "setGoal") {
+    const p = product(el.dataset.id);
+    modal(
+      "Objetivo de " + p.name,
+      "Cuántos kilos quieres tener de este gelato. «Qué producir hoy» te propone lo que falte hasta ahí. Con 0 no se propone nada.",
+      field(
+        "Kilos que quieres tener",
+        "target",
+        p.target || "",
+        "number",
+        'min="0" max="100000" step="0.001" required',
+      ),
+      async (f) => {
+        await mutate(
+          { type: "setGoal", product: p.id, target: Number(f.get("target")) },
+          "Objetivo guardado.",
+        );
+        salesData = null;
+        render();
+        return true;
+      },
+    );
     return;
   }
   if (name === "confirmDay" || name === "reopenDay") {

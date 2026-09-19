@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.32.0
+Lee reports/2026-09-19T18-30-44-856Z-fase-5-que-producir-hoy.md. Fase 5 del plan: core/plan.ts (businessDay, productionPlan, todayBrief). Falta = objetivo − stock (mínimo 0; null sin objetivo); venta media = kilos vendidos en los 14 días anteriores a hoy ÷ días con algún cierre en ese periodo; «da para» = stock ÷ media. Acción setGoal {product, target}: solo gelatos de una receta; baja el mínimo si quedara por encima (validate exige objetivo ≥ mínimo). GET /api/plan; alerts.day (todayBrief) viaja en cada sobre de estado. Interfaz: planPanel en views-production.js (planData se carga en loadSales junto con historial y día), homeDay en views.js, acción openDay (abre Producción con el resumen en un día dado), y el modal de producir admite data-quantity. Evaluación del chat: 23 casos. work/check-fase5-copia.cjs recorre la fase sobre una copia de data/.
+
 ## Punto de continuidad 0.31.1
 Lee reports/2026-09-19T17-28-50-824Z-gelato-dado-de-alta.md. Corrección tras el primer uso real: la receta del usuario no tenía recipe.product, así que ni valor de venta ni cierre del día funcionaban, y la pantalla no lo explicaba. La acción recipe acepta createProduct: crea el producto (kg, stock 0, mínimo y objetivo 0, precio 0, zona vitrina) con el nombre de la receta y el proveedor interno ownSupplierId «Elaboración propia» (se crea si falta); reutiliza un producto en kg con el mismo nombre si no es ingrediente. Interfaz: el editor de recetas nuevas lo trae elegido; botón createFinished («Activar ventas y valor de este gelato») en la ficha y en el cierre vacío. «Producto terminado» ya no aparece en la interfaz. Evaluación del chat: 22 casos. work/check-copia-real.cjs recorre el camino completo sobre una copia de data/.
 
