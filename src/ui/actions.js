@@ -300,6 +300,9 @@ async function action(name, el) {
       },
       "Producción aprobada: ingredientes descontados.",
     );
+    // The day summary and the value reports below include what was just produced.
+    salesData = null;
+    render();
     return;
   }
   if (name === "dailySales") {
@@ -333,6 +336,52 @@ async function action(name, el) {
       // The choice simply does not persist.
     }
     render();
+    return;
+  }
+  if (name === "confirmDay" || name === "reopenDay") {
+    const day = el.dataset.date;
+    const confirm = name === "confirmDay";
+    const dayName = date(day + "T12:00:00Z");
+    modal(
+      (confirm ? "Confirmar el cierre del " : "Reabrir el ") + dayName,
+      confirm
+        ? "El resumen del día queda guardado tal como está. Después, ventas, mermas y producciones de ese día no se pueden cambiar sin reabrirlo. La venta real es opcional: si la escribes, verás la diferencia con la estimada."
+        : "El día vuelve a admitir correcciones. El cierre anterior y el motivo quedan en el registro; al terminar, vuelve a confirmarlo.",
+      confirm
+        ? field(
+            "Venta real del día en € (opcional)",
+            "real",
+            "",
+            "number",
+            'min="0" max="1000000" step="0.01" placeholder="Lo que marcó la caja o el TPV"',
+          )
+        : field(
+            "Motivo",
+            "reason",
+            "",
+            "text",
+            'required maxlength="200" placeholder="Merma mal pesada, faltaba una producción…"',
+          ),
+      async (f) => {
+        const real = f.get("real");
+        await mutate(
+          confirm
+            ? {
+                type: "confirmDay",
+                date: day,
+                ...(real !== null && real !== ""
+                  ? { realSaleCents: Math.round(Number(real) * 100) }
+                  : {}),
+              }
+            : { type: "reopenDay", date: day, reason: f.get("reason") },
+          confirm ? "Día cerrado." : "Día reabierto.",
+        );
+        salesData = null;
+        render();
+        return true;
+      },
+      confirm ? "Confirmar cierre" : "Reabrir",
+    );
     return;
   }
   if (name === "setSaleValue" || name === "setManualCost") {

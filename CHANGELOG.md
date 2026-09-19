@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.31.0 — 2026-09-19 · sesión 045 · fase 4 del plan de producción y ventas
+
+Cuánto debí vender. Resumen de un día de negocio en una pantalla: al empezar, producido, vendido, merma, invitación o consumo, ajustes de inventario y lo que queda para mañana, por gelato y en total, con la venta estimada (kilos × valor de ese día) y su desglose. Venta real opcional con su diferencia. Confirmar el cierre guarda una instantánea y congela el día; reabrirlo exige motivo y deja rastro. Un día cerrado no ofrece corregir, eliminar, deshacer ni anular. SQLite pasa a user_version 5 (tabla days). De paso: tras aprobar una producción, los informes de Producción se recargan (antes seguían con el cálculo anterior).
+
+Pruebas: 170. Informe reports/2026-09-19T16-53-44-929Z-fase-4-cuanto-debi-vender.md.
+
 ## 0.30.0 — 2026-09-19 · sesión 045 · fase 3 del plan de producción y ventas
 
 Valor y coste del gelato. Cada receta con producto terminado tiene un valor de venta por kilo escrito por el usuario, con historial por fecha (cambiarlo hoy no toca los días pasados), y un coste por kilo calculado con los precios de compra y la fórmula a la vista, o escrito a mano y rotulado así. Cada producción guarda su coste al aprobarla. Dos informes separados en Producción, venta y coste, que nunca se mezclan; lo que no se puede calcular sale como «No disponible» y anula su total. El ejemplo del usuario (50 y 100 €/kg: 80 € de venta, 20 € de venta perdida, 10 € de coste perdido) es una prueba. De paso: las acciones nuevas respetan el candado del recetario y se corrige un «desbloqueá» del servidor.

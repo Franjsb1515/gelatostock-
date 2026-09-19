@@ -535,6 +535,33 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: valor de venta de 100 €/kg escrito en la receta; coste calculado con fórmula; informe de venta 90 € estimados y 50 € perdidos por merma, separado del de coste.",
     );
+    // Cuánto debí vender: el resumen del día cuadra, se confirma con venta real y queda congelado;
+    // reabrirlo exige motivo y devuelve las herramientas de corrección.
+    const dayPanel = window.locator("[data-day]");
+    assert.match(
+      (await dayPanel.locator(".report-kpis").innerText()).replace(/\s+/g, " "),
+      /90,00 € venta estimada \(0,9 kg\)/,
+    );
+    await dayPanel.locator('[data-action="confirmDay"]').click();
+    await window.locator('#modal input[name="real"]').fill("95");
+    await window.locator('#modal button[type="submit"]').click();
+    await window.locator("[data-day]", { hasText: "Día cerrado" }).waitFor();
+    assert.match(
+      (await dayPanel.locator(".report-kpis").innerText()).replace(/\s+/g, " "),
+      /95,00 € venta real, escrita por ti \+5,00 € diferencia/,
+    );
+    const dayTools =
+      '[data-action="undoDailySales"], [data-action="editCloseLine"], [data-action="undoCloseLine"]';
+    assert.equal(await window.locator(dayTools).count(), 0);
+    await dayPanel.locator('[data-action="reopenDay"]').click();
+    await window.locator('#modal input[name="reason"]').fill("Prueba");
+    await window.locator('#modal button[type="submit"]').click();
+    await window.locator("[data-day]", { hasText: "Reabierto" }).waitFor();
+    assert.ok((await window.locator(dayTools).count()) > 0);
+    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
+    console.log(
+      "PASS: resumen del día con 90 € de venta estimada; cierre confirmado con venta real de 95 € (+5 €), día congelado sin herramientas de corrección y reabierto con motivo.",
+    );
     // Cruceros: sin red la pantalla abre, dice que faltan datos (no inventa nada) y cita la fuente.
     await window.getByRole("button", { name: "Cruceros", exact: true }).click();
     await window.getByRole("heading", { name: /^Hoy · / }).waitFor();

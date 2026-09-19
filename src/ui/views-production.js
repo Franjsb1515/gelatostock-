@@ -124,7 +124,7 @@ function production() {
                         .filter((l) => l.quantity)
                         .map(lineText)
                         .join(", ") || "Sin consumo"
-                    }</td><td class="num">${productionCostCell(p)}</td><td class="row-tools"><button class="text-link" data-action="fixProduction" data-id="${esc(p.id)}">Corregir</button> <button class="text-link" data-action="voidProduction" data-id="${esc(p.id)}">Anular</button></td></tr>`,
+                    }</td><td class="num">${productionCostCell(p)}</td><td class="row-tools">${dayIsClosed(p.date) ? "<small>Día cerrado</small>" : `<button class="text-link" data-action="fixProduction" data-id="${esc(p.id)}">Corregir</button> <button class="text-link" data-action="voidProduction" data-id="${esc(p.id)}">Anular</button>`}</td></tr>`,
                 )
                 .join(""),
             )

@@ -27,6 +27,7 @@ const entityTables = [
   "productions",
   "learned",
   "prices",
+  "days",
 ] as const;
 type Table = (typeof entityTables)[number];
 export class Store {
@@ -55,7 +56,7 @@ export class Store {
         this.db.prepare("PRAGMA user_version").get()?.user_version,
       );
       ensure(
-        version <= 4,
+        version <= 5,
         "La base de datos pertenece a una versión más nueva.",
       );
       this.db
@@ -75,9 +76,10 @@ export class Store {
    CREATE TABLE IF NOT EXISTS recipes(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS productions(id TEXT PRIMARY KEY,recipe TEXT NOT NULL REFERENCES recipes(id),status TEXT NOT NULL CHECK(status IN ('proposed','applied','discarded')),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS prices(id TEXT PRIMARY KEY,product TEXT NOT NULL REFERENCES products(id),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+   CREATE TABLE IF NOT EXISTS days(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE INDEX IF NOT EXISTS order_lines_product ON order_lines(product);
    CREATE INDEX IF NOT EXISTS movements_product ON movements(product);
-   PRAGMA user_version=4;`);
+   PRAGMA user_version=5;`);
       ensure(
         this.db.prepare("PRAGMA quick_check").get()?.quick_check === "ok",
         "La base no pasó la comprobación de integridad.",
@@ -217,7 +219,7 @@ export class Store {
   private jsonRows(table: Table): unknown[] {
     return this.db
       .prepare(
-        `SELECT data FROM ${table} ORDER BY position ${["orders", "messages", "activity", "movements", "photos", "productions"].includes(table) ? "DESC" : "ASC"}`,
+        `SELECT data FROM ${table} ORDER BY position ${["orders", "messages", "activity", "movements", "photos", "productions", "days"].includes(table) ? "DESC" : "ASC"}`,
       )
       .all()
       .map((row) => JSON.parse(String(row.data)));
@@ -271,6 +273,7 @@ export class Store {
       productions: this.jsonRows("productions"),
       learned: this.jsonRows("learned"),
       prices: this.jsonRows("prices"),
+      days: this.jsonRows("days"),
       processed: this.db
         .prepare("SELECT id FROM operations ORDER BY position")
         .all()
@@ -403,6 +406,7 @@ export class Store {
         ...r,
         product: s.prices[i]!.product,
       })),
+      days: basic(s.days, true),
     };
     try {
       // Remove child rows before parent rows. Tables are a fixed internal allowlist.
@@ -451,6 +455,7 @@ export class Store {
       productions,
       learned,
       prices,
+      days,
       processed,
       ...meta
     } = s;

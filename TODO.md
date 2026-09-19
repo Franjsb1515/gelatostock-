@@ -1,4 +1,4 @@
-# TODO — estado real de 0.30.0
+# TODO — estado real de 0.31.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -6,7 +6,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 ## 1. Siguiente, en este orden
 
-- [ ] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las fases 1 (0.28.0), 2 (0.29.0) y 3 (0.30.0). Siguiente: fase 4, cuánto debí vender (resumen del día, venta real opcional, confirmar y reabrir el cierre).
+- [ ] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las fases 1 (0.28.0), 2 (0.29.0), 3 (0.30.0) y 4 (0.31.0). Siguiente: fase 5, qué producir hoy (objetivo − stock, con la venta media reciente al lado) e indicadores del día en el Resumen.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
 - [ ] [decidir] Mermas de ingredientes con los mismos motivos y objetivo de merma con aviso (ideas previas al plan; encajan tras la fase 2).
 - [ ] [app] Compras y Mensajes II (objetivo principal del usuario: ese apartado al 100 %): sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic; catálogo y precios por proveedor desde listas de precios.
@@ -41,6 +41,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 5. Producción, ventas y planificación
 
 - [ ] Lotes y vencimientos; rendimientos por receta.
+- [ ] Día cerrado: los movimientos manuales de Inventario (conteo, entrada, salida) sobre un gelato no se bloquean; si caen en un día cerrado, el resumen avisa de que algo cambió. Decidir si deben bloquearse.
+- [ ] Aviso en el Resumen de inicio cuando ayer quedó sin confirmar (encaja en la fase 5).
 - [ ] Coste: usa el precio actual de la ficha al aprobar, no el de cada compra recibida (sin lotes no se sabe qué compra se gastó). Las producciones anteriores a 0.30.0 no tienen coste guardado y se valoran con el coste actual de la receta.
 - [ ] Valor de venta con fecha de inicio elegible (hoy siempre vale desde el día de negocio en que se escribe).
 - [ ] Con meses de ventas registradas: ventas frente a clima y festivos además del impacto de cruceros, siempre como hechos y sin predicción hasta poder validarla.

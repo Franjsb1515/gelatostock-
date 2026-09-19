@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.30.0
+# Entrada para Claude · entrega vigente 0.31.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -16,13 +16,13 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
-- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (hechas las fases 1 a 3; siguiente: fase 4).
+- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (hechas las fases 1 a 4; siguiente: fase 5).
 
 ## WhatsApp (seguridad)
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
 
 ## Mapa
-- `core/` TypeScript estricto, puro y probado; `build/` es su salida generada. schema.ts (zod), domain.ts (apply y acciones), store.ts (SQLite canónico, user_version 4), messages.ts (lectura de respuestas por reglas), documents.ts, balance.ts, report.ts, inventory.ts, orders.ts, sales.ts, value.ts (valor de venta y coste), cruises.ts, context.ts.
+- `core/` TypeScript estricto, puro y probado; `build/` es su salida generada. schema.ts (zod), domain.ts (apply y acciones), store.ts (SQLite canónico, user_version 5), messages.ts (lectura de respuestas por reglas), documents.ts, balance.ts, report.ts, inventory.ts, orders.ts, sales.ts, value.ts (valor de venta y coste), day.ts (resumen y cierre confirmado del día), cruises.ts, context.ts.
 - `src/` servidor local (server.cjs, 127.0.0.1 con cookie, CSP y control de Origin), Electron (desktop.cjs, preload mínimo), IA (ai*.cjs), WhatsApp (whatsapp.cjs), cruceros (cruises/), clima y festivos (context/), interfaz en `src/ui/*.js` (scripts clásicos que comparten ámbito global; un archivo nuevo se registra en index.html y en la lista de recursos de server.cjs). La CSP prohíbe estilos en línea: usa clases; para geometría, SVG.
 - Datos en `data/`: gelatostock.sqlite y attachments son canónicos; las carpetas por proveedor son copias derivadas. cruceros.sqlite y contexto.sqlite son registros propios con copia diaria en backups/.
 - `docs/GUIA_USO.md` genera la pantalla Guía (scripts/build-guide.cjs). `src/ai-help.cjs` es la guía del chat: si cambia, repite `node scripts/evaluate-ai.cjs --chat`.
@@ -33,9 +33,10 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 - Mensajes: el aprendizaje por correcciones cambia la lectura, nunca la decisión. Una respuesta vinculada solo fija fecha prevista y confirmación del pedido; cantidades y stock no cambian solos.
 - Cierre del día: el día de negocio y el motivo viajan en el texto del movimiento («Venta del día AAAA-MM-DD», «Merma del día AAAA-MM-DD · Motivo», «Invitación o consumo del día AAAA-MM-DD»). Todo se lee con closeLineOf de core/sales.ts (lo usan report.ts y el historial); context.ts lee las ventas. No cambies el formato sin migrarlos. El texto antiguo «· Degustación o invitación» se lee como invitación.
 - Valor y coste (core/value.ts): venta y coste son dos informes que nunca se suman ni se restan. El valor de venta es un historial por fecha de inicio en la receta (saleValues); el coste de cada producción es una instantánea al aprobarla (cost). Un importe sin valor o sin coste es null («No disponible») y anula su total: no se rellena. El ejemplo del usuario (50 y 100 €/kg; 80, 20 y 10 €) es una prueba de tests/value.test.cjs: no la cambies.
+- Día cerrado (core/day.ts): confirmDay guarda una instantánea y congela el día; dailySales, undoDailySales, editar o eliminar una línea, aprobar y anular producciones de ese día se rechazan con ensureDayOpen hasta reopenDay con motivo. Una acción nueva que toque un día de negocio debe llamar a ensureDayOpen. Identidad que no se rompe: al empezar + producido − vendido − merma − invitación + ajustes = queda. Un ajuste de inventario nunca se reclasifica solo. La venta real solo la escribe la persona.
 - Cruceros, clima y festivos: única salida a internet además de WhatsApp; solo lectura, cuerpo fijo, respuesta no fiable y validada; un interruptor (cruises_off) y GELATO_CRUISES_AUTO=0; nunca automáticas bajo node:test; pruebas con `createApp({ cruiseProvider, contextProviders })`. «Hoy» y las horas son de Palma (este equipo está en UTC−3). Pasajeros declarados no es capacidad ni clientes. El impacto es una fórmula visible con umbrales del usuario. El clima de un día pasado es «previsión guardada». Citar siempre las fuentes (APB, MET Norway, Govern balear).
 
 ## Pruebas y cierre de sesión
 - `npm test` · `npm run format:check` · `npm run typecheck` · `npm run package:win` · `npm run test:desktop` (usa el modelo real; tarda varios minutos; si falla en `page.screenshot: Timeout`, la pantalla del equipo está suspendida: repite con el equipo activo).
 - Cierre: informe nuevo en reports/ + CHANGELOG + TODO + entrada en docs/CONTINUIDAD.md + pruebas reales + ejecutable reconstruido si cambió src/ + commit + ZIP (work/make-zip.cjs) sin datos, credenciales, node_modules ni binarios. Conserva los informes anteriores. No marques nada como probado en Mac desde Windows.
-- Pendiente y prioridades: TODO.md. Siguiente acordado: fase 4 del plan vigente; después, Compras y Mensajes II.
+- Pendiente y prioridades: TODO.md. Siguiente acordado: fase 5 del plan vigente; después, Compras y Mensajes II.

@@ -15,6 +15,7 @@ const {
   defaultOrderTemplate,
   salesHistory,
   valueReport,
+  daySummary,
   recipeCost,
   wasteReasonLabels,
   localDate,
@@ -554,6 +555,16 @@ function createApp({
             ? cruises.brief(addDays(cruises.dashboard().today, 1))
             : null,
       });
+      return;
+    }
+    if (u.pathname === "/api/day" && req.method === "GET") {
+      // «Cuánto debí vender»: summary of one business day from the full ledger (core/day.ts).
+      const day = u.searchParams.get("date") || "";
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+        json(400, { error: "Día inválido." });
+        return;
+      }
+      json(200, daySummary(store.load(), day, dayChangeHour()));
       return;
     }
     if (u.pathname === "/api/report" && req.method === "GET") {
@@ -1123,6 +1134,8 @@ function createApp({
             throw Error(
               "Recetas protegidas: desbloquea el recetario con la contraseña.",
             );
+          // The frozen summary must use the same business-day hour as GET /api/day.
+          if (data.type === "confirmDay") data.changeHour = dayChangeHour();
           store.dispatch(data);
         }
         json(200, envelope(store.load()));

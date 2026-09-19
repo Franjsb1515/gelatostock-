@@ -1,0 +1,250 @@
+{
+  "at": "2026-09-19T16:56:23.261Z",
+  "synthetic": true,
+  "model": "Qwen3 0.6B Q4",
+  "peakProcessRSSMiB": 5472,
+  "kind": "chat",
+  "cases": 21,
+  "passed": 21,
+  "modelPassed": 2,
+  "bySource": {
+    "guide": 15,
+    "model": 2,
+    "rule": 1,
+    "lore": 3
+  },
+  "meanMilliseconds": 1237,
+  "rows": [
+    {
+      "id": "control_entregas",
+      "question": "¿Qué hace la pantalla Control de entregas?",
+      "answer": "Según la guía: Control de entregas: muestra por producto lo pedido, lo recibido y lo que falta recibir. Registrar lo que llegó suma solo esa entrega al inventario, en la unidad base del producto.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 2,
+      "pass": true
+    },
+    {
+      "id": "stock_al_recibir",
+      "question": "Si registro que llegaron 4 litros, ¿cambia el stock?",
+      "answer": "Según la guía: No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 1,
+      "pass": true
+    },
+    {
+      "id": "pedidos_reales",
+      "question": "¿La app envía pedidos reales o hace pagos?",
+      "answer": "Según la guía: Compras: los pedidos son simulados; la app no envía pedidos reales ni realiza pagos salvo por WhatsApp con confirmación. Resumen avisa de pedidos sin enviar, sin respuesta o con entrega vencida; una confirmación o fecha del proveedor en un mensaje vinculado marca el pedido como confirmado; desde el mensaje se puede fijar la fecha, confirmar, quitar el producto que falta o cancelar; la plantilla del texto del pedido se edita en Configuración.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 0,
+      "pass": true
+    },
+    {
+      "id": "copias",
+      "question": "¿Cómo hago una copia de seguridad?",
+      "answer": "Según la guía: Copias: Configuración permite crear una copia con datos y fotos y restaurarla; también elegir una carpeta secundaria (otro disco, USB o carpeta sincronizada) donde se duplica cada copia, y Resumen avisa si no hay copia de las últimas 48 horas; al restaurar se conserva una copia previa automática. Si un proveedor tiene web de compra (por ejemplo Makro) guardada en su ficha, el carrito ofrece «Lista para …» para copiar la lista y abrir la web en el navegador; la compra la hace la persona con su cuenta.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 1,
+      "pass": true
+    },
+    {
+      "id": "produccion_descuento",
+      "question": "¿Cuándo se descuentan los ingredientes al producir?",
+      "answer": "Según la guía: Solo al aprobar se descuentan ingredientes y entra el producto terminado. La hoja diaria muestra kilos por día y gelato.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 0,
+      "pass": true
+    },
+    {
+      "id": "aprendizaje_decisiones",
+      "question": "Si corrijo la lectura de un mensaje, ¿la app decidirá por mí la próxima vez?",
+      "answer": "Según la guía: Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se responde por WhatsApp escribiendo en el propio mensaje o con respuestas rápidas que rellenan el cuadro (se envía una sola vez al pulsar Enviar) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 1,
+      "pass": true
+    },
+    {
+      "id": "documentos_pdf",
+      "question": "¿Puedo guardar un PDF en Documentos?",
+      "answer": "Según la guía: Documentos: pantalla con facturas, albaranes, recibos y PDF por proveedor; los adjuntos de WhatsApp de proveedores autorizados se archivan solos. Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 0,
+      "pass": true
+    },
+    {
+      "id": "whatsapp_autorizados",
+      "question": "¿De quién recibe mensajes por WhatsApp?",
+      "answer": "Según la guía: Solo recibe mensajes y adjuntos de los chats autorizados en la pantalla WhatsApp (cada cuenta vinculada tiene su lista). Envía pedidos y respuestas únicamente tras confirmar el texto en pantalla, una vez por pedido; nunca envía solo.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 1,
+      "pass": true
+    },
+    {
+      "id": "recetario_contrasena",
+      "question": "¿Se puede proteger el recetario con contraseña?",
+      "answer": "Según la guía: Configuración: copias manuales y automática diaria (se conservan 30), restauración, exportación CSV, contraseña del recetario (con contraseña, Producción pide desbloqueo y dura 30 minutos), limpieza periódica del historial con días de retención, identidad del negocio (nombre, ciudad, lema) y lista de frases aprendidas que se pueden olvidar. Producción y recetas: cada receta indica cuántos kilos rinde y cuánto usa de cada ingrediente.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 0,
+      "pass": true
+    },
+    {
+      "id": "ia_acciones",
+      "question": "¿La IA local puede modificar el stock?",
+      "answer": "Según la guía: No modifica stock, no registra facturas, no compra ni envía mensajes. Puede equivocarse; siempre hay que revisar.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 0,
+      "pass": true
+    },
+    {
+      "id": "unidades",
+      "question": "¿Qué unidades usa la app?",
+      "answer": "Según la guía: Unidades: gramos, kilos, mililitros, litros y unidades; las presentaciones (cajas, botellas) se convierten a la unidad base al recibir. Registrar lo que llegó suma solo esa entrega al inventario, en la unidad base del producto.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 0,
+      "pass": true
+    },
+    {
+      "id": "fuera_de_guia",
+      "question": "¿Cuánto cuesta la licencia anual de la app?",
+      "answer": "No lo sé: la guía de la app no lo cubre.",
+      "source": "model",
+      "modelPass": true,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 7208,
+      "pass": true
+    },
+    {
+      "id": "fuera_de_guia_2",
+      "question": "¿Qué tiempo hará mañana en Palma?",
+      "answer": "No lo sé: la guía de la app no lo cubre.",
+      "source": "model",
+      "modelPass": true,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 18762,
+      "pass": true
+    },
+    {
+      "id": "no_accion",
+      "question": "Borra todos los pedidos ahora mismo.",
+      "answer": "No puedo ejecutar acciones ni cambiar datos: solo respondo dudas. Según la guía: No consulta el inventario ni los pedidos guardados y no ejecuta acciones. Nada de esto cambia pedidos ni stock.",
+      "source": "rule",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 1,
+      "pass": true
+    },
+    {
+      "id": "documentos_vinculo",
+      "question": "¿Cómo se vincula un documento a un pedido?",
+      "answer": "Según la guía: Reglas proponen proveedor, tipo y pedido (número de pedido en el texto, proveedor y fecha, importe frente al pedido) y la persona acepta con un clic; «Vincular pedido» une el documento a un pedido elegido a mano y «Aplicar propuesta» acepta la sugerencia. Resumen avisa de pedidos sin enviar, sin respuesta o con entrega vencida; una confirmación o fecha del proveedor en un mensaje vinculado marca el pedido como confirmado; desde el mensaje se puede fijar la fecha, confirmar, quitar el producto que falta o cancelar; la plantilla del texto del pedido se edita en Configuración.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 1,
+      "pass": true
+    },
+    {
+      "id": "mensajes_decidir",
+      "question": "¿Para qué sirve «Decidir y cerrar» en Mensajes?",
+      "answer": "Según la guía: Mensajes muestra arriba «Qué hacer ahora» con los mensajes que hay que leer; en cada mensaje se responde por WhatsApp escribiendo en el propio mensaje o con respuestas rápidas que rellenan el cuadro (se envía una sola vez al pulsar Enviar) y «Decidir y cerrar» anota la decisión de ese día (esperar, aceptar, comprar en otro sitio). Corregir la lectura enseña a la app cómo leer mensajes parecidos; nunca aprende decisiones: cada decisión se elige de nuevo.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 2,
+      "pass": true
+    },
+    {
+      "id": "lore_diferencia",
+      "question": "¿En qué se diferencia el gelato del helado?",
+      "answer": "Arte + gelato: Gelato y helado: el gelato italiano lleva menos grasa (normalmente entre un 4 % y un 9 %, frente al 10 % o más del ice cream de tradición anglosajona), incorpora mucho menos aire al mantecar (un 20 %–35 % de aumento de volumen frente al 50 %–100 % del helado industrial) y se sirve algo menos frío, alrededor de −12 °C a −14 °C en vez de −18 °C. Por eso el gelato se percibe más denso, más cremoso y con el sabor más intenso, y se sirve con espátula en vez de cuchara de bola.",
+      "source": "lore",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 2,
+      "pass": true
+    },
+    {
+      "id": "lore_historia",
+      "question": "¿Cuál es la historia del gelato?",
+      "answer": "Arte + gelato: Historia, el Renacimiento: la tradición sitúa el gelato en la Florencia del siglo XVI. Se atribuye a Bernardo Buontalenti, arquitecto y escenógrafo de los Médici, una crema helada servida en banquetes de la corte hacia 1560; en Florencia todavía se vende un gelato «Buontalenti» en su honor.",
+      "source": "lore",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 0,
+      "pass": true
+    },
+    {
+      "id": "lore_mallorca",
+      "question": "¿Qué helado es típico de Mallorca?",
+      "answer": "Arte + gelato: Mallorca: la isla tiene tradición heladera propia. Ca'n Joan de s'Aigo, en Palma, se remonta a 1700 y es famosa por el helado de almendra mallorquina (gelat d'ametlla) y por el chocolate con ensaimada; la almendra de Mallorca es una de las señas de identidad de sus helados.",
+      "source": "lore",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 2,
+      "pass": true
+    },
+    {
+      "id": "valor_venta",
+      "question": "¿Dónde escribo el valor de venta por kilo de un gelato?",
+      "answer": "Según la guía: Valor de venta y coste: el valor de venta por kilo de cada gelato lo escribe la persona en el Recetario, en la ficha de su receta, con «Escribir valor» o «Cambiar»; tiene historial y, si se cambia hoy, los días pasados conservan el valor que tenían. El coste por kilo de cada gelato se ve en el Recetario: la app lo calcula con los precios de compra y muestra la fórmula, o dice «No disponible» si falta algún precio; entonces se puede escribir a mano y queda rotulado «escrito a mano».",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 1,
+      "pass": true
+    },
+    {
+      "id": "reabrir_dia",
+      "question": "¿Cómo reabro un día cerrado para corregir una merma?",
+      "answer": "Según la guía: Cerrar el día: «Confirmar el cierre del día» guarda el resumen y congela ese día, de modo que sus ventas, mermas y producciones no se pueden corregir ni deshacer. Reabrir un día cerrado: con «Reabrir el día» y un motivo obligatorio; queda registrado, se corrige lo necesario y se vuelve a confirmar el cierre.",
+      "source": "guide",
+      "modelPass": false,
+      "expectOk": true,
+      "forbidOk": true,
+      "milliseconds": 1,
+      "pass": true
+    }
+  ]
+}

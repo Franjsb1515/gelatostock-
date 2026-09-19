@@ -56,6 +56,8 @@ export {
   costPerKgOn,
   valueReport,
 } from "./value";
+import { computeDay, dayCloseId, isDayClosed } from "./day";
+export { computeDay, daySummary, isDayClosed } from "./day";
 const eur = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",") + " €";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
@@ -63,6 +65,13 @@ export function ensure(value: unknown, message: string): asserts value {
   if (!value) throw Error(message);
 }
 const now = () => new Date().toISOString();
+// A confirmed day is frozen: nothing that belongs to it changes until it is reopened with a reason.
+function ensureDayOpen(s: State, date: string): void {
+  ensure(
+    !isDayClosed(s, date),
+    `El día ${date} está cerrado. Reábrelo con «Reabrir el día», indicando el motivo, para cambiarlo.`,
+  );
+}
 function item<T extends { id: string }>(list: T[], id: string): T {
   const result = list.find((x) => x.id === id);
   ensure(result, "Registro inexistente.");
@@ -905,6 +914,7 @@ export function apply(state: State, input: unknown): State {
       const p = item(s.productions, a.id);
       ensure(p.status === "proposed", "Esta producción ya se resolvió.");
       const r = item(s.recipes, p.recipe);
+      ensureDayOpen(s, p.date);
       ensure(
         new Set(a.lines.map((l) => l.product)).size === a.lines.length &&
           a.lines.every((l) =>
@@ -958,6 +968,7 @@ export function apply(state: State, input: unknown): State {
       break;
     }
     case "dailySales": {
+      ensureDayOpen(s, a.date);
       ensure(
         new Set(a.lines.map((l) => l.product)).size === a.lines.length,
         "Productos repetidos.",
@@ -1015,6 +1026,7 @@ export function apply(state: State, input: unknown): State {
     case "undoDailySales": {
       // The whole close of a day is compensated at once; the original movements stay on record.
       const moves = closeMovements(s, a.date);
+      ensureDayOpen(s, a.date);
       ensure(
         moves.length > 0,
         "Ese día no tiene ventas ni mermas por deshacer.",
@@ -1033,12 +1045,61 @@ export function apply(state: State, input: unknown): State {
       note = `Cierre del ${a.date} deshecho: ${moves.length} movimientos compensados; el stock vuelve a su sitio.`;
       break;
     }
+    case "confirmDay": {
+      ensureDayOpen(s, a.date);
+      const snapshot = computeDay(s, a.date, a.changeHour);
+      ensure(
+        snapshot.rows.some(
+          (r) => r.produced || r.sold || r.waste || r.gift || r.adjust,
+        ),
+        "Ese día no tiene producción, ventas, mermas ni ajustes que cerrar.",
+      );
+      const entry = { at: now(), kind: "confirmed" as const, reason: "" };
+      const previous = s.days.find((d) => d.date === a.date);
+      const record = {
+        id: dayCloseId(a.date),
+        date: a.date,
+        status: "closed" as const,
+        confirmedAt: entry.at,
+        ...(a.realSaleCents !== undefined
+          ? { realSaleCents: a.realSaleCents }
+          : {}),
+        snapshot,
+        log: [...(previous?.log ?? []), entry],
+      };
+      s.days = [record, ...s.days.filter((d) => d.date !== a.date)].sort(
+        (x, y) => y.date.localeCompare(x.date),
+      );
+      const t = snapshot.totals;
+      const estimated =
+        t.soldCents === null
+          ? "venta estimada no disponible (falta el valor de venta de algún gelato)"
+          : `venta estimada ${eur(t.soldCents)}`;
+      const real =
+        a.realSaleCents === undefined
+          ? ""
+          : `, venta real ${eur(a.realSaleCents)}` +
+            (t.soldCents === null
+              ? ""
+              : ` (diferencia ${a.realSaleCents - t.soldCents < 0 ? "−" : "+"}${eur(Math.abs(a.realSaleCents - t.soldCents))})`);
+      note = `Día ${a.date} cerrado${previous ? " de nuevo" : ""}: vendido ${t.sold} kg, merma ${t.waste} kg, invitación o consumo ${t.gift} kg, quedan ${t.remaining} kg para mañana; ${estimated}${real}. Para cambiar algo de ese día hay que reabrirlo.`;
+      break;
+    }
+    case "reopenDay": {
+      const d = s.days.find((x) => x.date === a.date);
+      ensure(d && d.status === "closed", "Ese día no está cerrado.");
+      d.status = "reopened";
+      d.log.push({ at: now(), kind: "reopened", reason: a.reason });
+      note = `Día ${a.date} reabierto. Motivo: ${a.reason}. Se puede corregir y volver a cerrar; el cierre anterior queda en el registro.`;
+      break;
+    }
     case "voidProduction": {
       const p = item(s.productions, a.id);
       ensure(
         p.status === "applied",
         "Solo se anula una producción aprobada. Una propuesta se descarta.",
       );
+      ensureDayOpen(s, p.date);
       const undone = undoneMovements(s);
       const moves = s.movements.filter(
         (m) => m.production === p.id && !m.reverses && !undone.has(m.id),
@@ -1089,6 +1150,7 @@ export function apply(state: State, input: unknown): State {
         line && !m.reverses && !undoneMovements(s).has(m.id),
         "Esa línea no pertenece a un cierre vigente.",
       );
+      ensureDayOpen(s, line.date);
       const prod = item(s.products, m.product);
       const before = Math.abs(m.delta);
       const what =

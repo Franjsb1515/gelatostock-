@@ -198,5 +198,15 @@
     "forbid": [
       "no lo sé"
     ]
+  },
+  {
+    "id": "reabrir_dia",
+    "question": "¿Cómo reabro un día cerrado para corregir una merma?",
+    "expect": [
+      "reabrir|motivo"
+    ],
+    "forbid": [
+      "no lo sé"
+    ]
   }
 ]

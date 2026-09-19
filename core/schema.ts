@@ -283,6 +283,61 @@ export const movementSchema = z.object({
   reverses: idSchema.optional(),
   production: idSchema.optional(),
 });
+// A confirmed day close: the summary as it was when the person confirmed it. Key order matters:
+// it is the same as in core/day.ts, so a stored snapshot can be compared with a fresh one.
+const amount = z.number().finite().min(-1_000_000).max(1_000_000);
+const maybeCents = z.number().int().min(0).max(10_000_000_000).nullable();
+export const daySnapshotSchema = z.object({
+  rows: z
+    .array(
+      z.object({
+        product: idSchema,
+        name: text(100),
+        opening: amount,
+        produced: amount,
+        sold: amount,
+        waste: amount,
+        gift: amount,
+        adjust: amount,
+        remaining: amount,
+        saleValue: maybeCents,
+        soldCents: maybeCents,
+        wasteCents: maybeCents,
+        giftCents: maybeCents,
+      }),
+    )
+    .max(10000),
+  totals: z.object({
+    opening: amount,
+    produced: amount,
+    sold: amount,
+    waste: amount,
+    gift: amount,
+    adjust: amount,
+    remaining: amount,
+    soldCents: maybeCents,
+    wasteCents: maybeCents,
+    giftCents: maybeCents,
+  }),
+});
+const dayCloseSchema = z.object({
+  id: idSchema,
+  date: documentDate,
+  status: z.enum(["closed", "reopened"]),
+  confirmedAt: at,
+  // What the person says was really sold that day (till, TPV…). Optional; never calculated.
+  realSaleCents: cents.optional(),
+  snapshot: daySnapshotSchema,
+  log: z
+    .array(
+      z.object({
+        at,
+        kind: z.enum(["confirmed", "reopened"]),
+        reason: z.string().max(200).default(""),
+      }),
+    )
+    .max(200),
+});
 export const stateSchema = z.object({
   version: z.literal(1),
   revision: z.number().int().min(0),
@@ -321,6 +376,8 @@ export const stateSchema = z.object({
     )
     .max(5000)
     .default([]),
+  // Confirmed day closes, newest first.
+  days: z.array(dayCloseSchema).max(100000).default([]),
   // Price history per product (cents per pack): every change of the card price, oldest first.
   prices: z
     .array(
@@ -345,6 +402,8 @@ export type Message = State["messages"][number];
 export type Recipe = State["recipes"][number];
 export type Learned = State["learned"][number];
 export type Production = State["productions"][number];
+export type DayClose = State["days"][number];
+export type DaySnapshot = z.infer<typeof daySnapshotSchema>;
 const productInput = z.object({ type: z.literal("product"), ...productFields });
 export const actionSchema = z.intersection(
   z.object({
@@ -526,6 +585,19 @@ export const actionSchema = z.intersection(
         .max(500),
     }),
     z.object({ type: z.literal("undoDailySales"), date: documentDate }),
+    // Confirm the close of a business day: its summary is frozen and the day stops accepting
+    // changes until it is reopened with a reason.
+    z.object({
+      type: z.literal("confirmDay"),
+      date: documentDate,
+      realSaleCents: cents.optional(),
+      changeHour: z.number().int().min(0).max(8).default(5),
+    }),
+    z.object({
+      type: z.literal("reopenDay"),
+      date: documentDate,
+      reason: text(200),
+    }),
     // Annul an applied production; with redo, a new proposal with the same data is left to fix.
     z.object({
       type: z.literal("voidProduction"),

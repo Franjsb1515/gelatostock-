@@ -5,7 +5,10 @@ let salesUnit = "kg",
   salesMode = "sold",
   salesData = null,
   salesBusy = false,
-  salesDays = 30;
+  salesDays = 30,
+  // Day summary («cuánto debí vender»): reloaded together with the sales history.
+  dayDate = "",
+  dayData = null;
 try {
   salesMode =
     localStorage.getItem("gelato-sales-mode") === "remaining"
@@ -28,7 +31,13 @@ async function loadSales() {
   if (salesBusy) return;
   salesBusy = true;
   try {
-    salesData = await request("/api/sales?days=" + salesDays);
+    dayDate ||= businessToday();
+    const [sales, day] = await Promise.all([
+      request("/api/sales?days=" + salesDays),
+      request("/api/day?date=" + dayDate),
+    ]);
+    dayData = day;
+    salesData = sales;
   } catch (e) {
     toast(e.message);
   } finally {
@@ -36,6 +45,9 @@ async function loadSales() {
     if (page === "production") render();
   }
 }
+// A confirmed day is frozen: its rows offer no correction tools until it is reopened.
+const dayIsClosed = (day) =>
+  (state.days || []).some((d) => d.date === day && d.status === "closed");
 const finishedProducts = () =>
   // Only what a recipe produces counts as finished product; ingredients never appear here.
   state.products.filter(
@@ -136,7 +148,7 @@ function salesSection() {
             "",
           )}</tbody></table></div><div class="row-actions"><span class="sales-summary" data-sales-summary>Todavía sin cantidades.</span>${btn(icon("check") + " Registrar cierre", "dailySales", "primary", "disabled")}</div>`
       : '<p class="muted">No hay productos terminados: asigna un producto terminado (en kg) a una receta del recetario.</p>'
-  }</div></section>${salesHistoryPanel()}`;
+  }</div></section>${dayPanel()}${salesHistoryPanel()}`;
 }
 function salesHistoryPanel() {
   const h = salesData;
@@ -163,10 +175,10 @@ function salesHistoryPanel() {
       ? `<div class="report-kpis"><div><strong>${num(h.totals.sold)} kg</strong><span>vendidos</span></div><div><strong>${num(h.totals.waste)} kg</strong><span>de merma</span></div><div><strong>${num(h.totals.gift)} kg</strong><span>invitación o consumo</span></div><div><strong>${pctText(h.totals.wastePct)}</strong><span>merma sobre lo que salió</span></div><div><strong>${h.days.length}</strong><span>días con cierre</span></div></div><div class="report-grid"><section class="sales-by-day"><h3>Por día</h3><div class="table-scroll sales-scroll"><table class="report-table"><thead><tr><th>Día</th><th>Vendido</th><th>Merma</th><th>Invitación o consumo</th><th>% merma</th><th></th></tr></thead><tbody>${h.days
           .map(
             (d) =>
-              `<tr><td>${esc(dayName(d.date))}</td><td class="num">${num(d.sold)} kg</td><td class="num">${num(d.waste)} kg</td><td class="num">${num(d.gift)} kg</td><td class="num">${pctText(d.wastePct)}</td><td><button class="text-link" data-action="undoDailySales" data-date="${esc(d.date)}">Deshacer</button></td></tr>${d.lines
+              `<tr><td>${esc(dayName(d.date))}</td><td class="num">${num(d.sold)} kg</td><td class="num">${num(d.waste)} kg</td><td class="num">${num(d.gift)} kg</td><td class="num">${pctText(d.wastePct)}</td><td>${dayIsClosed(d.date) ? "<small>Día cerrado</small>" : `<button class="text-link" data-action="undoDailySales" data-date="${esc(d.date)}">Deshacer</button>`}</td></tr>${d.lines
                 .map(
                   (l) =>
-                    `<tr class="close-line"><td>${esc(l.name)}<small>${l.kind === "sale" ? "venta" : l.kind === "gift" ? "invitación o consumo" : "merma · " + esc(l.reason)}</small></td><td class="num">${l.kind === "sale" ? num(l.quantity) + " kg" : ""}</td><td class="num">${l.kind === "waste" ? num(l.quantity) + " kg" : ""}</td><td class="num">${l.kind === "gift" ? num(l.quantity) + " kg" : ""}</td><td></td><td class="row-tools"><button class="text-link" data-action="editCloseLine" data-id="${esc(l.id)}" data-date="${esc(d.date)}">Corregir</button> <button class="text-link" data-action="undoCloseLine" data-id="${esc(l.id)}" data-date="${esc(d.date)}">Eliminar</button></td></tr>`,
+                    `<tr class="close-line"><td>${esc(l.name)}<small>${l.kind === "sale" ? "venta" : l.kind === "gift" ? "invitación o consumo" : "merma · " + esc(l.reason)}</small></td><td class="num">${l.kind === "sale" ? num(l.quantity) + " kg" : ""}</td><td class="num">${l.kind === "waste" ? num(l.quantity) + " kg" : ""}</td><td class="num">${l.kind === "gift" ? num(l.quantity) + " kg" : ""}</td><td></td><td class="row-tools">${dayIsClosed(d.date) ? "" : `<button class="text-link" data-action="editCloseLine" data-id="${esc(l.id)}" data-date="${esc(d.date)}">Corregir</button> <button class="text-link" data-action="undoCloseLine" data-id="${esc(l.id)}" data-date="${esc(d.date)}">Eliminar</button>`}</td></tr>`,
                 )
                 .join("")}`,
           )
@@ -184,6 +196,71 @@ function salesHistoryPanel() {
           .join("")}</tbody></table></section></div>`
       : '<div class="empty compact">Todavía no hay cierres en este periodo. Registra el primero arriba.</div>'
   }</div></section>${valuePanels()}`;
+}
+// «Cuánto debí vender»: one business day on one screen (core/day.ts). A confirmed day shows the
+// frozen summary; an open day shows the live one. Sale side only: costs have their own report.
+function dayPanel() {
+  const d = dayData;
+  if (!d) return "";
+  const shown = d.closed ? d.close.snapshot : d.live;
+  const t = shown.totals;
+  const na = "<small>No disponible</small>";
+  const cell = (n) => (n === null ? na : money(n));
+  const kgCell = (n) => (n ? num(n) + " kg" : "—");
+  const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + num(Math.abs(n));
+  const real = d.closed ? (d.close.realSaleCents ?? null) : null;
+  const diff =
+    d.difference === null
+      ? ""
+      : `<div><strong>${d.difference < 0 ? "−" : "+"}${money(Math.abs(d.difference))}</strong><span>diferencia: venta real − estimada</span></div>`;
+  const dayText = new Date(d.date + "T12:00:00").toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const breakdown = shown.rows
+    .filter((r) => r.sold)
+    .map((r) =>
+      r.saleValue === null
+        ? `${esc(r.name)}: ${num(r.sold)} kg × valor de venta sin escribir = No disponible`
+        : `${esc(r.name)}: ${num(r.sold)} kg × ${money(r.saleValue)}/kg = ${money(r.soldCents)}`,
+    )
+    .join(" · ");
+  const log = (d.close?.log || [])
+    .map(
+      (l) =>
+        `${date(l.at)} ${time(l.at)} · ${l.kind === "confirmed" ? "cierre confirmado" : "reabierto: " + esc(l.reason)}`,
+    )
+    .join(" · ");
+  const active = shown.rows.some(
+    (r) => r.produced || r.sold || r.waste || r.gift || r.adjust,
+  );
+  return `<section class="panel" data-day><div class="panel-heading"><div><h2>Resumen del día: cuánto debí vender ${d.closed ? pill("Día cerrado", "sage") : d.close ? pill("Reabierto", "sand") : pill("Abierto", "sand")}</h2><p>${esc(dayText)}. Al empezar + producido − vendido − merma − invitación + ajustes = queda para mañana. La venta estimada son los kilos vendidos por el valor de venta de ese día.</p></div><label class="field short">Día<input type="date" id="day-date" class="inline-input" value="${esc(d.date)}" max="${todayLocal()}"></label></div><div class="sales-body">${
+    shown.rows.length
+      ? `<div class="report-kpis"><div><strong>${cell(t.soldCents)}</strong><span>venta estimada (${num(t.sold)} kg)</span></div>${real === null ? "" : `<div><strong>${money(real)}</strong><span>venta real, escrita por ti</span></div>`}${diff}<div><strong>${cell(t.wasteCents)}</strong><span>venta perdida por merma (${num(t.waste)} kg)</span></div><div><strong>${cell(t.giftCents)}</strong><span>invitación o consumo (${num(t.gift)} kg)</span></div><div><strong>${num(t.remaining)} kg</strong><span>quedan para mañana</span></div></div><div class="table-scroll"><table class="report-table"><thead><tr><th>Gelato</th><th>Al empezar</th><th>Producido</th><th>Vendido</th><th>Merma</th><th>Invitación o consumo</th><th>Ajustes de inventario</th><th>Queda para mañana</th><th>Venta estimada</th></tr></thead><tbody>${shown.rows
+          .map(
+            (r) =>
+              `<tr><td>${esc(r.name)}</td><td class="num">${num(r.opening)} kg</td><td class="num">${kgCell(r.produced)}</td><td class="num">${kgCell(r.sold)}</td><td class="num">${kgCell(r.waste)}</td><td class="num">${kgCell(r.gift)}</td><td class="num">${r.adjust ? signed(r.adjust) + " kg" : "—"}</td><td class="num"><strong>${num(r.remaining)} kg</strong></td><td class="num">${r.sold ? cell(r.soldCents) : "—"}</td></tr>`,
+          )
+          .join(
+            "",
+          )}<tr><td><strong>Total</strong></td><td class="num">${num(t.opening)} kg</td><td class="num">${kgCell(t.produced)}</td><td class="num">${kgCell(t.sold)}</td><td class="num">${kgCell(t.waste)}</td><td class="num">${kgCell(t.gift)}</td><td class="num">${t.adjust ? signed(t.adjust) + " kg" : "—"}</td><td class="num"><strong>${num(t.remaining)} kg</strong></td><td class="num"><strong>${t.sold ? cell(t.soldCents) : "—"}</strong></td></tr></tbody></table></div>${breakdown ? `<p class="fineprint">Desglose: ${breakdown}.</p>` : ""}${t.adjust ? '<p class="fineprint">Los ajustes de inventario son conteos o movimientos manuales de ese día: se enseñan aparte y no se convierten solos en merma ni en venta.</p>' : ""}${t.soldCents === null ? '<p class="fineprint">Venta estimada no disponible: escribe el valor de venta por kilo de cada gelato vendido en el Recetario.</p>' : ""}`
+      : '<div class="empty compact">Ese día no hay producto terminado ni movimientos que resumir.</div>'
+  }${d.drift ? `<div class="notice inline">${icon("shield")}<div><strong>Algo de este día cambió después del cierre</strong><span>Se muestra el cierre tal como lo confirmaste. Con los datos de ahora la venta estimada sería ${cell(d.live.totals.soldCents)} y quedarían ${num(d.live.totals.remaining)} kg. Si quieres actualizarlo, reabre el día y vuelve a cerrarlo.</span></div></div>` : ""}<div class="row-actions">${log ? `<span class="sales-summary">${log}</span>` : ""}${
+    d.closed
+      ? btn(
+          "Reabrir el día",
+          "reopenDay",
+          "secondary",
+          `data-date="${esc(d.date)}"`,
+        )
+      : btn(
+          icon("check") + " Confirmar el cierre del día",
+          "confirmDay",
+          "primary",
+          `data-date="${esc(d.date)}" ${active ? "" : "disabled"}`,
+        )
+  }</div></div></section>`;
 }
 // Two separate reports over the same days: sale (kilos × sale value of each day) and cost
 // (kilos × cost per kilo). They are never added or subtracted; null is «No disponible».

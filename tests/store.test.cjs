@@ -401,7 +401,7 @@ test("recetas y producciones persisten en SQLite y sobreviven al reinicio", () =
     assert.equal(again.movements.filter((m) => m.production).length, 2);
     assert.equal(
       Number(store.db.prepare("PRAGMA user_version").get().user_version),
-      4,
+      5,
     );
   }));
 
@@ -462,7 +462,7 @@ test("las frases aprendidas persisten y la base pasa a versión 3 sin perder dat
     assert.equal(again.learned[0].category, "closed");
     assert.equal(
       Number(store.db.prepare("PRAGMA user_version").get().user_version),
-      4,
+      5,
     );
   }));
 
@@ -508,7 +508,7 @@ test("un PDF se almacena por huella, se sirve con su tipo y se archiva por prove
     );
   }));
 
-test("historial de precios persiste en SQLite (user_version 4) y sobrevive a reabrir", () => {
+test("historial de precios persiste en SQLite (user_version 5) y sobrevive a reabrir", () => {
   const dir = fs.mkdtempSync(
     path.join(path.resolve(__dirname, "../work"), "store-prices-"),
   );
@@ -530,7 +530,7 @@ test("historial de precios persiste en SQLite (user_version 4) y sobrevive a rea
     const s = store.load();
     assert.equal(s.prices.length, 1);
     assert.equal(s.prices[0].to, 760);
-    assert.equal(store.db.prepare("PRAGMA user_version").get().user_version, 4);
+    assert.equal(store.db.prepare("PRAGMA user_version").get().user_version, 5);
     store.close();
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });

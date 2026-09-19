@@ -133,6 +133,12 @@ document.addEventListener("change", async (e) => {
     }
     return;
   }
+  if (e.target.id === "day-date") {
+    if (e.target.value) dayDate = e.target.value;
+    salesData = null;
+    render();
+    return;
+  }
   if (e.target.id === "sales-days") {
     salesDays = Number(e.target.value) || 30;
     salesData = null;
