@@ -523,6 +523,8 @@ export const actionSchema = z.intersection(
     z.object({
       type: z.literal("recipe"),
       id: idSchema.optional(),
+      // Without a finished product, create one named like the recipe (made in house, in kg).
+      createProduct: z.boolean().default(false),
       ...recipeFields,
     }),
     z.object({ type: z.literal("deleteRecipe"), id: idSchema }),

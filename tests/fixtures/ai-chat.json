@@ -208,5 +208,15 @@
     "forbid": [
       "no lo sé"
     ]
+  },
+  {
+    "id": "activar_gelato",
+    "question": "Mi receta no aparece en el cierre del día, ¿qué hago?",
+    "expect": [
+      "activar"
+    ],
+    "forbid": [
+      "no lo sé"
+    ]
   }
 ]

@@ -181,7 +181,7 @@ test("sin precio de compra el coste es «No disponible», salvo que se escriba a
   );
 });
 
-test("el valor de venta exige producto terminado", () => {
+test("el valor de venta exige que el gelato esté dado de alta para vender", () => {
   let s = seed();
   const { id, saleValues, manualCost, product, ...fields } = recipe(s);
   s = apply(s, { type: "recipe", ...fields, name: "Base blanca" });
@@ -194,7 +194,7 @@ test("el valor de venta exige producto terminado", () => {
         cents: 1000,
         from: "2026-09-01",
       }),
-    /producto terminado/,
+    /no está dado de alta para vender/,
   );
 });
 
@@ -258,4 +258,65 @@ test("servidor: la receta trae su coste con fórmula y /api/sales los dos inform
     if (app) await new Promise((r) => app.server.close(r));
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("una receta nueva da de alta su gelato sola: ya admite valor, ventas y mermas", () => {
+  let s = seed();
+  const suppliers = s.suppliers.length;
+  s = apply(s, {
+    type: "recipe",
+    name: "Chocoloco",
+    family: "crema",
+    yield: 1,
+    ingredients: [{ product: "p2", quantity: 0.5 }],
+    createProduct: true,
+  });
+  const r = s.recipes.find((x) => x.name === "Chocoloco");
+  const made = s.products.find((p) => p.id === r.product);
+  assert.deepEqual(
+    [made.name, made.unit, made.stock, made.min, made.target, made.price],
+    ["Chocoloco", "kg", 0, 0, 0, 0],
+  );
+  assert.equal(
+    s.suppliers.length,
+    suppliers + 1,
+    "proveedor «Elaboración propia»",
+  );
+  assert.match(s.activity[0].text, /queda dado de alta como gelato en stock/);
+  // Nunca se propone comprarlo: mínimo y objetivo 0.
+  s = apply(s, { type: "suggest" });
+  assert.ok(!s.cart.some((l) => l.product === made.id));
+  // El camino completo que fallaba: valor, producción, venta y merma.
+  s = apply(s, {
+    type: "setSaleValue",
+    recipe: r.id,
+    cents: 10000,
+    from: "2026-09-01",
+  });
+  s = apply(s, {
+    type: "produce",
+    recipe: r.id,
+    quantity: 1,
+    date: "2026-09-10",
+  });
+  const p = s.productions.find((x) => x.status === "proposed");
+  s = apply(s, { type: "applyProduction", id: p.id, lines: p.lines, note: "" });
+  s = apply(s, {
+    type: "dailySales",
+    date: "2026-09-10",
+    lines: [{ product: made.id, sold: 0.8, waste: 0.2 }],
+  });
+  const v = valueReport(s, "2026-09-10", "2026-09-10");
+  assert.deepEqual([v.sale.sold, v.sale.waste], [8000, 2000]);
+  // Una receta ya existente sin gelato se activa igual; la segunda vez no duplica nada.
+  const { id, saleValues, manualCost, ...fields } = r;
+  const again = apply(s, {
+    type: "recipe",
+    id,
+    ...fields,
+    createProduct: true,
+  });
+  assert.equal(again.products.length, s.products.length);
+  assert.equal(again.suppliers.length, s.suppliers.length);
+  validate(again);
 });

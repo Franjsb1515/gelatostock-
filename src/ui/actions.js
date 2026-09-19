@@ -156,15 +156,22 @@ async function action(name, el) {
           r.family || "crema",
         ) +
         select(
-          "Producto terminado (en kg)",
+          "Gelato que sale de esta receta",
           "product",
           [
-            ["", "Sin producto terminado"],
+            [
+              "__new__",
+              "El de esta receta: se crea solo con su nombre (recomendado)",
+            ],
+            ["", "Ninguno: es una base o pasta que no se vende"],
             ...state.products
               .filter((p) => p.unit === "kg")
               .map((p) => [p.id, p.name]),
           ],
-          r.product || "",
+          // A gelato needs its finished product: sales, waste and sale value hang from it.
+          r.product ||
+            // New recipes create it by default; an existing one keeps what it had.
+            (r.id ? "" : "__new__"),
         ) +
         field(
           "Rinde (kg de gelato)",
@@ -195,7 +202,11 @@ async function action(name, el) {
             ...(r.id ? { id: r.id } : {}),
             name: f.get("name"),
             family: f.get("family") || "crema",
-            ...(f.get("product") ? { product: f.get("product") } : {}),
+            ...(f.get("product") === "__new__"
+              ? { createProduct: true }
+              : f.get("product")
+                ? { product: f.get("product") }
+                : {}),
             yield: Number(f.get("yield")),
             ingredients,
             steps: f.get("steps") || "",
@@ -220,6 +231,18 @@ async function action(name, el) {
   }
   if (name === "openRecipes") {
     nav("recipes");
+    return;
+  }
+  if (name === "createFinished") {
+    // One click from the recipe sheet: the finished product is created with the recipe's name.
+    const r = state.recipes.find((x) => x.id === el.dataset.id);
+    const { id, cost, balance, saleValues, manualCost, locked, ...fields } = r;
+    await mutate(
+      { type: "recipe", id, ...fields, createProduct: true },
+      "Listo: ya puedes ponerle valor de venta y registrar sus ventas y mermas.",
+    );
+    salesData = null;
+    render();
     return;
   }
   if (name === "duplicateRecipe") {
@@ -435,7 +458,7 @@ async function action(name, el) {
         p.name,
       fix
         ? `Se anula la producción de ${num(p.quantity)} kg del ${date(p.date + "T12:00:00Z")} y queda una propuesta igual para que cambies lo que esté mal y la apruebes de nuevo. Los ingredientes vuelven al stock mientras tanto.`
-        : `Los ingredientes vuelven al stock y los ${num(p.output?.quantity ?? p.quantity)} kg de producto terminado salen. Úsalo si se registró dos veces o por error. Los movimientos originales se conservan en Actividad.`,
+        : `Los ingredientes vuelven al stock y los ${num(p.output?.quantity ?? p.quantity)} kg de gelato hecho salen del stock. Úsalo si se registró dos veces o por error. Los movimientos originales se conservan en Actividad.`,
       field(
         "Motivo (opcional)",
         "reason",

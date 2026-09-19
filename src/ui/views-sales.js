@@ -133,7 +133,7 @@ function salesSection() {
   const closedToday = salesData?.days.find((d) => d.date === today);
   return `<section class="panel" data-sales><div class="panel-heading"><div><h2>Cierre del día: ventas y mermas</h2><p>Apunta lo vendido, o pesa lo que queda y la app calcula lo vendido. Cada merma lleva su motivo; lo que invitas o consume el equipo va aparte y no cuenta como merma. Todo queda trazable y se puede deshacer.</p></div><div class="cruise-tabs" role="group" aria-label="Forma de apuntar"><button class="tab ${salesMode === "sold" ? "active" : ""}" data-action="salesMode" data-mode="sold" aria-pressed="${salesMode === "sold"}">Apunto lo vendido</button><button class="tab ${salesMode === "remaining" ? "active" : ""}" data-action="salesMode" data-mode="remaining" aria-pressed="${salesMode === "remaining"}">Peso lo que queda</button></div></div><div class="sales-body">${hint}<div class="sales-controls"><label class="field short">Día del cierre<input type="date" class="inline-input" data-sales-date value="${today}" max="${todayLocal()}"></label><label class="field short">Pesos en<select id="sales-unit" class="inline-input"><option value="kg" ${salesUnit === "kg" ? "selected" : ""}>kilos (0,425)</option><option value="g" ${salesUnit === "g" ? "selected" : ""}>gramos (425)</option></select></label></div>${closedToday ? `<p class="fineprint">Hoy ya hay un cierre registrado (${num(closedToday.sold)} kg vendidos, ${num(closedToday.waste)} kg de merma${closedToday.gift ? ", " + num(closedToday.gift) + " kg de invitación o consumo" : ""}). Lo que apuntes ahora se suma.</p>` : ""}${
     finished.length
-      ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Producto terminado</th><th>Stock</th><th>${salesMode === "remaining" ? "Queda" : "Vendido"} (${salesUnit})</th><th>Merma (${salesUnit})</th><th>Motivo de la merma</th><th>Invitación o consumo (${salesUnit})</th><th></th></tr></thead><tbody>${finished
+      ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Gelato</th><th>Stock</th><th>${salesMode === "remaining" ? "Queda" : "Vendido"} (${salesUnit})</th><th>Merma (${salesUnit})</th><th>Motivo de la merma</th><th>Invitación o consumo (${salesUnit})</th><th></th></tr></thead><tbody>${finished
           .map(
             (p) =>
               `<tr data-sale-row="${esc(p.id)}"><td><strong>${esc(p.name)}</strong></td><td>${num(p.stock)} kg</td><td><input type="number" class="inline-input" data-sale-input ${unitAttrs()} placeholder="${salesMode === "remaining" ? "peso" : "0"}" aria-label="${salesMode === "remaining" ? "Queda de" : "Vendido de"} ${esc(p.name)}"></td><td><input type="number" class="inline-input" data-sale-waste ${unitAttrs()} placeholder="0" aria-label="Merma de ${esc(p.name)}"></td><td><select class="inline-input" data-sale-reason disabled aria-label="Motivo de la merma de ${esc(p.name)}"><option value="">Sin indicar</option>${Object.entries(
@@ -147,7 +147,19 @@ function salesSection() {
           .join(
             "",
           )}</tbody></table></div><div class="row-actions"><span class="sales-summary" data-sales-summary>Todavía sin cantidades.</span>${btn(icon("check") + " Registrar cierre", "dailySales", "primary", "disabled")}</div>`
-      : '<p class="muted">No hay productos terminados: asigna un producto terminado (en kg) a una receta del recetario.</p>'
+      : `<p class="muted">Aquí aparecen los gelatos de tus recetas, y ahora mismo ninguna está dada de alta para vender. ${
+          state.recipes
+            .filter((r) => !r.product && !r.locked)
+            .map((r) =>
+              btn(
+                "Activar «" + esc(r.name) + "»",
+                "createFinished",
+                "secondary",
+                `data-id="${esc(r.id)}"`,
+              ),
+            )
+            .join(" ") || "Crea una receta en el Recetario."
+        }</p>`
   }</div></section>${dayPanel()}${salesHistoryPanel()}`;
 }
 function salesHistoryPanel() {
@@ -245,7 +257,7 @@ function dayPanel() {
           .join(
             "",
           )}<tr><td><strong>Total</strong></td><td class="num">${num(t.opening)} kg</td><td class="num">${kgCell(t.produced)}</td><td class="num">${kgCell(t.sold)}</td><td class="num">${kgCell(t.waste)}</td><td class="num">${kgCell(t.gift)}</td><td class="num">${t.adjust ? signed(t.adjust) + " kg" : "—"}</td><td class="num"><strong>${num(t.remaining)} kg</strong></td><td class="num"><strong>${t.sold ? cell(t.soldCents) : "—"}</strong></td></tr></tbody></table></div>${breakdown ? `<p class="fineprint">Desglose: ${breakdown}.</p>` : ""}${t.adjust ? '<p class="fineprint">Los ajustes de inventario son conteos o movimientos manuales de ese día: se enseñan aparte y no se convierten solos en merma ni en venta.</p>' : ""}${t.soldCents === null ? '<p class="fineprint">Venta estimada no disponible: escribe el valor de venta por kilo de cada gelato vendido en el Recetario.</p>' : ""}`
-      : '<div class="empty compact">Ese día no hay producto terminado ni movimientos que resumir.</div>'
+      : '<div class="empty compact">Ese día no hay gelato en stock ni movimientos que resumir.</div>'
   }${d.drift ? `<div class="notice inline">${icon("shield")}<div><strong>Algo de este día cambió después del cierre</strong><span>Se muestra el cierre tal como lo confirmaste. Con los datos de ahora la venta estimada sería ${cell(d.live.totals.soldCents)} y quedarían ${num(d.live.totals.remaining)} kg. Si quieres actualizarlo, reabre el día y vuelve a cerrarlo.</span></div></div>` : ""}<div class="row-actions">${log ? `<span class="sales-summary">${log}</span>` : ""}${
     d.closed
       ? btn(

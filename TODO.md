@@ -1,4 +1,4 @@
-# TODO — estado real de 0.31.0
+# TODO — estado real de 0.31.1
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 

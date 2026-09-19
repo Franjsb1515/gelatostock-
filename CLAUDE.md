@@ -1,9 +1,10 @@
-# Entrada para Claude · entrega vigente 0.31.0
+# Entrada para Claude · entrega vigente 0.31.1
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
 ## Cómo trabajar aquí
 - Proyecto en D:/CARPETAPROYECTOS/APPGELATOSTOCK. App local de escritorio (Electron) para una gelatería de Palma. Sin APIs de IA de pago ni llamadas externas ocultas.
+- Nada de jerga en pantalla: el usuario no entendió «producto terminado» y por eso no le funcionaban valor, ventas ni mermas. En la interfaz se dice «gelato», «gelato hecho» o «gelato en stock»; en el código sigue siendo recipe.product. Antes de dar algo por hecho, recorre el camino con datos como los suyos (una receta creada por él), no solo con la demo.
 - El usuario no programa y pide respuestas MUY breves en el chat; el detalle técnico va a reports/. Antes de un encargo grande, dile qué no es viable y por qué; luego decide y construye.
 - Antes de cambiar archivos: `git status`. Ejecuta pruebas antes de proponer reescrituras. Implementa solo lo necesario para la tarea.
 - Mejora continua: cada sesión audita lo que toca y corrige al menos un hueco verificado con evidencia. Ninguna afirmación sin salida de comando o captura. No degradar garantías ni ocultar abstenciones o pruebas fallidas. Si un documento de continuidad induce a error, corrígelo en la misma sesión.

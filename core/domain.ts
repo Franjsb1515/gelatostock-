@@ -65,6 +65,8 @@ export function ensure(value: unknown, message: string): asserts value {
   if (!value) throw Error(message);
 }
 const now = () => new Date().toISOString();
+// Supplier that owns what the shop makes itself. Min and target 0: purchases never suggest it.
+export const ownSupplierId = "elaboracion-propia";
 // A confirmed day is frozen: nothing that belongs to it changes until it is reopened with a reason.
 function ensureDayOpen(s: State, date: string): void {
   ensure(
@@ -796,7 +798,47 @@ export function apply(state: State, input: unknown): State {
       break;
     }
     case "recipe": {
-      const { type, revision, operationId, id, ...fields } = a;
+      const { type, revision, operationId, id, createProduct, ...fields } = a;
+      let created = "";
+      if (createProduct && !fields.product) {
+        // The gelato made in house is a product of its own: sales, waste and value hang from it.
+        const same = s.products.find(
+          (p) =>
+            p.unit === "kg" &&
+            !fields.ingredients.some((i) => i.product === p.id) &&
+            p.name.trim().toLowerCase() === fields.name.trim().toLowerCase(),
+        );
+        if (same) fields.product = same.id;
+        else {
+          if (!s.suppliers.some((x) => x.id === ownSupplierId))
+            s.suppliers.push({
+              id: ownSupplierId,
+              name: "Elaboración propia",
+              initials: "EP",
+              category: "Obrador",
+              delivery: "Se produce en el obrador; no se pide a nadie.",
+              color: "sage",
+            });
+          const productId = randomUUID();
+          s.products.push({
+            id: productId,
+            name: fields.name,
+            detail: "Gelato de elaboración propia",
+            zone: "vitrina",
+            category: "Gelatería",
+            unit: "kg",
+            stock: 0,
+            min: 0,
+            target: 0,
+            pack: 1,
+            price: 0,
+            supplier: ownSupplierId,
+            icon: "ice",
+          });
+          fields.product = productId;
+          created = ` «${fields.name}» queda dado de alta como gelato en stock (en kg, empieza en 0) para sus ventas, mermas y valor.`;
+        }
+      }
       ensure(
         new Set(fields.ingredients.map((i) => i.product)).size ===
           fields.ingredients.length,
@@ -816,7 +858,8 @@ export function apply(state: State, input: unknown): State {
       }
       if (id) Object.assign(item(s.recipes, id), fields);
       else s.recipes.push({ id: randomUUID(), ...fields, saleValues: [] });
-      note = `Receta guardada: ${fields.name} (rinde ${fields.yield} kg).`;
+      note =
+        `Receta guardada: ${fields.name} (rinde ${fields.yield} kg).` + created;
       break;
     }
     case "purge": {
@@ -839,7 +882,7 @@ export function apply(state: State, input: unknown): State {
       const r = item(s.recipes, a.recipe);
       ensure(
         r.product,
-        "Asigna primero un producto terminado a la receta: el valor se aplica a sus kilos.",
+        "Este gelato todavía no está dado de alta para vender: pulsa «Activar ventas y valor de este gelato» en su ficha del Recetario.",
       );
       const owner = s.recipes.find(
         (x) => x.product === r.product && x.saleValues.length,

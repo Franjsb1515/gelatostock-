@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.31.1 — 2026-09-19 · sesión 045 · corrección tras el primer uso real
+
+El usuario no podía escribir el valor de venta de su gelato ni registrar ventas y mermas: su receta no tenía «producto terminado», un concepto que la app exigía unir a mano y no explicaba. Ahora una receta nueva da de alta sola su gelato en stock, y una receta antigua se activa con un botón desde su ficha o desde el cierre del día. La expresión «producto terminado» desaparece de las pantallas.
+
+Pruebas: 171. Informe reports/2026-09-19T17-28-50-824Z-gelato-dado-de-alta.md.
+
 ## 0.31.0 — 2026-09-19 · sesión 045 · fase 4 del plan de producción y ventas
 
 Cuánto debí vender. Resumen de un día de negocio en una pantalla: al empezar, producido, vendido, merma, invitación o consumo, ajustes de inventario y lo que queda para mañana, por gelato y en total, con la venta estimada (kilos × valor de ese día) y su desglose. Venta real opcional con su diferencia. Confirmar el cierre guarda una instantánea y congela el día; reabrirlo exige motivo y deja rastro. Un día cerrado no ofrece corregir, eliminar, deshacer ni anular. SQLite pasa a user_version 5 (tabla days). De paso: tras aprobar una producción, los informes de Producción se recargan (antes seguían con el cálculo anterior).
