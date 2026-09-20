@@ -8,11 +8,11 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
 - [ ] [tú] Usar unos días la 0.33.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
-- [ ] [decidir] Compras con datos reales: los pedidos siguen naciendo como «simulación» hasta enviarlos por WhatsApp, y quedan botones «Simular envío». Revisar ese vocabulario dentro de Compras y Mensajes II.
-- [ ] [app] Formularios de Inventario: todavía dicen «unidad base» («Cantidad disponible · unidad base»). Cambiarlo obliga a tocar la prueba de escritorio, que busca esos nombres.
+- [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
+- [ ] [app] Formularios de Inventario: todavía dicen «unidad base» («Cantidad disponible · unidad base»). Va dentro de la fase 1 del plan de Compras y Mensajes II; obliga a tocar la prueba de escritorio, que busca esos nombres.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
 - [ ] [decidir] Mermas de ingredientes con los mismos motivos y objetivo de merma con aviso (ideas previas al plan; encajan tras la fase 2).
-- [ ] [app] Compras y Mensajes II (objetivo principal del usuario: ese apartado al 100 %): sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic; catálogo y precios por proveedor desde listas de precios.
+- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md (fase 1 proveedor alternativo, 2 reclamar respuesta y plantillas, 3 texto de los PDF, 4 listas de precios en foto, 5 catálogo y precios por proveedor).
 - [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
 
 ## 2. Depende de ti
@@ -26,7 +26,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 ## 3. Compras, mensajes y WhatsApp
 
-- [ ] Plantillas de respuesta editables (hoy son fijas por categoría).
+- [ ] Plantillas de respuesta editables (hoy son fijas por categoría). Fase 2 del plan.
 - [ ] Precios: registrar también los cambios detectados en listas de precios y en mensajes «sube de precio» (hoy solo al editar la ficha).
 - [ ] Lectura automática de respuestas de WhatsApp al importarlas, con aviso (hoy las reglas se aplican al abrir la bandeja).
 - [ ] Notificaciones para entregas previstas y mensajes de demostración; opción de silenciarlas.
