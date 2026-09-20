@@ -62,9 +62,41 @@ function orderTracking() {
       "</div>"
   }</div></section>`;
 }
+// Lo que cuesta una línea del carrito depende del proveedor elegido en ella: el habitual
+// del producto o uno de los que la persona apuntó, con el formato y el precio que escribió.
+function cartSupply(l) {
+  const p = product(l.product);
+  const alt = l.supplier
+    ? (p.alternates || []).find((x) => x.supplier === l.supplier)
+    : null;
+  return {
+    supplier: alt ? alt.supplier : p.supplier,
+    pack: alt ? alt.pack : p.pack,
+    price: alt ? alt.price : p.price,
+  };
+}
+function cartSupplierPicker(l, p) {
+  if (!(p.alternates || []).length) return "";
+  const here = cartSupply(l).supplier;
+  const opts = [
+    [p.supplier, supplier(p.supplier).name, p.pack, p.price],
+    ...p.alternates.map((x) => [
+      x.supplier,
+      supplier(x.supplier).name,
+      x.pack,
+      x.price,
+    ]),
+  ];
+  return `<label class="cart-supplier"><span class="sr-only">Proveedor elegido para ${esc(p.name)}</span><select data-cart-supplier="${esc(p.id)}">${opts
+    .map(
+      ([id, name, pack, price]) =>
+        `<option value="${esc(id)}" ${id === here ? "selected" : ""}>${esc(name)} · ${num(pack)} ${esc(p.unit)} · ${price ? money(price) : "sin precio"}</option>`,
+    )
+    .join("")}</select></label>`;
+}
 function orders() {
   const total = state.cart.reduce(
-    (n, l) => n + l.packs * product(l.product).price,
+    (n, l) => n + l.packs * cartSupply(l).price,
     0,
   );
   return (
@@ -78,7 +110,8 @@ function orders() {
         ? `<div class="cart-lines">${state.cart
             .map((l) => {
               const p = product(l.product);
-              return `<div class="cart-line"><span class="product-icon sage">${icon(p.icon)}</span><div class="cart-desc"><strong>${esc(p.name)}</strong><small>${esc(supplier(p.supplier).name)} · ${num(p.pack)} ${p.unit} / paquete</small></div><div class="stepper"><button type="button" class="step" data-step="-1" aria-label="Un paquete menos de ${esc(p.name)}">−</button><input aria-label="Paquetes de ${esc(p.name)}" class="quantity" type="number" min="0" max="10000" step="1" value="${l.packs}" data-cart="${p.id}"><button type="button" class="step" data-step="1" aria-label="Un paquete más de ${esc(p.name)}">+</button></div><strong>${money(l.packs * p.price)}</strong><button class="icon-button" aria-label="Quitar ${esc(p.name)}" data-remove="${p.id}">${icon("close")}</button></div>`;
+              const buy = cartSupply(l);
+              return `<div class="cart-line"><span class="product-icon sage">${icon(p.icon)}</span><div class="cart-desc"><strong>${esc(p.name)}</strong><small>${esc(supplier(buy.supplier).name)} · ${num(buy.pack)} ${p.unit} / paquete${l.supplier ? " · otro proveedor, elegido por ti" : ""}</small>${cartSupplierPicker(l, p)}</div><div class="stepper"><button type="button" class="step" data-step="-1" aria-label="Un paquete menos de ${esc(p.name)}">−</button><input aria-label="Paquetes de ${esc(p.name)}" class="quantity" type="number" min="0" max="10000" step="1" value="${l.packs}" data-cart="${p.id}"><button type="button" class="step" data-step="1" aria-label="Un paquete más de ${esc(p.name)}">+</button></div><strong>${buy.price ? money(l.packs * buy.price) : "No disponible"}</strong><button class="icon-button" aria-label="Quitar ${esc(p.name)}" data-remove="${p.id}">${icon("close")}</button></div>`;
             })
             .join("")}</div>`
         : '<div class="empty">' +
@@ -86,8 +119,7 @@ function orders() {
           "<h3>Tu próximo pedido empieza aquí</h3><p>Añade productos o prepara la reposición sugerida.</p></div>"
     }<div class="panel-bottom">${btn(icon("plus") + " Añadir producto", "addcart")}${state.suppliers
       .filter(
-        (s) =>
-          s.web && state.cart.some((l) => product(l.product).supplier === s.id),
+        (s) => s.web && state.cart.some((l) => cartSupply(l).supplier === s.id),
       )
       .map((s) =>
         btn(

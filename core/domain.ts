@@ -508,13 +508,15 @@ export function apply(state: State, input: unknown): State {
         price: a.price,
         supplier: a.supplier,
       });
+      // The usual supplier never stays duplicated in the list of other suppliers.
+      p.alternates = p.alternates.filter((x) => x.supplier !== a.supplier);
       if (a.composition !== undefined)
         p.composition = Object.values(a.composition).some(
           (v) => v !== undefined,
         )
           ? a.composition
           : undefined;
-      note = `Ficha actualizada: ${p.name}. La unidad base y el stock no se modificaron.`;
+      note = `Ficha actualizada: ${p.name}. La unidad de medida y el stock no se modificaron.`;
       break;
     }
     case "supplier": {
@@ -525,10 +527,55 @@ export function apply(state: State, input: unknown): State {
       break;
     }
     case "cart": {
-      item(s.products, a.product);
+      const p = item(s.products, a.product);
+      // Without an explicit supplier the line keeps the one already chosen; naming the usual
+      // supplier is how the person goes back to it.
+      const current = s.cart.find((l) => l.product === a.product)?.supplier;
+      const asked = a.supplier === undefined ? current : a.supplier;
+      const chosen = asked && asked !== p.supplier ? asked : undefined;
+      if (chosen)
+        ensure(
+          p.alternates.some((x) => x.supplier === chosen),
+          "Ese proveedor no está apuntado para este producto.",
+        );
       s.cart = s.cart.filter((l) => l.product !== a.product);
-      if (a.packs) s.cart.push({ product: a.product, packs: a.packs });
-      note = "Carrito actualizado.";
+      if (a.packs)
+        s.cart.push({ product: a.product, packs: a.packs, supplier: chosen });
+      note = chosen
+        ? `Carrito actualizado: ${p.name} se compra a ${item(s.suppliers, chosen).name}.`
+        : "Carrito actualizado.";
+      break;
+    }
+    case "setAlternate": {
+      const p = item(s.products, a.product);
+      const sup = item(s.suppliers, a.supplier);
+      ensure(
+        a.supplier !== p.supplier,
+        `${sup.name} ya es el proveedor habitual de ${p.name}.`,
+      );
+      const line = { supplier: a.supplier, pack: a.pack, price: a.price };
+      const at = p.alternates.findIndex((x) => x.supplier === a.supplier);
+      if (at >= 0) p.alternates[at] = line;
+      else {
+        ensure(
+          p.alternates.length < 5,
+          "Ya hay cinco proveedores apuntados para este producto.",
+        );
+        p.alternates.push(line);
+      }
+      note = `${sup.name} queda apuntado como otro proveedor de ${p.name}.`;
+      break;
+    }
+    case "removeAlternate": {
+      const p = item(s.products, a.product);
+      const before = p.alternates.length;
+      p.alternates = p.alternates.filter((x) => x.supplier !== a.supplier);
+      ensure(p.alternates.length < before, "Ese proveedor no estaba apuntado.");
+      // A cart line pointing at it goes back to the usual supplier; nothing is bought by surprise.
+      for (const l of s.cart)
+        if (l.product === p.id && l.supplier === a.supplier)
+          l.supplier = undefined;
+      note = `${item(s.suppliers, a.supplier).name} ya no figura como otro proveedor de ${p.name}.`;
       break;
     }
     case "suggest": {
@@ -546,9 +593,17 @@ export function apply(state: State, input: unknown): State {
         "El carrito cambió. Revísalo antes de autorizar.",
       );
       ensure(s.cart.length, "El carrito está vacío.");
-      for (const supplier of new Set(
-        s.cart.map((l) => item(s.products, l.product).supplier),
-      )) {
+      // Each line is bought from the supplier chosen in the cart; by default, the usual one.
+      const buyFrom = (l: { product: string; supplier?: string }) =>
+        l.supplier ?? item(s.products, l.product).supplier;
+      const supplyOf = (l: { product: string; supplier?: string }) => {
+        const p = item(s.products, l.product);
+        const alt = l.supplier
+          ? p.alternates.find((x) => x.supplier === l.supplier)
+          : undefined;
+        return { pack: alt?.pack ?? p.pack, price: alt?.price ?? p.price };
+      };
+      for (const supplier of new Set(s.cart.map(buyFrom))) {
         const number =
           Math.max(0, ...s.orders.map((o) => Number(o.number.slice(3)))) + 1;
         s.orders.unshift({
@@ -559,17 +614,13 @@ export function apply(state: State, input: unknown): State {
           at: now(),
           simulated: true,
           lines: s.cart
-            .filter((l) => item(s.products, l.product).supplier === supplier)
-            .map((l) => {
-              const p = item(s.products, l.product);
-              return {
-                product: p.id,
-                packs: l.packs,
-                pack: p.pack,
-                price: p.price,
-                received: 0,
-              };
-            }),
+            .filter((l) => buyFrom(l) === supplier)
+            .map((l) => ({
+              product: l.product,
+              packs: l.packs,
+              ...supplyOf(l),
+              received: 0,
+            })),
         });
       }
       s.cart = [];
@@ -834,6 +885,7 @@ export function apply(state: State, input: unknown): State {
             pack: 1,
             price: 0,
             supplier: ownSupplierId,
+            alternates: [],
             icon: "ice",
           });
           fields.product = productId;

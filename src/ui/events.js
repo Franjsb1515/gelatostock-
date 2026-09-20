@@ -259,6 +259,20 @@ document.addEventListener("change", async (e) => {
     document.getElementById(id).focus();
     return;
   }
+  if (e.target.dataset.cartSupplier) {
+    const id = e.target.dataset.cartSupplier;
+    const line = state.cart.find((l) => l.product === id);
+    await mutate(
+      {
+        type: "cart",
+        product: id,
+        packs: line ? line.packs : 1,
+        supplier: e.target.value,
+      },
+      "Proveedor de esta línea actualizado.",
+    );
+    return;
+  }
   if (e.target.dataset.cart)
     await mutate(
       {

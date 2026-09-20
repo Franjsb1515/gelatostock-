@@ -1,5 +1,27 @@
 // Campos, modales y formularios de conteo y fotos.
 // Los módulos de src/ui comparten el ámbito global y se cargan en orden desde index.html.
+// «Cantidad que hay ahora en kg»: la unidad del producto, nunca la palabra «unidad base».
+const unitName = { kg: "kilos", L: "litros", ud: "unidades" };
+function unitLabel(text, p) {
+  return `${text} en ${unitName[p.unit] || p.unit}`;
+}
+// Cambia el texto de la etiqueta de un campo ya dibujado (y el de sus botones − y +).
+function retitleField(input, label) {
+  const tag =
+    input.closest("label") ||
+    input.closest(".field")?.querySelector("label") ||
+    null;
+  if (tag && tag.firstChild && tag.firstChild.nodeType === 3)
+    tag.firstChild.nodeValue = label;
+  else if (tag) tag.textContent = label;
+  const box = input.closest(".stepper");
+  if (box)
+    for (const b of box.querySelectorAll(".step"))
+      b.setAttribute(
+        "aria-label",
+        (b.dataset.step === "-1" ? "Menos " : "Más ") + label,
+      );
+}
 function field(label, name, value = "", type = "text", extra = "") {
   return `<label class="field">${esc(label)}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;
 }
@@ -52,7 +74,7 @@ function count(id) {
       p.id,
     ) +
       field(
-        "Cantidad disponible · unidad base",
+        unitLabel("Cantidad que hay ahora", p),
         "value",
         p.stock,
         "number",
@@ -77,7 +99,10 @@ function count(id) {
       ),
   );
   $("#modal-form select").addEventListener("change", (e) => {
-    $("#modal-form input[name=value]").value = product(e.target.value).stock;
+    const chosen = product(e.target.value);
+    const input = $("#modal-form input[name=value]");
+    input.value = chosen.stock;
+    retitleField(input, unitLabel("Cantidad que hay ahora", chosen));
   });
 }
 function photoFields(ph) {

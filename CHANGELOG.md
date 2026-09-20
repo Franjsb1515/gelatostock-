@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.34.0 — 2026-09-20 · sesión 046 · fase 1 de Compras y Mensajes II
+
+Otro proveedor para el mismo producto. En Inventario, «Otros proveedores» apunta hasta cinco proveedores más por producto, cada uno con su formato y su precio, escritos por la persona. En el carrito, cada línea elige a quién se le pide y el importe usa ese precio; al autorizar se crea un pedido por proveedor elegido, con formato y precio como instantánea. Si un mensaje dice que falta un producto, aparece «Comprarlo a …» por cada proveedor apuntado, que lo pone en el carrito sin enviar nada. La ficha del producto no cambia nunca por esto. De paso: los formularios de Inventario ya no dicen «unidad base» sino la unidad del producto («Cantidad que hay ahora en kilos»), el alta de un producto ya no habla de «proveedor de demostración» y al autorizar un solo pedido el texto deja de decir «1 pedidos».
+
+Pruebas: 178 y 19 PASS de escritorio; chat 24/24. Informe reports/2026-09-20T21-35-26-886Z-fase-1-otro-proveedor-del-mismo-producto.md.
+
 ## 0.33.0 — 2026-09-20 · sesión 045 · fase 6 del plan de producción y ventas
 
 Repaso de claridad con los datos reales delante. Al activar un gelato, la app explica que lo producido antes no entró en ningún stock y pregunta cuántos kilos hay ahora. Una producción de un gelato sin activar lo avisa antes de aprobar. Fuera textos de «demostración» y «ficticios» donde hay datos reales (inicio, Inventario, Compras) y los últimos «producto terminado» de mensajes y apuntes.

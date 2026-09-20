@@ -93,7 +93,7 @@ const assert = require("node:assert/strict");
       .getByRole("button", { name: "Registrar stock", exact: true })
       .click();
     await window
-      .getByRole("spinbutton", { name: "Cantidad disponible · unidad base" })
+      .getByRole("spinbutton", { name: "Cantidad que hay ahora en kilos" })
       .fill("4.25");
     await window.getByRole("button", { name: "Guardar", exact: true }).click();
     await window.getByRole("dialog").waitFor({ state: "hidden" });
@@ -199,7 +199,7 @@ const assert = require("node:assert/strict");
       .getByRole("combobox", { name: "Tipo de movimiento", exact: true })
       .selectOption("exit");
     await window
-      .getByRole("spinbutton", { name: "Cantidad en unidad base", exact: true })
+      .getByRole("spinbutton", { name: "Cantidad en kilos", exact: true })
       .fill("1");
     await window
       .getByRole("textbox", { name: "Motivo", exact: true })
@@ -372,6 +372,59 @@ const assert = require("node:assert/strict");
       .waitFor();
     console.log(
       "PASS: pedido 2 cajas de 6 L; recepción 4 L, pendiente 8 L; recepción final cierra el pedido.",
+    );
+    // Otro proveedor para el mismo producto: se apunta en Inventario y se elige en el carrito.
+    await window
+      .getByRole("button", { name: "Inventario", exact: true })
+      .click();
+    await window
+      .locator('[data-action="altSuppliers"][data-product="p3"]')
+      .click();
+    await window
+      .locator("#modal-form select[name=supplier]")
+      .selectOption("s1");
+    await window.locator("#modal-form input[name=pack]").fill("2");
+    await window.locator("#modal-form input[name=price]").fill("30");
+    await window.getByRole("button", { name: "Apuntar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    await window.getByRole("button", { name: "Compras", exact: true }).click();
+    await window
+      .getByRole("button", { name: "Añadir producto", exact: true })
+      .click();
+    await window.locator("#modal-form select[name=product]").selectOption("p3");
+    await window.getByRole("button", { name: "Guardar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    await window.locator('select[data-cart-supplier="p3"]').selectOption("s1");
+    await window.waitForFunction(() =>
+      state.cart.some((l) => l.product === "p3" && l.supplier === "s1"),
+    );
+    await window.getByRole("button", { name: /Revisar y autorizar/ }).click();
+    await window
+      .getByRole("button", { name: "Autorizar pedidos", exact: true })
+      .click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    const alt = await window.evaluate(() => {
+      const o = state.orders.find(
+        (x) =>
+          x.status === "pending" && x.lines.some((l) => l.product === "p3"),
+      );
+      return {
+        supplier: o.supplier,
+        line: o.lines.find((l) => l.product === "p3"),
+        ficha: product("p3").supplier,
+        id: o.id,
+      };
+    });
+    assert.equal(alt.supplier, "s1");
+    assert.equal(alt.line.pack, 2);
+    assert.equal(alt.line.price, 3000);
+    assert.equal(alt.ficha, "s3");
+    await window.evaluate(
+      (id) => mutate({ type: "cancel", order: id }),
+      alt.id,
+    );
+    console.log(
+      "PASS: otro proveedor apuntado para el pistacho; el carrito se lo pide a Origen Coffee con su formato (2 kg) y su precio (30 €), y la ficha sigue en Gelato Italia.",
     );
     await window
       .getByRole("button", { name: "Producción", exact: true })

@@ -49,6 +49,18 @@ export const productFields = {
   pack: quantity.refine((n) => n > 0),
   price: cents,
   supplier: idSchema,
+  // Other suppliers where the person buys the same product. Written by hand, one entry
+  // per supplier, each with its own format and price: nothing here is inferred.
+  alternates: z
+    .array(
+      z.object({
+        supplier: idSchema,
+        pack: quantity.refine((n) => n > 0),
+        price: cents,
+      }),
+    )
+    .max(5)
+    .default([]),
 };
 export const productSchema = z.object({
   id: idSchema,
@@ -351,6 +363,8 @@ export const stateSchema = z.object({
       z.object({
         product: idSchema,
         packs: z.number().int().min(1).max(10000),
+        // Chosen supplier when it is not the product's usual one: always one of its alternates.
+        supplier: idSchema.optional(),
       }),
     )
     .max(10000),
@@ -448,6 +462,20 @@ export const actionSchema = z.intersection(
       type: z.literal("cart"),
       product: idSchema,
       packs: z.number().int().min(0).max(10000),
+      supplier: idSchema.optional(),
+    }),
+    // Another supplier for the same product: format and price are the ones the person writes.
+    z.object({
+      type: z.literal("setAlternate"),
+      product: idSchema,
+      supplier: idSchema,
+      pack: quantity.refine((n) => n > 0),
+      price: cents,
+    }),
+    z.object({
+      type: z.literal("removeAlternate"),
+      product: idSchema,
+      supplier: idSchema,
     }),
     z.object({ type: z.literal("suggest") }),
     z.object({ type: z.literal("authorize") }),

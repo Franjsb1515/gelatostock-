@@ -724,12 +724,37 @@ async function action(name, el) {
       nav("orders");
     return;
   }
+  if (name === "buyElsewhere") {
+    const p = product(el.dataset.product);
+    const s = supplier(el.dataset.supplier);
+    const packs = Math.max(1, Number(el.dataset.packs) || 1);
+    const alt = (p.alternates || []).find((x) => x.supplier === s.id);
+    if (!alt) return;
+    modal(
+      `Comprar ${p.name} a ${s.name}`,
+      "Se añade al carrito con el formato y el precio que apuntaste para ese proveedor. No se envía nada: el pedido se crea cuando autorices el carrito.",
+      `<p>${packs} paquete${packs === 1 ? "" : "s"} × ${num(alt.pack)} ${esc(p.unit)} · ${alt.price ? money(packs * alt.price) : "precio: No disponible"}</p><p class="fineprint">El proveedor habitual de ${esc(p.name)} no cambia, y el pedido que ya enviaste se queda como está.</p>`,
+      async () => {
+        const ok = await mutate(
+          { type: "cart", product: p.id, packs, supplier: s.id },
+          `${p.name} va al carrito de ${s.name}.`,
+        );
+        if (ok) nav("orders");
+        return ok;
+      },
+      "Añadir al carrito",
+    );
+    return;
+  }
   if (name === "webList") {
     const s = supplier(el.dataset.supplier);
     const lines = state.cart
-      .map((l) => ({ l, p: product(l.product) }))
-      .filter(({ p }) => p.supplier === s.id)
-      .map(({ l, p }) => `${l.packs} × ${p.name} (${num(p.pack)} ${p.unit})`);
+      .map((l) => ({ l, p: product(l.product), buy: cartSupply(l) }))
+      .filter(({ buy }) => buy.supplier === s.id)
+      .map(
+        ({ l, p, buy }) =>
+          `${l.packs} × ${p.name} (${num(buy.pack)} ${p.unit})`,
+      );
     const text =
       `Lista de compra · ${s.name} · ${new Date().toLocaleDateString("es-ES")}\n` +
       lines.join("\n");
@@ -790,17 +815,17 @@ async function action(name, el) {
   if (name === "product") {
     modal(
       "Nuevo producto",
-      "Definí su unidad base y cómo lo comprás.",
+      "Di en qué se mide y cómo lo compras.",
       `<div class="form-grid">${field("Nombre", "name", "", "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", "", "text", 'maxlength="200"')}${select("Zona de conteo", "zone", Object.entries(zoneLabel), "almacen")}${select(
         "Categoría",
         "category",
         ["Gelatería", "Cafetería", "Postres", "Envases"].map((x) => [x, x]),
-      )}${select("Unidad base", "unit", [
+      )}${select("Se mide en", "unit", [
         ["kg", "Kilogramos"],
         ["L", "Litros"],
         ["ud", "Unidades"],
-      ])}${field("Stock actual", "stock", 0, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock mínimo", "min", 0, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", 1, "number", 'min="0" max="1000000" step="0.001" required')}${field("Unidades base por paquete", "pack", 1, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio estimado por paquete (€)", "price", 0, "number", 'min="0" max="1000000" step="0.01" required')}${select(
-        "Proveedor de demostración",
+      ])}${field("Stock actual", "stock", 0, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock mínimo", "min", 0, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", 1, "number", 'min="0" max="1000000" step="0.001" required')}${field("Cuánto trae cada paquete", "pack", 1, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio estimado por paquete (€)", "price", 0, "number", 'min="0" max="1000000" step="0.01" required')}${select(
+        "Proveedor",
         "supplier",
         state.suppliers.map((s) => [s.id, s.name]),
       )}</div>`,
@@ -818,7 +843,12 @@ async function action(name, el) {
     modal(
       "Autorizar pedidos",
       "Se crean los pedidos, uno por proveedor. No se envía nada todavía: el envío por WhatsApp es el paso siguiente y lo confirmas tú.",
-      `<p>Se crearán ${new Set(state.cart.map((l) => product(l.product).supplier)).size} pedidos pendientes de envío.</p><div class="review-total">Total estimado <strong>${money(state.cart.reduce((n, l) => n + l.packs * product(l.product).price, 0))}</strong></div><p class="fineprint">Envío e impuestos por confirmar. En el siguiente paso podrás simular el envío.</p>`,
+      `<p>${(() => {
+        const n = new Set(state.cart.map((l) => cartSupply(l).supplier)).size;
+        return n === 1
+          ? "Se creará 1 pedido pendiente de envío."
+          : `Se crearán ${n} pedidos pendientes de envío, uno por cada proveedor elegido en el carrito.`;
+      })()}</p><div class="review-total">Total estimado <strong>${money(state.cart.reduce((n, l) => n + l.packs * cartSupply(l).price, 0))}</strong></div><p class="fineprint">Envío e impuestos por confirmar. En el siguiente paso podrás simular el envío.</p>`,
       async () => {
         const ok = await mutate(
           { type: "authorize", revision },
@@ -1501,7 +1531,7 @@ async function action(name, el) {
     const initial = el.dataset.zone || (due ? due.zone : zonesInUse[0]);
     modal(
       "Hoja de conteo por zona",
-      "Cuenta lo que hay en la zona y escribe cada cantidad en su unidad base. Al guardar, cada línea queda como un conteo (aunque no cambie) y el stock se ajusta.",
+      "Cuenta lo que hay en la zona y escribe cada cantidad como la mides (kilos, litros o unidades). Al guardar, cada línea queda como un conteo (aunque no cambie) y el stock se ajusta.",
       `<label class="field">Zona<select id="count-zone" name="zone">${zonesInUse.map((z) => `<option value="${z}" ${z === initial ? "selected" : ""}>${esc(zoneLabel[z] || z)}</option>`).join("")}</select></label><div id="count-rows">${countRows(initial)}</div>`,
       async (f) => {
         const zone = f.get("zone");

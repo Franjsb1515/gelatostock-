@@ -206,6 +206,7 @@ export function seed(): State {
       pack,
       price,
       supplier,
+      alternates: [],
       icon,
     }),
   );

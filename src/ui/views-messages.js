@@ -186,6 +186,28 @@ function orderActions(m, order) {
           `data-order="${esc(order.id)}" data-product="${esc(hit.id)}"`,
         ),
       );
+    // Otros proveedores donde él compra ese mismo producto. Solo los que apuntó: la app no elige.
+    if (hit) {
+      const packs = order.lines.find((l) => l.product === hit.id)?.packs || 1;
+      for (const x of hit.alternates || [])
+        buttons.push(
+          btn(
+            `Comprarlo a ${esc(supplier(x.supplier).name)}${x.price ? " · " + money(packs * x.price) : ""}`,
+            "buyElsewhere",
+            "secondary",
+            `data-product="${esc(hit.id)}" data-supplier="${esc(x.supplier)}" data-packs="${packs}"`,
+          ),
+        );
+      if (!(hit.alternates || []).length)
+        buttons.push(
+          btn(
+            `Apuntar otro proveedor de ${esc(hit.name)}`,
+            "altSuppliers",
+            "secondary",
+            `data-product="${esc(hit.id)}"`,
+          ),
+        );
+    }
   }
   if (i.category === "cancellation" && order.status === "pending")
     buttons.push(

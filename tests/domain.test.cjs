@@ -1284,3 +1284,83 @@ test("respuestas vinculadas: confirmación y fecha marcan el pedido; acciones de
     }),
   );
 });
+
+// Otro proveedor para el mismo producto: lo escribe la persona y solo se usa si lo elige.
+test("otro proveedor: se apunta con su formato y su precio, y no cambia la ficha", () => {
+  let s = apply(seed(), {
+    type: "setAlternate",
+    product: "p2",
+    supplier: "s3",
+    pack: 12,
+    price: 1290,
+  });
+  const p = s.products.find((x) => x.id === "p2");
+  assert.deepEqual(p.alternates, [{ supplier: "s3", pack: 12, price: 1290 }]);
+  assert.equal(p.supplier, "s2");
+  assert.equal(p.pack, 6);
+  assert.equal(p.price, 690);
+  // Repetir el mismo proveedor actualiza su línea, no la duplica.
+  s = apply(s, {
+    type: "setAlternate",
+    product: "p2",
+    supplier: "s3",
+    pack: 10,
+    price: 1100,
+  });
+  assert.deepEqual(s.products.find((x) => x.id === "p2").alternates, [
+    { supplier: "s3", pack: 10, price: 1100 },
+  ]);
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "setAlternate",
+        product: "p2",
+        supplier: "s2",
+        pack: 1,
+        price: 100,
+      }),
+    /proveedor habitual/,
+  );
+});
+test("el carrito compra a quien se elija y el pedido va a ese proveedor", () => {
+  let s = apply(seed(), {
+    type: "setAlternate",
+    product: "p2",
+    supplier: "s3",
+    pack: 12,
+    price: 1290,
+  });
+  s = apply(s, { type: "cart", product: "p2", packs: 2, supplier: "s3" });
+  assert.equal(s.cart[0].supplier, "s3");
+  // Cambiar la cantidad sin decir proveedor conserva la elección.
+  s = apply(s, { type: "cart", product: "p2", packs: 3 });
+  assert.equal(s.cart[0].supplier, "s3");
+  s = apply(s, { type: "authorize", revision: s.revision });
+  const o = s.orders[0];
+  assert.equal(o.supplier, "s3");
+  assert.deepEqual(o.lines, [
+    { product: "p2", packs: 3, pack: 12, price: 1290, received: 0 },
+  ]);
+  // El producto sigue siendo del proveedor de siempre.
+  assert.equal(s.products.find((x) => x.id === "p2").supplier, "s2");
+});
+test("volver al proveedor habitual y quitar la alternativa deja el carrito limpio", () => {
+  let s = apply(seed(), {
+    type: "setAlternate",
+    product: "p2",
+    supplier: "s3",
+    pack: 12,
+    price: 1290,
+  });
+  s = apply(s, { type: "cart", product: "p2", packs: 1, supplier: "s3" });
+  s = apply(s, { type: "cart", product: "p2", packs: 1, supplier: "s2" });
+  assert.equal(s.cart[0].supplier, undefined);
+  s = apply(s, { type: "cart", product: "p2", packs: 1, supplier: "s3" });
+  s = apply(s, { type: "removeAlternate", product: "p2", supplier: "s3" });
+  assert.equal(s.cart[0].supplier, undefined);
+  assert.deepEqual(s.products.find((x) => x.id === "p2").alternates, []);
+  assert.throws(
+    () => apply(s, { type: "cart", product: "p2", packs: 1, supplier: "s3" }),
+    /no está apuntado/,
+  );
+});

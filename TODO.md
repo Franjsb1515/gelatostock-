@@ -1,4 +1,4 @@
-# TODO — estado real de 0.33.0
+# TODO — estado real de 0.34.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -7,12 +7,12 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 1. Siguiente, en este orden
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
-- [ ] [tú] Usar unos días la 0.33.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [ ] [tú] Usar unos días la 0.34.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
-- [ ] [app] Formularios de Inventario: todavía dicen «unidad base» («Cantidad disponible · unidad base»). Va dentro de la fase 1 del plan de Compras y Mensajes II; obliga a tocar la prueba de escritorio, que busca esos nombres.
+- [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
 - [ ] [decidir] Mermas de ingredientes con los mismos motivos y objetivo de merma con aviso (ideas previas al plan; encajan tras la fase 2).
-- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md (fase 1 proveedor alternativo, 2 reclamar respuesta y plantillas, 3 texto de los PDF, 4 listas de precios en foto, 5 catálogo y precios por proveedor).
+- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Fase 1 hecha (0.34.0): otro proveedor del mismo producto. Siguientes: 2 reclamar respuesta y plantillas, 3 texto de los PDF, 4 listas de precios en foto, 5 catálogo y precios por proveedor.
 - [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
 
 ## 2. Depende de ti
@@ -31,7 +31,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] Lectura automática de respuestas de WhatsApp al importarlas, con aviso (hoy las reglas se aplican al abrir la bandeja).
 - [ ] Notificaciones para entregas previstas y mensajes de demostración; opción de silenciarlas.
 - [ ] Recuperar adjuntos del historial y mensajes más antiguos que los que carga WhatsApp Web.
-- [ ] Memoria de equivalencias por proveedor (código de albarán → producto), consultada al leer documentos.
+- [ ] Memoria de equivalencias por proveedor (código de albarán → producto), consultada al leer documentos. Fase 4 del plan.
 - [ ] Abrir la carpeta del proveedor desde la app (hoy se muestra la ruta).
 
 ## 4. Documentos e IA local
