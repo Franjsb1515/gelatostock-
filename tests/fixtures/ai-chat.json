@@ -160,5 +160,17 @@
     "question": "¿La app lee un PDF de factura?",
     "expect": ["pdf"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "precios_proveedor",
+    "question": "¿Dónde veo a qué precio le compro a un proveedor?",
+    "expect": ["qué le compras|precio"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "precio_mensaje",
+    "question": "Un proveedor me dice por WhatsApp que sube el precio, ¿se cambia solo?",
+    "expect": ["confirm"],
+    "forbid": ["no lo sé"]
   }
 ]

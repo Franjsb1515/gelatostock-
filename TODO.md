@@ -1,4 +1,4 @@
-# TODO — estado real de 0.36.0
+# TODO — estado real de 0.37.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -7,12 +7,12 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 1. Siguiente, en este orden
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
-- [ ] [tú] Usar unos días la 0.36.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [ ] [tú] Usar unos días la 0.37.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
 - [ ] [decidir] Mermas de ingredientes con los mismos motivos y objetivo de merma con aviso (ideas previas al plan; encajan tras la fase 2).
-- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Hechas la fase 1 (0.34.0, otro proveedor del mismo producto), la 2 (0.35.0, reclamar respuesta y textos editables) y la 3 (0.36.0, texto de los PDF). Siguientes: 4 listas de precios en foto (necesita tus tarifas reales) y 5 catálogo y precios por proveedor.
+- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Hechas la 1 (0.34.0, otro proveedor del mismo producto), la 2 (0.35.0, reclamar respuesta y textos editables), la 3 (0.36.0, texto de los PDF) y la 5 (0.37.0, catálogo y precios por proveedor). Queda solo la 4, listas de precios en foto, parada hasta que mandes tus tarifas reales.
 - [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
 
 ## 2. Depende de ti
@@ -28,11 +28,12 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 3. Compras, mensajes y WhatsApp
 
 - [x] Plantillas de respuesta editables: Configuración → Respuestas rápidas (0.35.0).
-- [ ] Precios: registrar también los cambios detectados en listas de precios y en mensajes «sube de precio» (hoy solo al editar la ficha).
+- [x] Precios: un mensaje con un precio claro y un documento archivado permiten apuntar el precio citando de dónde sale (0.37.0). Falta leer las líneas de una lista de precios: es la fase 4.
 - [ ] Lectura automática de respuestas de WhatsApp al importarlas, con aviso (hoy las reglas se aplican al abrir la bandeja).
 - [ ] Notificaciones para entregas previstas y mensajes de demostración; opción de silenciarlas.
 - [ ] Recuperar adjuntos del historial y mensajes más antiguos que los que carga WhatsApp Web.
 - [ ] Memoria de equivalencias por proveedor (código de albarán → producto), consultada al leer documentos. Fase 4 del plan.
+- [ ] Los precios se apuntan desde un documento escribiendo el importe a mano: leer las líneas de la tarifa es la fase 4.
 - [ ] Abrir la carpeta del proveedor desde la app (hoy se muestra la ruta).
 
 ## 4. Documentos e IA local
@@ -47,7 +48,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] Lotes y vencimientos; rendimientos por receta.
 - [ ] Día cerrado: los movimientos manuales de Inventario (conteo, entrada, salida) sobre un gelato no se bloquean; si caen en un día cerrado, el resumen avisa de que algo cambió. Decidir si deben bloquearse.
 - [ ] Coste: usa el precio actual de la ficha al aprobar, no el de cada compra recibida (sin lotes no se sabe qué compra se gastó). Las producciones anteriores a 0.30.0 no tienen coste guardado y se valoran con el coste actual de la receta.
-- [ ] Valor de venta con fecha de inicio elegible (hoy siempre vale desde el día de negocio en que se escribe).
+- [ ] Valor de venta con fecha de inicio elegible (hoy siempre vale desde el día de negocio en que se escribe). Lo mismo con el precio de compra: se apunta desde hoy, no se puede fechar hacia atrás.
 - [ ] Con meses de ventas registradas: ventas frente a clima y festivos además del impacto de cruceros, siempre como hechos y sin predicción hasta poder validarla.
 - [ ] Observaciones meteorológicas reales si aparece una fuente abierta (AEMET exige una clave propia del usuario).
 

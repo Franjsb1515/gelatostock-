@@ -46,6 +46,82 @@ export function priceAlerts(s: State, days = 30): PriceAlert[] {
   }
   return out;
 }
+export const priceSourceLabels: Record<string, string> = {
+  edit: "escrito a mano",
+  document: "de un documento",
+  message: "de un mensaje",
+};
+export type CatalogLine = {
+  product: string;
+  name: string;
+  unit: string;
+  pack: number;
+  price: number;
+  // The usual supplier of the product, or one of the others where he also buys it.
+  usual: boolean;
+  // When that price was written down. Null when nothing records it: then it is "No disponible",
+  // never guessed from the day the product was created.
+  since: string | null;
+  source: "edit" | "document" | "message" | null;
+  ref: string | null;
+  refLabel: string | null;
+};
+// What he buys from one supplier, at what price and since when, with where each price comes
+// from. Only what is written down: no average, no estimate, no price taken from another supplier.
+export function supplierCatalog(s: State, supplier: string): CatalogLine[] {
+  const origin = (product: string, price: number) => {
+    const last = [...s.prices]
+      .reverse()
+      .find((e) => e.product === product && e.supplier === supplier);
+    if (!last || last.to !== price)
+      return { since: null, source: null, ref: null, refLabel: null };
+    const ref = last.ref ?? null;
+    let refLabel: string | null = null;
+    if (ref && last.source === "document")
+      refLabel = s.photos.find((p) => p.id === ref)?.name ?? null;
+    if (ref && last.source === "message") {
+      const m = s.messages.find((x) => x.id === ref);
+      refLabel = m ? `mensaje del ${m.at.slice(0, 10)}` : null;
+    }
+    return { since: last.at, source: last.source, ref, refLabel };
+  };
+  const out: CatalogLine[] = [];
+  for (const p of s.products) {
+    if (p.supplier === supplier)
+      out.push({
+        product: p.id,
+        name: p.name,
+        unit: p.unit,
+        pack: p.pack,
+        price: p.price,
+        usual: true,
+        ...origin(p.id, p.price),
+      });
+    const alt = p.alternates.find((x) => x.supplier === supplier);
+    if (alt)
+      out.push({
+        product: p.id,
+        name: p.name,
+        unit: p.unit,
+        pack: alt.pack,
+        price: alt.price,
+        usual: false,
+        since: null,
+        source: "edit",
+        ref: null,
+        refLabel: null,
+      });
+  }
+  return out.sort(
+    (a, b) =>
+      Number(b.usual) - Number(a.usual) || a.name.localeCompare(b.name, "es"),
+  );
+}
+export function supplierCatalogs(s: State): Record<string, CatalogLine[]> {
+  const out: Record<string, CatalogLine[]> = {};
+  for (const sup of s.suppliers) out[sup.id] = supplierCatalog(s, sup.id);
+  return out;
+}
 export type ZoneStatus = {
   zone: string;
   label: string;

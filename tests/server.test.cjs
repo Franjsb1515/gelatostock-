@@ -983,3 +983,68 @@ test("un PDF con texto se lee en el servidor y propone proveedor; un escaneo lo 
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+test("catálogo por proveedor: el sobre de estado lo trae y apuntar un precio cita el mensaje", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-cat-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const envelope = async () =>
+      (await fetch(origin + "/api/state", { headers })).json();
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    let env = await envelope();
+    const cafe = env.state.products.find((p) => p.id === "p1");
+    let line = env.catalog[cafe.supplier].find((l) => l.product === "p1");
+    assert.equal(line.price, cafe.price);
+    // Nada fecha ese precio todavía: se dice, no se inventa.
+    assert.equal(line.since, null);
+    assert.equal(line.source, null);
+    await post("/api/action", {
+      type: "message",
+      supplier: cafe.supplier,
+      text: "Buenos días, el café sube a 26 € la bolsa desde el lunes.",
+      revision: env.state.revision,
+      operationId: randomUUID(),
+    });
+    env = await envelope();
+    const message = env.state.messages.find((m) => m.interpretation?.priceTo);
+    assert.equal(message.interpretation.priceTo, 2600);
+    // Leerlo no lo apunta: la ficha sigue con su precio.
+    assert.equal(
+      env.state.products.find((p) => p.id === "p1").price,
+      cafe.price,
+    );
+    const res = await post("/api/action", {
+      type: "setPrice",
+      product: "p1",
+      price: 2600,
+      source: "message",
+      ref: message.id,
+      revision: env.state.revision,
+      operationId: randomUUID(),
+    });
+    assert.equal(res.status, 200);
+    env = await envelope();
+    assert.equal(env.state.products.find((p) => p.id === "p1").price, 2600);
+    line = env.catalog[cafe.supplier].find((l) => l.product === "p1");
+    assert.equal(line.price, 2600);
+    assert.equal(line.source, "message");
+    assert.ok(line.since);
+    assert.match(line.refLabel, /^mensaje del \d{4}-\d{2}-\d{2}$/);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

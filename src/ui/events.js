@@ -333,13 +333,11 @@ document.addEventListener("input", (e) => {
     $("#search").setSelectionRange(pos, pos);
   }
 });
+// Primera carga: el mismo sobre que el resto de respuestas, para que los avisos, las
+// plantillas y el catálogo por proveedor estén desde el arranque y no tras el primer cambio.
 request("/api/state")
   .then((data) => {
-    state = data.state;
-    appVersion = data.version || appVersion;
-    if (data.backup) backupInfo = data.backup;
-    dataDir = data.dataDir;
-    archiveWarning = data.archiveWarning;
+    applyEnvelope(data);
     history.replaceState(null, "", "/");
     render();
   })

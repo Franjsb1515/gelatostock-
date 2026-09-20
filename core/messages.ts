@@ -21,6 +21,9 @@ export type Interpretation = {
   deliveryDate?: string;
   deliveryHint?: string;
   missing?: string;
+  priceTo?: number;
+  priceFrom?: number;
+  priceHint?: string;
   summary: string;
   learned?: boolean;
   corrected?: boolean;
@@ -153,6 +156,40 @@ export function resolveDate(
   if (hour) return { hint: hour[0] };
   if (/\bprimera hora\b/.test(t)) return { hint: "a primera hora" };
   return {};
+}
+export type PriceReading = { to: number; from?: number; hint: string };
+const amountCents = (v: string) =>
+  Math.round(Number(v.replace(",", ".")) * 100);
+// A price the supplier states in a message. Rules, and deliberately narrow: only when the text
+// speaks of a price AND writes either "de X € a Y €" or a single amount in euros. Anything more
+// ambiguous returns nothing, because a wrong price would falsify the cost of the recipes.
+// It is always a proposal: writing it down needs the person (action setPrice).
+export function readPriceChange(text: string): PriceReading | undefined {
+  const t = fold(text);
+  if (
+    !/\b(precio|precios|tarifa|tarifas|sube|suben|subida|subimos|baja|bajan|bajada|cuesta|vale|queda en|pasa|pasan|se queda en|nuevo importe)\b/.test(
+      t,
+    )
+  )
+    return undefined;
+  const euro = "(?:€|eur\\b|euros?\\b)";
+  const num = "(\\d{1,6}(?:[.,]\\d{1,2})?)";
+  const pair = t.match(
+    new RegExp(
+      "\\bde\\s+" + num + "\\s*" + euro + "?\\s+a\\s+" + num + "\\s*" + euro,
+    ),
+  );
+  if (pair) {
+    const from = amountCents(pair[1]!);
+    const to = amountCents(pair[2]!);
+    if (to > 0 && from > 0 && to <= 100_000_000 && from <= 100_000_000)
+      return { to, from, hint: pair[0]!.trim().slice(0, 80) };
+  }
+  const singles = [...t.matchAll(new RegExp(num + "\\s*" + euro, "g"))];
+  if (singles.length !== 1) return undefined;
+  const to = amountCents(singles[0]![1]!);
+  if (to <= 0 || to > 100_000_000) return undefined;
+  return { to, hint: singles[0]![0]!.trim().slice(0, 80) };
 }
 // Learned phrases match when the normalized text is the same or nearly the same.
 function matchLearned(
@@ -294,15 +331,27 @@ export function interpretReply(
       ? "Promoción informativa; no requiere respuesta ni cambia pedidos."
       : "No se reconoce la intención del mensaje. Léelo.",
   }[category];
+  const priced = readPriceChange(text);
+  const priceText = priced
+    ? ` Precio que dice el mensaje: ${(priced.to / 100).toFixed(2).replace(".", ",")} €${priced.from !== undefined ? ` (antes ${(priced.from / 100).toFixed(2).replace(".", ",")} €)` : ""}. No se apunta sin tu confirmación.`
+    : "";
   const summary = remembered
-    ? `Aprendido de una corrección tuya: ${labels[category]}. ${dateText}`.trim()
-    : (base + " " + dateText).trim();
+    ? `Aprendido de una corrección tuya: ${labels[category]}. ${dateText}`.trim() +
+      priceText
+    : (base + " " + dateText).trim() + priceText;
   return {
     category,
     needsReading,
     ...(when.date ? { deliveryDate: when.date } : {}),
     ...(when.hint ? { deliveryHint: when.hint } : {}),
     ...(missing ? { missing: missing.slice(0, 120) } : {}),
+    ...(priced
+      ? {
+          priceTo: priced.to,
+          priceHint: priced.hint,
+          ...(priced.from !== undefined ? { priceFrom: priced.from } : {}),
+        }
+      : {}),
     summary: summary.slice(0, 300),
     ...(remembered ? { learned: true } : {}),
   };

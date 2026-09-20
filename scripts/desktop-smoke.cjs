@@ -933,6 +933,20 @@ const assert = require("node:assert/strict");
       .first()
       .waitFor();
     assert.equal(await w2.locator(".conversation").count(), 1);
+    // Fase 5: qué le compra a un proveedor, con el origen de cada precio, dentro del ejecutable.
+    await w2.locator('button[data-nav="suppliers"]').click();
+    await w2
+      .locator('[data-action="supplierCatalog"][data-supplier="s2"]')
+      .first()
+      .click();
+    const catalogo = (await w2.locator("#modal").innerText()).replace(
+      /\s+/g,
+      " ",
+    );
+    assert.match(catalogo, /Leche entera/);
+    // Sin ningún cambio registrado, la fecha y el origen del precio son «No disponible».
+    assert.match(catalogo, /No disponible/);
+    await w2.locator('#modal [data-action="close"]').first().click();
     console.log(
       "PASS: OCR local automático de proveedor y propuesta en mensaje; búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.",
     );

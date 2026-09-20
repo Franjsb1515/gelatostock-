@@ -151,7 +151,7 @@ function messages() {
         "",
       )}</select></label></div><section class="inbox-layout"><div class="conversation-list"><div class="conversation-heading">Conversaciones <span>${list.length} de ${state.messages.length}</span></div>${groups.map((g) => `<div class="conversation-group"><div class="conversation-group-title"><strong>${esc(supplier(g.supplier).name)}</strong><small>${g.items.length} mensaje${g.items.length === 1 ? "" : "s"}${g.unread ? " · " + g.unread + " sin leer" : ""}</small></div>${g.items.map((x) => `<button class="conversation ${m?.id === x.id ? "selected" : ""}" data-open-message="${x.id}"><span class="supplier-avatar ${supplier(x.supplier).color}">${esc(supplier(x.supplier).initials)}</span><div><div class="conversation-title"><strong>${esc(x.interpretation ? replyLabel[x.interpretation.category] : priorityLabel[x.priority])}</strong><small>${date(x.at)} ${time(x.at)}</small></div><p>${esc(x.text)}</p><span class="mini-status">${x.reviewed ? (x.decision ? "Decidido" : "Revisado") : priorityLabel[x.priority]} · ${relevanceLabel[x.relevance]}${x.interpretation?.needsReading && !x.reviewed ? " · Leer" : ""}</span></div>${!x.read ? '<i class="unread-dot"></i>' : ""}</button>`).join("")}</div>`).join("") || '<div class="empty compact"><h3>No hay mensajes que coincidan con estos filtros.</h3><p>Cambia el filtro «Mostrar», elige otro proveedor o borra la búsqueda.</p></div>'}</div><div class="message-detail">${
       m
-        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}${orderActions(m, order)}<div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
+        ? `<div class="detail-heading"><span class="supplier-avatar ${supplier(m.supplier).color}">${esc(supplier(m.supplier).initials)}</span><div><h2>${esc(supplier(m.supplier).name)}</h2><p>${m.channel === "whatsapp" ? "WhatsApp · " + esc(m.sender || "") : "Mensaje de demostración"} · ${date(m.at)}, ${time(m.at)}</p></div>${pill(m.reviewed ? (m.decision ? "Decidido" : "Revisado") : priorityLabel[m.priority], m.reviewed ? "sage" : m.priority === "important" ? "peach" : "lavender")}</div><div class="message-body"><div class="message-label">MENSAJE ORIGINAL</div><div class="message-bubble">${esc(m.text)}</div>${m.decision ? `<div class="decision-box"><div class="message-label">TU DECISIÓN</div><p>${esc(m.decision)}</p><small>${m.decidedAt ? date(m.decidedAt) + " " + time(m.decidedAt) : ""}</small></div>` : ""}${replyBlock(m)}${priceActions(m)}${orderActions(m, order)}<div class="decide-block"><div class="message-label">RESPONDER Y DECIDIR</div>${
             canReply
               ? `<div class="quick-replies">${quickReplies(m)
                   .map(([label, text]) =>
@@ -170,6 +170,34 @@ function messages() {
         : '<div class="empty"><h3>Elige una conversación.</h3><p>Aquí verás el mensaje, su lectura por reglas y las opciones para responder y decidir.</p></div>'
     }</div></section>`
   );
+}
+
+// Precio que el mensaje dice, leído por reglas. Se enseña junto al original y no llega a
+// ninguna ficha hasta que él elige el producto y confirma el importe.
+function priceActions(m) {
+  const i = m.interpretation || {};
+  if (!i.priceTo) return "";
+  const fold = (v) =>
+    String(v || "")
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase();
+  const text = fold(m.text);
+  const hit = state.products
+    .filter((p) => p.supplier === m.supplier)
+    .find(
+      (p) =>
+        text.includes(fold(p.name)) ||
+        fold(p.name)
+          .split(" ")
+          .some((w) => w.length > 3 && text.includes(w)),
+    );
+  return `<div class="order-actions"><div class="message-label">PRECIO QUE DICE EL MENSAJE</div><p class="muted">Leído por reglas: ${money(i.priceTo)} el paquete${i.priceFrom ? " (antes " + money(i.priceFrom) + ")" : ""}${i.priceHint ? " · en el texto: «" + esc(i.priceHint) + "»" : ""}. ${hit ? "Puede ser " + esc(hit.name) + ", pero lo eliges tú." : "El mensaje no dice de qué producto tuyo habla: lo eliges tú."} Nada se apunta hasta que lo confirmes.</p><div class="message-actions">${btn(
+    "Apuntar este precio…",
+    "setPrice",
+    "secondary",
+    `data-supplier="${esc(m.supplier)}" data-source="message" data-ref="${esc(m.id)}" data-price="${i.priceTo}"${hit ? ` data-product="${esc(hit.id)}"` : ""}`,
+  )}</div></div>`;
 }
 
 // Actions the reading makes obvious for the linked order. Each one is a click by the person.

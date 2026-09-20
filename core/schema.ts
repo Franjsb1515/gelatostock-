@@ -160,6 +160,11 @@ const messageSchema = z.object({
       deliveryDate: documentDate.optional(),
       deliveryHint: text(100).optional(),
       missing: text(120).optional(),
+      // Price stated by the supplier in the text, read by rules. A proposal: it never
+      // reaches the product card without the action setPrice.
+      priceTo: cents.optional(),
+      priceFrom: cents.optional(),
+      priceHint: text(80).optional(),
       summary: text(300),
       learned: z.boolean().optional(),
       corrected: z.boolean().optional(),
@@ -405,6 +410,8 @@ export const stateSchema = z.object({
         from: cents,
         to: cents,
         source: z.enum(["edit", "document", "message"]).default("edit"),
+        // The document or the message that justifies the price, when there is one.
+        ref: idSchema.optional(),
       }),
     )
     .max(100000)
@@ -478,6 +485,15 @@ export const actionSchema = z.intersection(
       type: z.literal("removeAlternate"),
       product: idSchema,
       supplier: idSchema,
+    }),
+    // Write down the price of a product citing where it comes from: a document or a message
+    // that the person confirms. Nothing else on the card changes.
+    z.object({
+      type: z.literal("setPrice"),
+      product: idSchema,
+      price: cents,
+      source: z.enum(["document", "message"]),
+      ref: idSchema,
     }),
     z.object({ type: z.literal("suggest") }),
     z.object({ type: z.literal("authorize") }),

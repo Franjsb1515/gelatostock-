@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.37.0 — 2026-09-20 · sesión 046 · fase 5 de Compras y Mensajes II
+
+Catálogo y precios por proveedor. Cada ficha de proveedor trae «Qué le compras»: qué productos le compras, a qué precio el paquete, desde cuándo está apuntado ese precio y de dónde sale (escrito a mano, de un documento o de un mensaje), citando el documento o el mensaje; lo que no consta dice «No disponible». Si un proveedor avisa por WhatsApp de un precio claro, el mensaje lo enseña leído por reglas y ofrece «Apuntar este precio…»: eliges el producto, repasas el importe y solo entonces entra en la ficha y en el historial. Lo mismo desde un documento archivado con «Apuntar un precio». Ningún precio cambia solo. De paso, la primera carga de la app ya usa el mismo sobre de estado que el resto: hasta ahora los avisos y las plantillas estaban vacíos hasta el primer cambio.
+
+Pruebas: 191 y 21 PASS de escritorio; chat 28/28. Informe reports/2026-09-20T23-41-17-402Z-fase-5-catalogo-y-precios-por-proveedor.md.
+
 ## 0.36.0 — 2026-09-20 · sesión 046 · fase 3 de Compras y Mensajes II
 
 El texto de los PDF. Al añadir un PDF en Documentos, la app lee el texto que el propio archivo lleva dentro (no es OCR, no sale a internet y es exacto cuando el PDF trae texto) y propone proveedor, tipo de documento y pedido con las reglas de siempre. Si el PDF es un escaneo, no lleva texto: la app lo dice con claridad y no inventa. Los PDF que llegan por WhatsApp de proveedores autorizados también se archivan con su texto. De paso: «Guardar foto» pasa a «Guardar documento» y «Proveedor de la foto» a «Proveedor del documento», y se corrigen los últimos mensajes en voseo (Elegilo, Añadilo, Volvé, Esperá, Confirmá, Verificá, Probá).

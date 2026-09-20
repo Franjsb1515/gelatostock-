@@ -11,6 +11,7 @@ const {
   weekStart,
   priceAlerts,
   countStatus,
+  supplierCatalogs,
   orderReminders,
   defaultOrderTemplate,
   defaultNudgeTemplate,
@@ -309,6 +310,8 @@ function createApp({
     nudgeTemplate: nudgeTemplate(),
     replyTemplates: replyTemplates(),
     cruises: cruiseInfo(),
+    // Qué le compra a cada proveedor, a qué precio y desde cuándo (core/inventory.ts).
+    catalog: supplierCatalogs(state),
     alerts: {
       prices: priceAlerts(state, 30),
       counts: countStatus(state, countDays()),

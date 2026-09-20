@@ -23,10 +23,17 @@ export {
   labels as replyLabels,
   normalizePhrase,
 } from "./messages";
-export { localDate } from "./messages";
+export { localDate, readPriceChange } from "./messages";
 export { recipeBalance, balanceRanges, balanceLabels } from "./balance";
 export { weeklyReport, weekStart, weekBounds } from "./report";
-export { priceAlerts, countStatus, zoneLabels } from "./inventory";
+export {
+  priceAlerts,
+  countStatus,
+  zoneLabels,
+  supplierCatalog,
+  supplierCatalogs,
+  priceSourceLabels,
+} from "./inventory";
 export {
   orderReminders,
   defaultOrderTemplate,
@@ -581,6 +588,45 @@ export function apply(state: State, input: unknown): State {
         if (l.product === p.id && l.supplier === a.supplier)
           l.supplier = undefined;
       note = `${item(s.suppliers, a.supplier).name} ya no figura como otro proveedor de ${p.name}.`;
+      break;
+    }
+    case "setPrice": {
+      const p = item(s.products, a.product);
+      const sup = item(s.suppliers, p.supplier);
+      const from =
+        a.source === "message"
+          ? (() => {
+              const m = item(s.messages, a.ref);
+              ensure(
+                m.supplier === p.supplier,
+                `Ese mensaje es de otro proveedor, no de ${sup.name}.`,
+              );
+              return `el mensaje de ${sup.name} del ${m.at.slice(0, 10)}`;
+            })()
+          : (() => {
+              const d = item(s.photos, a.ref);
+              ensure(
+                !d.supplier || d.supplier === p.supplier,
+                `Ese documento es de otro proveedor, no de ${sup.name}.`,
+              );
+              return `el documento «${d.name}»`;
+            })();
+      ensure(
+        a.price !== p.price,
+        `${p.name} ya está a ${eur(a.price)} en su ficha.`,
+      );
+      s.prices.push({
+        id: randomUUID(),
+        product: p.id,
+        supplier: p.supplier,
+        at: now(),
+        from: p.price,
+        to: a.price,
+        source: a.source,
+        ref: a.ref,
+      });
+      note = `Precio de ${p.name}: ${eur(p.price)} → ${eur(a.price)} el paquete, según ${from}. El stock no cambia.`;
+      p.price = a.price;
       break;
     }
     case "suggest": {

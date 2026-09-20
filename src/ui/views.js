@@ -190,7 +190,7 @@ function suppliers() {
                   })
                   .join("")}</div>`
               : "";
-          })()}<div class="supplier-card-footer">${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`,
+          })()}<div class="supplier-card-footer">${btn("Qué le compras", "supplierCatalog", "secondary", `data-supplier="${s.id}"`)}${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`,
       )
       .join(
         "",

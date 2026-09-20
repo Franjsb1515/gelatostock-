@@ -56,7 +56,93 @@ function altSuppliersModal(id) {
       if (ok) altSuppliersModal(p.id);
     });
 }
+// Qué le compra a un proveedor, a qué precio y desde cuándo. Lo calcula el núcleo
+// (core/inventory.ts) y viaja en el sobre de estado; aquí solo se enseña.
+function supplierCatalogModal(id) {
+  const s = supplier(id);
+  const lines = (catalog && catalog[id]) || [];
+  const rows = lines
+    .map(
+      (l) =>
+        `<tr><td><strong>${esc(l.name)}</strong>${l.usual ? "" : "<small>otro proveedor donde también lo compras</small>"}</td><td>${num(l.pack)} ${esc(l.unit)}</td><td>${l.price ? money(l.price) : "No disponible"}</td><td>${l.since ? date(l.since) : "No disponible"}</td><td>${esc(priceSourceLabel[l.source] || "No disponible")}${l.refLabel ? "<small>" + esc(l.refLabel) + "</small>" : ""}</td></tr>`,
+    )
+    .join("");
+  modal(
+    "Qué le compras a " + s.name,
+    "Precio por paquete de cada producto, desde cuándo está apuntado y de dónde salió. Lo que no consta se queda en «No disponible»: no se rellena solo.",
+    lines.length
+      ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Paquete</th><th>Precio</th><th>Desde</th><th>De dónde sale</th></tr></thead><tbody>${rows}</tbody></table></div><p class="fineprint">«Desde» es el día en que se apuntó ese precio. Los productos con el precio de siempre, sin ningún cambio registrado, salen como «No disponible».</p>`
+      : `<p>Todavía no hay ningún producto con ${esc(s.name)} como proveedor.</p>`,
+    async () => true,
+    "Cerrar",
+  );
+}
+// Apuntar un precio citando de dónde sale: un documento archivado o un mensaje del proveedor.
+// La app nunca lo escribe sola; aquí se elige el producto y se repasa el importe.
+function setPriceModal({ supplier: supId, source, ref, price, product: pick }) {
+  const s = supplier(supId);
+  const list = state.products.filter((p) => p.supplier === supId);
+  const origin =
+    source === "message"
+      ? "el mensaje de " + s.name
+      : "el documento que tienes archivado";
+  if (!list.length) {
+    modal(
+      "Apuntar un precio",
+      "Se apunta en la ficha del producto citando de dónde sale.",
+      `<p>Ningún producto tiene a ${esc(s.name)} como proveedor habitual, así que no hay dónde apuntarlo.</p>`,
+      async () => true,
+      "Cerrar",
+    );
+    return;
+  }
+  const chosen = list.find((p) => p.id === pick) || list[0];
+  modal(
+    "Apuntar el precio",
+    `Queda en la ficha del producto y en el historial del proveedor, citando ${origin}. No cambia el stock ni ningún pedido.`,
+    select(
+      "Producto",
+      "product",
+      list.map((p) => [p.id, `${p.name} · hoy ${money(p.price)} el paquete`]),
+      chosen.id,
+    ) +
+      field(
+        "Precio por paquete (€)",
+        "price",
+        (price === undefined ? chosen.price : price) / 100,
+        "number",
+        'min="0" max="1000000" step="0.01" required',
+      ) +
+      `<p class="fineprint">El precio anterior no se pierde: queda en el historial con su fecha. El coste de las recetas y el carrito usan a partir de ahora el precio nuevo.</p>`,
+    async (f) =>
+      mutate(
+        {
+          type: "setPrice",
+          product: f.get("product"),
+          price: Math.round(Number(f.get("price")) * 100),
+          source,
+          ref,
+        },
+        "Precio apuntado con su origen.",
+      ),
+    "Apuntar precio",
+  );
+}
 async function extendedAction(name, el) {
+  if (name === "supplierCatalog") {
+    supplierCatalogModal(el.dataset.supplier);
+    return true;
+  }
+  if (name === "setPrice") {
+    setPriceModal({
+      supplier: el.dataset.supplier,
+      source: el.dataset.source,
+      ref: el.dataset.ref,
+      price: el.dataset.price ? Number(el.dataset.price) : undefined,
+      product: el.dataset.product,
+    });
+    return true;
+  }
   if (name === "movement") {
     const first = product(el?.dataset?.product) || state.products[0];
     modal(

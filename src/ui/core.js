@@ -8,6 +8,7 @@ let appVersion = "",
   historyInfo = null,
   replyDrafts = {},
   alerts = null,
+  catalog = {},
   countDays = 7,
   dayChangeHour = 5,
   orderTemplate = "",
@@ -219,6 +220,7 @@ function applyEnvelope(data) {
   if (data.nudgeTemplate !== undefined) nudgeTemplate = data.nudgeTemplate;
   if (data.replyTemplates !== undefined) replyTemplates = data.replyTemplates;
   if (data.alerts) alerts = data.alerts;
+  if (data.catalog) catalog = data.catalog;
   if (data.cruises) cruiseInfo = data.cruises;
   if (data.dataDir) dataDir = data.dataDir;
   archiveWarning = data.archiveWarning;
@@ -347,6 +349,13 @@ setInterval(refreshWhatsApp, 2000);
 function businessName() {
   return state?.business || "GelatoStock";
 }
+
+// De dónde sale cada precio del catálogo de un proveedor.
+const priceSourceLabel = {
+  edit: "escrito a mano",
+  document: "de un documento",
+  message: "de un mensaje",
+};
 
 const zoneLabel = {
   vitrina: "Vitrina",

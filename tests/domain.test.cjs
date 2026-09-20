@@ -10,6 +10,8 @@ const {
   nudgeMessage,
   daysSinceDispatch,
   renderNudgeTemplate,
+  readPriceChange,
+  supplierCatalog,
 } = require("../src/domain.cjs");
 function milkOrder() {
   let s = apply(seed(), { type: "cart", product: "p2", packs: 2 });
@@ -1479,5 +1481,158 @@ test("el texto del recordatorio sale de la plantilla y dice cuántos días lleva
       dias: "3 días",
     }),
     nudgeMessage(s, s.orders[0].id, undefined, at),
+  );
+});
+
+// Fase 5: catálogo y precios por proveedor. El precio solo se apunta citando de dónde sale.
+test("lee un precio del mensaje solo cuando el texto no deja dudas", () => {
+  assert.deepEqual(
+    readPriceChange(
+      "Aviso: la caja de 6 L pasa de 18 € a 19,50 € desde el lunes.",
+    ),
+    { to: 1950, from: 1800, hint: "de 18 € a 19,50 €" },
+  );
+  assert.equal(readPriceChange("El precio del litro sube a 2,35 €")?.to, 235);
+  // Sin importe no hay lectura: un porcentaje no es un precio.
+  assert.equal(readPriceChange("La tarifa sube un 5 % en abril"), undefined);
+  // Dos importes sueltos sin «de … a …» son ambiguos: la app calla.
+  assert.equal(
+    readPriceChange("Precio: 3 € la unidad, portes 12 € aparte"),
+    undefined,
+  );
+  // Sin hablar de precio, un importe cualquiera no se lee como tarifa.
+  assert.equal(readPriceChange("Te devolvemos los 40 € del envase"), undefined);
+});
+test("un precio leído viaja en la interpretación y no cambia nada por su cuenta", () => {
+  const s = apply(seed(), {
+    type: "message",
+    supplier: "s1",
+    text: "Buenos días, el café sube de 24,50 € a 26 € a partir del lunes.",
+  });
+  const m = s.messages[0];
+  assert.equal(m.interpretation.priceTo, 2600);
+  assert.equal(m.interpretation.priceFrom, 2450);
+  assert.match(m.interpretation.summary, /No se apunta sin tu confirmación/);
+  // La ficha del producto sigue igual: leer no es apuntar.
+  assert.equal(s.products[0].price, 2450);
+  assert.equal(s.prices.length, 0);
+});
+test("apuntar el precio de un mensaje deja origen, documento citado y stock intacto", () => {
+  let s = apply(seed(), {
+    type: "message",
+    supplier: "s1",
+    text: "El café sube a 26 € la bolsa.",
+  });
+  const m = s.messages[0];
+  const stock = s.products[0].stock;
+  s = apply(s, {
+    type: "setPrice",
+    product: "p1",
+    price: 2600,
+    source: "message",
+    ref: m.id,
+  });
+  assert.equal(s.products[0].price, 2600);
+  assert.equal(s.products[0].stock, stock);
+  const e = s.prices.at(-1);
+  assert.deepEqual(
+    {
+      from: e.from,
+      to: e.to,
+      source: e.source,
+      ref: e.ref,
+      supplier: e.supplier,
+    },
+    { from: 2450, to: 2600, source: "message", ref: m.id, supplier: "s1" },
+  );
+  assert.match(s.activity[0].text, /24,50 € → 26,00 €/);
+  // Repetir el mismo precio no crea un cambio falso.
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "setPrice",
+        product: "p1",
+        price: 2600,
+        source: "message",
+        ref: m.id,
+      }),
+    /ya está a 26.00/,
+  );
+  // Un mensaje de otro proveedor no justifica el precio de este producto.
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "setPrice",
+        product: "p1",
+        price: 2700,
+        source: "message",
+        ref: "welcome-message",
+      }),
+    /otro proveedor/,
+  );
+});
+test("apuntar el precio de un documento cita el documento archivado", () => {
+  let s = apply(seed(), {
+    type: "photo",
+    name: "tarifa-marzo.pdf",
+    supplier: "s1",
+    data: "data:application/pdf;base64,JVBERi0=",
+    ocrText: "Café 26,00 €",
+  });
+  const doc = s.photos[0];
+  s = apply(s, {
+    type: "setPrice",
+    product: "p1",
+    price: 2600,
+    source: "document",
+    ref: doc.id,
+  });
+  assert.equal(s.prices.at(-1).source, "document");
+  assert.equal(s.prices.at(-1).ref, doc.id);
+  const line = supplierCatalog(s, "s1").find((l) => l.product === "p1");
+  assert.equal(line.price, 2600);
+  assert.equal(line.source, "document");
+  assert.equal(line.refLabel, "tarifa-marzo.pdf");
+  assert.equal(line.since, s.prices.at(-1).at);
+});
+test("el catálogo del proveedor dice «No disponible» cuando nada fecha el precio", () => {
+  const s = seed();
+  const lines = supplierCatalog(s, "s1");
+  assert.ok(lines.length);
+  for (const l of lines) {
+    assert.equal(l.usual, true);
+    assert.equal(l.since, null);
+    assert.equal(l.source, null);
+    assert.equal(l.refLabel, null);
+  }
+  assert.equal(
+    lines.length,
+    s.products.filter((p) => p.supplier === "s1").length,
+  );
+});
+test("el catálogo incluye los productos que también compra a ese proveedor", () => {
+  const s = apply(seed(), {
+    type: "setAlternate",
+    product: "p1",
+    supplier: "s2",
+    pack: 2,
+    price: 4800,
+  });
+  const line = supplierCatalog(s, "s2").find(
+    (l) => l.product === "p1" && !l.usual,
+  );
+  assert.deepEqual(
+    {
+      pack: line.pack,
+      price: line.price,
+      since: line.since,
+      source: line.source,
+    },
+    { pack: 2, price: 4800, since: null, source: "edit" },
+  );
+  // El proveedor habitual de p1 no cambia por apuntarlo en otro sitio.
+  assert.equal(s.products[0].supplier, "s1");
+  assert.ok(
+    supplierCatalog(s, "s1").some((l) => l.product === "p1" && l.usual),
   );
 });
