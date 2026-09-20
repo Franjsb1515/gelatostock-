@@ -317,6 +317,18 @@ class WhatsAppConnection {
     if (typeof this.mainStore?.dispatch !== "function") return;
     try {
       let ocrText;
+      // Un PDF trae su propio texto: se lee del archivo, sin OCR y sin red.
+      if (mime === "application/pdf" && typeof this.pdfText === "function") {
+        try {
+          const read = await this.pdfText(bytes);
+          ocrText = String(read?.text || "").slice(0, 20000) || undefined;
+        } catch (e) {
+          this.log(
+            "Texto del PDF no disponible: " +
+              String(e?.message || e).slice(0, 80),
+          );
+        }
+      }
       if (mime !== "application/pdf" && typeof this.ocr === "function") {
         try {
           const read = await this.ocr(

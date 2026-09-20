@@ -1059,7 +1059,7 @@ async function action(name, el) {
   if (name === "message") {
     modal(
       "Simular un mensaje entrante",
-      "Probá la bandeja y los avisos. Este evento se genera únicamente en el equipo.",
+      "Prueba la bandeja y los avisos. Este mensaje se crea solo en este equipo.",
       select(
         "Proveedor",
         "supplier",

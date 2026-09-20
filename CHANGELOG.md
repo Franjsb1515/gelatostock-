@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.36.0 — 2026-09-20 · sesión 046 · fase 3 de Compras y Mensajes II
+
+El texto de los PDF. Al añadir un PDF en Documentos, la app lee el texto que el propio archivo lleva dentro (no es OCR, no sale a internet y es exacto cuando el PDF trae texto) y propone proveedor, tipo de documento y pedido con las reglas de siempre. Si el PDF es un escaneo, no lleva texto: la app lo dice con claridad y no inventa. Los PDF que llegan por WhatsApp de proveedores autorizados también se archivan con su texto. De paso: «Guardar foto» pasa a «Guardar documento» y «Proveedor de la foto» a «Proveedor del documento», y se corrigen los últimos mensajes en voseo (Elegilo, Añadilo, Volvé, Esperá, Confirmá, Verificá, Probá).
+
+Pruebas: 184 y 21 PASS de escritorio; chat 26/26. Informe reports/2026-09-20T22-37-59-473Z-fase-3-texto-de-los-pdf.md.
+
 ## 0.35.0 — 2026-09-20 · sesión 046 · fase 2 de Compras y Mensajes II
 
 Reclamar respuesta y textos propios. Un pedido enviado por WhatsApp que el proveedor no contesta trae «Reclamar respuesta»: la app propone el texto (número del pedido y días que lleva enviado), la persona lo cambia si quiere y se envía una sola vez; como mucho un recordatorio por pedido y día, y el pie del pedido deja constancia de cuántos van. Reclamar no cambia el pedido ni el stock. El aviso del Resumen «se envió y no hay respuesta» trae el mismo botón. En Configuración se editan la plantilla del recordatorio y las respuestas rápidas de Mensajes, que hasta ahora eran fijas en el código.

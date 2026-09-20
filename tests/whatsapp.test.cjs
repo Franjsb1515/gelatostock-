@@ -492,5 +492,33 @@ test("un adjunto de proveedor autorizado se archiva en Documentos con texto OCR 
     assert.equal(doc.source, "whatsapp");
     assert.equal(doc.name, "factura.png");
     assert.match(doc.ocrText, /GS-001/);
+    // Un PDF no pasa por OCR: su texto sale del propio archivo.
+    dispatched.length = 0;
+    c.pdfText = async (bytes) => ({
+      text: "PROFORMA P-9 " + bytes.length + " bytes",
+    });
+    const pdf = require("node:fs").readFileSync(
+      require("node:path").join(__dirname, "fixtures", "factura-texto.pdf"),
+    );
+    await c.receive(
+      {
+        from: "34910000001@c.us",
+        id: { _serialized: "media-2" },
+        timestamp: 2,
+        body: "",
+        hasMedia: true,
+        _data: { size: pdf.length },
+        downloadMedia: async () => ({
+          mimetype: "application/pdf",
+          data: pdf.toString("base64"),
+          filename: "proforma.pdf",
+        }),
+      },
+      c.generation,
+    );
+    const archivo = dispatched.find((d) => d.type === "photo");
+    assert.ok(archivo);
+    assert.equal(archivo.name, "proforma.pdf");
+    assert.match(archivo.ocrText, /PROFORMA P-9/);
     c.client = null;
   }));

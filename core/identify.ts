@@ -63,6 +63,6 @@ export function identifySupplier(s: State, input: unknown) {
         ? "El remitente no identifica de forma única a un proveedor registrado."
         : candidates.length
           ? "Hay varios proveedores posibles. Elige el emisor del documento."
-          : "No se encontró un proveedor registrado. Elegilo o añadí sus datos de identificación.",
+          : "No se encontró ningún proveedor tuyo en el texto. Elígelo a mano o añade sus datos en Proveedores.",
   };
 }

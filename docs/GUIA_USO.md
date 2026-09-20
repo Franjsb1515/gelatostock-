@@ -69,7 +69,7 @@ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y men
 - Windows avisa con una notificación cuando escribe un proveedor autorizado.
 
 ## Documentos
-Facturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.
+Facturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). El texto se lee en este equipo para proponer proveedor, tipo y pedido: en una foto con la cámara del ordenador (OCR) y en un PDF leyendo el texto que el propio archivo lleva dentro, que es exacto y no hace falta OCR. Si el PDF es un escaneo o una foto guardada como PDF, no lleva texto: la app lo dice y eliges el proveedor a mano o haces una foto de la hoja. Los adjuntos de WhatsApp de proveedores autorizados llegan solos, y de los PDF también se guarda su texto. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.
 
 ## Proveedores
 Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).

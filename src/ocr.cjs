@@ -4,7 +4,7 @@ const { createWorker } = require("tesseract.js");
 let running = false;
 async function recognizeLocal(data) {
   if (running)
-    throw Error("Ya hay una lectura en curso. Esperá a que termine.");
+    throw Error("Ya hay una lectura en curso. Espera a que termine.");
   if (
     typeof data !== "string" ||
     data.length > 8000000 ||

@@ -114,7 +114,7 @@ function photoFields(ph) {
     .slice(0, 10);
   return (
     select(
-      "Proveedor de la foto",
+      "Proveedor del documento",
       "supplier",
       [["", "Sin proveedor"], ...state.suppliers.map((s) => [s.id, s.name])],
       ph?.supplier || "",
@@ -137,7 +137,7 @@ function showDetection(form, result, manual) {
       supplier(result.supplier).name +
       ". " +
       result.reason +
-      " Confirmá o corregí antes de guardar."
+      " Confirma o corrige antes de guardar."
     : result.reason;
 }
 function photo() {
@@ -145,10 +145,10 @@ function photo() {
     manual = false;
   modal(
     "Añadir un documento",
-    "Foto o PDF. En fotos se lee el texto localmente para proponer proveedor, tipo y pedido. Las cantidades no cambian.",
-    '<p class="detection-status" role="status">Al elegir una foto se buscará su proveedor entre tus fichas.</p>' +
+    "Foto o PDF. El texto se lee en este equipo para proponer proveedor, tipo y pedido. Las cantidades no cambian.",
+    '<p class="detection-status" role="status">Al elegir el archivo se buscará su proveedor entre tus fichas.</p>' +
       photoFields() +
-      `<label class="upload-zone">${icon("photo")}<strong>Elige una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído de la foto</summary><label class="field">Texto reconocido<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Puedes elegirlo manualmente si la lectura falla.</p>`,
+      `<label class="upload-zone">${icon("photo")}<strong>Elige una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído del documento</summary><label class="field">Texto leído<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Puedes elegirlo manualmente si la lectura falla.</p>`,
     async (f) => {
       const file = f.get("photo");
       const pdf = file.type === "application/pdf";
@@ -169,10 +169,10 @@ function photo() {
           supplier: f.get("supplier") || undefined,
           documentDate: f.get("documentDate"),
         },
-        "Foto y proveedor guardados.",
+        "Documento guardado con su proveedor.",
       );
     },
-    "Guardar foto",
+    "Guardar documento",
   );
   const form = $("#modal-form");
   form
@@ -194,10 +194,19 @@ function photo() {
       try {
         if (file.type === "application/pdf") {
           if (file.size > 10000000) throw Error("El PDF supera 10 MB.");
-          form.querySelector("#photo-preview").innerHTML =
-            '<p class="muted">PDF listo para guardar. El texto de un PDF no se lee todavía; puedes elegir proveedor y pedido a mano.</p>';
           form.querySelector(".detection-status").textContent =
-            "PDF seleccionado.";
+            "Leyendo el texto del PDF en este equipo. No se envía a ninguna parte.";
+          const data = await readFile(file);
+          if (current !== serial || $("#modal-form") !== form) return;
+          const result = await request("/api/pdf", { data });
+          if (current !== serial || $("#modal-form") !== form) return;
+          form.querySelector("textarea[name=ocrText]").value = result.text;
+          form.querySelector("#photo-preview").innerHTML = result.text
+            ? `<p class="muted">PDF de ${result.pages} página${result.pages === 1 ? "" : "s"} leído. Mira «Texto leído del documento» para comprobarlo.</p>`
+            : `<p class="muted">${esc(result.reason)}</p>`;
+          if (result.text) showDetection(form, result.detection, manual);
+          else
+            form.querySelector(".detection-status").textContent = result.reason;
           return;
         }
         if (

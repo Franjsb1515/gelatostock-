@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.35.0
+# Entrada para Claude · entrega vigente 0.36.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -17,7 +17,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
-- Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1 y la 2; respuestas del usuario del 2026-09-20 dentro). docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
+- Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1, la 2 y la 3; respuestas del usuario del 2026-09-20 dentro). docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
 
 ## WhatsApp (seguridad)
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
@@ -26,6 +26,7 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 - `core/` TypeScript estricto, puro y probado; `build/` es su salida generada. schema.ts (zod), domain.ts (apply y acciones), store.ts (SQLite canónico, user_version 5), messages.ts (lectura de respuestas por reglas), documents.ts, balance.ts, report.ts, inventory.ts, orders.ts, sales.ts, value.ts (valor de venta y coste), day.ts (resumen y cierre confirmado del día), plan.ts (qué producir hoy e indicadores del inicio), cruises.ts, context.ts.
 - `src/` servidor local (server.cjs, 127.0.0.1 con cookie, CSP y control de Origin), Electron (desktop.cjs, preload mínimo), IA (ai*.cjs), WhatsApp (whatsapp.cjs), cruceros (cruises/), clima y festivos (context/), interfaz en `src/ui/*.js` (scripts clásicos que comparten ámbito global; un archivo nuevo se registra en index.html y en la lista de recursos de server.cjs). La CSP prohíbe estilos en línea: usa clases; para geometría, SVG.
 - Datos en `data/`: gelatostock.sqlite y attachments son canónicos; las carpetas por proveedor son copias derivadas. cruceros.sqlite y contexto.sqlite son registros propios con copia diaria en backups/.
+- Documentos: el texto de un PDF se lee del propio archivo con unpdf (src/pdftext.cjs, sin red, sin OCR); una foto sigue pasando por tesseract (src/ocr.cjs). Un PDF sin texto se declara como tal y no se inventa nada.
 - `docs/GUIA_USO.md` genera la pantalla Guía (scripts/build-guide.cjs). `src/ai-help.cjs` es la guía del chat: si cambia, repite `node scripts/evaluate-ai.cjs --chat`.
 
 ## Garantías por módulo (no degradar)

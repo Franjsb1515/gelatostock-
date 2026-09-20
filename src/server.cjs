@@ -27,6 +27,7 @@ const {
   localDate,
 } = require("../build/domain.js");
 const { recognizeLocal } = require("./ocr.cjs");
+const { readPdfText } = require("./pdftext.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { LocalAI } = require("./ai.cjs");
 const { appendLog } = require("./logs.cjs");
@@ -322,6 +323,7 @@ function createApp({
     appendLog(path.join(dataDir, "runtime", "logs", "ia.log"), line);
   const whatsapp = new WhatsAppConnection(dataDir, store);
   whatsapp.ocr = (data) => recognizeLocal(data);
+  whatsapp.pdfText = (bytes) => readPdfText(bytes);
   const token = randomBytes(32).toString("hex");
   const sameToken = (value) =>
     typeof value === "string" &&
@@ -657,6 +659,7 @@ function createApp({
         "/api/identify",
         "/api/whatsapp",
         "/api/ocr",
+        "/api/pdf",
       ].includes(u.pathname)
     ) {
       if (
@@ -677,9 +680,11 @@ function createApp({
               ? 20000
               : u.pathname === "/api/ocr"
                 ? 8_100_000
-                : u.pathname === "/api/identify"
-                  ? 100_000
-                  : 100_000_000)
+                : u.pathname === "/api/pdf"
+                  ? 14_000_000
+                  : u.pathname === "/api/identify"
+                    ? 100_000
+                    : 100_000_000)
           )
             throw Error("Archivo demasiado grande (máximo 100 MB).");
           chunks.push(chunk);
@@ -746,7 +751,7 @@ function createApp({
             );
             if (!supplier?.whatsapp)
               throw Error(
-                "El proveedor no tiene WhatsApp en su ficha. Añadilo en Proveedores.",
+                "El proveedor no tiene WhatsApp en su ficha. Añádelo en Proveedores.",
               );
             const text = orderMessage(state, order.id, orderTemplate());
             if (data.type === "preview") {
@@ -764,7 +769,7 @@ function createApp({
             // The person authorizes this exact text; anything else is refused.
             if (data.text !== text)
               throw Error(
-                "El texto cambió desde la vista previa. Volvé a abrir el envío.",
+                "El texto cambió desde la vista previa. Vuelve a abrir el envío.",
               );
             const sent = await whatsapp.send({
               phone: supplier.whatsapp,
@@ -945,6 +950,17 @@ function createApp({
         }
         if (u.pathname === "/api/identify") {
           json(200, identifySupplier(store.load(), data));
+          return;
+        }
+        if (u.pathname === "/api/pdf") {
+          // El texto sale del propio archivo (no es OCR); un escaneo no trae texto y se dice.
+          const result = await readPdfText(data.data);
+          json(200, {
+            ...result,
+            detection: result.text
+              ? identifySupplier(store.load(), { text: result.text })
+              : { reason: result.reason },
+          });
           return;
         }
         if (u.pathname === "/api/ocr") {

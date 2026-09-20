@@ -114,7 +114,7 @@ const assert = require("node:assert/strict");
       .waitFor();
     assert.equal(
       await window
-        .getByRole("combobox", { name: "Proveedor de la foto", exact: true })
+        .getByRole("combobox", { name: "Proveedor del documento", exact: true })
         .inputValue(),
       "s1",
     );
@@ -123,9 +123,53 @@ const assert = require("node:assert/strict");
     });
     await window.locator("input[name=documentDate]").fill("2026-09-01");
     await window
-      .getByRole("button", { name: "Guardar foto", exact: true })
+      .getByRole("button", { name: "Guardar documento", exact: true })
       .click();
     await window.getByRole("dialog").waitFor({ state: "hidden" });
+    // Un PDF con texto se lee del propio archivo dentro del ejecutable, sin OCR ni red.
+    await window
+      .getByRole("button", { name: "Cargar foto", exact: true })
+      .click();
+    await window
+      .locator("input[name=photo]")
+      .setInputFiles(path.join(root, "tests", "fixtures", "factura-texto.pdf"));
+    await window
+      .locator("#photo-preview")
+      .filter({ hasText: "PDF de 1 página leído" })
+      .waitFor();
+    const pdfText = await window.locator("textarea[name=ocrText]").inputValue();
+    assert.match(pdfText, /FACTURA F-2026-114/);
+    assert.match(pdfText, /Total: 121,00 EUR/);
+    await window
+      .getByRole("button", { name: "Cancelar", exact: true })
+      .first()
+      .click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    // Un PDF escaneado no trae texto: lo dice y no inventa proveedor.
+    await window
+      .getByRole("button", { name: "Cargar foto", exact: true })
+      .click();
+    await window
+      .locator("input[name=photo]")
+      .setInputFiles(
+        path.join(root, "tests", "fixtures", "escaneo-sin-texto.pdf"),
+      );
+    await window
+      .locator(".detection-status")
+      .filter({ hasText: "no trae texto dentro" })
+      .waitFor();
+    assert.equal(
+      await window.locator("textarea[name=ocrText]").inputValue(),
+      "",
+    );
+    await window
+      .getByRole("button", { name: "Cancelar", exact: true })
+      .first()
+      .click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    console.log(
+      "PASS: el texto de un PDF se lee dentro del ejecutable (factura F-2026-114 con su total) y un escaneo sin texto lo dice sin inventar proveedor.",
+    );
     await window
       .getByRole("button", { name: "Configuración", exact: true })
       .click();
@@ -141,7 +185,7 @@ const assert = require("node:assert/strict");
       .first()
       .click();
     await window
-      .getByRole("combobox", { name: "Proveedor de la foto", exact: true })
+      .getByRole("combobox", { name: "Proveedor del documento", exact: true })
       .selectOption("s2");
     await window.locator("input[name=documentDate]").fill("2026-09-02");
     await window.getByRole("button", { name: "Guardar", exact: true }).click();

@@ -919,3 +919,67 @@ test("plantilla del pedido: se guarda, exige {lineas} y la vista previa la usa",
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("un PDF con texto se lee en el servidor y propone proveedor; un escaneo lo dice", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-pdf-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    const asData = (name) =>
+      "data:application/pdf;base64," +
+      fs
+        .readFileSync(path.join(__dirname, "fixtures", name))
+        .toString("base64");
+    // El proveedor de la factura se reconoce por su alias, como con una foto.
+    const s = (await (await fetch(origin + "/api/state", { headers })).json())
+      .state;
+    await post("/api/action", {
+      type: "supplier",
+      id: "s2",
+      name: "Fresco Mercado",
+      initials: "FM",
+      category: "Lácteos",
+      delivery: "L-V",
+      color: "sage",
+      aliases: "Lacteos Mediterraneo SL",
+      revision: s.revision,
+      operationId: randomUUID(),
+    });
+    let r = await post("/api/pdf", { data: asData("factura-texto.pdf") });
+    assert.equal(r.status, 200);
+    const leido = await r.json();
+    assert.match(leido.text, /FACTURA F-2026-114/);
+    assert.equal(leido.pages, 1);
+    assert.equal(leido.detection.supplier, "s2");
+    r = await post("/api/pdf", { data: asData("escaneo-sin-texto.pdf") });
+    assert.equal(r.status, 200);
+    const escaneo = await r.json();
+    assert.equal(escaneo.text, "");
+    assert.match(escaneo.reason, /no trae texto dentro/);
+    assert.equal(escaneo.detection.supplier, undefined);
+    // Sin cookie no se lee nada.
+    r = await fetch(origin + "/api/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: origin },
+      body: JSON.stringify({ data: asData("factura-texto.pdf") }),
+    });
+    assert.equal(r.status, 403);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

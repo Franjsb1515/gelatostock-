@@ -213,7 +213,7 @@ export function assessRelevance(
     if (refs.length === 1 && matches.length === 1)
       return {
         relevance: "relevant",
-        relevanceReason: `Menciona ${matches[0]!.number}, un pedido de este proveedor. Verificá el contenido antes de vincularlo.`,
+        relevanceReason: `Menciona ${matches[0]!.number}, un pedido de este proveedor. Comprueba el contenido antes de vincularlo.`,
       };
     return {
       relevance: "review",

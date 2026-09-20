@@ -1,4 +1,4 @@
-# TODO — estado real de 0.35.0
+# TODO — estado real de 0.36.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -7,12 +7,12 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 1. Siguiente, en este orden
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
-- [ ] [tú] Usar unos días la 0.35.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [ ] [tú] Usar unos días la 0.36.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
 - [ ] [decidir] Mermas de ingredientes con los mismos motivos y objetivo de merma con aviso (ideas previas al plan; encajan tras la fase 2).
-- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Hechas la fase 1 (0.34.0, otro proveedor del mismo producto) y la 2 (0.35.0, reclamar respuesta y textos editables). Siguientes: 3 texto de los PDF, 4 listas de precios en foto, 5 catálogo y precios por proveedor.
+- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Hechas la fase 1 (0.34.0, otro proveedor del mismo producto), la 2 (0.35.0, reclamar respuesta y textos editables) y la 3 (0.36.0, texto de los PDF). Siguientes: 4 listas de precios en foto (necesita tus tarifas reales) y 5 catálogo y precios por proveedor.
 - [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
 
 ## 2. Depende de ti
@@ -20,6 +20,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] Confirmar productos, proveedores, recetas, unidades y sistema de ventas reales.
 - [ ] Fichas de composición reales de tus ingredientes (el balance técnico usa las de demostración).
 - [ ] Mac: ejecutar docs/MAC.md en tu equipo y enviar la salida de scripts/measure-ai-memory.cjs. De ahí salen: ajustar descarga e hilos de la IA, adaptar la prueba de escritorio, nombre e icono del bundle y firma.
+- [ ] Entre cinco y diez tarifas reales para medir la fase 4 (fotos como las que haces y algún PDF; puedes tapar el nombre del proveedor, pero los precios y formatos han de ser los de verdad).
 - [ ] Documentos y mensajes reales autorizados (anonimizados) para medir OCR, clasificación, lectura de respuestas y chat. Hoy todos los corpus son sintéticos y escritos por la misma sesión que las reglas.
 - [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia).
 - [ ] Makro u otro proveedor web: aplazado por ti el 2026-09-09, sin cuenta todavía. No avanzar hasta que lo pidas; la web se puede guardar en la ficha del proveedor.
@@ -36,7 +37,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 ## 4. Documentos e IA local
 
-- [ ] Leer el texto de los PDF (hoy solo se archivan) y extraer cantidades y fecha con revisión.
+- [x] Leer el texto de los PDF (0.36.0). Queda extraer cantidades y fecha con revisión: va en la fase 4 del plan.
 - [ ] Reducir abstenciones legítimas (la proforma de prueba discrepa entre lecturas); no tocar prompts sin repetir la evaluación de 11 casos.
 - [ ] Chat con contexto de inventario y pedidos: solo tras definir qué datos se exponen y con pruebas de fuga.
 - [ ] Sandbox real del trabajador de IA: hoy se desactivan módulos de red de Node, no el proceso nativo.
