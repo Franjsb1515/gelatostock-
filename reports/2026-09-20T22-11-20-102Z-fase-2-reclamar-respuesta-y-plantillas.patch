@@ -1,0 +1,1030 @@
+diff --git a/ABRIR GELATOSTOCK.vbs b/ABRIR GELATOSTOCK.vbs
+index 85050d2..4c848ba 100644
+--- a/ABRIR GELATOSTOCK.vbs	
++++ b/ABRIR GELATOSTOCK.vbs	
+@@ -5,4 +5,4 @@ shell.CurrentDirectory = root
+ shell.Environment("PROCESS")("GELATO_DATA_DIR") = root & "\data"
+ shell.Environment("PROCESS")("TEMP") = root & "\work"
+ shell.Environment("PROCESS")("TMP") = root & "\work"
+-shell.Run Chr(34) & root & "\dist\GelatoStock-0.34.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
++shell.Run Chr(34) & root & "\dist\GelatoStock-0.35.0-win32-x64\GelatoStock.exe" & Chr(34), 1, False
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 5b8db1a..1498c15 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,11 @@
+ # Registro de parches y sesiones
+ 
++## 0.35.0 — 2026-09-20 · sesión 046 · fase 2 de Compras y Mensajes II
++
++Reclamar respuesta y textos propios. Un pedido enviado por WhatsApp que el proveedor no contesta trae «Reclamar respuesta»: la app propone el texto (número del pedido y días que lleva enviado), la persona lo cambia si quiere y se envía una sola vez; como mucho un recordatorio por pedido y día, y el pie del pedido deja constancia de cuántos van. Reclamar no cambia el pedido ni el stock. El aviso del Resumen «se envió y no hay respuesta» trae el mismo botón. En Configuración se editan la plantilla del recordatorio y las respuestas rápidas de Mensajes, que hasta ahora eran fijas en el código.
++
++Pruebas: 180 y 20 PASS de escritorio; chat 25/25. Informe reports/2026-09-20T22-11-20-102Z-fase-2-reclamar-respuesta-y-plantillas.md.
++
+ ## 0.34.0 — 2026-09-20 · sesión 046 · fase 1 de Compras y Mensajes II
+ 
+ Otro proveedor para el mismo producto. En Inventario, «Otros proveedores» apunta hasta cinco proveedores más por producto, cada uno con su formato y su precio, escritos por la persona. En el carrito, cada línea elige a quién se le pide y el importe usa ese precio; al autorizar se crea un pedido por proveedor elegido, con formato y precio como instantánea. Si un mensaje dice que falta un producto, aparece «Comprarlo a …» por cada proveedor apuntado, que lo pone en el carrito sin enviar nada. La ficha del producto no cambia nunca por esto. De paso: los formularios de Inventario ya no dicen «unidad base» sino la unidad del producto («Cantidad que hay ahora en kilos»), el alta de un producto ya no habla de «proveedor de demostración» y al autorizar un solo pedido el texto deja de decir «1 pedidos».
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 4ee63ae..20c4a7e 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -1,4 +1,4 @@
+-# Entrada para Claude · entrega vigente 0.33.0
++# Entrada para Claude · entrega vigente 0.35.0
+ 
+ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
+ 
+@@ -17,7 +17,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
+ - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
+ - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
+ - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
+-- Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; respuestas del usuario del 2026-09-20 dentro). docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
++- Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1 y la 2; respuestas del usuario del 2026-09-20 dentro). docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
+ 
+ ## WhatsApp (seguridad)
+ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
+diff --git a/README.md b/README.md
+index 0e189ce..1f183e0 100644
+--- a/README.md
++++ b/README.md
+@@ -1,12 +1,12 @@
+-# GelatoStock · prototipo 0.34.0
++# GelatoStock · prototipo 0.35.0
+ 
+ Aplicación local de escritorio para una gelatería con café de especialidad y postres. Sirve para saber qué falta, pedirlo a los proveedores, entender lo que contestan y planificar el día. Es un prototipo para probar el circuito completo; todavía no es la aplicación final de producción.
+ 
+ ## Abrir en este Windows
+ 
+-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python ni navegador. Si Windows bloquea VBScript, abre `dist/GelatoStock-0.34.0-win32-x64/GelatoStock.exe`; en ese caso los datos se guardan junto al ejecutable.
++Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python ni navegador. Si Windows bloquea VBScript, abre `dist/GelatoStock-0.35.0-win32-x64/GelatoStock.exe`; en ese caso los datos se guardan junto al ejecutable.
+ 
+-El acceso principal guarda datos, copias y perfil en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`, y los temporales en `work/`. No mover el ejecutable aislado: necesita el resto de su carpeta. Para llevarlo a otro Windows x64, copia toda la carpeta `dist/GelatoStock-0.34.0-win32-x64`. Arranca con datos de ejemplo salvo que restaures una copia. No sincroniza equipos.
++El acceso principal guarda datos, copias y perfil en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`, y los temporales en `work/`. No mover el ejecutable aislado: necesita el resto de su carpeta. Para llevarlo a otro Windows x64, copia toda la carpeta `dist/GelatoStock-0.35.0-win32-x64`. Arranca con datos de ejemplo salvo que restaures una copia. No sincroniza equipos.
+ 
+ ## Qué hace hoy
+ 
+diff --git a/TODO.md b/TODO.md
+index b610d27..5feb6f4 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -1,4 +1,4 @@
+-# TODO — estado real de 0.34.0
++# TODO — estado real de 0.35.0
+ 
+ Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
+ 
+@@ -7,12 +7,12 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él
+ ## 1. Siguiente, en este orden
+ 
+ - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
+-- [ ] [tú] Usar unos días la 0.34.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
++- [ ] [tú] Usar unos días la 0.35.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+ - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
+ - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
+ - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
+ - [ ] [decidir] Mermas de ingredientes con los mismos motivos y objetivo de merma con aviso (ideas previas al plan; encajan tras la fase 2).
+-- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Fase 1 hecha (0.34.0): otro proveedor del mismo producto. Siguientes: 2 reclamar respuesta y plantillas, 3 texto de los PDF, 4 listas de precios en foto, 5 catálogo y precios por proveedor.
++- [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Hechas la fase 1 (0.34.0, otro proveedor del mismo producto) y la 2 (0.35.0, reclamar respuesta y textos editables). Siguientes: 3 texto de los PDF, 4 listas de precios en foto, 5 catálogo y precios por proveedor.
+ - [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
+ 
+ ## 2. Depende de ti
+@@ -26,7 +26,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él
+ 
+ ## 3. Compras, mensajes y WhatsApp
+ 
+-- [ ] Plantillas de respuesta editables (hoy son fijas por categoría). Fase 2 del plan.
++- [x] Plantillas de respuesta editables: Configuración → Respuestas rápidas (0.35.0).
+ - [ ] Precios: registrar también los cambios detectados en listas de precios y en mensajes «sube de precio» (hoy solo al editar la ficha).
+ - [ ] Lectura automática de respuestas de WhatsApp al importarlas, con aviso (hoy las reglas se aplican al abrir la bandeja).
+ - [ ] Notificaciones para entregas previstas y mensajes de demostración; opción de silenciarlas.
+diff --git a/core/domain.ts b/core/domain.ts
+index 3237001..66537b9 100644
+--- a/core/domain.ts
++++ b/core/domain.ts
+@@ -3,6 +3,7 @@ import {
+   interpretReply,
+   labels as replyLabels,
+   normalizePhrase,
++  localDate,
+ } from "./messages";
+ import {
+   stateSchema,
+@@ -30,6 +31,10 @@ export {
+   orderReminders,
+   defaultOrderTemplate,
+   renderOrderTemplate,
++  defaultNudgeTemplate,
++  renderNudgeTemplate,
++  nudgeMessage,
++  daysSinceDispatch,
+ } from "./orders";
+ import { defaultOrderTemplate, renderOrderTemplate } from "./orders";
+ import { zoneLabels } from "./inventory";
+@@ -613,6 +618,7 @@ export function apply(state: State, input: unknown): State {
+           status: "pending",
+           at: now(),
+           simulated: true,
++          nudges: [],
+           lines: s.cart
+             .filter((l) => buyFrom(l) === supplier)
+             .map((l) => ({
+@@ -659,6 +665,27 @@ export function apply(state: State, input: unknown): State {
+       note = `Pedido ${o.number} confirmado por el proveedor.`;
+       break;
+     }
++    // A reminder the person wrote and sent: it leaves a trace and nothing else changes.
++    case "nudge": {
++      const o = item(s.orders, a.order);
++      ensure(
++        ["sent", "partial"].includes(o.status),
++        "Solo se reclama un pedido enviado y todavía en curso.",
++      );
++      ensure(o.dispatch, "Ese pedido no se envió por WhatsApp.");
++      ensure(
++        !o.confirmedAt,
++        `El proveedor ya confirmó ${o.number}: no hace falta reclamar.`,
++      );
++      const day = localDate(new Date(a.dispatch.at));
++      ensure(
++        !o.nudges.some((n) => localDate(new Date(n.at)) === day),
++        `Ya reclamaste ${o.number} hoy. Espera a mañana.`,
++      );
++      o.nudges.push(a.dispatch);
++      note = `Recordatorio de ${o.number} enviado por WhatsApp a ${a.dispatch.to}. El pedido no cambia: sigue a la espera de respuesta.`;
++      break;
++    }
+     case "removeLine": {
+       const o = item(s.orders, a.order);
+       ensure(
+diff --git a/core/orders.ts b/core/orders.ts
+index 8110d21..554e3ed 100644
+--- a/core/orders.ts
++++ b/core/orders.ts
+@@ -85,3 +85,48 @@ export function renderOrderTemplate(
+     .replaceAll("{lineas}", values.lineas)
+     .trim();
+ }
++// Reminder for an order sent by WhatsApp that the supplier has not answered. The person sees
++// the text, can change it and sends it: the app never nudges on its own.
++export const defaultNudgeTemplate =
++  "Hola, {proveedor}: os escribimos por el pedido {numero} de {negocio}. Lo enviamos hace {dias} y todavía no tenemos respuesta. ¿Nos confirmáis disponibilidad y fecha de entrega? Gracias.";
++export function renderNudgeTemplate(
++  template: string,
++  values: {
++    numero: string;
++    negocio: string;
++    proveedor: string;
++    dias: string;
++  },
++): string {
++  const t =
++    template && template.includes("{numero}") ? template : defaultNudgeTemplate;
++  return t
++    .replaceAll("{numero}", values.numero)
++    .replaceAll("{negocio}", values.negocio)
++    .replaceAll("{proveedor}", values.proveedor)
++    .replaceAll("{dias}", values.dias)
++    .trim();
++}
++// Days since the order was sent, written as the reminder says it ("3 días").
++export function daysSinceDispatch(s: State, orderId: string, at = Date.now()) {
++  const o = s.orders.find((x) => x.id === orderId);
++  if (!o?.dispatch) return null;
++  const days = Math.max(0, Math.floor((at - Date.parse(o.dispatch.at)) / DAY));
++  return { days, text: days === 1 ? "1 día" : `${days} días` };
++}
++export function nudgeMessage(
++  s: State,
++  orderId: string,
++  template = defaultNudgeTemplate,
++  at = Date.now(),
++): string {
++  const o = s.orders.find((x) => x.id === orderId);
++  if (!o) throw Error("Pedido inexistente.");
++  const since = daysSinceDispatch(s, orderId, at);
++  return renderNudgeTemplate(template, {
++    numero: o.number,
++    negocio: s.business,
++    proveedor: s.suppliers.find((x) => x.id === o.supplier)?.name ?? "",
++    dias: since ? since.text : "unos días",
++  });
++}
+diff --git a/core/schema.ts b/core/schema.ts
+index 80f9865..56526f6 100644
+--- a/core/schema.ts
++++ b/core/schema.ts
+@@ -120,6 +120,8 @@ const orderSchema = z.object({
+   simulated: z.literal(true),
+   lines: z.array(lineSchema).min(1).max(10000),
+   dispatch: dispatchSchema.optional(),
++  // Reminders sent by hand when the supplier does not answer; at most one per day.
++  nudges: z.array(dispatchSchema).max(50).default([]),
+   expected: documentDate.optional(),
+   // Set when the supplier confirmed (by a linked reply or by hand). Never changes stock.
+   confirmedAt: at.optional(),
+@@ -491,6 +493,12 @@ export const actionSchema = z.intersection(
+       date: documentDate,
+     }),
+     z.object({ type: z.literal("confirmOrder"), order: idSchema }),
++    // A reminder actually sent by WhatsApp; it never changes the order beyond leaving its trace.
++    z.object({
++      type: z.literal("nudge"),
++      order: idSchema,
++      dispatch: dispatchSchema,
++    }),
+     // The supplier cannot serve a product: it leaves the order (nothing received yet for it).
+     z.object({
+       type: z.literal("removeLine"),
+diff --git a/docs/CONTINUIDAD.md b/docs/CONTINUIDAD.md
+index 54648ab..a8ef68e 100644
+--- a/docs/CONTINUIDAD.md
++++ b/docs/CONTINUIDAD.md
+@@ -2,6 +2,9 @@
+ 
+ Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
+ 
++## Punto de continuidad 0.35.0
++Lee docs/PLAN_COMPRAS_MENSAJES_II.md y reports/2026-09-20T22-11-20-102Z-fase-2-reclamar-respuesta-y-plantillas.md. Fase 2: recordatorio y textos editables. Núcleo: `nudges` (array de dispatchSchema) en orderSchema y acción `nudge` (exige pedido sent o partial, con dispatch, sin confirmedAt y sin otro recordatorio el mismo día según localDate; solo añade el registro). core/orders.ts añade defaultNudgeTemplate, renderNudgeTemplate (ignora una plantilla sin {numero}), nudgeMessage y daysSinceDispatch. Servidor: POST /api/whatsapp con type nudgePreview y nudge (las mismas comprobaciones antes de enviar, para no mandar un mensaje que la acción luego rechace; el texto lo escribe la persona, 1 a 1.000 caracteres; whatsapp.send sin `order` porque ese hueco es del envío del pedido), y /api/maintenance con nudgeTemplate y replyTemplates; ambos viajan en el sobre de estado (nudgeTemplate, replyTemplates). Interfaz: botón «Reclamar respuesta» en la ficha del pedido (se apaga con nudgedToday), acción orderNudge con el texto editable, atajo en el aviso del inicio, tarjetas nuevas en Configuración y replyDefaults en views-messages.js (ocho botones con id; {fecha} se sustituye con la fecha leída). La prueba del servidor cubre el ciclo con cliente falso; el doble de WhatsApp ahora devuelve un id por mensaje y el diagnóstico del canal registra dos envíos (pedido y recordatorio). work/check-fase2-cm2.cjs recorre la fase sobre una copia de data/ con un envío ficticio propio de la copia. Siguientes del plan: 3 texto de los PDF, 4 listas de precios en foto, 5 catálogo y precios por proveedor.
++
+ ## Punto de continuidad 0.34.0
+ Lee docs/PLAN_COMPRAS_MENSAJES_II.md y reports/2026-09-20T21-35-26-886Z-fase-1-otro-proveedor-del-mismo-producto.md. Fase 1 del plan nuevo: `alternates` en productFields (proveedor, pack y price escritos por la persona, hasta cinco, nunca deducidos), `supplier?` opcional en cada línea del carrito y en la acción `cart` (sin ese campo la línea conserva el proveedor elegido; nombrar al habitual lo devuelve), acciones `setAlternate` y `removeAlternate` (quitar uno limpia las líneas del carrito que lo usaban), y `authorize` agrupa por el proveedor de la línea tomando pack y price del alternativo. Interfaz: botón «Otros proveedores» en cada fila de Inventario (altSuppliersModal en actions-extended.js), desplegable por línea en el carrito (cartSupply y cartSupplierPicker en views-orders.js, evento data-cart-supplier en events.js) y botones «Comprarlo a …» en un mensaje de falta de producto (orderActions en views-messages.js, acción buyElsewhere). Sin migración de SQLite: productos y carrito guardan JSON y zod pone los valores por omisión. De paso: fuera «unidad base» de los formularios (unitLabel y retitleField en forms.js; la prueba de escritorio busca los nombres nuevos), «Proveedor de demostración» en el alta y el plural de «1 pedidos». work/check-fase1-cm2.cjs recorre la fase sobre una copia de data/ (salida en work/check-fase1-cm2.txt). Queda pendiente del plan: reclamar respuesta (fase 2), texto de los PDF (3), listas de precios en foto (4) y catálogo por proveedor (5); el vocabulario de «simulación» se conserva por decisión del usuario.
+ 
+diff --git a/docs/GUIA_USO.md b/docs/GUIA_USO.md
+index 9bb57f4..cbd2ca5 100644
+--- a/docs/GUIA_USO.md
++++ b/docs/GUIA_USO.md
+@@ -42,6 +42,7 @@ Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), l
+ - Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.
+ - Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.
+ - Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.
++- Reclamar respuesta: si enviaste un pedido por WhatsApp y el proveedor no contesta, el pedido trae «Reclamar respuesta». La app escribe el recordatorio (dice el número del pedido y cuántos días lleva enviado), tú lo lees, lo cambias si quieres y se envía una sola vez. Como mucho un recordatorio por pedido y día; el botón queda en «Reclamado hoy» hasta mañana. Reclamar no cambia el pedido ni el stock. El texto que se propone se edita en Configuración → Plantilla del recordatorio. El aviso del Resumen «enviado sin respuesta» lleva al mismo botón.
+ - Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.
+ - Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.
+ - Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en la unidad del producto. Un pedido con entregas parciales sigue en curso hasta completarse.
+@@ -52,7 +53,7 @@ Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), l
+ ## Mensajes
+ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.
+ - «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.
+-- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.
++- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido. Las respuestas rápidas se escriben con tus palabras en Configuración → Respuestas rápidas; {fecha} se sustituye por la fecha que dijo el proveedor.
+ - Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Cuando el proveedor dice que no tiene un producto, aparece además «Comprarlo a …» por cada otro proveedor que hayas apuntado para ese producto: lo pone en el carrito de ese proveedor con su formato y su precio, y no envía nada. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.
+ - Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.
+ - Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.
+@@ -94,7 +95,7 @@ Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de
+ El chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.
+ 
+ ## Configuración
+-Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.
++Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos. También los textos que envía la app: plantilla del pedido, plantilla del recordatorio y respuestas rápidas.
+ 
+ ## Copias y espacio
+ - Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).
+diff --git a/package-lock.json b/package-lock.json
+index 24133c8..2232af7 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.34.0",
++  "version": "0.35.0",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "appgelatostock",
+-      "version": "0.34.0",
++      "version": "0.35.0",
+       "dependencies": {
+         "@huggingface/transformers": "4.2.0",
+         "@tesseract.js-data/spa": "1.0.0",
+diff --git a/package.json b/package.json
+index 473fbd7..68afc8f 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "appgelatostock",
+-  "version": "0.34.0",
++  "version": "0.35.0",
+   "private": true,
+   "description": "Prototipo local de inventario y compras para gelateria",
+   "main": "src/desktop.cjs",
+diff --git a/scripts/desktop-smoke.cjs b/scripts/desktop-smoke.cjs
+index c160798..8981704 100644
+--- a/scripts/desktop-smoke.cjs
++++ b/scripts/desktop-smoke.cjs
+@@ -426,6 +426,38 @@ const assert = require("node:assert/strict");
+     console.log(
+       "PASS: otro proveedor apuntado para el pistacho; el carrito se lo pide a Origen Coffee con su formato (2 kg) y su precio (30 €), y la ficha sigue en Gelato Italia.",
+     );
++    // Textos que envía la app: recordatorio y respuestas rápidas, editables en Configuración.
++    await window
++      .getByRole("button", { name: "Configuración", exact: true })
++      .click();
++    await window
++      .getByRole("heading", { name: "Plantilla del recordatorio", exact: true })
++      .waitFor();
++    await window
++      .getByRole("button", { name: "Editar respuestas", exact: true })
++      .click();
++    await window
++      .locator("#modal-form textarea[name=llamo]")
++      .fill("Te llamo ahora mismo, Artello.");
++    await window.getByRole("button", { name: "Guardar", exact: true }).click();
++    await window.getByRole("dialog").waitFor({ state: "hidden" });
++    await window
++      .getByRole("button", { name: "Editar respuestas", exact: true })
++      .click();
++    assert.equal(
++      await window.locator("#modal-form textarea[name=llamo]").inputValue(),
++      "Te llamo ahora mismo, Artello.",
++    );
++    await window
++      .getByRole("button", { name: "Cancelar", exact: true })
++      .first()
++      .click();
++    await window.getByRole("dialog").waitFor({ state: "hidden" });
++    const saved = await window.evaluate(() => replyTemplates.llamo);
++    assert.equal(saved, "Te llamo ahora mismo, Artello.");
++    console.log(
++      "PASS: respuesta rápida escrita por la persona guardada y recuperada en Configuración.",
++    );
+     await window
+       .getByRole("button", { name: "Producción", exact: true })
+       .click();
+diff --git a/src/ai-help.cjs b/src/ai-help.cjs
+index a4d6db4..48eee7f 100644
+--- a/src/ai-help.cjs
++++ b/src/ai-help.cjs
+@@ -3,6 +3,7 @@
+ module.exports = `GelatoStock es una aplicación local de escritorio para una gelatería con café y postres. Funciona sin internet y guarda los datos en el equipo (SQLite y fotos).
+ Pantallas: Resumen (estado general), Inventario (productos, conteo, mínimos, entradas, salidas y mermas con motivo, corrección con movimiento compensatorio), Compras (carrito por proveedor, propuesta de reposición, pedidos simulados y Control de entregas), Mensajes (bandeja real y de demostración por conversación de proveedor, con prioridad, relevancia, vínculo a pedidos, respuestas rápidas y decisiones), WhatsApp (conector por QR: recibe de contactos autorizados y envía pedidos y respuestas solo con confirmación en pantalla), Guía (esta misma guía dentro de la app), Proveedores (fichas con NIF, teléfono y alias), Actividad (historial de movimientos), Configuración (copias de seguridad, restauración, archivo de fotos por proveedor y fecha, OCR) e IA local.
+ Otro proveedor para el mismo producto: en Inventario, «Otros proveedores» apunta hasta cinco proveedores más por producto, cada uno con su formato y su precio, escritos por la persona. No cambia el proveedor habitual. En el carrito, cada línea elige a quién se le pide y al autorizar se crea un pedido por proveedor elegido. Si un mensaje dice que falta un producto, ofrece «Comprarlo a …» con esos proveedores.
++Si un proveedor no contesta ni responde a un pedido enviado por WhatsApp, ese pedido trae el botón «Reclamar respuesta»: la app propone el texto con el número del pedido y los días que lleva sin respuesta, la persona lo cambia si quiere y se envía una sola vez, como mucho un recordatorio por pedido y día. No cambia el pedido ni el stock. Las plantillas del pedido y del recordatorio y las respuestas rápidas se editan en Configuración.
+ Control de entregas: muestra por producto lo pedido, lo recibido y lo que falta recibir. Registrar lo que llegó suma solo esa entrega al inventario, en la unidad del producto (kilos, litros o unidades). Un pedido con entregas parciales sigue En curso hasta completarse.
+ Compras: los pedidos son simulados; la app no envía pedidos reales ni realiza pagos salvo por WhatsApp con confirmación. Resumen avisa de pedidos sin enviar, sin respuesta o con entrega vencida; una confirmación o fecha del proveedor en un mensaje vinculado marca el pedido como confirmado; desde el mensaje se puede fijar la fecha, confirmar, quitar el producto que falta o cancelar; la plantilla del texto del pedido se edita en Configuración. «Enviar pendientes por WhatsApp» muestra todos los pedidos pendientes, la persona marca los que quiere y revisa los textos, y la app los envía uno a uno con pausa mostrando el progreso. Si un proveedor tiene web de compra (por ejemplo Makro) guardada en su ficha, el carrito ofrece «Lista para …» para copiar la lista y abrir la web en el navegador; la compra la hace la persona con su cuenta. Cancelar un pedido pendiente no cambia el stock.
+ Copias: Configuración permite crear una copia con datos y fotos y restaurarla; también elegir una carpeta secundaria (otro disco, USB o carpeta sincronizada) donde se duplica cada copia, y Resumen avisa si no hay copia de las últimas 48 horas; al restaurar se conserva una copia previa automática.
+diff --git a/src/server.cjs b/src/server.cjs
+index c42bdb4..8305960 100644
+--- a/src/server.cjs
++++ b/src/server.cjs
+@@ -13,6 +13,9 @@ const {
+   countStatus,
+   orderReminders,
+   defaultOrderTemplate,
++  defaultNudgeTemplate,
++  nudgeMessage,
++  daysSinceDispatch,
+   salesHistory,
+   valueReport,
+   daySummary,
+@@ -187,6 +190,17 @@ function createApp({
+   // Guided counts: a zone is due when its oldest count is older than this (0 = off).
+   const orderTemplate = () =>
+     store.setting("order_template") || defaultOrderTemplate;
++  // Reminder for an order without an answer, and the person's own reply texts by button.
++  const nudgeTemplate = () =>
++    store.setting("nudge_template") || defaultNudgeTemplate;
++  const replyTemplates = () => {
++    try {
++      const raw = JSON.parse(store.setting("reply_templates") || "{}");
++      return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
++    } catch {
++      return {};
++    }
++  };
+   const countDays = () => {
+     const v = store.setting("count_days");
+     return v === undefined ? 7 : Number(v);
+@@ -291,6 +305,8 @@ function createApp({
+     countDays: countDays(),
+     dayChangeHour: dayChangeHour(),
+     orderTemplate: orderTemplate(),
++    nudgeTemplate: nudgeTemplate(),
++    replyTemplates: replyTemplates(),
+     cruises: cruiseInfo(),
+     alerts: {
+       prices: priceAlerts(state, 30),
+@@ -769,6 +785,75 @@ function createApp({
+             json(200, envelope(next, { sent }));
+             return;
+           }
++          if (data.type === "nudgePreview" || data.type === "nudge") {
++            // Reminder for an order sent and not answered. The person sees the text, can change
++            // it and sends it: at most one per order and day, and never automatically.
++            const state = store.load();
++            const order = state.orders.find(
++              (o) => o.id === String(data.order || ""),
++            );
++            if (!order) throw Error("Pedido inexistente.");
++            if (!["sent", "partial"].includes(order.status))
++              throw Error("Solo se reclama un pedido enviado y en curso.");
++            if (!order.dispatch)
++              throw Error("Ese pedido no se envió por WhatsApp.");
++            if (order.confirmedAt)
++              throw Error(
++                "El proveedor ya confirmó ese pedido: no hace falta reclamar.",
++              );
++            const today = localDate(new Date());
++            if (
++              (order.nudges || []).some(
++                (n) => localDate(new Date(n.at)) === today,
++              )
++            )
++              throw Error("Ya reclamaste ese pedido hoy. Espera a mañana.");
++            const supplier = state.suppliers.find(
++              (x) => x.id === order.supplier,
++            );
++            if (!supplier?.whatsapp)
++              throw Error(
++                "El proveedor no tiene WhatsApp en su ficha. Añádelo en Proveedores.",
++              );
++            const proposed = nudgeMessage(state, order.id, nudgeTemplate());
++            if (data.type === "nudgePreview") {
++              json(200, {
++                text: proposed,
++                to: supplier.whatsapp,
++                label: supplier.name,
++                number: order.number,
++                days: daysSinceDispatch(state, order.id)?.text || "",
++                answered: state.messages.some((m) => m.order === order.id),
++                connected: whatsapp.status === "connected",
++                authorized:
++                  !!whatsapp.account &&
++                  !!whatsapp.store.allowed(whatsapp.account, supplier.whatsapp),
++              });
++              return;
++            }
++            const text = String(data.text || "").trim();
++            if (!text || text.length > 1000)
++              throw Error(
++                "El recordatorio debe tener entre 1 y 1.000 caracteres.",
++              );
++            const sent = await whatsapp.send({
++              phone: supplier.whatsapp,
++              text,
++            });
++            const next = store.dispatch({
++              type: "nudge",
++              order: order.id,
++              dispatch: {
++                channel: "whatsapp",
++                to: sent.recipient,
++                messageId: sent.id,
++                at: sent.at,
++                text,
++              },
++            });
++            json(200, envelope(next, { sent }));
++            return;
++          }
+           if (data.type === "recover") {
+             const imported = await whatsapp.recover();
+             json(200, { ...annotate(whatsapp.view()), imported });
+@@ -942,6 +1027,40 @@ function createApp({
+             json(200, envelope(store.load()));
+             return;
+           }
++          if (data.type === "nudgeTemplate") {
++            const template = String(data.template || "").trim();
++            if (template.length > 1000)
++              throw Error("Plantilla demasiado larga.");
++            if (template && !template.includes("{numero}"))
++              throw Error(
++                "La plantilla debe incluir {numero}, el número del pedido.",
++              );
++            store.setSetting("nudge_template", template || undefined);
++            json(200, envelope(store.load()));
++            return;
++          }
++          if (data.type === "replyTemplates") {
++            // The person's own texts for the reply buttons, by button id. Empty = the original.
++            const raw =
++              data.templates && typeof data.templates === "object"
++                ? data.templates
++                : {};
++            const out = {};
++            for (const [key, value] of Object.entries(raw).slice(0, 30)) {
++              if (!/^[a-z]{1,40}$/.test(key)) continue;
++              const text = String(value || "").trim();
++              if (!text) continue;
++              if (text.length > 300)
++                throw Error("Cada respuesta admite hasta 300 caracteres.");
++              out[key] = text;
++            }
++            store.setSetting(
++              "reply_templates",
++              Object.keys(out).length ? JSON.stringify(out) : undefined,
++            );
++            json(200, envelope(store.load()));
++            return;
++          }
+           if (data.type === "cruises") {
+             store.setSetting("cruises_off", data.enabled ? undefined : "1");
+             json(200, envelope(store.load()));
+diff --git a/src/styles.css b/src/styles.css
+index 72da66d..61ef6e1 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -1766,6 +1766,14 @@ dialog::backdrop {
+   display: block;
+   margin-top: 2px;
+ }
++.template-list {
++  display: flex;
++  flex-direction: column;
++  gap: var(--s-3);
++}
++.template-list textarea {
++  width: 100%;
++}
+ .cart-supplier {
+   display: block;
+   margin-top: var(--s-2);
+diff --git a/src/ui/actions.js b/src/ui/actions.js
+index ecbb1af..5491858 100644
+--- a/src/ui/actions.js
++++ b/src/ui/actions.js
+@@ -78,6 +78,91 @@ async function action(name, el) {
+     );
+     return;
+   }
++  if (name === "orderNudge") {
++    // Reclamar respuesta: la app propone el texto, la persona lo lee, lo cambia si quiere y envía.
++    let preview;
++    try {
++      preview = await request("/api/whatsapp", {
++        type: "nudgePreview",
++        order: el.dataset.order,
++      });
++    } catch (e) {
++      toast(e.message);
++      return;
++    }
++    const blocked = !preview.connected
++      ? "WhatsApp no está conectado. Conecta por QR en la pantalla WhatsApp."
++      : !preview.authorized
++        ? "Este número no está autorizado para la cuenta conectada. Autorízalo en WhatsApp → Autorizar chat."
++        : "";
++    modal(
++      "Reclamar respuesta de " + preview.number,
++      "Se envía una sola vez al número de la ficha del proveedor. Puedes cambiar el texto antes de enviarlo.",
++      `<p><strong>Para:</strong> ${esc(preview.label)} · ${esc(preview.to)}</p><p class="fineprint">Enviado hace ${esc(preview.days)}${preview.answered ? ", y hay algún mensaje suyo vinculado a este pedido" : ", sin ningún mensaje suyo vinculado"}.</p><label class="field">Mensaje que se enviará<textarea name="text" class="ai-editor" maxlength="1000" rows="5">${esc(preview.text)}</textarea></label>${blocked ? `<p role="alert">${esc(blocked)}</p>` : '<p class="fineprint">Reclamar no cambia el pedido ni el stock: solo pide respuesta. Como mucho, un recordatorio por pedido y día.</p>'}`,
++      async (f) => {
++        if (blocked) return false;
++        const data = await request("/api/whatsapp", {
++          type: "nudge",
++          order: el.dataset.order,
++          text: f.get("text"),
++        });
++        applyEnvelope(data);
++        render();
++        toast("Recordatorio enviado a " + data.sent.recipient + ".");
++        return true;
++      },
++      blocked ? "Cerrar" : "Enviar recordatorio",
++    );
++    return;
++  }
++  if (name === "nudgeTemplateEditor") {
++    modal(
++      "Plantilla del recordatorio",
++      "Texto que se propone al reclamar respuesta de un pedido. Usa {numero} para el número del pedido y, si quieres, {proveedor}, {negocio} y {dias}. Vacío = texto original.",
++      `<label class="field">Plantilla<textarea name="template" maxlength="1000" rows="6">${esc(nudgeTemplate)}</textarea></label>`,
++      async (f) => {
++        applyEnvelope(
++          await request("/api/maintenance", {
++            type: "nudgeTemplate",
++            template: f.get("template"),
++          }),
++        );
++        render();
++        toast("Plantilla guardada. Se propone en los próximos recordatorios.");
++        return true;
++      },
++    );
++    return;
++  }
++  if (name === "replyTemplatesEditor") {
++    modal(
++      "Respuestas rápidas",
++      "Son los botones que salen en un mensaje para responder de un toque. Cambia el texto de los que quieras; vacío deja el original. {fecha} se sustituye por la fecha que dijo el proveedor.",
++      `<div class="template-list">${replyDefaults
++        .map(
++          (r) =>
++            `<label class="field">${esc(r.label)}<textarea name="${esc(r.id)}" maxlength="300" rows="2">${esc(replyTemplates[r.id] || r.text)}</textarea></label>`,
++        )
++        .join("")}</div>`,
++      async (f) => {
++        const templates = {};
++        for (const r of replyDefaults) {
++          const written = String(f.get(r.id) || "").trim();
++          if (written && written !== r.text) templates[r.id] = written;
++        }
++        applyEnvelope(
++          await request("/api/maintenance", {
++            type: "replyTemplates",
++            templates,
++          }),
++        );
++        render();
++        toast("Respuestas rápidas guardadas.");
++        return true;
++      },
++    );
++    return;
++  }
+   if (name === "aiSavePhotoType") {
+     const photo = state.photos.find((p) => p.id === aiSourcePhoto);
+     if (!photo || !aiResult || aiResult.invalid) return;
+diff --git a/src/ui/core.js b/src/ui/core.js
+index 8b897d5..a7f999a 100644
+--- a/src/ui/core.js
++++ b/src/ui/core.js
+@@ -11,6 +11,8 @@ let appVersion = "",
+   countDays = 7,
+   dayChangeHour = 5,
+   orderTemplate = "",
++  nudgeTemplate = "",
++  replyTemplates = {},
+   cruiseInfo = null,
+   weeklyData = null,
+   weeklyWeek = "",
+@@ -214,6 +216,8 @@ function applyEnvelope(data) {
+   if (data.countDays !== undefined) countDays = data.countDays;
+   if (data.dayChangeHour !== undefined) dayChangeHour = data.dayChangeHour;
+   if (data.orderTemplate !== undefined) orderTemplate = data.orderTemplate;
++  if (data.nudgeTemplate !== undefined) nudgeTemplate = data.nudgeTemplate;
++  if (data.replyTemplates !== undefined) replyTemplates = data.replyTemplates;
+   if (data.alerts) alerts = data.alerts;
+   if (data.cruises) cruiseInfo = data.cruises;
+   if (data.dataDir) dataDir = data.dataDir;
+diff --git a/src/ui/guide.js b/src/ui/guide.js
+index 6cfd326..5f1c82e 100644
+--- a/src/ui/guide.js
++++ b/src/ui/guide.js
+@@ -1,2 +1,2 @@
+ // Generado por scripts/build-guide.cjs a partir de docs/GUIA_USO.md. No editar a mano.
+-const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto se mide en kilos, litros o unidades y tiene mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad en que se mide se conserva para no romper el historial.\n- Otros proveedores: en cada producto, «Otros proveedores» apunta dónde más lo compras, con el formato y el precio de cada uno (hasta cinco). No cambia su proveedor habitual: sirve para que, cuando uno no tenga, puedas pedírselo a otro desde el carrito o desde el propio mensaje.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\nCierre del día (en Producción): para cada producto terminado puedes apuntar lo vendido o, con «Peso lo que queda», escribir el peso que queda en la cubeta y la app calcula lo vendido (stock menos merma menos lo que queda). Cada merma admite un motivo: fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, u otro. La fila avisa al momento si algo no cuadra con el stock y el botón no se activa hasta que cuadre. Debajo, el historial de 14 días a 12 meses muestra por día de negocio lo vendido, la merma y el porcentaje de merma, las mermas por motivo y por producto. «Deshacer» compensa todas las ventas y mermas de ese día y devuelve el stock; los movimientos originales siguen en Actividad. Si hay datos de cruceros, el cierre recuerda cómo viene mañana. Invitación o consumo: lo que invitas a clientes, das a probar o consume el equipo se apunta en su propia columna. Sale del stock igual que lo demás, pero no es merma ni venta: el porcentaje de merma se calcula solo con lo que de verdad se perdió, y el historial y la Semana lo muestran aparte. Las degustaciones que apuntaste como merma en versiones anteriores se leen ya como invitación, sin que tengas que hacer nada. Dar de alta un gelato para vender: al crear una receta, en «Gelato que sale de esta receta» viene elegido «El de esta receta»: la app crea sola el gelato en stock con el nombre de la receta, en kilos y empezando en 0. Ese gelato es el que se produce, se vende, se merma y lleva el valor de venta. Si una receta antigua no lo tiene, su ficha del Recetario y el cierre del día enseñan el botón «Activar ventas y valor de este gelato»: un clic y listo. Al activarlo, la app te pregunta cuántos kilos tienes ahora de ese gelato: lo que hubieras producido antes de activarlo no se guardó en ningún stock, así que ese número es el punto de partida (si no tienes, déjalo vacío). Si registras una producción de un gelato sin activar, la propuesta lo avisa y trae el mismo botón. Elige «Ninguno» solo para una base o pasta que no se vende. Valor y coste del gelato: en el Recetario, cada receta con producto terminado tiene dos cifras por kilo que nunca se mezclan. El valor de venta lo escribes tú («Escribir valor» o «Cambiar»); vale desde ese día y los días anteriores conservan el valor que tenían, con el historial a la vista. El coste lo calcula la app con los precios de compra de Inventario y enseña la fórmula (cantidad × precio ÷ rendimiento); si falta algún precio dice «No disponible» y puedes escribirlo a mano: mientras exista manda el tuyo y se rotula «escrito a mano»; al quitarlo vuelve el calculado. Cada producción guarda su coste al aprobarla, así que un precio que sube después no cambia las producciones pasadas. En Producción, debajo del historial, hay dos informes separados: el de venta (kilos × valor de venta de cada día: venta estimada, venta perdida por merma, valor invitado y valor de lo producido) y el de coste (coste de lo producido, coste perdido por merma, de invitación y de lo vendido). Ejemplo: chocolate que cuesta 50 €/kg y se vende a 100 €/kg; con 1 kg producido, 800 g vendidos son 80 € de venta, y 200 g de merma son 20 € de venta perdida en un informe y 10 € de coste perdido en el otro. Si a un gelato le falta el valor o el coste, su importe y el total salen como «No disponible»: no se rellenan con estimaciones. Por ahora solo kilos de gelato; cucuruchos, tarrinas, litros y caja quedan fuera. Qué producir hoy: arriba en Producción hay una tabla con cada gelato: lo que hay, los kilos que quieres tener (los escribes tú con «Escribir» o «Cambiar»), lo que falta (quiero tener − hay) y un botón «Producir X kg» que abre la producción ya con esos kilos. Al lado, como dato y no como previsión, la venta media al día (kilos vendidos en los 14 días anteriores ÷ días con cierre registrado) y para cuántos días da lo que hay. Sin cierres todavía, la media es «No disponible». El Resumen de inicio enseña lo del día: producido, venta estimada, merma y gelato que queda; avisa de qué falta producir y de si ayer quedó sin confirmar, con un enlace para revisarlo. Cuánto debí vender: en Producción, debajo del cierre, el «Resumen del día» enseña cada gelato en una línea: lo que había al empezar, lo producido, lo vendido, la merma, la invitación o consumo, los ajustes de inventario y lo que queda para mañana. Siempre cuadra así: al empezar + producido − vendido − merma − invitación + ajustes = queda para mañana. La venta estimada son los kilos vendidos por el valor de venta que tenía cada gelato ese día, con el desglose escrito debajo; si a un gelato vendido le falta el valor, dice «No disponible». Un conteo que no cuadra aparece como ajuste de inventario: la app no lo convierte en merma ni en venta. Con el selector de día puedes mirar cualquier día anterior. «Confirmar el cierre del día» guarda el resumen tal como está; ahí puedes escribir, si quieres, la venta real (la de la caja o el TPV) y verás la diferencia con la estimada. Un día cerrado queda congelado: sus ventas, mermas y producciones no ofrecen «Corregir», «Eliminar», «Deshacer» ni «Anular». Para cambiar algo, «Reabrir el día» pide un motivo, deja el rastro en el propio resumen y en Actividad, y al terminar se vuelve a confirmar. Si algo cambia por detrás de un día cerrado, el resumen lo avisa y sigue enseñando lo que confirmaste. Corregir sin miedo: los pesos se pueden escribir en kilos o en gramos, como los marca la balanza (425 g). En el historial, cada día se despliega en sus líneas y cada venta o merma tiene «Corregir» (cambias el peso o el motivo) y «Eliminar»; el stock y los totales del día se recalculan solos y la línea anterior queda compensada en Actividad. En la hoja diaria de producción, cada producción aprobada tiene «Corregir» (se anula y queda una propuesta igual para cambiar lo que esté mal y aprobarla de nuevo) y «Anular» (por ejemplo, si se registró dos veces): los ingredientes vuelven al stock y el producto terminado sale. Si parte de esa producción ya se vendió o se tiró, la app no deja anularla y explica qué deshacer antes. Día de negocio: si cierras de madrugada, en Configuración eliges a qué hora cambia el día (por defecto a las 5:00); lo que apuntes antes de esa hora cuenta para el día anterior.\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- A quién se lo pides: si un producto tiene otros proveedores apuntados, su línea del carrito trae un desplegable con cada uno, su formato y su precio. Al autorizar se crea un pedido por cada proveedor elegido. La ficha del producto no cambia.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en la unidad del producto. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Cuando el proveedor dice que no tiene un producto, aparece además «Comprarlo a …» por cada otro proveedor que hayas apuntado para ese producto: lo pone en el carrito de ese proveedor con su formato y su precio, y no envía nada. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nHerramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma. Contexto del día: cada día muestra además el clima previsto para Palma (MET Norway, unos 9 días; de un día pasado solo queda la previsión que había, nunca una observación), si es festivo según el calendario laboral oficial del Govern de les Illes Balears (autonómicos y los dos locales de Palma) y los eventos que anotes tú con «Añadir evento». La pestaña «Ventas e impacto» pone los kilos vendidos de cada día con ventas registradas junto al nivel de impacto de ese día: días, media, mínimo y máximo por nivel; con menos de 8 días de un nivel la app dice que la media todavía no es fiable; no calcula correlaciones ni predice ventas. En Configuración → Cruceros en Palma, «Restaurar copia del registro» recupera el registro de cruceros (y tus fichas de barcos) desde la copia diaria; el registro actual queda guardado al lado.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
++const GUIDE_MD = "# Guía de uso de GelatoStock (Artello)\n\nEsta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.\n\n## Ideas clave\n- Todo funciona sin internet, salvo WhatsApp.\n- Nada cambia el stock por sí solo: solo tus conteos, entradas, salidas, mermas, recepciones de pedidos y producciones aprobadas.\n- Las lecturas automáticas (mensajes, documentos) son propuestas. Tú confirmas.\n- La app aprende de tus correcciones de lectura (qué quiso decir un proveedor), no de tus decisiones. Aceptar o no una entrega, comprar en otro sitio o esperar es siempre decisión tuya en cada caso.\n\n## Resumen\nLo importante de hoy: productos bajo mínimo, mensajes que debes leer, producciones por aprobar y entregas previstas en los próximos dos días. «Preparar reposición» llena el carrito con lo que falta, descontando lo que ya está en camino.\n\n## Inventario\nCada producto se mide en kilos, litros o unidades y tiene mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).\n- Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.\n- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.\n- Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.\n- Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.\n- Editar producto: cambia mínimos, presentación o proveedor; la unidad en que se mide se conserva para no romper el historial.\n- Otros proveedores: en cada producto, «Otros proveedores» apunta dónde más lo compras, con el formato y el precio de cada uno (hasta cinco). No cambia su proveedor habitual: sirve para que, cuando uno no tenga, puedas pedírselo a otro desde el carrito o desde el propio mensaje.\n\n## Producción\n- Recetas: cuánto rinde (kg de gelato) y cuánto usa de cada ingrediente para esa cantidad. Opcionalmente, qué producto terminado genera. El detalle vive en la pantalla Recetario.\n- Registrar producción: eliges receta, kilos y día. La app calcula el consumo estimado y lo muestra para que lo revises: corrige cantidades, cambia los kilos terminados y aprueba. Solo al aprobar se descuentan ingredientes y entra el producto terminado.\n- Hoja diaria: kilos producidos por día y gelato.\n- Ventas y mermas del día: kilos vendidos o desechados de producto terminado. Solo aparecen los productos que alguna receta genera como terminado.\n- Recetario protegido: en Configuración puedes poner una contraseña; entonces Producción pide desbloqueo (30 minutos).\n\nCierre del día (en Producción): para cada producto terminado puedes apuntar lo vendido o, con «Peso lo que queda», escribir el peso que queda en la cubeta y la app calcula lo vendido (stock menos merma menos lo que queda). Cada merma admite un motivo: fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, u otro. La fila avisa al momento si algo no cuadra con el stock y el botón no se activa hasta que cuadre. Debajo, el historial de 14 días a 12 meses muestra por día de negocio lo vendido, la merma y el porcentaje de merma, las mermas por motivo y por producto. «Deshacer» compensa todas las ventas y mermas de ese día y devuelve el stock; los movimientos originales siguen en Actividad. Si hay datos de cruceros, el cierre recuerda cómo viene mañana. Invitación o consumo: lo que invitas a clientes, das a probar o consume el equipo se apunta en su propia columna. Sale del stock igual que lo demás, pero no es merma ni venta: el porcentaje de merma se calcula solo con lo que de verdad se perdió, y el historial y la Semana lo muestran aparte. Las degustaciones que apuntaste como merma en versiones anteriores se leen ya como invitación, sin que tengas que hacer nada. Dar de alta un gelato para vender: al crear una receta, en «Gelato que sale de esta receta» viene elegido «El de esta receta»: la app crea sola el gelato en stock con el nombre de la receta, en kilos y empezando en 0. Ese gelato es el que se produce, se vende, se merma y lleva el valor de venta. Si una receta antigua no lo tiene, su ficha del Recetario y el cierre del día enseñan el botón «Activar ventas y valor de este gelato»: un clic y listo. Al activarlo, la app te pregunta cuántos kilos tienes ahora de ese gelato: lo que hubieras producido antes de activarlo no se guardó en ningún stock, así que ese número es el punto de partida (si no tienes, déjalo vacío). Si registras una producción de un gelato sin activar, la propuesta lo avisa y trae el mismo botón. Elige «Ninguno» solo para una base o pasta que no se vende. Valor y coste del gelato: en el Recetario, cada receta con producto terminado tiene dos cifras por kilo que nunca se mezclan. El valor de venta lo escribes tú («Escribir valor» o «Cambiar»); vale desde ese día y los días anteriores conservan el valor que tenían, con el historial a la vista. El coste lo calcula la app con los precios de compra de Inventario y enseña la fórmula (cantidad × precio ÷ rendimiento); si falta algún precio dice «No disponible» y puedes escribirlo a mano: mientras exista manda el tuyo y se rotula «escrito a mano»; al quitarlo vuelve el calculado. Cada producción guarda su coste al aprobarla, así que un precio que sube después no cambia las producciones pasadas. En Producción, debajo del historial, hay dos informes separados: el de venta (kilos × valor de venta de cada día: venta estimada, venta perdida por merma, valor invitado y valor de lo producido) y el de coste (coste de lo producido, coste perdido por merma, de invitación y de lo vendido). Ejemplo: chocolate que cuesta 50 €/kg y se vende a 100 €/kg; con 1 kg producido, 800 g vendidos son 80 € de venta, y 200 g de merma son 20 € de venta perdida en un informe y 10 € de coste perdido en el otro. Si a un gelato le falta el valor o el coste, su importe y el total salen como «No disponible»: no se rellenan con estimaciones. Por ahora solo kilos de gelato; cucuruchos, tarrinas, litros y caja quedan fuera. Qué producir hoy: arriba en Producción hay una tabla con cada gelato: lo que hay, los kilos que quieres tener (los escribes tú con «Escribir» o «Cambiar»), lo que falta (quiero tener − hay) y un botón «Producir X kg» que abre la producción ya con esos kilos. Al lado, como dato y no como previsión, la venta media al día (kilos vendidos en los 14 días anteriores ÷ días con cierre registrado) y para cuántos días da lo que hay. Sin cierres todavía, la media es «No disponible». El Resumen de inicio enseña lo del día: producido, venta estimada, merma y gelato que queda; avisa de qué falta producir y de si ayer quedó sin confirmar, con un enlace para revisarlo. Cuánto debí vender: en Producción, debajo del cierre, el «Resumen del día» enseña cada gelato en una línea: lo que había al empezar, lo producido, lo vendido, la merma, la invitación o consumo, los ajustes de inventario y lo que queda para mañana. Siempre cuadra así: al empezar + producido − vendido − merma − invitación + ajustes = queda para mañana. La venta estimada son los kilos vendidos por el valor de venta que tenía cada gelato ese día, con el desglose escrito debajo; si a un gelato vendido le falta el valor, dice «No disponible». Un conteo que no cuadra aparece como ajuste de inventario: la app no lo convierte en merma ni en venta. Con el selector de día puedes mirar cualquier día anterior. «Confirmar el cierre del día» guarda el resumen tal como está; ahí puedes escribir, si quieres, la venta real (la de la caja o el TPV) y verás la diferencia con la estimada. Un día cerrado queda congelado: sus ventas, mermas y producciones no ofrecen «Corregir», «Eliminar», «Deshacer» ni «Anular». Para cambiar algo, «Reabrir el día» pide un motivo, deja el rastro en el propio resumen y en Actividad, y al terminar se vuelve a confirmar. Si algo cambia por detrás de un día cerrado, el resumen lo avisa y sigue enseñando lo que confirmaste. Corregir sin miedo: los pesos se pueden escribir en kilos o en gramos, como los marca la balanza (425 g). En el historial, cada día se despliega en sus líneas y cada venta o merma tiene «Corregir» (cambias el peso o el motivo) y «Eliminar»; el stock y los totales del día se recalculan solos y la línea anterior queda compensada en Actividad. En la hoja diaria de producción, cada producción aprobada tiene «Corregir» (se anula y queda una propuesta igual para cambiar lo que esté mal y aprobarla de nuevo) y «Anular» (por ejemplo, si se registró dos veces): los ingredientes vuelven al stock y el producto terminado sale. Si parte de esa producción ya se vendió o se tiró, la app no deja anularla y explica qué deshacer antes. Día de negocio: si cierras de madrugada, en Configuración eliges a qué hora cambia el día (por defecto a las 5:00); lo que apuntes antes de esa hora cuenta para el día anterior.\n\n## Recetario\nFichas completas de cada receta: familia (crema, sorbete, postre, base, otro), lo que rinde, ingredientes con su porcentaje sobre la masa, elaboración y alérgenos.\n- Calcular para X kg: escribe los kilos o usa − y + y la ficha muestra las cantidades escaladas; no cambia nada en la app.\n- Balance técnico: si los ingredientes tienen ficha de composición (Inventario → Editar producto: azúcares, grasa, sólidos totales y sólidos lácteos no grasos por 100 g), la receta muestra sus porcentajes sobre la masa y si están en el rango orientativo de su familia. Sin fichas, dice cuáles faltan.\n- Producir desde la ficha abre «Registrar producción» con esa receta. Duplicar crea una copia para variantes. Eliminar solo si no tiene producciones aprobadas.\n- Con contraseña del recetario, esta pantalla y Producción piden desbloqueo.\n\n## Compras\n- Carrito por proveedor: revisa cantidades y presentaciones con los botones − y + o escribiendo el número; «Autorizar» crea los pedidos.\n- A quién se lo pides: si un producto tiene otros proveedores apuntados, su línea del carrito trae un desplegable con cada uno, su formato y su precio. Al autorizar se crea un pedido por cada proveedor elegido. La ficha del producto no cambia.\n- Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.\n- Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.\n- Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.\n- Reclamar respuesta: si enviaste un pedido por WhatsApp y el proveedor no contesta, el pedido trae «Reclamar respuesta». La app escribe el recordatorio (dice el número del pedido y cuántos días lleva enviado), tú lo lees, lo cambias si quieres y se envía una sola vez. Como mucho un recordatorio por pedido y día; el botón queda en «Reclamado hoy» hasta mañana. Reclamar no cambia el pedido ni el stock. El texto que se propone se edita en Configuración → Plantilla del recordatorio. El aviso del Resumen «enviado sin respuesta» lleva al mismo botón.\n- Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.\n- Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.\n- Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en la unidad del producto. Un pedido con entregas parciales sigue en curso hasta completarse.\n- Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.\n- Simular envío: para practicar sin canal real.\n- Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.\n\n## Mensajes\nBandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.\n- «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.\n- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido. Las respuestas rápidas se escriben con tus palabras en Configuración → Respuestas rápidas; {fecha} se sustituye por la fecha que dijo el proveedor.\n- Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Cuando el proveedor dice que no tiene un producto, aparece además «Comprarlo a …» por cada otro proveedor que hayas apuntado para ese producto: lo pone en el carrito de ese proveedor con su formato y su precio, y no envía nada. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.\n- Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.\n- Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.\n- Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».\n- Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.\n- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.\n- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.\n\n## WhatsApp\n- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.\n- Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.\n- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).\n- Windows avisa con una notificación cuando escribe un proveedor autorizado.\n\n## Documentos\nFacturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). Las fotos se leen localmente para proponer proveedor, tipo y pedido; los adjuntos de WhatsApp de proveedores autorizados llegan solos. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.\n\n## Proveedores\nFicha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con los que aparece en documentos (sirven para reconocerlo en fotos y mensajes).\n\n## Semana\nResumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.\n\n## Cruceros\nHerramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma. Contexto del día: cada día muestra además el clima previsto para Palma (MET Norway, unos 9 días; de un día pasado solo queda la previsión que había, nunca una observación), si es festivo según el calendario laboral oficial del Govern de les Illes Balears (autonómicos y los dos locales de Palma) y los eventos que anotes tú con «Añadir evento». La pestaña «Ventas e impacto» pone los kilos vendidos de cada día con ventas registradas junto al nivel de impacto de ese día: días, media, mínimo y máximo por nivel; con menos de 8 días de un nivel la app dice que la media todavía no es fiable; no calcula correlaciones ni predice ventas. En Configuración → Cruceros en Palma, «Restaurar copia del registro» recupera el registro de cruceros (y tus fichas de barcos) desde la copia diaria; el registro actual queda guardado al lado.\n\n## Actividad\nHistorial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.\n\n## IA local\n- Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.\n- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.\n- Confirmar el tipo en la foto: guarda tu decisión en el documento.\n\n## Guía\nEsta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.\n\n## IA local, un guiño\nEl chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.\n\n## Configuración\nCopias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos. También los textos que envía la app: plantilla del pedido, plantilla del recordatorio y respuestas rápidas.\n\n## Copias y espacio\n- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).\n- Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.\n- Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.\n\n## Si algo falla\n- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.\n- Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».\n- Contraseña del recetario olvidada: con la app cerrada, borra la clave recipes_lock de la tabla settings en data/gelatostock.sqlite.\n- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.\n";
+diff --git a/src/ui/views-messages.js b/src/ui/views-messages.js
+index e4f8436..5061b2b 100644
+--- a/src/ui/views-messages.js
++++ b/src/ui/views-messages.js
+@@ -34,39 +34,74 @@ function messageMatches(x) {
+     fold(x.text + " " + supplier(x.supplier).name).includes(fold(messageQuery))
+   );
+ }
++// Botones de respuesta rápida. El texto de origen es este; la persona puede cambiar el suyo en
++// Configuración (replyTemplates) y {fecha} se sustituye por la fecha que dijo el proveedor.
++const replyDefaults = [
++  {
++    id: "gracias",
++    cats: ["delivery_date", "confirmation"],
++    label: "Vale, gracias",
++    text: "Vale, gracias. Quedamos así.",
++  },
++  {
++    id: "fecha",
++    cats: ["delivery_date"],
++    needsDate: true,
++    label: "De acuerdo con la fecha",
++    text: "De acuerdo, esperamos la entrega {fecha}. Gracias.",
++  },
++  {
++    id: "loquetengas",
++    cats: ["out_of_stock", "change"],
++    label: "Mándanos lo que tengas",
++    text: "Mándanos lo que tengas disponible y avísanos del resto. Gracias.",
++  },
++  {
++    id: "otrolado",
++    cats: ["out_of_stock", "change"],
++    label: "Lo compramos por otro lado",
++    text: "Gracias, esta vez lo resolvemos por otro lado. Deja fuera lo que falte.",
++  },
++  {
++    id: "si",
++    cats: ["question"],
++    label: "Sí, confirmado",
++    text: "Sí, confirmado. Gracias.",
++  },
++  {
++    id: "no",
++    cats: ["question"],
++    label: "No, mejor no",
++    text: "No, mejor no. Gracias por preguntar.",
++  },
++  {
++    id: "entendido",
++    cats: ["cancellation"],
++    label: "Entendido",
++    text: "Entendido, gracias por avisar.",
++  },
++  {
++    id: "llamo",
++    cats: null,
++    label: "Te llamo",
++    text: "Te llamo en un momento para concretarlo.",
++  },
++];
+ const quickReplies = (m) => {
+   const i = m.interpretation || {};
+   const when = i.deliveryDate
+     ? date(i.deliveryDate + "T12:00:00Z")
+     : i.deliveryHint || "";
+-  const options = [];
+-  if (i.category === "delivery_date" || i.category === "confirmation")
+-    options.push(["Vale, gracias", "Vale, gracias. Quedamos así."]);
+-  if (i.category === "delivery_date" && when)
+-    options.push([
+-      "De acuerdo con la fecha",
+-      `De acuerdo, esperamos la entrega ${when}. Gracias.`,
+-    ]);
+-  if (i.category === "out_of_stock" || i.category === "change")
+-    options.push(
+-      [
+-        "Mándanos lo que tengas",
+-        "Mándanos lo que tengas disponible y avísanos del resto. Gracias.",
+-      ],
+-      [
+-        "Lo compramos por otro lado",
+-        "Gracias, esta vez lo resolvemos por otro lado. Deja fuera lo que falte.",
+-      ],
+-    );
+-  if (i.category === "question")
+-    options.push(
+-      ["Sí, confirmado", "Sí, confirmado. Gracias."],
+-      ["No, mejor no", "No, mejor no. Gracias por preguntar."],
+-    );
+-  if (i.category === "cancellation")
+-    options.push(["Entendido", "Entendido, gracias por avisar."]);
+-  options.push(["Te llamo", "Te llamo en un momento para concretarlo."]);
+-  return options.slice(0, 4);
++  return replyDefaults
++    .filter(
++      (r) =>
++        (!r.cats || r.cats.includes(i.category)) && (!r.needsDate || !!when),
++    )
++    .map((r) => [
++      r.label,
++      (replyTemplates[r.id] || r.text).replaceAll("{fecha}", when),
++    ])
++    .slice(0, 4);
+ };
+ function messages() {
+   const list = state.messages.filter(messageMatches);
+diff --git a/src/ui/views-orders.js b/src/ui/views-orders.js
+index 052622b..6e35849 100644
+--- a/src/ui/views-orders.js
++++ b/src/ui/views-orders.js
+@@ -13,6 +13,11 @@ function orderReplies(o) {
+     )
+     .join("")}</div>`;
+ }
++// Un recordatorio por pedido y día: el botón se apaga cuando ya se reclamó hoy.
++function nudgedToday(o) {
++  const today = new Date().toDateString();
++  return (o.nudges || []).some((n) => new Date(n.at).toDateString() === today);
++}
+ function orderTracking() {
+   const open = state.orders.filter(
+     (o) => !["received", "cancelled"].includes(o.status),
+@@ -52,7 +57,7 @@ function orderTracking() {
+           return docs.length
+             ? `<div class="order-replies"><strong>Documentos vinculados</strong>${docs.map((d) => `<p>${pill(docTypeLabel(d.docType), "sage")} ${esc(d.name)} · ${esc(d.documentDate || d.at.slice(0, 10))}</p>`).join("")}</div>`
+             : "";
+-        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. ${o.confirmedAt ? `Confirmado por el proveedor el ${date(o.confirmedAt)}.` : "Pendiente de confirmación del proveedor."}` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Apuntado a mano en la app: no se envió ningún mensaje ni hay pagos."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "danger", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) + btn("Fijar fecha de entrega", "setExpected", "secondary", `data-order="${esc(o.id)}"`) + (o.confirmedAt ? "" : btn("Marcar confirmado", "confirmOrder", "secondary", `data-order="${esc(o.id)}"`)) : ""}</div></footer></article>`;
++        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. ${o.confirmedAt ? `Confirmado por el proveedor el ${date(o.confirmedAt)}.` : "Pendiente de confirmación del proveedor."}${(o.nudges || []).length ? ` Recordatorio enviado ${o.nudges.length === 1 ? "una vez" : o.nudges.length + " veces"}, el último el ${date(o.nudges[o.nudges.length - 1].at)} a las ${time(o.nudges[o.nudges.length - 1].at)}.` : ""}` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Apuntado a mano en la app: no se envió ningún mensaje ni hay pagos."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "danger", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) + btn("Fijar fecha de entrega", "setExpected", "secondary", `data-order="${esc(o.id)}"`) + (o.confirmedAt ? "" : btn("Marcar confirmado", "confirmOrder", "secondary", `data-order="${esc(o.id)}"`) + (o.dispatch ? btn(nudgedToday(o) ? "Reclamado hoy" : "Reclamar respuesta", "orderNudge", "secondary", `data-order="${esc(o.id)}" ${nudgedToday(o) ? "disabled" : ""}`) : "")) : ""}</div></footer></article>`;
+       })
+       .join("") ||
+     '<div class="panel empty compact">' +
+diff --git a/src/ui/views.js b/src/ui/views.js
+index 438ea0f..11ffa10 100644
+--- a/src/ui/views.js
++++ b/src/ui/views.js
+@@ -148,7 +148,12 @@ function homeNotices() {
+     return "";
+   return `<div class="notice subtle home-notice">${icon("alert")}<div>${ships ? `<strong>Hoy ${ships.ships === 1 ? "hay 1 crucero" : "hay " + ships.ships + " cruceros"} en Palma · impacto potencial ${esc(ships.impactLabel.toLowerCase())}</strong><span>${esc(ships.names.slice(0, 4).join(", "))}${ships.names.length > 4 ? "…" : ""}. ${ships.passengers === null ? "Pasajeros declarados: no disponible" : num(ships.passengers) + " pasajeros declarados al puerto"}${ships.firstArrival ? ", primera llegada " + ships.firstArrival : ""}${ships.lastDeparture ? ", última salida " + ships.lastDeparture : ""}. </span><button class="text-button" data-nav="cruises">Ver cruceros ${icon("arrow")}</button>` : ""}${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
+     follow.length
+-      ? `<strong>Pedidos que necesitan seguimiento</strong><span>${esc(follow.map((f) => f.text).join(" "))} </span><button class="text-button" data-nav="orders">Ver pedidos ${icon("arrow")}</button>`
++      ? `<strong>Pedidos que necesitan seguimiento</strong><span>${esc(follow.map((f) => f.text).join(" "))} </span>${(() => {
++          const waiting = follow.find((f) => f.kind === "unanswered");
++          return waiting
++            ? `<button class="text-button" data-action="orderNudge" data-order="${esc(waiting.order)}">Reclamar respuesta de ${esc(waiting.number)} ${icon("arrow")}</button>`
++            : "";
++        })()}<button class="text-button" data-nav="orders">Ver pedidos ${icon("arrow")}</button>`
+       : ""
+   }${
+     rises.length
+@@ -304,6 +309,6 @@ function settings() {
+             ? `<p class="muted">Y ${state.learned.length - 30} más.</p>`
+             : "")
+         : '<p class="muted">Todavía no has corregido ninguna lectura.</p>'
+-    }</section><section class="panel settings-card"><h2>Plantilla del pedido</h2><p>Es el texto que se envía por WhatsApp. Puedes cambiar saludo, despedida o firma; {lineas} se sustituye por los productos, {numero}, {negocio} y {proveedor} por sus valores.</p><pre class="template-preview">${esc(orderTemplate)}</pre><div class="setting-actions">${btn("Editar plantilla", "orderTemplateEditor", "secondary")}</div></section><section class="panel settings-card"><h2>Identidad del negocio</h2><p>El nombre y el lugar aparecen en la barra lateral, en los mensajes de pedido y en las exportaciones.</p><p><strong>${esc(state.business)}</strong>${state.place ? " · " + esc(state.place) : ""}</p>${btn("Editar identidad", "businessEditor", "secondary")}</section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
++    }</section><section class="panel settings-card"><h2>Plantilla del pedido</h2><p>Es el texto que se envía por WhatsApp. Puedes cambiar saludo, despedida o firma; {lineas} se sustituye por los productos, {numero}, {negocio} y {proveedor} por sus valores.</p><pre class="template-preview">${esc(orderTemplate)}</pre><div class="setting-actions">${btn("Editar plantilla", "orderTemplateEditor", "secondary")}</div></section><section class="panel settings-card"><h2>Plantilla del recordatorio</h2><p>Es el texto que se propone al pulsar «Reclamar respuesta» en un pedido que el proveedor no contesta. Puedes cambiarlo antes de cada envío. {numero} es el número del pedido; {dias}, el tiempo que lleva enviado.</p><pre class="template-preview">${esc(nudgeTemplate)}</pre><div class="setting-actions">${btn("Editar plantilla", "nudgeTemplateEditor", "secondary")}</div></section><section class="panel settings-card"><h2>Respuestas rápidas</h2><p>Los botones que aparecen en un mensaje para responder de un toque. Cambia el texto de los que quieras con tus palabras.</p><p>${Object.keys(replyTemplates).length ? `${Object.keys(replyTemplates).length} con tu texto; el resto, el de origen.` : "Todas con el texto de origen."}</p><div class="setting-actions">${btn("Editar respuestas", "replyTemplatesEditor", "secondary")}</div></section><section class="panel settings-card"><h2>Identidad del negocio</h2><p>El nombre y el lugar aparecen en la barra lateral, en los mensajes de pedido y en las exportaciones.</p><p><strong>${esc(state.business)}</strong>${state.place ? " · " + esc(state.place) : ""}</p>${btn("Editar identidad", "businessEditor", "secondary")}</section><section class="panel settings-card"><h2>Primeros pasos</h2><ol class="steps"><li><strong>Inventario</strong>: revisa productos, mínimos y presentaciones; registra el stock real con «Registrar stock».</li><li><strong>Proveedores</strong>: completa NIF, WhatsApp con prefijo (+34…) y otros nombres que aparezcan en sus documentos.</li><li><strong>Producción</strong>: crea tus recetas; cada día anota kilos producidos, aprueba el consumo y registra ventas y mermas.</li><li><strong>Compras</strong>: «Preparar reposición», revisa el carrito, autoriza y envía por WhatsApp; registra lo que llega en Control de entregas.</li><li><strong>WhatsApp</strong>: conecta por QR, autoriza los chats de tus proveedores y activa «Conectar al abrir».</li><li><strong>Mensajes</strong>: mira «Debes leer»; lo demás queda anotado. La IA local es opcional y solo propone.</li><li><strong>Copias</strong>: se hacen solas cada día; restaura desde aquí si hace falta.</li></ol></section><section class="panel settings-card"><h2>Sobre este prototipo</h2><p>GelatoStock · versión ${esc(appVersion)}</p><p>Datos de ejemplo persistentes. Compras y mensajes simulados. Los módulos futuros se detallan en los documentos de la carpeta del proyecto.</p><div class="notice inline">${icon("box")}<span>Esta instalación es independiente. Todavía no sincroniza con otros equipos.</span></div></section></div>`
+   );
+ }
+diff --git a/tests/domain.test.cjs b/tests/domain.test.cjs
+index 8c71f5e..d70dd56 100644
+--- a/tests/domain.test.cjs
++++ b/tests/domain.test.cjs
+@@ -7,6 +7,9 @@ const {
+   pending,
+   needed,
+   classify,
++  nudgeMessage,
++  daysSinceDispatch,
++  renderNudgeTemplate,
+ } = require("../src/domain.cjs");
+ function milkOrder() {
+   let s = apply(seed(), { type: "cart", product: "p2", packs: 2 });
+@@ -1364,3 +1367,117 @@ test("volver al proveedor habitual y quitar la alternativa deja el carrito limpi
+     /no está apuntado/,
+   );
+ });
++
++// Reclamar respuesta: deja rastro, no cambia el pedido y solo una vez al día.
++function whatsappOrder() {
++  let s = apply(seed(), { type: "cart", product: "p2", packs: 2 });
++  s = apply(s, { type: "authorize", revision: s.revision });
++  return {
++    id: s.orders[0].id,
++    pending: s,
++    sent: apply(s, {
++      type: "send",
++      order: s.orders[0].id,
++      dispatch: {
++        channel: "whatsapp",
++        to: "+34910000001",
++        messageId: "m-1",
++        at: "2026-09-18T09:00:00.000Z",
++        text: "Pedido",
++      },
++    }),
++  };
++}
++test("un recordatorio deja rastro sin tocar el pedido y no se repite el mismo día", () => {
++  const base = whatsappOrder();
++  const id = base.id;
++  let s = base.pending;
++  const dispatch = (at) => ({
++    channel: "whatsapp",
++    to: "+34910000001",
++    messageId: "n-" + at,
++    at,
++    text: "¿Nos confirmáis el pedido?",
++  });
++  // Sin envío real por WhatsApp no hay nada que reclamar, aunque el pedido figure enviado.
++  const simulado = milkOrder();
++  assert.throws(
++    () =>
++      apply(simulado, {
++        type: "nudge",
++        order: simulado.orders[0].id,
++        dispatch: dispatch("2026-09-20T10:00:00.000Z"),
++      }),
++    /no se envió por WhatsApp/,
++  );
++  assert.throws(
++    () =>
++      apply(s, {
++        type: "nudge",
++        order: id,
++        dispatch: dispatch("2026-09-20T10:00:00.000Z"),
++      }),
++    /enviado y todavía en curso/,
++  );
++  s = base.sent;
++  const before = JSON.stringify(s.orders[0].lines);
++  s = apply(s, {
++    type: "nudge",
++    order: id,
++    dispatch: dispatch("2026-09-20T10:00:00.000Z"),
++  });
++  assert.equal(s.orders[0].nudges.length, 1);
++  assert.equal(s.orders[0].status, "sent");
++  assert.equal(s.orders[0].confirmedAt, undefined);
++  assert.equal(JSON.stringify(s.orders[0].lines), before);
++  assert.match(s.activity[0].text, /Recordatorio/);
++  assert.throws(
++    () =>
++      apply(s, {
++        type: "nudge",
++        order: id,
++        dispatch: dispatch("2026-09-20T18:30:00.000Z"),
++      }),
++    /hoy/,
++  );
++  const next = apply(s, {
++    type: "nudge",
++    order: id,
++    dispatch: dispatch("2026-09-21T09:00:00.000Z"),
++  });
++  assert.equal(next.orders[0].nudges.length, 2);
++  // Un pedido confirmado ya no se reclama.
++  const done = apply(s, { type: "confirmOrder", order: id });
++  assert.throws(
++    () =>
++      apply(done, {
++        type: "nudge",
++        order: id,
++        dispatch: dispatch("2026-09-22T09:00:00.000Z"),
++      }),
++    /ya confirmó/,
++  );
++});
++test("el texto del recordatorio sale de la plantilla y dice cuántos días lleva", () => {
++  const s = whatsappOrder().sent;
++  const at = Date.parse("2026-09-21T09:00:00.000Z");
++  const text = nudgeMessage(s, s.orders[0].id, undefined, at);
++  assert.match(text, /GS-001/);
++  assert.match(text, /3 días/);
++  assert.match(text, /Artello/);
++  assert.equal(
++    daysSinceDispatch(s, s.orders[0].id, Date.parse("2026-09-19T09:00:00.000Z"))
++      .text,
++    "1 día",
++  );
++  // Una plantilla sin {numero} no se usa: el proveedor no sabría de qué pedido hablamos.
++  assert.equal(
++    renderNudgeTemplate("Hola, ¿alguna novedad?", {
++      numero: "GS-001",
++      negocio: "Artello",
++      proveedor: "Fresco Mercado",
++      dias: "3 días",
++    }),
++    nudgeMessage(s, s.orders[0].id, undefined, at),
++  );
++});
+diff --git a/tests/fixtures/ai-chat.json b/tests/fixtures/ai-chat.json
+index 7612bc2..ce66faa 100644
+--- a/tests/fixtures/ai-chat.json
++++ b/tests/fixtures/ai-chat.json
+@@ -148,5 +148,11 @@
+     "question": "Mi proveedor no tiene un producto, ¿puedo pedírselo a otro?",
+     "expect": ["otros proveedores|otro proveedor"],
+     "forbid": ["no lo sé"]
++  },
++  {
++    "id": "reclamar",
++    "question": "Un proveedor no contesta a un pedido, ¿qué puedo hacer?",
++    "expect": ["reclamar"],
++    "forbid": ["no lo sé"]
+   }
+ ]
+diff --git a/tests/server.test.cjs b/tests/server.test.cjs
+index c3065f2..ae568d5 100644
+--- a/tests/server.test.cjs
++++ b/tests/server.test.cjs
+@@ -181,9 +181,10 @@ test("envío real por WhatsApp desde el servidor: vista previa exacta, un envío
+     app.whatsapp.status = "connected";
+     const calls = [];
+     app.whatsapp.client = {
++      // Cada mensaje real trae su propio identificador; el doble también.
+       sendMessage: async (to, text) => (
+         calls.push([to, text]),
+-        { id: { _serialized: "real-1" } }
++        { id: { _serialized: "real-" + calls.length } }
+       ),
+     };
+     app.whatsapp.store.permit(account, "+34910000001", "Fresco");
+@@ -213,10 +214,36 @@ test("envío real por WhatsApp desde el servidor: vista previa exacta, un envío
+     });
+     assert.equal(r.status, 400);
+     assert.equal(calls.length, 1);
++    // Reclamar respuesta: texto propuesto, editable, una sola vez al día y sin tocar el pedido.
++    r = await post("/api/whatsapp", { type: "nudgePreview", order: order.id });
++    const nudge = await r.json();
++    assert.equal(r.status, 200);
++    assert.match(nudge.text, new RegExp(order.number));
++    assert.equal(nudge.answered, false);
++    r = await post("/api/whatsapp", {
++      type: "nudge",
++      order: order.id,
++      text: nudge.text + " (gracias)",
++    });
++    assert.equal(r.status, 200);
++    assert.equal(calls.length, 2);
++    assert.match(calls[1][1], /\(gracias\)$/);
++    s = await state();
++    assert.equal(s.orders[0].nudges.length, 1);
++    assert.equal(s.orders[0].status, "sent");
++    assert.equal(s.orders[0].confirmedAt, undefined);
++    r = await post("/api/whatsapp", {
++      type: "nudge",
++      order: order.id,
++      text: nudge.text,
++    });
++    assert.equal(r.status, 400);
++    assert.equal(calls.length, 2);
+     const view = await (
+       await fetch(origin + "/api/whatsapp?account=" + account, { headers })
+     ).json();
+-    assert.equal(view.sent.length, 1);
++    // El diagnóstico del canal registra cada envío real: el pedido y su recordatorio.
++    assert.equal(view.sent.length, 2);
+     app.whatsapp.client = null;
+   } finally {
+     if (app) await new Promise((r) => app.server.close(r));

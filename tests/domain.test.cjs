@@ -7,6 +7,9 @@ const {
   pending,
   needed,
   classify,
+  nudgeMessage,
+  daysSinceDispatch,
+  renderNudgeTemplate,
 } = require("../src/domain.cjs");
 function milkOrder() {
   let s = apply(seed(), { type: "cart", product: "p2", packs: 2 });
@@ -1362,5 +1365,119 @@ test("volver al proveedor habitual y quitar la alternativa deja el carrito limpi
   assert.throws(
     () => apply(s, { type: "cart", product: "p2", packs: 1, supplier: "s3" }),
     /no está apuntado/,
+  );
+});
+
+// Reclamar respuesta: deja rastro, no cambia el pedido y solo una vez al día.
+function whatsappOrder() {
+  let s = apply(seed(), { type: "cart", product: "p2", packs: 2 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  return {
+    id: s.orders[0].id,
+    pending: s,
+    sent: apply(s, {
+      type: "send",
+      order: s.orders[0].id,
+      dispatch: {
+        channel: "whatsapp",
+        to: "+34910000001",
+        messageId: "m-1",
+        at: "2026-09-18T09:00:00.000Z",
+        text: "Pedido",
+      },
+    }),
+  };
+}
+test("un recordatorio deja rastro sin tocar el pedido y no se repite el mismo día", () => {
+  const base = whatsappOrder();
+  const id = base.id;
+  let s = base.pending;
+  const dispatch = (at) => ({
+    channel: "whatsapp",
+    to: "+34910000001",
+    messageId: "n-" + at,
+    at,
+    text: "¿Nos confirmáis el pedido?",
+  });
+  // Sin envío real por WhatsApp no hay nada que reclamar, aunque el pedido figure enviado.
+  const simulado = milkOrder();
+  assert.throws(
+    () =>
+      apply(simulado, {
+        type: "nudge",
+        order: simulado.orders[0].id,
+        dispatch: dispatch("2026-09-20T10:00:00.000Z"),
+      }),
+    /no se envió por WhatsApp/,
+  );
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "nudge",
+        order: id,
+        dispatch: dispatch("2026-09-20T10:00:00.000Z"),
+      }),
+    /enviado y todavía en curso/,
+  );
+  s = base.sent;
+  const before = JSON.stringify(s.orders[0].lines);
+  s = apply(s, {
+    type: "nudge",
+    order: id,
+    dispatch: dispatch("2026-09-20T10:00:00.000Z"),
+  });
+  assert.equal(s.orders[0].nudges.length, 1);
+  assert.equal(s.orders[0].status, "sent");
+  assert.equal(s.orders[0].confirmedAt, undefined);
+  assert.equal(JSON.stringify(s.orders[0].lines), before);
+  assert.match(s.activity[0].text, /Recordatorio/);
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "nudge",
+        order: id,
+        dispatch: dispatch("2026-09-20T18:30:00.000Z"),
+      }),
+    /hoy/,
+  );
+  const next = apply(s, {
+    type: "nudge",
+    order: id,
+    dispatch: dispatch("2026-09-21T09:00:00.000Z"),
+  });
+  assert.equal(next.orders[0].nudges.length, 2);
+  // Un pedido confirmado ya no se reclama.
+  const done = apply(s, { type: "confirmOrder", order: id });
+  assert.throws(
+    () =>
+      apply(done, {
+        type: "nudge",
+        order: id,
+        dispatch: dispatch("2026-09-22T09:00:00.000Z"),
+      }),
+    /ya confirmó/,
+  );
+});
+test("el texto del recordatorio sale de la plantilla y dice cuántos días lleva", () => {
+  const s = whatsappOrder().sent;
+  const at = Date.parse("2026-09-21T09:00:00.000Z");
+  const text = nudgeMessage(s, s.orders[0].id, undefined, at);
+  assert.match(text, /GS-001/);
+  assert.match(text, /3 días/);
+  assert.match(text, /Artello/);
+  assert.equal(
+    daysSinceDispatch(s, s.orders[0].id, Date.parse("2026-09-19T09:00:00.000Z"))
+      .text,
+    "1 día",
+  );
+  // Una plantilla sin {numero} no se usa: el proveedor no sabría de qué pedido hablamos.
+  assert.equal(
+    renderNudgeTemplate("Hola, ¿alguna novedad?", {
+      numero: "GS-001",
+      negocio: "Artello",
+      proveedor: "Fresco Mercado",
+      dias: "3 días",
+    }),
+    nudgeMessage(s, s.orders[0].id, undefined, at),
   );
 });

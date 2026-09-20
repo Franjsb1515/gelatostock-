@@ -78,6 +78,91 @@ async function action(name, el) {
     );
     return;
   }
+  if (name === "orderNudge") {
+    // Reclamar respuesta: la app propone el texto, la persona lo lee, lo cambia si quiere y envía.
+    let preview;
+    try {
+      preview = await request("/api/whatsapp", {
+        type: "nudgePreview",
+        order: el.dataset.order,
+      });
+    } catch (e) {
+      toast(e.message);
+      return;
+    }
+    const blocked = !preview.connected
+      ? "WhatsApp no está conectado. Conecta por QR en la pantalla WhatsApp."
+      : !preview.authorized
+        ? "Este número no está autorizado para la cuenta conectada. Autorízalo en WhatsApp → Autorizar chat."
+        : "";
+    modal(
+      "Reclamar respuesta de " + preview.number,
+      "Se envía una sola vez al número de la ficha del proveedor. Puedes cambiar el texto antes de enviarlo.",
+      `<p><strong>Para:</strong> ${esc(preview.label)} · ${esc(preview.to)}</p><p class="fineprint">Enviado hace ${esc(preview.days)}${preview.answered ? ", y hay algún mensaje suyo vinculado a este pedido" : ", sin ningún mensaje suyo vinculado"}.</p><label class="field">Mensaje que se enviará<textarea name="text" class="ai-editor" maxlength="1000" rows="5">${esc(preview.text)}</textarea></label>${blocked ? `<p role="alert">${esc(blocked)}</p>` : '<p class="fineprint">Reclamar no cambia el pedido ni el stock: solo pide respuesta. Como mucho, un recordatorio por pedido y día.</p>'}`,
+      async (f) => {
+        if (blocked) return false;
+        const data = await request("/api/whatsapp", {
+          type: "nudge",
+          order: el.dataset.order,
+          text: f.get("text"),
+        });
+        applyEnvelope(data);
+        render();
+        toast("Recordatorio enviado a " + data.sent.recipient + ".");
+        return true;
+      },
+      blocked ? "Cerrar" : "Enviar recordatorio",
+    );
+    return;
+  }
+  if (name === "nudgeTemplateEditor") {
+    modal(
+      "Plantilla del recordatorio",
+      "Texto que se propone al reclamar respuesta de un pedido. Usa {numero} para el número del pedido y, si quieres, {proveedor}, {negocio} y {dias}. Vacío = texto original.",
+      `<label class="field">Plantilla<textarea name="template" maxlength="1000" rows="6">${esc(nudgeTemplate)}</textarea></label>`,
+      async (f) => {
+        applyEnvelope(
+          await request("/api/maintenance", {
+            type: "nudgeTemplate",
+            template: f.get("template"),
+          }),
+        );
+        render();
+        toast("Plantilla guardada. Se propone en los próximos recordatorios.");
+        return true;
+      },
+    );
+    return;
+  }
+  if (name === "replyTemplatesEditor") {
+    modal(
+      "Respuestas rápidas",
+      "Son los botones que salen en un mensaje para responder de un toque. Cambia el texto de los que quieras; vacío deja el original. {fecha} se sustituye por la fecha que dijo el proveedor.",
+      `<div class="template-list">${replyDefaults
+        .map(
+          (r) =>
+            `<label class="field">${esc(r.label)}<textarea name="${esc(r.id)}" maxlength="300" rows="2">${esc(replyTemplates[r.id] || r.text)}</textarea></label>`,
+        )
+        .join("")}</div>`,
+      async (f) => {
+        const templates = {};
+        for (const r of replyDefaults) {
+          const written = String(f.get(r.id) || "").trim();
+          if (written && written !== r.text) templates[r.id] = written;
+        }
+        applyEnvelope(
+          await request("/api/maintenance", {
+            type: "replyTemplates",
+            templates,
+          }),
+        );
+        render();
+        toast("Respuestas rápidas guardadas.");
+        return true;
+      },
+    );
+    return;
+  }
   if (name === "aiSavePhotoType") {
     const photo = state.photos.find((p) => p.id === aiSourcePhoto);
     if (!photo || !aiResult || aiResult.invalid) return;

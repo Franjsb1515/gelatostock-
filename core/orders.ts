@@ -85,3 +85,48 @@ export function renderOrderTemplate(
     .replaceAll("{lineas}", values.lineas)
     .trim();
 }
+// Reminder for an order sent by WhatsApp that the supplier has not answered. The person sees
+// the text, can change it and sends it: the app never nudges on its own.
+export const defaultNudgeTemplate =
+  "Hola, {proveedor}: os escribimos por el pedido {numero} de {negocio}. Lo enviamos hace {dias} y todavía no tenemos respuesta. ¿Nos confirmáis disponibilidad y fecha de entrega? Gracias.";
+export function renderNudgeTemplate(
+  template: string,
+  values: {
+    numero: string;
+    negocio: string;
+    proveedor: string;
+    dias: string;
+  },
+): string {
+  const t =
+    template && template.includes("{numero}") ? template : defaultNudgeTemplate;
+  return t
+    .replaceAll("{numero}", values.numero)
+    .replaceAll("{negocio}", values.negocio)
+    .replaceAll("{proveedor}", values.proveedor)
+    .replaceAll("{dias}", values.dias)
+    .trim();
+}
+// Days since the order was sent, written as the reminder says it ("3 días").
+export function daysSinceDispatch(s: State, orderId: string, at = Date.now()) {
+  const o = s.orders.find((x) => x.id === orderId);
+  if (!o?.dispatch) return null;
+  const days = Math.max(0, Math.floor((at - Date.parse(o.dispatch.at)) / DAY));
+  return { days, text: days === 1 ? "1 día" : `${days} días` };
+}
+export function nudgeMessage(
+  s: State,
+  orderId: string,
+  template = defaultNudgeTemplate,
+  at = Date.now(),
+): string {
+  const o = s.orders.find((x) => x.id === orderId);
+  if (!o) throw Error("Pedido inexistente.");
+  const since = daysSinceDispatch(s, orderId, at);
+  return renderNudgeTemplate(template, {
+    numero: o.number,
+    negocio: s.business,
+    proveedor: s.suppliers.find((x) => x.id === o.supplier)?.name ?? "",
+    dias: since ? since.text : "unos días",
+  });
+}

@@ -181,9 +181,10 @@ test("envío real por WhatsApp desde el servidor: vista previa exacta, un envío
     app.whatsapp.status = "connected";
     const calls = [];
     app.whatsapp.client = {
+      // Cada mensaje real trae su propio identificador; el doble también.
       sendMessage: async (to, text) => (
         calls.push([to, text]),
-        { id: { _serialized: "real-1" } }
+        { id: { _serialized: "real-" + calls.length } }
       ),
     };
     app.whatsapp.store.permit(account, "+34910000001", "Fresco");
@@ -213,10 +214,36 @@ test("envío real por WhatsApp desde el servidor: vista previa exacta, un envío
     });
     assert.equal(r.status, 400);
     assert.equal(calls.length, 1);
+    // Reclamar respuesta: texto propuesto, editable, una sola vez al día y sin tocar el pedido.
+    r = await post("/api/whatsapp", { type: "nudgePreview", order: order.id });
+    const nudge = await r.json();
+    assert.equal(r.status, 200);
+    assert.match(nudge.text, new RegExp(order.number));
+    assert.equal(nudge.answered, false);
+    r = await post("/api/whatsapp", {
+      type: "nudge",
+      order: order.id,
+      text: nudge.text + " (gracias)",
+    });
+    assert.equal(r.status, 200);
+    assert.equal(calls.length, 2);
+    assert.match(calls[1][1], /\(gracias\)$/);
+    s = await state();
+    assert.equal(s.orders[0].nudges.length, 1);
+    assert.equal(s.orders[0].status, "sent");
+    assert.equal(s.orders[0].confirmedAt, undefined);
+    r = await post("/api/whatsapp", {
+      type: "nudge",
+      order: order.id,
+      text: nudge.text,
+    });
+    assert.equal(r.status, 400);
+    assert.equal(calls.length, 2);
     const view = await (
       await fetch(origin + "/api/whatsapp?account=" + account, { headers })
     ).json();
-    assert.equal(view.sent.length, 1);
+    // El diagnóstico del canal registra cada envío real: el pedido y su recordatorio.
+    assert.equal(view.sent.length, 2);
     app.whatsapp.client = null;
   } finally {
     if (app) await new Promise((r) => app.server.close(r));

@@ -148,5 +148,11 @@
     "question": "Mi proveedor no tiene un producto, ¿puedo pedírselo a otro?",
     "expect": ["otros proveedores|otro proveedor"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "reclamar",
+    "question": "Un proveedor no contesta a un pedido, ¿qué puedo hacer?",
+    "expect": ["reclamar"],
+    "forbid": ["no lo sé"]
   }
 ]

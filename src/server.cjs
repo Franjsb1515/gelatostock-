@@ -13,6 +13,9 @@ const {
   countStatus,
   orderReminders,
   defaultOrderTemplate,
+  defaultNudgeTemplate,
+  nudgeMessage,
+  daysSinceDispatch,
   salesHistory,
   valueReport,
   daySummary,
@@ -187,6 +190,17 @@ function createApp({
   // Guided counts: a zone is due when its oldest count is older than this (0 = off).
   const orderTemplate = () =>
     store.setting("order_template") || defaultOrderTemplate;
+  // Reminder for an order without an answer, and the person's own reply texts by button.
+  const nudgeTemplate = () =>
+    store.setting("nudge_template") || defaultNudgeTemplate;
+  const replyTemplates = () => {
+    try {
+      const raw = JSON.parse(store.setting("reply_templates") || "{}");
+      return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+    } catch {
+      return {};
+    }
+  };
   const countDays = () => {
     const v = store.setting("count_days");
     return v === undefined ? 7 : Number(v);
@@ -291,6 +305,8 @@ function createApp({
     countDays: countDays(),
     dayChangeHour: dayChangeHour(),
     orderTemplate: orderTemplate(),
+    nudgeTemplate: nudgeTemplate(),
+    replyTemplates: replyTemplates(),
     cruises: cruiseInfo(),
     alerts: {
       prices: priceAlerts(state, 30),
@@ -769,6 +785,75 @@ function createApp({
             json(200, envelope(next, { sent }));
             return;
           }
+          if (data.type === "nudgePreview" || data.type === "nudge") {
+            // Reminder for an order sent and not answered. The person sees the text, can change
+            // it and sends it: at most one per order and day, and never automatically.
+            const state = store.load();
+            const order = state.orders.find(
+              (o) => o.id === String(data.order || ""),
+            );
+            if (!order) throw Error("Pedido inexistente.");
+            if (!["sent", "partial"].includes(order.status))
+              throw Error("Solo se reclama un pedido enviado y en curso.");
+            if (!order.dispatch)
+              throw Error("Ese pedido no se envió por WhatsApp.");
+            if (order.confirmedAt)
+              throw Error(
+                "El proveedor ya confirmó ese pedido: no hace falta reclamar.",
+              );
+            const today = localDate(new Date());
+            if (
+              (order.nudges || []).some(
+                (n) => localDate(new Date(n.at)) === today,
+              )
+            )
+              throw Error("Ya reclamaste ese pedido hoy. Espera a mañana.");
+            const supplier = state.suppliers.find(
+              (x) => x.id === order.supplier,
+            );
+            if (!supplier?.whatsapp)
+              throw Error(
+                "El proveedor no tiene WhatsApp en su ficha. Añádelo en Proveedores.",
+              );
+            const proposed = nudgeMessage(state, order.id, nudgeTemplate());
+            if (data.type === "nudgePreview") {
+              json(200, {
+                text: proposed,
+                to: supplier.whatsapp,
+                label: supplier.name,
+                number: order.number,
+                days: daysSinceDispatch(state, order.id)?.text || "",
+                answered: state.messages.some((m) => m.order === order.id),
+                connected: whatsapp.status === "connected",
+                authorized:
+                  !!whatsapp.account &&
+                  !!whatsapp.store.allowed(whatsapp.account, supplier.whatsapp),
+              });
+              return;
+            }
+            const text = String(data.text || "").trim();
+            if (!text || text.length > 1000)
+              throw Error(
+                "El recordatorio debe tener entre 1 y 1.000 caracteres.",
+              );
+            const sent = await whatsapp.send({
+              phone: supplier.whatsapp,
+              text,
+            });
+            const next = store.dispatch({
+              type: "nudge",
+              order: order.id,
+              dispatch: {
+                channel: "whatsapp",
+                to: sent.recipient,
+                messageId: sent.id,
+                at: sent.at,
+                text,
+              },
+            });
+            json(200, envelope(next, { sent }));
+            return;
+          }
           if (data.type === "recover") {
             const imported = await whatsapp.recover();
             json(200, { ...annotate(whatsapp.view()), imported });
@@ -939,6 +1024,40 @@ function createApp({
                 "La plantilla debe incluir {lineas}, donde van los productos.",
               );
             store.setSetting("order_template", template || undefined);
+            json(200, envelope(store.load()));
+            return;
+          }
+          if (data.type === "nudgeTemplate") {
+            const template = String(data.template || "").trim();
+            if (template.length > 1000)
+              throw Error("Plantilla demasiado larga.");
+            if (template && !template.includes("{numero}"))
+              throw Error(
+                "La plantilla debe incluir {numero}, el número del pedido.",
+              );
+            store.setSetting("nudge_template", template || undefined);
+            json(200, envelope(store.load()));
+            return;
+          }
+          if (data.type === "replyTemplates") {
+            // The person's own texts for the reply buttons, by button id. Empty = the original.
+            const raw =
+              data.templates && typeof data.templates === "object"
+                ? data.templates
+                : {};
+            const out = {};
+            for (const [key, value] of Object.entries(raw).slice(0, 30)) {
+              if (!/^[a-z]{1,40}$/.test(key)) continue;
+              const text = String(value || "").trim();
+              if (!text) continue;
+              if (text.length > 300)
+                throw Error("Cada respuesta admite hasta 300 caracteres.");
+              out[key] = text;
+            }
+            store.setSetting(
+              "reply_templates",
+              Object.keys(out).length ? JSON.stringify(out) : undefined,
+            );
             json(200, envelope(store.load()));
             return;
           }

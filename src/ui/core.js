@@ -11,6 +11,8 @@ let appVersion = "",
   countDays = 7,
   dayChangeHour = 5,
   orderTemplate = "",
+  nudgeTemplate = "",
+  replyTemplates = {},
   cruiseInfo = null,
   weeklyData = null,
   weeklyWeek = "",
@@ -214,6 +216,8 @@ function applyEnvelope(data) {
   if (data.countDays !== undefined) countDays = data.countDays;
   if (data.dayChangeHour !== undefined) dayChangeHour = data.dayChangeHour;
   if (data.orderTemplate !== undefined) orderTemplate = data.orderTemplate;
+  if (data.nudgeTemplate !== undefined) nudgeTemplate = data.nudgeTemplate;
+  if (data.replyTemplates !== undefined) replyTemplates = data.replyTemplates;
   if (data.alerts) alerts = data.alerts;
   if (data.cruises) cruiseInfo = data.cruises;
   if (data.dataDir) dataDir = data.dataDir;

@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.33.0
+# Entrada para Claude · entrega vigente 0.35.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -17,7 +17,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
-- Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; respuestas del usuario del 2026-09-20 dentro). docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
+- Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1 y la 2; respuestas del usuario del 2026-09-20 dentro). docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
 
 ## WhatsApp (seguridad)
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.

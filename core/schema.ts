@@ -120,6 +120,8 @@ const orderSchema = z.object({
   simulated: z.literal(true),
   lines: z.array(lineSchema).min(1).max(10000),
   dispatch: dispatchSchema.optional(),
+  // Reminders sent by hand when the supplier does not answer; at most one per day.
+  nudges: z.array(dispatchSchema).max(50).default([]),
   expected: documentDate.optional(),
   // Set when the supplier confirmed (by a linked reply or by hand). Never changes stock.
   confirmedAt: at.optional(),
@@ -491,6 +493,12 @@ export const actionSchema = z.intersection(
       date: documentDate,
     }),
     z.object({ type: z.literal("confirmOrder"), order: idSchema }),
+    // A reminder actually sent by WhatsApp; it never changes the order beyond leaving its trace.
+    z.object({
+      type: z.literal("nudge"),
+      order: idSchema,
+      dispatch: dispatchSchema,
+    }),
     // The supplier cannot serve a product: it leaves the order (nothing received yet for it).
     z.object({
       type: z.literal("removeLine"),

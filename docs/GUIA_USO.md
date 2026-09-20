@@ -42,6 +42,7 @@ Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), l
 - Compra en webs (Makro u otras): guarda la web en la ficha del proveedor. En el carrito aparece «Lista para …»: copia la lista y abre la web en tu navegador; compras tú con tu cuenta y la app no entra ni paga. Cuando llegue, registra la entrega.
 - Seguimiento: Resumen avisa de pedidos autorizados sin enviar desde hace un día, enviados sin respuesta desde hace un día y entregas previstas que ya pasaron sin registrar. En cada pedido enviado puedes fijar la fecha de entrega o marcarlo confirmado a mano.
 - Plantilla del pedido: en Configuración puedes cambiar el texto que se envía (saludo, despedida, firma) con {lineas}, {numero}, {negocio} y {proveedor}.
+- Reclamar respuesta: si enviaste un pedido por WhatsApp y el proveedor no contesta, el pedido trae «Reclamar respuesta». La app escribe el recordatorio (dice el número del pedido y cuántos días lleva enviado), tú lo lees, lo cambias si quieres y se envía una sola vez. Como mucho un recordatorio por pedido y día; el botón queda en «Reclamado hoy» hasta mañana. Reclamar no cambia el pedido ni el stock. El texto que se propone se edita en Configuración → Plantilla del recordatorio. El aviso del Resumen «enviado sin respuesta» lleva al mismo botón.
 - Al autorizar el carrito, si WhatsApp está conectado se abre directamente la lista para enviar los pedidos uno a uno.
 - Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.
 - Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en la unidad del producto. Un pedido con entregas parciales sigue en curso hasta completarse.
@@ -52,7 +53,7 @@ Fichas completas de cada receta: familia (crema, sorbete, postre, base, otro), l
 ## Mensajes
 Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y mensajes de demostración, agrupados por conversación de proveedor.
 - «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.
-- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido.
+- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido. Las respuestas rápidas se escriben con tus palabras en Configuración → Respuestas rápidas; {fecha} se sustituye por la fecha que dijo el proveedor.
 - Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Cuando el proveedor dice que no tiene un producto, aparece además «Comprarlo a …» por cada otro proveedor que hayas apuntado para ese producto: lo pone en el carrito de ese proveedor con su formato y su precio, y no envía nada. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.
 - Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.
 - Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.
@@ -94,7 +95,7 @@ Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de
 El chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.
 
 ## Configuración
-Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos.
+Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos. También los textos que envía la app: plantilla del pedido, plantilla del recordatorio y respuestas rápidas.
 
 ## Copias y espacio
 - Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).

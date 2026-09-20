@@ -426,6 +426,38 @@ const assert = require("node:assert/strict");
     console.log(
       "PASS: otro proveedor apuntado para el pistacho; el carrito se lo pide a Origen Coffee con su formato (2 kg) y su precio (30 €), y la ficha sigue en Gelato Italia.",
     );
+    // Textos que envía la app: recordatorio y respuestas rápidas, editables en Configuración.
+    await window
+      .getByRole("button", { name: "Configuración", exact: true })
+      .click();
+    await window
+      .getByRole("heading", { name: "Plantilla del recordatorio", exact: true })
+      .waitFor();
+    await window
+      .getByRole("button", { name: "Editar respuestas", exact: true })
+      .click();
+    await window
+      .locator("#modal-form textarea[name=llamo]")
+      .fill("Te llamo ahora mismo, Artello.");
+    await window.getByRole("button", { name: "Guardar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    await window
+      .getByRole("button", { name: "Editar respuestas", exact: true })
+      .click();
+    assert.equal(
+      await window.locator("#modal-form textarea[name=llamo]").inputValue(),
+      "Te llamo ahora mismo, Artello.",
+    );
+    await window
+      .getByRole("button", { name: "Cancelar", exact: true })
+      .first()
+      .click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    const saved = await window.evaluate(() => replyTemplates.llamo);
+    assert.equal(saved, "Te llamo ahora mismo, Artello.");
+    console.log(
+      "PASS: respuesta rápida escrita por la persona guardada y recuperada en Configuración.",
+    );
     await window
       .getByRole("button", { name: "Producción", exact: true })
       .click();

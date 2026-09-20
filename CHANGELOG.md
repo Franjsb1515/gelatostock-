@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.35.0 — 2026-09-20 · sesión 046 · fase 2 de Compras y Mensajes II
+
+Reclamar respuesta y textos propios. Un pedido enviado por WhatsApp que el proveedor no contesta trae «Reclamar respuesta»: la app propone el texto (número del pedido y días que lleva enviado), la persona lo cambia si quiere y se envía una sola vez; como mucho un recordatorio por pedido y día, y el pie del pedido deja constancia de cuántos van. Reclamar no cambia el pedido ni el stock. El aviso del Resumen «se envió y no hay respuesta» trae el mismo botón. En Configuración se editan la plantilla del recordatorio y las respuestas rápidas de Mensajes, que hasta ahora eran fijas en el código.
+
+Pruebas: 180 y 20 PASS de escritorio; chat 25/25. Informe reports/2026-09-20T22-11-20-102Z-fase-2-reclamar-respuesta-y-plantillas.md.
+
 ## 0.34.0 — 2026-09-20 · sesión 046 · fase 1 de Compras y Mensajes II
 
 Otro proveedor para el mismo producto. En Inventario, «Otros proveedores» apunta hasta cinco proveedores más por producto, cada uno con su formato y su precio, escritos por la persona. En el carrito, cada línea elige a quién se le pide y el importe usa ese precio; al autorizar se crea un pedido por proveedor elegido, con formato y precio como instantánea. Si un mensaje dice que falta un producto, aparece «Comprarlo a …» por cada proveedor apuntado, que lo pone en el carrito sin enviar nada. La ficha del producto no cambia nunca por esto. De paso: los formularios de Inventario ya no dicen «unidad base» sino la unidad del producto («Cantidad que hay ahora en kilos»), el alta de un producto ya no habla de «proveedor de demostración» y al autorizar un solo pedido el texto deja de decir «1 pedidos».

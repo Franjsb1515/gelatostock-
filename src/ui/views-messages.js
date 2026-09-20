@@ -34,39 +34,74 @@ function messageMatches(x) {
     fold(x.text + " " + supplier(x.supplier).name).includes(fold(messageQuery))
   );
 }
+// Botones de respuesta rápida. El texto de origen es este; la persona puede cambiar el suyo en
+// Configuración (replyTemplates) y {fecha} se sustituye por la fecha que dijo el proveedor.
+const replyDefaults = [
+  {
+    id: "gracias",
+    cats: ["delivery_date", "confirmation"],
+    label: "Vale, gracias",
+    text: "Vale, gracias. Quedamos así.",
+  },
+  {
+    id: "fecha",
+    cats: ["delivery_date"],
+    needsDate: true,
+    label: "De acuerdo con la fecha",
+    text: "De acuerdo, esperamos la entrega {fecha}. Gracias.",
+  },
+  {
+    id: "loquetengas",
+    cats: ["out_of_stock", "change"],
+    label: "Mándanos lo que tengas",
+    text: "Mándanos lo que tengas disponible y avísanos del resto. Gracias.",
+  },
+  {
+    id: "otrolado",
+    cats: ["out_of_stock", "change"],
+    label: "Lo compramos por otro lado",
+    text: "Gracias, esta vez lo resolvemos por otro lado. Deja fuera lo que falte.",
+  },
+  {
+    id: "si",
+    cats: ["question"],
+    label: "Sí, confirmado",
+    text: "Sí, confirmado. Gracias.",
+  },
+  {
+    id: "no",
+    cats: ["question"],
+    label: "No, mejor no",
+    text: "No, mejor no. Gracias por preguntar.",
+  },
+  {
+    id: "entendido",
+    cats: ["cancellation"],
+    label: "Entendido",
+    text: "Entendido, gracias por avisar.",
+  },
+  {
+    id: "llamo",
+    cats: null,
+    label: "Te llamo",
+    text: "Te llamo en un momento para concretarlo.",
+  },
+];
 const quickReplies = (m) => {
   const i = m.interpretation || {};
   const when = i.deliveryDate
     ? date(i.deliveryDate + "T12:00:00Z")
     : i.deliveryHint || "";
-  const options = [];
-  if (i.category === "delivery_date" || i.category === "confirmation")
-    options.push(["Vale, gracias", "Vale, gracias. Quedamos así."]);
-  if (i.category === "delivery_date" && when)
-    options.push([
-      "De acuerdo con la fecha",
-      `De acuerdo, esperamos la entrega ${when}. Gracias.`,
-    ]);
-  if (i.category === "out_of_stock" || i.category === "change")
-    options.push(
-      [
-        "Mándanos lo que tengas",
-        "Mándanos lo que tengas disponible y avísanos del resto. Gracias.",
-      ],
-      [
-        "Lo compramos por otro lado",
-        "Gracias, esta vez lo resolvemos por otro lado. Deja fuera lo que falte.",
-      ],
-    );
-  if (i.category === "question")
-    options.push(
-      ["Sí, confirmado", "Sí, confirmado. Gracias."],
-      ["No, mejor no", "No, mejor no. Gracias por preguntar."],
-    );
-  if (i.category === "cancellation")
-    options.push(["Entendido", "Entendido, gracias por avisar."]);
-  options.push(["Te llamo", "Te llamo en un momento para concretarlo."]);
-  return options.slice(0, 4);
+  return replyDefaults
+    .filter(
+      (r) =>
+        (!r.cats || r.cats.includes(i.category)) && (!r.needsDate || !!when),
+    )
+    .map((r) => [
+      r.label,
+      (replyTemplates[r.id] || r.text).replaceAll("{fecha}", when),
+    ])
+    .slice(0, 4);
 };
 function messages() {
   const list = state.messages.filter(messageMatches);

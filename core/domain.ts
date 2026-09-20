@@ -3,6 +3,7 @@ import {
   interpretReply,
   labels as replyLabels,
   normalizePhrase,
+  localDate,
 } from "./messages";
 import {
   stateSchema,
@@ -30,6 +31,10 @@ export {
   orderReminders,
   defaultOrderTemplate,
   renderOrderTemplate,
+  defaultNudgeTemplate,
+  renderNudgeTemplate,
+  nudgeMessage,
+  daysSinceDispatch,
 } from "./orders";
 import { defaultOrderTemplate, renderOrderTemplate } from "./orders";
 import { zoneLabels } from "./inventory";
@@ -613,6 +618,7 @@ export function apply(state: State, input: unknown): State {
           status: "pending",
           at: now(),
           simulated: true,
+          nudges: [],
           lines: s.cart
             .filter((l) => buyFrom(l) === supplier)
             .map((l) => ({
@@ -657,6 +663,27 @@ export function apply(state: State, input: unknown): State {
       );
       o.confirmedAt = now();
       note = `Pedido ${o.number} confirmado por el proveedor.`;
+      break;
+    }
+    // A reminder the person wrote and sent: it leaves a trace and nothing else changes.
+    case "nudge": {
+      const o = item(s.orders, a.order);
+      ensure(
+        ["sent", "partial"].includes(o.status),
+        "Solo se reclama un pedido enviado y todavía en curso.",
+      );
+      ensure(o.dispatch, "Ese pedido no se envió por WhatsApp.");
+      ensure(
+        !o.confirmedAt,
+        `El proveedor ya confirmó ${o.number}: no hace falta reclamar.`,
+      );
+      const day = localDate(new Date(a.dispatch.at));
+      ensure(
+        !o.nudges.some((n) => localDate(new Date(n.at)) === day),
+        `Ya reclamaste ${o.number} hoy. Espera a mañana.`,
+      );
+      o.nudges.push(a.dispatch);
+      note = `Recordatorio de ${o.number} enviado por WhatsApp a ${a.dispatch.to}. El pedido no cambia: sigue a la espera de respuesta.`;
       break;
     }
     case "removeLine": {

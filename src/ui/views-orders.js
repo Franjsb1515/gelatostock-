@@ -13,6 +13,11 @@ function orderReplies(o) {
     )
     .join("")}</div>`;
 }
+// Un recordatorio por pedido y día: el botón se apaga cuando ya se reclamó hoy.
+function nudgedToday(o) {
+  const today = new Date().toDateString();
+  return (o.nudges || []).some((n) => new Date(n.at).toDateString() === today);
+}
 function orderTracking() {
   const open = state.orders.filter(
     (o) => !["received", "cancelled"].includes(o.status),
@@ -52,7 +57,7 @@ function orderTracking() {
           return docs.length
             ? `<div class="order-replies"><strong>Documentos vinculados</strong>${docs.map((d) => `<p>${pill(docTypeLabel(d.docType), "sage")} ${esc(d.name)} · ${esc(d.documentDate || d.at.slice(0, 10))}</p>`).join("")}</div>`
             : "";
-        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. ${o.confirmedAt ? `Confirmado por el proveedor el ${date(o.confirmedAt)}.` : "Pendiente de confirmación del proveedor."}` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Apuntado a mano en la app: no se envió ningún mensaje ni hay pagos."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "danger", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) + btn("Fijar fecha de entrega", "setExpected", "secondary", `data-order="${esc(o.id)}"`) + (o.confirmedAt ? "" : btn("Marcar confirmado", "confirmOrder", "secondary", `data-order="${esc(o.id)}"`)) : ""}</div></footer></article>`;
+        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. ${o.confirmedAt ? `Confirmado por el proveedor el ${date(o.confirmedAt)}.` : "Pendiente de confirmación del proveedor."}${(o.nudges || []).length ? ` Recordatorio enviado ${o.nudges.length === 1 ? "una vez" : o.nudges.length + " veces"}, el último el ${date(o.nudges[o.nudges.length - 1].at)} a las ${time(o.nudges[o.nudges.length - 1].at)}.` : ""}` : o.status === "pending" || o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Apuntado a mano en la app: no se envió ningún mensaje ni hay pagos."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "danger", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) + btn("Fijar fecha de entrega", "setExpected", "secondary", `data-order="${esc(o.id)}"`) + (o.confirmedAt ? "" : btn("Marcar confirmado", "confirmOrder", "secondary", `data-order="${esc(o.id)}"`) + (o.dispatch ? btn(nudgedToday(o) ? "Reclamado hoy" : "Reclamar respuesta", "orderNudge", "secondary", `data-order="${esc(o.id)}" ${nudgedToday(o) ? "disabled" : ""}`) : "")) : ""}</div></footer></article>`;
       })
       .join("") ||
     '<div class="panel empty compact">' +
