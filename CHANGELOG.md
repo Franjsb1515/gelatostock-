@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.33.0 — 2026-09-20 · sesión 045 · fase 6 del plan de producción y ventas
+
+Repaso de claridad con los datos reales delante. Al activar un gelato, la app explica que lo producido antes no entró en ningún stock y pregunta cuántos kilos hay ahora. Una producción de un gelato sin activar lo avisa antes de aprobar. Fuera textos de «demostración» y «ficticios» donde hay datos reales (inicio, Inventario, Compras) y los últimos «producto terminado» de mensajes y apuntes.
+
+Pruebas: 175. Informe reports/2026-09-20T19-56-48-598Z-fase-6-repaso-de-claridad.md.
+
 ## 0.32.0 — 2026-09-19 · sesión 045 · fase 5 del plan de producción y ventas
 
 Qué producir hoy y Resumen. En Producción, una tabla por gelato con lo que hay, los kilos que el usuario quiere tener (los escribe ahí mismo), lo que falta y un botón que abre la producción con esos kilos; al lado, la venta media de los 14 días anteriores y para cuántos días da el stock, como hechos con su fórmula. El inicio muestra lo producido, la venta estimada, la merma y lo que queda del día, qué falta producir y si ayer quedó sin confirmar.

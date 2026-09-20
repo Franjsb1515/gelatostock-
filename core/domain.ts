@@ -318,7 +318,7 @@ export function validate(input: unknown): State {
     );
     ensure(
       !r.product || !r.ingredients.some((i) => i.product === r.product),
-      "El producto terminado no puede ser ingrediente de su propia receta.",
+      "El gelato que sale de una receta no puede ser ingrediente de esa misma receta.",
     );
   }
   for (const p of s.productions)
@@ -543,7 +543,7 @@ export function apply(state: State, input: unknown): State {
     case "authorize": {
       ensure(
         a.revision === s.revision,
-        "El carrito cambió. Revisalo antes de autorizar.",
+        "El carrito cambió. Revísalo antes de autorizar.",
       );
       ensure(s.cart.length, "El carrito está vacío.");
       for (const supplier of new Set(
@@ -574,7 +574,7 @@ export function apply(state: State, input: unknown): State {
       }
       s.cart = [];
       note =
-        "Pedidos de demostración autorizados. Ningún envío real realizado.";
+        "Pedidos creados, uno por proveedor. Todavía no se ha enviado nada: se envían desde Compras.";
       break;
     }
     case "send": {
@@ -855,7 +855,10 @@ export function apply(state: State, input: unknown): State {
       }
       if (fields.product) {
         const p = item(s.products, fields.product);
-        ensure(p.unit === "kg", "El producto terminado debe medirse en kg.");
+        ensure(
+          p.unit === "kg",
+          "El gelato que sale de la receta debe medirse en kg.",
+        );
       }
       if (id) Object.assign(item(s.recipes, id), fields);
       else s.recipes.push({ id: randomUUID(), ...fields, saleValues: [] });
@@ -890,7 +893,7 @@ export function apply(state: State, input: unknown): State {
       );
       ensure(
         !owner || owner.id === r.id,
-        `El valor de este producto terminado ya se lleva en la receta «${owner?.name}».`,
+        `El valor de venta de este gelato ya se lleva en la receta «${owner?.name}».`,
       );
       const before = saleValueOn(s, r.product, a.from);
       r.saleValues = [
@@ -1011,7 +1014,7 @@ export function apply(state: State, input: unknown): State {
           p.output.product,
           p.output.quantity,
           "output",
-          `Producto terminado: ${p.name} (${p.date})`,
+          `Gelato hecho: ${p.name} (${p.date})`,
           { production: p.id },
         );
       const short = s.products.filter(
@@ -1193,7 +1196,7 @@ export function apply(state: State, input: unknown): State {
           note: p.note,
         });
       note =
-        `${text}. Los ingredientes vuelven al stock y el producto terminado sale; los movimientos originales se conservan.` +
+        `${text}. Los ingredientes vuelven al stock y el gelato hecho sale; los apuntes originales se conservan en Actividad.` +
         (a.redo
           ? " Queda una propuesta igual para corregirla y aprobarla de nuevo."
           : "");

@@ -62,7 +62,7 @@ async function recognizeLocal(data) {
           expired = true;
           reject(
             Error(
-              "La lectura tardó demasiado. Probá una foto más pequeña o elegí el proveedor manualmente.",
+              "La lectura tardó demasiado. Prueba con una foto más pequeña o elige el proveedor a mano.",
             ),
           );
         }, 30000);

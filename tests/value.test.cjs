@@ -320,3 +320,29 @@ test("una receta nueva da de alta su gelato sola: ya admite valor, ventas y merm
   assert.equal(again.suppliers.length, s.suppliers.length);
   validate(again);
 });
+
+test("fase 6: los apuntes hablan claro y el cambio de texto no rompe ningún cálculo", () => {
+  const { daySummary, businessDay } = require("../build/domain.js");
+  const day = businessDay(new Date(), 5);
+  let s = apply(seed(), {
+    type: "setSaleValue",
+    recipe: "r1",
+    cents: 10000,
+    from: day,
+  });
+  s = produce(s, 2, day);
+  const entry = s.movements.find((m) => m.kind === "output");
+  assert.equal(entry.reason, `Gelato hecho: Gelato de chocolate (${day})`);
+  assert.equal(
+    daySummary(s, day).live.rows.find((r) => r.product === "p4").produced,
+    2,
+  );
+  assert.equal(valueReport(s, day, day).sale.produced, 20000);
+  s = apply(s, { type: "cart", product: "p2", packs: 1 });
+  s = apply(s, { type: "authorize", revision: s.revision });
+  assert.match(s.activity[0].text, /Todavía no se ha enviado nada/);
+  assert.doesNotMatch(
+    s.activity.map((a) => a.text).join(" "),
+    /demostración autorizados|producto terminado/,
+  );
+});

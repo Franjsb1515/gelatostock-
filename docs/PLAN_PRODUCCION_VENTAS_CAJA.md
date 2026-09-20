@@ -63,7 +63,7 @@ Cada fase: pruebas propias, guía actualizada, una sola versión y un solo cierr
 - [x] **Fase 3 · Valor y coste del gelato (0.30.0).** Valor por kilo de cada gelato, editable, con historial e instantánea; coste de cada producción con instantánea (sale de los precios de compra y del consumo aprobado); producción, merma e invitaciones en kilos, en coste y en valor.
 - [x] **Fase 4 · Cuánto debí vender (0.31.0).** Resumen del día en una pantalla: stock al empezar, producido, vendido estimado en kilos y en euros (kilos × valor por kilo vigente ese día), merma, invitaciones, lo que queda para mañana; desglose explicable; venta real opcional y su diferencia; confirmar el cierre con instantánea y reabrir con motivo.
 - [x] **Fase 5 · Qué producir hoy y Resumen (0.32.0).** Recomendación por reglas (objetivo − stock, con la venta media reciente al lado) e indicadores del día en el inicio.
-- [ ] **Fase 6 · Repaso transversal.** Pequeñas mejoras de claridad en toda la app, con su pregunta de control: ¿la hace más clara, rápida, fiable o coherente sin perder identidad?
+- [x] **Fase 6 · Repaso transversal (0.33.0, primera pasada con los datos reales delante; la siguiente, con lo que diga el usuario tras usarla).** Pequeñas mejoras de claridad en toda la app, con su pregunta de control: ¿la hace más clara, rápida, fiable o coherente sin perder identidad?
 
 ## Criterios de aceptación del usuario (sus 18 pasos) y dónde se cubren
 

@@ -1,10 +1,10 @@
-# Entrada para Claude · entrega vigente 0.32.0
+# Entrada para Claude · entrega vigente 0.33.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
 ## Cómo trabajar aquí
 - Proyecto en D:/CARPETAPROYECTOS/APPGELATOSTOCK. App local de escritorio (Electron) para una gelatería de Palma. Sin APIs de IA de pago ni llamadas externas ocultas.
-- Nada de jerga en pantalla: el usuario no entendió «producto terminado» y por eso no le funcionaban valor, ventas ni mermas. En la interfaz se dice «gelato», «gelato hecho» o «gelato en stock»; en el código sigue siendo recipe.product. Antes de dar algo por hecho, recorre el camino con datos como los suyos (una receta creada por él), no solo con la demo.
+- Nada de jerga en pantalla: el usuario no entendió «producto terminado» y por eso no le funcionaban valor, ventas ni mermas. En la interfaz se dice «gelato», «gelato hecho» o «gelato en stock»; en el código sigue siendo recipe.product. Tampoco textos de «demostración», «simulado» o «ficticio» donde el usuario tiene datos reales. Para leer la app como él: work/audit-fase6.cjs vuelca el texto de cada pantalla sobre una copia de data/. Antes de dar algo por hecho, recorre el camino con datos como los suyos (una receta creada por él), no solo con la demo.
 - El usuario no programa y pide respuestas MUY breves en el chat; el detalle técnico va a reports/. Antes de un encargo grande, dile qué no es viable y por qué; luego decide y construye.
 - Antes de cambiar archivos: `git status`. Ejecuta pruebas antes de proponer reescrituras. Implementa solo lo necesario para la tarea.
 - Mejora continua: cada sesión audita lo que toca y corrige al menos un hueco verificado con evidencia. Ninguna afirmación sin salida de comando o captura. No degradar garantías ni ocultar abstenciones o pruebas fallidas. Si un documento de continuidad induce a error, corrígelo en la misma sesión.
@@ -17,7 +17,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
-- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (hechas las fases 1 a 5; siguiente: fase 6, repaso transversal).
+- Plan vigente: docs/PLAN_PRODUCCION_VENTAS_CAJA.md (hechas las seis fases; queda abierto a lo que diga el usuario tras usarla).
 
 ## WhatsApp (seguridad)
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
@@ -41,4 +41,4 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 ## Pruebas y cierre de sesión
 - `npm test` · `npm run format:check` · `npm run typecheck` · `npm run package:win` · `npm run test:desktop` (usa el modelo real; tarda varios minutos; si falla en `page.screenshot: Timeout`, la pantalla del equipo está suspendida: repite con el equipo activo).
 - Cierre: informe nuevo en reports/ + CHANGELOG + TODO + entrada en docs/CONTINUIDAD.md + pruebas reales + ejecutable reconstruido si cambió src/ + commit + ZIP (work/make-zip.cjs) sin datos, credenciales, node_modules ni binarios. Conserva los informes anteriores. No marques nada como probado en Mac desde Windows.
-- Pendiente y prioridades: TODO.md. Siguiente acordado: fase 6 del plan vigente; después, Compras y Mensajes II.
+- Pendiente y prioridades: TODO.md. Siguiente acordado: Compras y Mensajes II, salvo que el usuario traiga correcciones de uso, que van primero.

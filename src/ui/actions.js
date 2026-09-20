@@ -237,12 +237,43 @@ async function action(name, el) {
     // One click from the recipe sheet: the finished product is created with the recipe's name.
     const r = state.recipes.find((x) => x.id === el.dataset.id);
     const { id, cost, balance, saleValues, manualCost, locked, ...fields } = r;
-    await mutate(
-      { type: "recipe", id, ...fields, createProduct: true },
-      "Listo: ya puedes ponerle valor de venta y registrar sus ventas y mermas.",
+    const before = state.productions
+      .filter((p) => p.recipe === r.id && p.status === "applied")
+      .reduce((n, p) => n + p.quantity, 0);
+    modal(
+      "Activar " + r.name,
+      "La app dará de alta este gelato para que puedas ponerle valor de venta y apuntar sus ventas y mermas." +
+        (before
+          ? ` Ya habías producido ${num(before)} kg antes de activarlo; esos kilos no se guardaron en ningún stock, así que la app no sabe cuánto te queda.`
+          : "") +
+        " Si ahora tienes gelato hecho, escribe cuántos kilos; si no, déjalo vacío y empieza en 0.",
+      field(
+        "Kilos que tienes ahora (opcional)",
+        "kilos",
+        "",
+        "number",
+        'min="0" max="100000" step="0.001" placeholder="0"',
+      ),
+      async (f) => {
+        const ok = await mutate(
+          { type: "recipe", id, ...fields, createProduct: true },
+          "Listo: ya puedes ponerle valor de venta y registrar sus ventas y mermas.",
+        );
+        const kilos = Math.round(Number(f.get("kilos")) * 1000) / 1000;
+        const made = state.recipes.find((x) => x.id === id)?.product;
+        if (ok && kilos > 0 && made)
+          await mutate({
+            type: "count",
+            product: made,
+            value: kilos,
+            reason: "Kilos que había al activar el gelato",
+          });
+        salesData = null;
+        render();
+        return ok;
+      },
+      "Activar",
     );
-    salesData = null;
-    render();
     return;
   }
   if (name === "duplicateRecipe") {

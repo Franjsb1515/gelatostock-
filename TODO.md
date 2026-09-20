@@ -1,4 +1,4 @@
-# TODO — estado real de 0.32.0
+# TODO — estado real de 0.33.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -6,7 +6,10 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 ## 1. Siguiente, en este orden
 
-- [ ] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las fases 1 (0.28.0), 2 (0.29.0), 3 (0.30.0), 4 (0.31.0) y 5 (0.32.0). Siguiente: fase 6, repaso transversal de claridad.
+- [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
+- [ ] [tú] Usar unos días la 0.33.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [ ] [decidir] Compras con datos reales: los pedidos siguen naciendo como «simulación» hasta enviarlos por WhatsApp, y quedan botones «Simular envío». Revisar ese vocabulario dentro de Compras y Mensajes II.
+- [ ] [app] Formularios de Inventario: todavía dicen «unidad base» («Cantidad disponible · unidad base»). Cambiarlo obliga a tocar la prueba de escritorio, que busca esos nombres.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
 - [ ] [decidir] Mermas de ingredientes con los mismos motivos y objetivo de merma con aviso (ideas previas al plan; encajan tras la fase 2).
 - [ ] [app] Compras y Mensajes II (objetivo principal del usuario: ese apartado al 100 %): sustituto o proveedor alternativo cuando falta un producto; reclamar respuesta con un clic; catálogo y precios por proveedor desde listas de precios.
