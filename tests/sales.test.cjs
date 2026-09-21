@@ -316,3 +316,91 @@ test("fase 2: las degustaciones apuntadas antes como merma se leen como invitaci
   const undone = apply(old, { type: "undoDailySales", date: "2026-09-08" });
   assert.equal(salesHistory(undone, "2026-09-08", "2026-09-08").days.length, 0);
 });
+
+test("merma de un ingrediente: los mismos motivos que el cierre del día, y la semana los junta", () => {
+  const { closeLineOf } = require("../build/sales.js");
+  const { wasteLabelOf } = require("../build/domain.js");
+  const today = new Date();
+  const day = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  // Una merma de inventario con motivo y detalle escrito por la persona.
+  let s = apply(seed(), {
+    type: "movement",
+    product: "p2",
+    kind: "waste",
+    value: 2,
+    wasteReason: "expiry",
+    reason: "garrafa abierta el lunes",
+  });
+  const first = s.movements[0];
+  assert.equal(
+    first.reason,
+    "Merma · Fin de vida útil · garrafa abierta el lunes",
+  );
+  assert.equal(stock(s, "p2"), 6);
+  // En la actividad la palabra «Merma» no se repite.
+  assert.equal(
+    s.activity[0].text,
+    "Merma: Leche entera, 2 L. Fin de vida útil · garrafa abierta el lunes",
+  );
+  // No es una línea de cierre: no cuenta como merma de un día de negocio.
+  assert.equal(closeLineOf(first), null);
+  assert.equal(wasteLabelOf(first), "Fin de vida útil");
+  // Sin detalle, solo el motivo.
+  s = apply(s, {
+    type: "movement",
+    product: "p1",
+    kind: "waste",
+    value: 0.2,
+    wasteReason: "accident",
+  });
+  assert.equal(s.movements[0].reason, "Merma · Caída o rotura");
+  // El motivo de merma no vale para una entrada, y un movimiento sin motivo se rechaza.
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "movement",
+        product: "p1",
+        kind: "entry",
+        value: 1,
+        wasteReason: "expiry",
+        reason: "compra",
+      }),
+    /solo vale para una merma/,
+  );
+  assert.throws(
+    () => apply(s, { type: "movement", product: "p1", kind: "exit", value: 1 }),
+    /Escribe el motivo/,
+  );
+  // Una merma escrita a mano antes de esta versión se lee como «Sin motivo»; no se reescribe.
+  s = apply(s, {
+    type: "movement",
+    product: "p3",
+    kind: "waste",
+    value: 0.1,
+    reason: "se cayó el bote",
+  });
+  assert.equal(s.movements[0].reason, "se cayó el bote");
+  assert.equal(wasteLabelOf(s.movements[0]), "Sin motivo");
+  // El cierre del día usa el mismo motivo y acaba en el mismo grupo de la semana.
+  s = close(s, day, [
+    { product: "p4", sold: 1, waste: 0.3, wasteReason: "accident" },
+  ]);
+  const week = weeklyReport(s, weekStart(today));
+  const group = (label) => week.wasteByReason.find((g) => g.label === label);
+  assert.equal(group("Caída o rotura").movements, 2);
+  assert.deepEqual(
+    group("Caída o rotura").lines.map((l) => [l.name, l.quantity, l.unit]),
+    [
+      ["Chocolate 70 %", 0.3, "kg"],
+      ["Café de especialidad", 0.2, "kg"],
+    ],
+  );
+  // Cada unidad se queda en su línea: no se suman litros con kilos.
+  assert.deepEqual(
+    group("Fin de vida útil").lines.map((l) => [l.quantity, l.unit]),
+    [[2, "L"]],
+  );
+  assert.equal(group("Sin motivo").movements, 1);
+  // El primero de la lista es el motivo con más apuntes.
+  assert.equal(week.wasteByReason[0].label, "Caída o rotura");
+});

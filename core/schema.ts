@@ -12,6 +12,15 @@ export const quantity = z
   );
 const signedQuantity = z.number().finite().min(-1_000_000).max(1_000_000);
 const text = (max = 200) => z.string().trim().min(1).max(max);
+// Los mismos motivos para la merma del cierre del día y para la merma de un ingrediente en
+// Inventario, para poder compararlas (las etiquetas están en core/sales.ts).
+const wasteReasonEnum = z.enum([
+  "expiry",
+  "texture",
+  "display",
+  "accident",
+  "other",
+]);
 const documentDate = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -464,7 +473,10 @@ export const actionSchema = z.intersection(
       product: idSchema,
       kind: z.enum(["entry", "exit", "waste"]),
       value: quantity.refine((n) => n > 0),
-      reason: text(500),
+      // Con motivo de merma, el texto libre es el detalle y puede ir vacío; sin él, sigue
+      // siendo obligatorio (lo comprueba core/domain.ts).
+      reason: z.string().trim().max(500).default(""),
+      wasteReason: wasteReasonEnum.optional(),
     }),
     z.object({ type: z.literal("reverse"), id: idSchema, reason: text(500) }),
     z.object({
@@ -636,9 +648,7 @@ export const actionSchema = z.intersection(
             waste: quantity.default(0),
             // Given away or eaten by the team: leaves the stock, but it is not a loss.
             gift: quantity.default(0),
-            wasteReason: z
-              .enum(["expiry", "texture", "display", "accident", "other"])
-              .optional(),
+            wasteReason: wasteReasonEnum.optional(),
           }),
         )
         .min(1)
@@ -671,9 +681,7 @@ export const actionSchema = z.intersection(
       type: z.literal("editCloseLine"),
       id: idSchema,
       quantity: quantity.refine((n) => n > 0),
-      wasteReason: z
-        .enum(["expiry", "texture", "display", "accident", "other"])
-        .optional(),
+      wasteReason: wasteReasonEnum.optional(),
     }),
     z.object({
       type: z.literal("photoType"),

@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.39.0 — 2026-09-21 · sesión 047 (segunda parte) · mermas de ingredientes con motivo
+
+Pedido tuyo: los mismos motivos que el cierre del día también para los ingredientes. En Inventario, «Entrada / salida» → «Merma / pérdida» pide ahora el motivo de una lista (fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, otro), y lo que antes escribías a mano pasa a ser un detalle opcional («se cayó el bote»). Como los motivos son los mismos, la merma del gelato y la del ingrediente se pueden mirar juntas: el resumen de la Semana trae «Mermas por motivo», con lo apuntado en el cierre y lo apuntado en Inventario, cada producto con su unidad y sin sumar kilos con litros. Las mermas que ya tenías escritas con tus palabras se quedan como están y salen como «Sin motivo»: no se reescribe ningún movimiento. Queda pendiente de acordar contigo la otra mitad de la idea: el objetivo de merma con aviso.
+
+Pruebas: 194 y 21 PASS de escritorio; chat 31/31. Informe reports/2026-09-21T14-20-00-000Z-mermas-de-ingredientes-con-motivo.md.
+
 ## 0.38.0 — 2026-09-21 · sesión 047 · aviso de mensajes nuevos
 
 Enterarte de que ha llegado un mensaje. Cuando un proveedor escribe por WhatsApp, su mensaje ya entraba solo en Mensajes y ya se leía por reglas al entrar; lo que faltaba era que te enteraras con la app abierta. Ahora aparece un aviso abajo a la derecha con el proveedor y lo que dice («Falta de producto · hay que leerlo»), y «Abrir el mensaje» te lleva a él. El aviso no redibuja la pantalla: si estás escribiendo, no pierdes nada. La notificación de Windows dice también esa lectura en vez del texto suelto. Los dos avisos se apagan juntos en Configuración → Aviso de mensajes nuevos; apagados, los mensajes entran igual. La fase 4 del plan (listas de precios en foto) sigue parada a la espera de tarifas reales.

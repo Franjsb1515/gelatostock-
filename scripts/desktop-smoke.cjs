@@ -266,6 +266,38 @@ const assert = require("node:assert/strict");
       .click();
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     assert.equal(savedStock(), 4.25);
+    // Merma de un ingrediente con los mismos motivos que el cierre del día (otro producto,
+    // para no tocar la cuenta de p1). El texto libre pasa a ser un detalle opcional.
+    await window
+      .getByRole("button", { name: "Inventario", exact: true })
+      .click();
+    await window
+      .getByRole("button", { name: "Entrada / salida", exact: true })
+      .click();
+    await window
+      .getByRole("combobox", { name: "Producto", exact: true })
+      .selectOption("p3");
+    await window
+      .getByRole("combobox", { name: "Tipo de movimiento", exact: true })
+      .selectOption("waste");
+    await window
+      .getByRole("combobox", { name: "Motivo de la merma", exact: true })
+      .selectOption("accident");
+    await window
+      .getByRole("spinbutton", { name: "Cantidad en kilos", exact: true })
+      .fill("0.2");
+    await window
+      .getByRole("textbox", { name: "Detalle (opcional)", exact: true })
+      .fill("se cayó el bote");
+    await window.getByRole("button", { name: "Guardar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.deepEqual(
+      await window.evaluate(() => {
+        const m = state.movements.find((x) => x.product === "p3");
+        return [m.kind, m.reason, product("p3").stock];
+      }),
+      ["waste", "Merma · Caída o rotura · se cayó el bote", 3],
+    );
     await window.screenshot({
       path: path.join(root, "output", "playwright", "v08-movimientos.png"),
     });

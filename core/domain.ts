@@ -48,6 +48,7 @@ import { zoneLabels } from "./inventory";
 import {
   wasteReasonText,
   wasteReasonLabels,
+  stockWasteText,
   giftText,
   closeMovements,
   closeLineOf,
@@ -58,6 +59,8 @@ export {
   giftLabel,
   wasteReasons,
   wasteReasonLabels,
+  stockWasteText,
+  wasteLabelOf,
   closeMovements,
 } from "./sales";
 import { productionCost, recipeCost, saleValueOn } from "./value";
@@ -475,8 +478,25 @@ export function apply(state: State, input: unknown): State {
     }
     case "movement": {
       const p = item(s.products, a.product);
-      move(s, p.id, a.kind === "entry" ? a.value : -a.value, a.kind, a.reason);
-      note = `${a.kind === "entry" ? "Entrada" : a.kind === "waste" ? "Merma" : "Salida"}: ${p.name}, ${a.value} ${p.unit}. ${a.reason}`;
+      ensure(
+        !a.wasteReason || a.kind === "waste",
+        "El motivo de merma solo vale para una merma.",
+      );
+      ensure(
+        !!a.reason || !!a.wasteReason,
+        "Escribe el motivo del movimiento.",
+      );
+      // Una merma con motivo se guarda con el texto de core/sales.ts, igual que las del
+      // cierre del día, para poder leer las dos por el mismo motivo.
+      const reason = a.wasteReason
+        ? stockWasteText(a.wasteReason, a.reason)
+        : a.reason;
+      move(s, p.id, a.kind === "entry" ? a.value : -a.value, a.kind, reason);
+      // En la actividad ya pone «Merma»: el motivo va sin repetir esa palabra.
+      const shown = a.wasteReason
+        ? wasteReasonLabels[a.wasteReason] + (a.reason ? ` · ${a.reason}` : "")
+        : a.reason;
+      note = `${a.kind === "entry" ? "Entrada" : a.kind === "waste" ? "Merma" : "Salida"}: ${p.name}, ${a.value} ${p.unit}. ${shown}`;
       break;
     }
     case "reverse": {

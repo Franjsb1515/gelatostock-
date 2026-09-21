@@ -180,6 +180,12 @@
     "forbid": ["no lo sé"]
   },
   {
+    "id": "merma_ingrediente",
+    "question": "¿Puedo poner el motivo cuando se me estropea un ingrediente?",
+    "expect": ["motivo"],
+    "forbid": ["no lo sé"]
+  },
+  {
     "id": "aviso_apagar",
     "question": "¿Puedo quitar el aviso de mensajes nuevos?",
     "expect": ["configuración"],

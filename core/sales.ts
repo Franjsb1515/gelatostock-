@@ -33,6 +33,37 @@ export const wasteReasonText = (date: string, reason?: WasteReason): string =>
   `Merma del día ${date}` + (reason ? ` · ${wasteReasonLabels[reason]}` : "");
 export const giftText = (date: string): string =>
   `${giftLabel} del día ${date}`;
+/**
+ * Texto de una merma registrada en Inventario (un ingrediente, no el cierre del día):
+ * «Merma · Motivo» y, si la persona lo escribe, « · detalle». Los motivos son los mismos
+ * que los del cierre a propósito, para poder comparar las dos mermas.
+ * Nunca empieza por «Merma del día», así que closeLineOf no lo confunde con un cierre.
+ */
+export const stockWasteText = (reason: WasteReason, detail?: string): string =>
+  `Merma · ${wasteReasonLabels[reason]}` +
+  (detail?.trim() ? ` · ${detail.trim()}` : "");
+const stockWastePattern = /^Merma · ([^·]+?)\s*(?: · |$)/;
+const labelOfReason = new Map<string, WasteReason>(
+  (Object.entries(wasteReasonLabels) as [WasteReason, string][]).map(
+    ([key, label]) => [label, key],
+  ),
+);
+/**
+ * Motivo de cualquier merma viva, venga del cierre del día o de Inventario, como etiqueta.
+ * «Sin motivo» cuando el movimiento no lo dice (las mermas anteriores a esta versión, que
+ * llevan el texto que escribió la persona). null si el movimiento no es una merma.
+ */
+export function wasteLabelOf(m: {
+  kind: string;
+  reason: string;
+}): string | null {
+  if (m.kind !== "waste") return null;
+  const close = closeLineOf(m);
+  // Un texto antiguo de degustación se lee como invitación, y eso no es merma.
+  if (close) return close.kind === "waste" ? close.reason : null;
+  const found = stockWastePattern.exec(m.reason)?.[1]?.trim();
+  return (found && labelOfReason.has(found) ? found : null) ?? unknownReason;
+}
 const salePattern = /^Venta del día (\d{4}-\d{2}-\d{2})/;
 const giftPattern = /^Invitación o consumo del día (\d{4}-\d{2}-\d{2})/;
 const wastePattern = /^Merma del día (\d{4}-\d{2}-\d{2})(?: · (.+))?$/;

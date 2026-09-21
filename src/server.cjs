@@ -313,6 +313,8 @@ function createApp({
     nudgeTemplate: nudgeTemplate(),
     replyTemplates: replyTemplates(),
     messageNotices: messageNotices(),
+    // Los motivos de merma, los mismos para el cierre del día y para Inventario.
+    wasteReasons: wasteReasonLabels,
     cruises: cruiseInfo(),
     // Qué le compra a cada proveedor, a qué precio y desde cuándo (core/inventory.ts).
     catalog: supplierCatalogs(state),

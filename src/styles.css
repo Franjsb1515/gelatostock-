@@ -1136,6 +1136,9 @@ td small {
   font-weight: 600;
   color: var(--ink-soft);
 }
+.field[hidden] {
+  display: none;
+}
 .field input,
 .field select,
 .field textarea,

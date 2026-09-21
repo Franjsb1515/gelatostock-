@@ -2,7 +2,7 @@
 // Days are local calendar days; a week runs Monday to Sunday.
 import type { State } from "./schema";
 import { localDate } from "./messages";
-import { closeLineOf } from "./sales";
+import { closeLineOf, wasteLabelOf } from "./sales";
 
 export type WeeklyLine = {
   product: string;
@@ -22,6 +22,12 @@ export type WeeklyReport = {
   }[];
   sales: WeeklyLine[];
   waste: WeeklyLine[];
+  /**
+   * La merma de la semana por motivo, juntando la del cierre del día y la que se apunta en
+   * Inventario: los motivos son los mismos. No se suman cantidades entre motivos porque cada
+   * producto tiene su unidad (kg, L, ud); cada motivo trae sus líneas y cuántos movimientos son.
+   */
+  wasteByReason: { label: string; lines: WeeklyLine[]; movements: number }[];
   /** Invitación o consumo: sale del stock, pero no es merma ni venta. */
   gifts: WeeklyLine[];
   receipts: WeeklyLine[];
@@ -80,6 +86,10 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
     if (line) line.quantity = Math.round((line.quantity + qty) * 1000) / 1000;
     else lines.push({ product: id, name: p.name, unit: p.unit, quantity: qty });
   };
+  const byReason = new Map<
+    string,
+    { lines: WeeklyLine[]; movements: number }
+  >();
   const sales: WeeklyLine[] = [],
     waste: WeeklyLine[] = [],
     gifts: WeeklyLine[] = [],
@@ -107,6 +117,13 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
       add(waste, m.product, qty);
       const row = dayRow(day);
       if (row) row.waste += qty;
+      const label = wasteLabelOf(m);
+      if (label) {
+        const group = byReason.get(label) ?? { lines: [], movements: 0 };
+        add(group.lines, m.product, qty);
+        group.movements++;
+        byReason.set(label, group);
+      }
     } else if (m.kind === "receipt") add(receipts, m.product, qty);
   }
   const production = s.productions
@@ -170,6 +187,11 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
     days,
     sales,
     waste,
+    wasteByReason: [...byReason.entries()]
+      .map(([label, group]) => ({ label, ...group }))
+      .sort(
+        (a, b) => b.movements - a.movements || a.label.localeCompare(b.label),
+      ),
     gifts,
     receipts,
     production,

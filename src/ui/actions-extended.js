@@ -166,6 +166,8 @@ async function extendedAction(name, el) {
           'min="0.001" max="1000000" step="0.001" required',
           "1",
         ) +
+        // Los mismos motivos que el cierre del día, para poder comparar las dos mermas.
+        `<label class="field" id="waste-reason-field" hidden>Motivo de la merma<select name="wasteReason">${options(Object.entries(wasteReasons), "expiry")}</select></label>` +
         field(
           "Motivo",
           "reason",
@@ -173,17 +175,20 @@ async function extendedAction(name, el) {
           "text",
           'required maxlength="500" placeholder="Ejemplo: consumo de barra o rotura"',
         ),
-      async (f) =>
-        mutate(
+      async (f) => {
+        const waste = f.get("kind") === "waste";
+        return mutate(
           {
             type: "movement",
             product: f.get("product"),
             kind: f.get("kind"),
             value: Number(f.get("value")),
-            reason: f.get("reason"),
+            reason: f.get("reason") || "",
+            ...(waste ? { wasteReason: f.get("wasteReason") } : {}),
           },
           "Movimiento guardado.",
-        ),
+        );
+      },
     );
     $("#modal-form select[name=product]").addEventListener("change", (e) =>
       retitleField(
@@ -191,6 +196,18 @@ async function extendedAction(name, el) {
         unitLabel("Cantidad", product(e.target.value)),
       ),
     );
+    // Con «Merma / pérdida» el motivo se elige de la lista y el texto libre pasa a ser un
+    // detalle opcional; con entrada o salida, el texto libre vuelve a ser obligatorio.
+    $("#modal-form select[name=kind]").addEventListener("change", (e) => {
+      const waste = e.target.value === "waste";
+      const reason = $("#modal-form input[name=reason]");
+      $("#waste-reason-field").hidden = !waste;
+      reason.required = !waste;
+      reason.placeholder = waste
+        ? "Ejemplo: se rompió la garrafa al abrirla"
+        : "Ejemplo: consumo de barra o rotura";
+      retitleField(reason, waste ? "Detalle (opcional)" : "Motivo");
+    });
     return true;
   }
   if (name === "reverse") {

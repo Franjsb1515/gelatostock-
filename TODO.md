@@ -1,4 +1,4 @@
-# TODO — estado real de 0.38.0
+# TODO — estado real de 0.39.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -7,11 +7,12 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 1. Siguiente, en este orden
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
-- [ ] [tú] Usar unos días la 0.38.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [ ] [tú] Usar unos días la 0.39.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
-- [ ] [decidir] Mermas de ingredientes con los mismos motivos y objetivo de merma con aviso (ideas previas al plan; encajan tras la fase 2).
+- [x] Mermas de ingredientes con los mismos motivos que el cierre del día (0.39.0, pedido por ti el 2026-09-21). La Semana trae «Mermas por motivo» con las dos juntas.
+- [ ] [decidir] Objetivo de merma con aviso (la otra mitad de aquella idea): falta acordar sobre qué se mide el objetivo (por producto, por semana, en kilos o en porcentaje) y a partir de cuándo avisa.
 - [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Hechas la 1 (0.34.0, otro proveedor del mismo producto), la 2 (0.35.0, reclamar respuesta y textos editables), la 3 (0.36.0, texto de los PDF) y la 5 (0.37.0, catálogo y precios por proveedor). Queda solo la 4, listas de precios en foto, parada hasta que mandes tus tarifas reales.
 - [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
 

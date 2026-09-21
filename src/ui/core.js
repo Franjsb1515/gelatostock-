@@ -15,6 +15,7 @@ let appVersion = "",
   nudgeTemplate = "",
   replyTemplates = {},
   messageNotices = true,
+  wasteReasons = {},
   cruiseInfo = null,
   weeklyData = null,
   weeklyWeek = "",
@@ -221,6 +222,7 @@ function applyEnvelope(data) {
   if (data.nudgeTemplate !== undefined) nudgeTemplate = data.nudgeTemplate;
   if (data.replyTemplates !== undefined) replyTemplates = data.replyTemplates;
   if (data.messageNotices !== undefined) messageNotices = data.messageNotices;
+  if (data.wasteReasons) wasteReasons = data.wasteReasons;
   if (data.alerts) alerts = data.alerts;
   if (data.catalog) catalog = data.catalog;
   if (data.cruises) cruiseInfo = data.cruises;
