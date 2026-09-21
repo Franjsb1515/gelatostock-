@@ -3,6 +3,7 @@ const fs = require("node:fs"),
 const { EventEmitter } = require("node:events");
 const { WhatsAppStore, normalize, hash } = require("./whatsapp-store.cjs");
 const { appendLog } = require("./logs.cjs");
+const { replyLabels } = require("./domain.cjs");
 class WhatsAppConnection {
   constructor(dataDir, mainStore) {
     this.store = new WhatsAppStore(dataDir);
@@ -189,22 +190,33 @@ class WhatsAppConnection {
     }
   }
   // Authorized supplier messages also enter the main inbox (rules, priorities, order link).
+  // Returns the rule reading of the message just imported, so the shell can say what arrived.
   importToInbox(supplier, sender, entry) {
-    if (typeof this.mainStore?.dispatch !== "function") return;
+    if (typeof this.mainStore?.dispatch !== "function") return undefined;
     try {
       const text = (
         entry.text || (entry.file ? "[Adjunto: " + entry.name + "]" : "")
       ).slice(0, 5000);
-      if (!text.trim()) return;
-      this.mainStore.dispatch({
+      if (!text.trim()) return undefined;
+      const id = "wa-" + hash(entry.id).slice(0, 40);
+      const next = this.mainStore.dispatch({
         type: "message",
         supplier,
         text,
-        eventId: "wa-" + hash(entry.id).slice(0, 40),
+        eventId: id,
         channel: "whatsapp",
         sender,
       });
       this.log("mensaje de " + sender + " añadido a la bandeja de proveedores");
+      const read = next?.messages?.find?.((m) => m.id === id)?.interpretation;
+      return read
+        ? {
+            category: read.category,
+            label: replyLabels[read.category] || "",
+            summary: String(read.summary || "").slice(0, 200),
+            needsReading: !!read.needsReading,
+          }
+        : undefined;
     } catch (e) {
       this.log(
         "no se pudo añadir a la bandeja: " +
@@ -485,14 +497,18 @@ class WhatsAppConnection {
     }
     if (generation === this.generation && this.status === "connected")
       if (this.store.insert(account, entry)) {
+        // Primero la bandeja (ahí se lee por reglas), luego el aviso: así el aviso puede
+        // decir qué dice el mensaje y no solo que ha llegado uno.
+        const reading = permitted.supplier
+          ? this.importToInbox(permitted.supplier, sender, entry)
+          : undefined;
         this.events.emit("message", {
           sender,
           label: permitted.label,
           text: String(entry.text || "").slice(0, 120),
           supplier: permitted.supplier || null,
+          ...(reading ? { reading } : {}),
         });
-        if (permitted.supplier)
-          this.importToInbox(permitted.supplier, sender, entry);
       }
   }
   // Real send. Only to a chat the person authorized for the connected account,

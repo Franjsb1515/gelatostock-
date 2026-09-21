@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.38.0 — 2026-09-21 · sesión 047 · aviso de mensajes nuevos
+
+Enterarte de que ha llegado un mensaje. Cuando un proveedor escribe por WhatsApp, su mensaje ya entraba solo en Mensajes y ya se leía por reglas al entrar; lo que faltaba era que te enteraras con la app abierta. Ahora aparece un aviso abajo a la derecha con el proveedor y lo que dice («Falta de producto · hay que leerlo»), y «Abrir el mensaje» te lleva a él. El aviso no redibuja la pantalla: si estás escribiendo, no pierdes nada. La notificación de Windows dice también esa lectura en vez del texto suelto. Los dos avisos se apagan juntos en Configuración → Aviso de mensajes nuevos; apagados, los mensajes entran igual. La fase 4 del plan (listas de precios en foto) sigue parada a la espera de tarifas reales.
+
+Pruebas: 193 y 21 PASS de escritorio; chat 30/30. Informe reports/2026-09-21T12-55-00-000Z-aviso-de-mensajes-nuevos.md.
+
 ## 0.37.0 — 2026-09-20 · sesión 046 · fase 5 de Compras y Mensajes II
 
 Catálogo y precios por proveedor. Cada ficha de proveedor trae «Qué le compras»: qué productos le compras, a qué precio el paquete, desde cuándo está apuntado ese precio y de dónde sale (escrito a mano, de un documento o de un mensaje), citando el documento o el mensaje; lo que no consta dice «No disponible». Si un proveedor avisa por WhatsApp de un precio claro, el mensaje lo enseña leído por reglas y ofrece «Apuntar este precio…»: eliges el producto, repasas el importe y solo entonces entra en la ficha y en el historial. Lo mismo desde un documento archivado con «Apuntar un precio». Ningún precio cambia solo. De paso, la primera carga de la app ya usa el mismo sobre de estado que el resto: hasta ahora los avisos y las plantillas estaban vacíos hasta el primer cambio.

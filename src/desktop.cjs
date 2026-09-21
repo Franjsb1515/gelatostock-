@@ -110,9 +110,16 @@ if (!app.requestSingleInstanceLock()) {
       backend.whatsapp.events.on("message", (m) => {
         try {
           if (!Notification.isSupported()) return;
+          // El aviso se puede apagar en Configuración; el mensaje entra igual en la bandeja.
+          if (backend.store.setting("message_notices_off") === "1") return;
           const n = new Notification({
-            title: "WhatsApp · " + m.label,
-            body: m.text || "Mensaje recibido",
+            title:
+              "WhatsApp · " +
+              m.label +
+              (m.reading ? " · " + m.reading.label : ""),
+            body:
+              (m.reading?.needsReading ? "Hay que leerlo. " : "") +
+              (m.text || "Mensaje recibido"),
           });
           n.on("click", () => {
             if (!win) return;

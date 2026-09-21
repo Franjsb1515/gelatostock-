@@ -355,6 +355,48 @@ test("preferencia de conexión automática y evento local al recibir un mensaje 
     c.client = null;
   }));
 
+test("el aviso de un mensaje autorizado dice lo que las reglas han leído", () =>
+  fixture(async (c) => {
+    // La bandeja es la que lee por reglas: el aviso repite esa lectura, no inventa otra.
+    c.mainStore = {
+      load: () => ({ suppliers: [] }),
+      dispatch: (a) => ({
+        messages: [
+          {
+            id: a.eventId,
+            interpretation: {
+              category: "out_of_stock",
+              needsReading: true,
+              summary: "El proveedor indica falta de producto.",
+            },
+          },
+        ],
+      }),
+    };
+    const a = c.store.bind("+34600000001");
+    c.account = a;
+    c.status = "connected";
+    c.readyAt = 0;
+    c.store.permit(a, "+34910000001", "Proveedor", "sup-1");
+    c.client = {};
+    const seen = [];
+    c.events.on("message", (m) => seen.push(m));
+    await c.receive(
+      {
+        from: "34910000001@c.us",
+        id: { _serialized: "ev-read-1" },
+        timestamp: 1,
+        body: "No nos queda nata",
+      },
+      c.generation,
+    );
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].reading.category, "out_of_stock");
+    assert.equal(seen[0].reading.label, "Falta de producto");
+    assert.equal(seen[0].reading.needsReading, true);
+    c.client = null;
+  }));
+
 test("recuperación del historial reciente importa solo lo que falta y respeta autorizaciones", () =>
   fixture(async (c) => {
     const a = c.store.bind("+34600000001");

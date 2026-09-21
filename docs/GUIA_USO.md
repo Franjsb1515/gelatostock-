@@ -67,7 +67,9 @@ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y men
 - Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.
 - Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.
 - Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).
-- Windows avisa con una notificación cuando escribe un proveedor autorizado.
+- Windows avisa con una notificación cuando escribe un proveedor autorizado, y dice qué ha leído la app en ese mensaje (por ejemplo «Falta de producto»).
+- Con la app abierta, un mensaje nuevo aparece como aviso abajo a la derecha, con el proveedor y lo que dice; «Abrir el mensaje» te lleva a él. El aviso no redibuja la pantalla ni te interrumpe si estás escribiendo.
+- Los dos avisos se apagan juntos en Configuración → Aviso de mensajes nuevos. Apagados, los mensajes entran igual y los ves al abrir Mensajes.
 
 ## Documentos
 Facturas, albaranes, recibos y pedidos por proveedor (fotos o PDF). El texto se lee en este equipo para proponer proveedor, tipo y pedido: en una foto con la cámara del ordenador (OCR) y en un PDF leyendo el texto que el propio archivo lleva dentro, que es exacto y no hace falta OCR. Si el PDF es un escaneo o una foto guardada como PDF, no lleva texto: la app lo dice y eliges el proveedor a mano o haces una foto de la hoja. Los adjuntos de WhatsApp de proveedores autorizados llegan solos, y de los PDF también se guarda su texto. Si el documento es una tarifa o una factura, «Apuntar un precio» escribe el precio de un producto de ese proveedor citando ese documento: eliges el producto, escribes el importe del paquete y queda en el historial con su origen. «Aceptar» aplica la propuesta; «Vincular pedido» lo elige a mano; «Organizar» cambia proveedor y fecha. En Control de entregas se ven los documentos de cada pedido.

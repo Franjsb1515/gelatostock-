@@ -182,6 +182,26 @@ document.addEventListener("change", async (e) => {
     render();
     return;
   }
+  if (e.target.id === "message-notices") {
+    try {
+      applyEnvelope(
+        await request("/api/maintenance", {
+          type: "messageNotices",
+          enabled: e.target.checked,
+        }),
+      );
+      if (!messageNotices) hideIncoming(true);
+      render();
+      toast(
+        e.target.checked
+          ? "Los mensajes nuevos avisan en cuanto llegan."
+          : "Sin aviso: los mensajes siguen entrando en Mensajes.",
+      );
+    } catch (err) {
+      toast(err.message);
+    }
+    return;
+  }
   if (e.target.id === "cruises-enabled") {
     try {
       applyEnvelope(

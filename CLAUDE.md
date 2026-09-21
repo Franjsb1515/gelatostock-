@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.37.0
+# Entrada para Claude · entrega vigente 0.38.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -17,7 +17,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
-- Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1, la 2, la 3 y la 5; queda la 4, parada hasta que el usuario mande tarifas reales; respuestas del usuario del 2026-09-20 dentro). docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
+- Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1, la 2, la 3 y la 5; queda la 4, parada hasta que el usuario mande tarifas reales; respuestas del usuario del 2026-09-20 dentro). Sin tarifas, se trabaja lo siguiente de TODO.md: así salió la 0.38.0. docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
 
 ## WhatsApp (seguridad)
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
@@ -32,6 +32,7 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 ## Garantías por módulo (no degradar)
 - Stock: cantidades en unidad base, recepciones solo incrementales, presentaciones del pedido como instantánea. No mezclar kg, L y ud. Un movimiento compensado no cuenta en ningún informe.
 - IA local (Qwen3 0.6B Q4, elegido tras comparar variantes): solo propone etiquetas revisables; reglas primero; no ejecuta acciones; la evidencia que genera se descarta y se muestra el original. Doble lectura del mismo modelo, sin independencia estadística. Cambiar prompts exige repetir la evaluación de 11 casos (línea base 10/11, conserva pass:false). Las reglas leen las respuestas de proveedores mejor que los modelos (80/80 frente a 55/80): no sustituir sin cifras. Pesos fuera de las fuentes; scripts/package.cjs copia solo el modelo del manifiesto.
+- Aviso de mensajes nuevos: la ventana abierta pregunta cada cinco segundos por GET /api/pulse, que lleva la revisión y la lectura por reglas del último mensaje, nunca su texto. El aviso no redibuja la pantalla (se perdería lo escrito): solo el recuadro de #incoming, y el estado se refresca al cambiar de pantalla. No cambia nada por su cuenta y se apaga en Configuración (message_notices_off), que apaga también la notificación de Windows.
 - Mensajes: el aprendizaje por correcciones cambia la lectura, nunca la decisión. Una respuesta vinculada solo fija fecha prevista y confirmación del pedido; cantidades y stock no cambian solos.
 - Precios (core/inventory.ts, acción setPrice): un precio solo se apunta si la persona lo confirma, citando el documento o el mensaje del que sale (`ref` en el historial). Ninguna lectura cambia un precio sola. El catálogo del proveedor da fecha y origen solo si la última entrada del historial coincide con el precio actual; si no, «No disponible». readPriceChange es estrecho a propósito: sin palabra de precio, con dos importes sueltos o con un porcentaje, no propone nada.
 - Cierre del día: el día de negocio y el motivo viajan en el texto del movimiento («Venta del día AAAA-MM-DD», «Merma del día AAAA-MM-DD · Motivo», «Invitación o consumo del día AAAA-MM-DD»). Todo se lee con closeLineOf de core/sales.ts (lo usan report.ts y el historial); context.ts lee las ventas. No cambies el formato sin migrarlos. El texto antiguo «· Degustación o invitación» se lee como invitación.

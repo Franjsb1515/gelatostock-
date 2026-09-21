@@ -25,6 +25,7 @@ const {
   businessDay,
   recipeCost,
   wasteReasonLabels,
+  replyLabels,
   localDate,
 } = require("../build/domain.js");
 const { recognizeLocal } = require("./ocr.cjs");
@@ -207,6 +208,8 @@ function createApp({
     const v = store.setting("count_days");
     return v === undefined ? 7 : Number(v);
   };
+  // Aviso de mensaje nuevo: dentro de la app y en el escritorio. Se puede apagar.
+  const messageNotices = () => store.setting("message_notices_off") !== "1";
   const purgeNow = () => {
     const days = retentionDays();
     if (!(days > 0)) return { skipped: true };
@@ -309,6 +312,7 @@ function createApp({
     orderTemplate: orderTemplate(),
     nudgeTemplate: nudgeTemplate(),
     replyTemplates: replyTemplates(),
+    messageNotices: messageNotices(),
     cruises: cruiseInfo(),
     // Qué le compra a cada proveedor, a qué precio y desde cuándo (core/inventory.ts).
     catalog: supplierCatalogs(state),
@@ -490,6 +494,37 @@ function createApp({
     }
     if (u.pathname === "/api/state" && req.method === "GET") {
       json(200, envelope(store.load()));
+      return;
+    }
+    // «¿Ha llegado algo?»: pregunta barata que la ventana abierta repite cada pocos segundos.
+    // Devuelve la revisión y la lectura por reglas del último mensaje, nunca su texto. La
+    // pantalla no se redibuja sola con esto: solo aparece el aviso y la persona decide.
+    if (u.pathname === "/api/pulse" && req.method === "GET") {
+      const s = store.load();
+      const last = s.messages[0];
+      const category = last?.interpretation?.category || "other";
+      json(200, {
+        revision: s.revision,
+        notices: messageNotices(),
+        unread: s.messages.filter((m) => !m.read).length,
+        toRead: s.messages.filter(
+          (m) => m.interpretation?.needsReading && !m.reviewed,
+        ).length,
+        last: last
+          ? {
+              id: last.id,
+              at: last.at,
+              read: !!last.read,
+              channel: last.channel || "",
+              supplier:
+                s.suppliers.find((x) => x.id === last.supplier)?.name || "",
+              category,
+              label: replyLabels[category],
+              summary: last.interpretation?.summary || "",
+              needsReading: !!last.interpretation?.needsReading,
+            }
+          : null,
+      });
       return;
     }
     if (u.pathname.startsWith("/api/cruises") && req.method === "GET") {
@@ -1076,6 +1111,14 @@ function createApp({
             store.setSetting(
               "reply_templates",
               Object.keys(out).length ? JSON.stringify(out) : undefined,
+            );
+            json(200, envelope(store.load()));
+            return;
+          }
+          if (data.type === "messageNotices") {
+            store.setSetting(
+              "message_notices_off",
+              data.enabled ? undefined : "1",
             );
             json(200, envelope(store.load()));
             return;

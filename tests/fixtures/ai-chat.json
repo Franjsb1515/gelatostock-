@@ -172,5 +172,17 @@
     "question": "Un proveedor me dice por WhatsApp que sube el precio, ¿se cambia solo?",
     "expect": ["confirm"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "aviso_mensaje_nuevo",
+    "question": "¿Cómo me entero de que ha llegado un mensaje de un proveedor?",
+    "expect": ["aviso|avisa"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "aviso_apagar",
+    "question": "¿Puedo quitar el aviso de mensajes nuevos?",
+    "expect": ["configuración"],
+    "forbid": ["no lo sé"]
   }
 ]

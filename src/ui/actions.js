@@ -1,6 +1,36 @@
 // Acciones principales disparadas por botones (data-action).
 // Los módulos de src/ui comparten el ámbito global y se cargan en orden desde index.html.
 async function action(name, el) {
+  // Aviso de mensaje nuevo: abrirlo trae el estado fresco y lo deja seleccionado en Mensajes.
+  if (name === "incomingOpen") {
+    const id = incomingId;
+    hideIncoming();
+    try {
+      await reloadState();
+    } catch {
+      toast("No se pudo actualizar. Abre Mensajes para verlo.");
+    }
+    const m = state.messages.find((x) => x.id === id);
+    if (!m) {
+      nav("messages");
+      return;
+    }
+    selectedMessage = id;
+    messageSupplier = "all";
+    messageFilter = "all";
+    messageQuery = "";
+    page = "messages";
+    if (!m.read) await mutate({ type: "read", id });
+    else render();
+    document
+      .querySelector(".message-detail")
+      ?.scrollIntoView({ block: "start" });
+    return;
+  }
+  if (name === "incomingHide") {
+    hideIncoming(true);
+    return;
+  }
   if (name === "aiOpen") {
     nav("ai");
     return;

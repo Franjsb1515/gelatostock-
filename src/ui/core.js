@@ -14,6 +14,7 @@ let appVersion = "",
   orderTemplate = "",
   nudgeTemplate = "",
   replyTemplates = {},
+  messageNotices = true,
   cruiseInfo = null,
   weeklyData = null,
   weeklyWeek = "",
@@ -219,11 +220,15 @@ function applyEnvelope(data) {
   if (data.orderTemplate !== undefined) orderTemplate = data.orderTemplate;
   if (data.nudgeTemplate !== undefined) nudgeTemplate = data.nudgeTemplate;
   if (data.replyTemplates !== undefined) replyTemplates = data.replyTemplates;
+  if (data.messageNotices !== undefined) messageNotices = data.messageNotices;
   if (data.alerts) alerts = data.alerts;
   if (data.catalog) catalog = data.catalog;
   if (data.cruises) cruiseInfo = data.cruises;
   if (data.dataDir) dataDir = data.dataDir;
   archiveWarning = data.archiveWarning;
+  // Con el estado recién traído, el mensaje más nuevo ya está a la vista: deja de ser «nuevo».
+  pulseSeen = state?.messages?.[0]?.id || "";
+  staleState = false;
 }
 async function reloadState() {
   applyEnvelope(await request("/api/state"));
@@ -233,6 +238,12 @@ function nav(to) {
   page = to;
   query = "";
   filter = "Todos";
+  // Si mientras tanto ha entrado algo (un mensaje de WhatsApp), esta pantalla se dibuja ya
+  // con lo nuevo. Refrescar aquí y no en medio de un formulario evita perder lo escrito.
+  if (staleState) {
+    reloadState().catch(() => render());
+    return;
+  }
   render();
 }
 const pageLabel = {
@@ -344,6 +355,40 @@ async function refreshWhatsApp() {
   }
 }
 setInterval(refreshWhatsApp, 2000);
+// ¿Ha llegado algo? Pregunta barata cada cinco segundos (revisión y lectura del último
+// mensaje, sin su texto). No redibuja la pantalla sola: si hay un mensaje nuevo aparece el
+// aviso de abajo, y lo demás espera al siguiente cambio de pantalla (nav).
+let pulseSeen = "",
+  staleState = false,
+  incomingId = "";
+async function pulse() {
+  if (!state || busy || $("#modal")?.open) return;
+  try {
+    const p = await request("/api/pulse");
+    if (p.notices !== undefined) messageNotices = p.notices;
+    if (p.revision !== state.revision) staleState = true;
+    if (!messageNotices) return;
+    if (p.last && p.last.id !== pulseSeen && !p.last.read) showIncoming(p.last);
+  } catch {
+    /* Sin conexión con el servidor local: se reintenta en el siguiente latido. */
+  }
+}
+setInterval(pulse, 5000);
+function showIncoming(last) {
+  const bar = $("#incoming");
+  if (!bar || incomingId === last.id) return;
+  incomingId = last.id;
+  bar.innerHTML = `<div class="incoming-bar"><div class="incoming-text"><strong>Mensaje nuevo de ${esc(last.supplier || "un proveedor")}</strong><p>${esc(last.label)}${last.needsReading ? " · hay que leerlo" : " · queda anotado"}</p></div><div class="incoming-actions">${btn("Abrir el mensaje", "incomingOpen", "primary")}${btn("Ahora no", "incomingHide", "secondary")}</div></div>`;
+  bar.hidden = false;
+}
+function hideIncoming(seen) {
+  const bar = $("#incoming");
+  if (!bar) return;
+  if (seen) pulseSeen = incomingId || pulseSeen;
+  incomingId = "";
+  bar.hidden = true;
+  bar.innerHTML = "";
+}
 
 // Name shown on printed pages.
 function businessName() {

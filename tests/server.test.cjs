@@ -1048,3 +1048,74 @@ test("catálogo por proveedor: el sobre de estado lo trae y apuntar un precio ci
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("latido: qué ha llegado sin traer todo el estado, con la lectura del último mensaje y el aviso apagable", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-pulse-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    const state = async () =>
+      (await (await fetch(origin + "/api/state", { headers })).json()).state;
+    const pulse = async () =>
+      await (await fetch(origin + "/api/pulse", { headers })).json();
+    // Sin la cookie de la sesión local no se contesta nada, tampoco el latido.
+    assert.equal((await fetch(origin + "/api/pulse")).status, 403);
+    const before = await pulse();
+    assert.equal(before.notices, true);
+    assert.equal(before.revision, (await state()).revision);
+    const s = await state();
+    assert.equal(
+      (
+        await post("/api/action", {
+          type: "message",
+          supplier: "s2",
+          text: "No nos queda nata hasta el jueves",
+          channel: "whatsapp",
+          revision: s.revision,
+          operationId: "p2",
+        })
+      ).status,
+      200,
+    );
+    const after = await pulse();
+    assert.ok(after.revision > before.revision);
+    assert.equal(after.last.supplier, "Fresco Mercado");
+    assert.equal(after.last.category, "out_of_stock");
+    assert.equal(after.last.label, "Falta de producto");
+    assert.equal(after.last.needsReading, true);
+    assert.equal(after.last.read, false);
+    assert.equal(after.toRead, 1);
+    assert.ok(after.unread >= 1);
+    // El latido lleva la lectura de las reglas, no el mensaje: el texto se queda en la bandeja.
+    assert.equal(after.last.text, undefined);
+    assert.match(after.last.summary, /falta de producto/i);
+    // El aviso se puede apagar; el mensaje sigue entrando igual.
+    const off = await (
+      await post("/api/maintenance", { type: "messageNotices", enabled: false })
+    ).json();
+    assert.equal(off.messageNotices, false);
+    assert.equal((await pulse()).notices, false);
+    assert.equal((await pulse()).toRead, 1);
+    const on = await (
+      await post("/api/maintenance", { type: "messageNotices", enabled: true })
+    ).json();
+    assert.equal(on.messageNotices, true);
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

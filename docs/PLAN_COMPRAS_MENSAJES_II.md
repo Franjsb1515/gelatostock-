@@ -64,14 +64,14 @@ Una fase por sesión, una versión por fase, un solo cierre (pruebas, formato, e
 - Un PDF escaneado sin texto lo dice con claridad y no inventa.
 - Decidir en esa sesión si el peso añadido al ejecutable es aceptable; si no lo es, se dice y se queda fuera.
 
-### Fase 4 · Listas de precios en foto, en serio (0.37.0)
+### Fase 4 · Listas de precios en foto, en serio (la versión que toque cuando lleguen las tarifas)
 
 - Preparación de la imagen antes del OCR con `sharp` (gris, contraste, tamaño), y lectura por líneas.
 - Pantalla de revisión: a la izquierda la foto o el PDF, a la derecha una tabla con lo leído (nombre, formato, precio) y a qué producto suyo corresponde cada línea. Se confirma línea a línea; lo que no cuadre se queda fuera.
 - Memoria de equivalencias por proveedor (TODO §3): el nombre del proveedor para un producto se recuerda y se propone la próxima vez.
 - Medición con el juego de documentos reales del punto 6 y cifra publicada en el informe.
 
-### Fase 5 · Catálogo y precios por proveedor (0.38.0)
+### Fase 5 · Catálogo y precios por proveedor (hecha en 0.37.0, adelantada porque la 4 espera las tarifas)
 
 - Ficha del proveedor: qué le compra, a qué precio y desde cuándo, con el origen de cada precio (a mano, documento o mensaje) y el documento citado.
 - Confirmar una línea de una lista escribe el precio con `source: document`; un mensaje de «sube de precio» confirmado escribe `source: message`.

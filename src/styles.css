@@ -1413,6 +1413,42 @@ dialog::backdrop {
   transform: translate(-50%, 0);
 }
 
+/* ---------- Aviso de mensaje nuevo (no redibuja la pantalla) ---------- */
+#incoming {
+  position: fixed;
+  right: var(--s-5);
+  bottom: var(--s-5);
+  z-index: 99;
+  max-width: min(380px, calc(100vw - 48px));
+}
+#incoming[hidden] {
+  display: none;
+}
+.incoming-bar {
+  display: grid;
+  gap: var(--s-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--pistacho);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--s-4);
+}
+.incoming-text strong {
+  display: block;
+  color: var(--ink-title);
+  font-size: var(--fs-14);
+}
+.incoming-text p {
+  color: var(--ink-soft);
+  font-size: var(--fs-13);
+}
+.incoming-actions {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
 /* ---------- Estados vacíos ---------- */
 .empty {
   text-align: center;

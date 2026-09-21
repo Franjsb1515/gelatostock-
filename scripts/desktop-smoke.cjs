@@ -947,6 +947,39 @@ const assert = require("node:assert/strict");
     // Sin ningún cambio registrado, la fecha y el origen del precio son «No disponible».
     assert.match(catalogo, /No disponible/);
     await w2.locator('#modal [data-action="close"]').first().click();
+    // Aviso de mensaje nuevo dentro del ejecutable: el mensaje entra por la vía del servidor
+    // (como al importarlo de WhatsApp) y la ventana abierta se entera sola, sin redibujarse.
+    await w2.locator('button[data-nav="stock"]').click();
+    assert.equal(
+      await w2.evaluate(async () => {
+        const r = await fetch("/api/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "message",
+            supplier: "s2",
+            text: "No nos queda nata hasta el jueves.",
+            channel: "whatsapp",
+            revision: state.revision,
+            operationId: crypto.randomUUID(),
+          }),
+        });
+        return r.status;
+      }),
+      200,
+    );
+    await w2.locator("#incoming").waitFor({ state: "visible", timeout: 15000 });
+    const aviso = (await w2.locator("#incoming").innerText()).replace(
+      /\s+/g,
+      " ",
+    );
+    assert.match(aviso, /Mensaje nuevo de Fresco Mercado/);
+    assert.match(aviso, /Falta de producto/);
+    assert.equal(await w2.evaluate(() => page), "stock");
+    await w2.locator('#incoming [data-action="incomingOpen"]').click();
+    await w2.locator(".message-detail").first().waitFor();
+    assert.equal(await w2.evaluate(() => page), "messages");
+    assert.equal(await w2.locator("#incoming").isVisible(), false);
     console.log(
       "PASS: OCR local automático de proveedor y propuesta en mensaje; búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.",
     );
