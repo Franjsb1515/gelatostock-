@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.40.1
+# Entrada para Claude · entrega vigente 0.40.2
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -20,6 +20,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Plan vigente: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1, la 2, la 3 y la 5; queda la 4, parada hasta que el usuario mande tarifas reales; respuestas del usuario del 2026-09-20 dentro). Sin tarifas, se trabaja lo siguiente de TODO.md: así salió la 0.38.0. docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
 
 ## WhatsApp (seguridad)
+La sesión se mantiene entre arranques: al quedar «ready» la conexión se recuerda (autoconnect) y solo se olvida con disconnect(), que es «Cerrar sesión» del usuario. close() cierra el navegador pero nunca hace logout. La migración de una vez (autoconnect_v2) enciende el recuerdo si ya había cuenta vinculada y su carpeta de sesión existe; si la persona lo apaga después, se respeta.
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
 
 ## Mapa

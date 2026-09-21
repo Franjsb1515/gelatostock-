@@ -180,6 +180,12 @@
     "forbid": ["no lo sé"]
   },
   {
+    "id": "whatsapp_sesion",
+    "question": "¿Por qué se desconecta WhatsApp cuando cierro la app?",
+    "expect": ["sesión"],
+    "forbid": ["no lo sé"]
+  },
+  {
     "id": "objetivo_merma",
     "question": "¿Puedo ponerme un tope de merma para un producto?",
     "expect": ["objetivo de merma|tope"],

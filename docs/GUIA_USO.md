@@ -66,7 +66,8 @@ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y men
 - Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.
 
 ## WhatsApp
-- Conectar por QR desde el teléfono (Dispositivos vinculados). «Conectar al abrir» reconecta sola.
+- Conectar por QR desde el teléfono (Dispositivos vinculados). **La sesión se queda guardada**: al cerrar y volver a abrir la app se reconecta sola, sin pedir otro QR, hasta que pulses «Cerrar sesión / cambiar número». Cerrar la app no cierra la sesión.
+- Si prefieres conectarte a mano cada vez, pon «Mantener la sesión al abrir» en «no».
 - Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.
 - Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).
 - Windows avisa con una notificación cuando escribe un proveedor autorizado, y dice qué ha leído la app en ese mensaje (por ejemplo «Falta de producto»).

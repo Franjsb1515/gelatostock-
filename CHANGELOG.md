@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.40.2 — 2026-09-21 · sesión 047 · WhatsApp mantiene la sesión
+
+Lo que nos dijiste: al cerrar y abrir la app, WhatsApp aparecía desconectado. La sesión nunca se perdía —sigue guardada en el disco—, pero reconectar al abrir era un interruptor aparte que había que acordarse de encender, y el tuyo estaba en «no»: por eso la app arrancaba desconectada aunque el teléfono siguiera vinculado. Ahora, al conectar por QR la app recuerda la sesión y vuelve a conectarse sola cada vez que la abres, sin pedir otro QR, hasta que pulses «Cerrar sesión / cambiar número»; entonces deja de hacerlo. Cerrar la app no cierra la sesión. Si ya tenías el teléfono vinculado, la app lo reconoce al abrirse una vez y no hace falta que toques nada. El botón de la pantalla WhatsApp pasa a decir «Mantener la sesión al abrir», y si prefieres conectarte a mano, lo pones en «no» y se respeta.
+
+Pruebas: 198 y chat 33/33. Informe reports/2026-09-21T17-10-00-000Z-whatsapp-mantiene-la-sesion.md. Comprobado sobre una copia de tu carpeta de WhatsApp: al abrirla, la app ya queda en «mantener la sesión: sí» con tu número vinculado.
+
 ## 0.40.1 — 2026-09-21 · sesión 047 · el acceso de inicio vuelve a abrir la app
 
 Corrección de un fallo que te encontraste al abrir: «ABRIR GELATOSTOCK.vbs» llevaba escrita a mano la carpeta de la versión 0.36.0, y al empaquetar una versión nueva esa carpeta se borra; por eso Windows decía «El sistema no puede encontrar el archivo especificado» (80070002). Ahora el acceso busca solo la última versión que haya en dist, así que no se rompe nunca más al subir de versión; si no encontrara ninguna, lo dice con letras claras en vez de fallar. Una prueba nueva comprueba que el acceso no vuelva a llevar una versión escrita a mano.

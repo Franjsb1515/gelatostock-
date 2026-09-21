@@ -1,4 +1,4 @@
-# TODO — estado real de 0.40.1
+# TODO — estado real de 0.40.2
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -8,7 +8,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
 - [ ] [tú] Repetir `npm run test:desktop` con el equipo despierto: en la sesión del 2026-09-21 se cortó tres veces en `page.screenshot: Timeout` (pantalla suspendida), así que la 0.40.0 no tiene la prueba de escritorio completa.
-- [ ] [tú] Usar unos días la 0.40.1 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [ ] [tú] Usar unos días la 0.40.2 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.

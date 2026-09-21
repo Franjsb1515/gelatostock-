@@ -397,6 +397,67 @@ test("el aviso de un mensaje autorizado dice lo que las reglas han leído", () =
     c.client = null;
   }));
 
+test("la sesión se recuerda al conectar y solo se olvida al cerrarla", () =>
+  fixture(async (c, dir) => {
+    // Cerrar y abrir la app no puede desconectar WhatsApp: la sesión sigue en el disco y la
+    // app se reconecta sola. Solo «Cerrar sesión» deja de reconectar.
+    assert.equal(c.autoConnect, false);
+    assert.equal(c.rememberSession(), true);
+    assert.equal(c.autoConnect, true);
+    // Volver a conectar no cambia nada ni escribe de nuevo.
+    assert.equal(c.rememberSession(), false);
+    assert.equal(c.autoConnect, true);
+    // Una instancia nueva sobre la misma carpeta la sigue recordando.
+    const { WhatsAppConnection } = require("../src/whatsapp.cjs");
+    const otra = new WhatsAppConnection(dir, {
+      load: () => ({ suppliers: [] }),
+    });
+    try {
+      assert.equal(otra.autoConnect, true);
+      assert.equal(otra.view().autoConnect, true);
+    } finally {
+      await otra.close();
+    }
+    // Cerrar la sesión (decisión de la persona) sí la olvida.
+    c.account = c.store.bind("+34600000001");
+    await c.disconnect();
+    assert.equal(c.autoConnect, false);
+    assert.equal(c.status, "disconnected");
+  }));
+
+test("una sesión ya vinculada se recuerda una sola vez, y apagarlo después se respeta", () =>
+  fixture(async (c, dir) => {
+    // Quien ya tenía WhatsApp vinculado antes de esta versión arrancaba «Desconectado»
+    // aunque la sesión siguiera en el disco: el interruptor era aparte y estaba en «no».
+    const a = c.store.bind("+34600000001");
+    c.store.set("autoconnect", "0");
+    c.store.set("autoconnect_v2", "");
+    const id = c.store.session();
+    fs.mkdirSync(path.join(c.store.dir, "sessions", "session-" + id), {
+      recursive: true,
+    });
+    const { WhatsAppConnection } = require("../src/whatsapp.cjs");
+    const abierta = new WhatsAppConnection(dir, {
+      load: () => ({ suppliers: [] }),
+    });
+    try {
+      assert.equal(abierta.autoConnect, true, "la sesión guardada se recuerda");
+      // La persona lo apaga a propósito: no se vuelve a encender al abrir otra vez.
+      abierta.autoConnect = false;
+    } finally {
+      await abierta.close();
+    }
+    const otraVez = new WhatsAppConnection(dir, {
+      load: () => ({ suppliers: [] }),
+    });
+    try {
+      assert.equal(otraVez.autoConnect, false, "se respeta lo que eligió");
+    } finally {
+      await otraVez.close();
+    }
+    assert.ok(a);
+  }));
+
 test("recuperación del historial reciente importa solo lo que falta y respeta autorizaciones", () =>
   fixture(async (c) => {
     const a = c.store.bind("+34600000001");

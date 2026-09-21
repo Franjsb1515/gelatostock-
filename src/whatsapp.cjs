@@ -19,6 +19,32 @@ class WhatsAppConnection {
     this.chain = Promise.resolve();
     // Local events for the desktop shell (native notices); never leave the process.
     this.events = new EventEmitter();
+    this.migrateRememberedSession();
+  }
+  /**
+   * Migración de una sola vez (0.40.2). Hasta aquí, reconectar al abrir era un interruptor
+   * aparte que había que acordarse de encender: quien tenía la sesión vinculada abría la app
+   * y la veía «Desconectado», aunque la sesión siguiera guardada en el disco. Si hay cuenta
+   * vinculada y su carpeta de sesión sigue existiendo, se recuerda. La marca evita repetirlo:
+   * si la persona lo apaga después, se respeta.
+   */
+  migrateRememberedSession() {
+    try {
+      if (this.store.get("autoconnect_v2")) return false;
+      this.store.set("autoconnect_v2", "1");
+      if (this.autoConnect) return false;
+      const id = this.store.get("session");
+      if (!id || !this.store.get("active")) return false;
+      const folder = path.join(this.store.dir, "sessions", "session-" + id);
+      if (!fs.existsSync(folder)) return false;
+      this.autoConnect = true;
+      this.log(
+        "sesión guardada encontrada: la app se reconectará sola al abrirse",
+      );
+      return true;
+    } catch {
+      return false;
+    }
   }
   get autoConnect() {
     return this.store.get("autoconnect") === "1";
@@ -111,6 +137,10 @@ class WhatsAppConnection {
           this.qr = null;
           this.status = "connected";
           this.reconnectAttempts = 0;
+          // La sesión queda guardada: desde ahora la app se reconecta sola al abrirse, hasta
+          // que la persona cierre la sesión. Antes había que acordarse de encender el
+          // interruptor y la app arrancaba desconectada aunque la sesión siguiera válida.
+          this.rememberSession();
           // Messages that arrived while the app was closed are not replayed as events:
           // read the recent history of each authorized chat once the sync settles.
           setTimeout(() => {
@@ -609,9 +639,18 @@ class WhatsAppConnection {
       this.sending = false;
     }
   }
+  /** Recordar la sesión: al abrir la app se reconecta sola mientras no se cierre la sesión. */
+  rememberSession() {
+    if (this.autoConnect) return false;
+    this.autoConnect = true;
+    this.log("sesión recordada: la app se reconectará sola al abrirse");
+    return true;
+  }
   async disconnect() {
     if (this.status === "closing")
       throw Error("La sesión ya se está cerrando.");
+    // Cerrar la sesión es decisión de la persona: la app deja de reconectarse sola.
+    this.autoConnect = false;
     const client = this.client;
     ++this.generation;
     this.status = "closing";
