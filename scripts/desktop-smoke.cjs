@@ -718,12 +718,42 @@ const assert = require("node:assert/strict");
       /calculado con los precios de compra[\s\S]*Calculado: .*÷ 1 kg/,
     );
     await window.locator('[data-action="setSaleValue"]').first().click();
+    // «Vale desde» viene con hoy y admite un año hacia atrás y otro hacia delante.
+    const desde = window.locator('#modal input[name="from"]');
+    const hoyValor = await desde.inputValue();
+    assert.match(hoyValor, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok((await desde.getAttribute("min")) < hoyValor);
+    assert.ok((await desde.getAttribute("max")) > hoyValor);
     await window.locator('#modal input[name="euros"]').fill("100");
     await window.locator('#modal button[type="submit"]').click();
     await window
       .locator('[data-value="sale"]', { hasText: "100,00 € por kilo" })
       .first()
       .waitFor();
+    // Y se puede fechar hacia atrás: el valor de ayer no toca el de hoy.
+    const ayer = new Date(Date.now() - 86400000);
+    const ayerValor = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, "0")}-${String(ayer.getDate()).padStart(2, "0")}`;
+    await window.locator('[data-action="setSaleValue"]').first().click();
+    await window.locator('#modal input[name="euros"]').fill("80");
+    await window.locator('#modal input[name="from"]').fill(ayerValor);
+    await window.locator('#modal button[type="submit"]').click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.deepEqual(
+      await window.evaluate(
+        (dias) => {
+          const r = state.recipes.find((x) => (x.saleValues || []).length);
+          return (r.saleValues || []).map((v) => [
+            v.from === dias[0] ? "hoy" : v.from === dias[1] ? "ayer" : v.from,
+            v.cents,
+          ]);
+        },
+        [hoyValor, ayerValor],
+      ),
+      [
+        ["ayer", 8000],
+        ["hoy", 10000],
+      ],
+    );
     await window
       .getByRole("button", { name: "Producción", exact: true })
       .click();

@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.41.0 — 2026-09-21 · sesión 047 (quinta parte) · el valor de venta se puede fechar
+
+Hasta ahora, el valor de venta de un gelato valía siempre desde el día en que lo escribías: si lo apuntabas el jueves, el lunes anterior se quedaba sin valor y su venta estimada salía «No disponible». Ahora, al escribirlo o cambiarlo, eliges **desde qué día vale**. Por defecto es hoy. Si lo escribes tarde, pones el día en que empezó a valer y la venta estimada de esos días se recalcula; si ya sabes desde cuándo sube, pones un día futuro y no cambia nada hasta que llegue. Los días anteriores a esa fecha conservan el valor que tenían, y un día ya cerrado conserva el resumen que confirmaste: la app te avisa de que algo cambió, como hasta ahora. En el aviso de Actividad se dice cuántos días cerrados quedan dentro de la fecha elegida.
+
+Pruebas: 199 y chat 34/34. La prueba de escritorio de esta versión no pudo terminarse (se corta en una captura porque el equipo se suspende); la del ejecutable anterior, la 0.40.2, sí pasó entera esta misma tarde con 21 PASS. Informe reports/2026-09-21T18-40-00-000Z-valor-de-venta-fechado.md.
+
 ## 0.40.2 — 2026-09-21 · sesión 047 · WhatsApp mantiene la sesión
 
 Lo que nos dijiste: al cerrar y abrir la app, WhatsApp aparecía desconectado. La sesión nunca se perdía —sigue guardada en el disco—, pero reconectar al abrir era un interruptor aparte que había que acordarse de encender, y el tuyo estaba en «no»: por eso la app arrancaba desconectada aunque el teléfono siguiera vinculado. Ahora, al conectar por QR la app recuerda la sesión y vuelve a conectarse sola cada vez que la abres, sin pedir otro QR, hasta que pulses «Cerrar sesión / cambiar número»; entonces deja de hacerlo. Cerrar la app no cierra la sesión. Si ya tenías el teléfono vinculado, la app lo reconoce al abrirse una vez y no hace falta que toques nada. El botón de la pantalla WhatsApp pasa a decir «Mantener la sesión al abrir», y si prefieres conectarte a mano, lo pones en «no» y se respeta.

@@ -180,6 +180,12 @@
     "forbid": ["no lo sé"]
   },
   {
+    "id": "valor_desde",
+    "question": "Escribí tarde el precio del gelato, ¿puedo ponerlo desde el lunes pasado?",
+    "expect": ["vale desde|día anterior|antes"],
+    "forbid": ["no lo sé"]
+  },
+  {
     "id": "whatsapp_sesion",
     "question": "¿Por qué se desconecta WhatsApp cuando cierro la app?",
     "expect": ["sesión"],

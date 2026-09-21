@@ -589,13 +589,19 @@ async function action(name, el) {
     const r = state.recipes.find((x) => x.id === el.dataset.id);
     const sale = name === "setSaleValue";
     const today = businessToday();
+    // Se puede fechar hacia atrás (lo escribiste tarde) y hacia delante (ya sabes desde qué
+    // día sube). Un año a cada lado es margen de sobra y evita teclear un año equivocado.
+    const dayString = (d) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const oldest = dayString(new Date(Date.now() - 365 * 86400000));
+    const latest = dayString(new Date(Date.now() + 365 * 86400000));
     const current = sale
       ? (r.saleValues || []).filter((v) => v.from <= today).pop()?.cents
       : r.cost?.manual;
     modal(
       (sale ? "Valor de venta de " : "Coste a mano de ") + r.name,
       sale
-        ? "Euros por kilo de gelato vendido. Vale desde hoy; los días anteriores conservan el valor que tenían."
+        ? "Euros por kilo de gelato vendido. Elige desde qué día vale: los días anteriores conservan el valor que tenían."
         : "Euros por kilo. Mientras exista, manda sobre el coste calculado y se rotula «escrito a mano». Déjalo vacío para quitarlo y volver al calculado. Las producciones ya aprobadas conservan su coste.",
       field(
         sale ? "Valor de venta (€ por kilo)" : "Coste (€ por kilo)",
@@ -603,13 +609,28 @@ async function action(name, el) {
         current ? (current / 100).toFixed(2) : "",
         "number",
         `min="0.01" max="100000" step="0.01" ${sale ? "required" : ""}`,
-      ),
+      ) +
+        (sale
+          ? field(
+              "Vale desde",
+              "from",
+              today,
+              "date",
+              `min="${oldest}" max="${latest}" required`,
+            ) +
+            '<p class="fineprint">Por defecto, hoy. Si lo escribes tarde, pon el día en que empezó a valer y la venta estimada de esos días se recalcula; si ya sabes desde qué día sube, pon el día futuro y no cambia nada hasta que llegue. Un día ya cerrado conserva el resumen que confirmaste y avisa de que algo cambió.</p>'
+          : ""),
       async (f) => {
         const cents = Math.round(Number(f.get("euros")) * 100);
         if (!sale && !cents && !r.cost?.manual) return true;
         await mutate(
           sale
-            ? { type: "setSaleValue", recipe: r.id, cents, from: today }
+            ? {
+                type: "setSaleValue",
+                recipe: r.id,
+                cents,
+                from: f.get("from") || today,
+              }
             : {
                 type: "setManualCost",
                 recipe: r.id,

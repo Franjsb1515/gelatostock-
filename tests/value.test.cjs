@@ -346,3 +346,58 @@ test("fase 6: los apuntes hablan claro y el cambio de texto no rompe ningún cá
     /demostración autorizados|producto terminado/,
   );
 });
+
+test("el valor de venta se puede fechar hacia atrás, nunca hacia delante, y avisa de los días cerrados", () => {
+  const hoy = new Date();
+  const dia = (resta) => {
+    const d = new Date(hoy.getTime() - resta * 86400000);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  let s = emptyTub(seed());
+  s = produce(s, 2, dia(3));
+  s = apply(s, {
+    type: "dailySales",
+    date: dia(3),
+    lines: [{ product: "p4", sold: 1 }],
+  });
+  // Escrito hoy, pero vale desde hace tres días: esa venta ya cuenta con su valor.
+  s = apply(s, {
+    type: "setSaleValue",
+    recipe: "r1",
+    cents: 9000,
+    from: dia(3),
+  });
+  assert.equal(saleValueOn(s, "p4", dia(3)), 9000);
+  assert.equal(saleValueOn(s, "p4", dia(4)), null, "antes, no");
+  assert.equal(valueReport(s, dia(3), dia(3)).sale.sold, 9000);
+  // Hacia delante también vale («desde mañana subo»), y no cambia nada hasta que llega ese día.
+  const manana = apply(s, {
+    type: "setSaleValue",
+    recipe: "r1",
+    cents: 9900,
+    from: dia(-1),
+  });
+  assert.equal(saleValueOn(manana, "p4", dia(0)), 9000, "hoy sigue igual");
+  assert.equal(saleValueOn(manana, "p4", dia(-1)), 9900, "mañana, el nuevo");
+  // Hoy, claro.
+  s = apply(s, {
+    type: "setSaleValue",
+    recipe: "r1",
+    cents: 9500,
+    from: dia(0),
+  });
+  assert.equal(saleValueOn(s, "p4", dia(0)), 9500);
+  // Con un día ya cerrado desde esa fecha, la nota lo dice: su resumen confirmado no cambia.
+  s = apply(s, { type: "confirmDay", date: dia(3), changeHour: 5 });
+  s = apply(s, {
+    type: "setSaleValue",
+    recipe: "r1",
+    cents: 9100,
+    from: dia(3),
+  });
+  assert.match(s.activity[0].text, /1 día ya cerrado desde esa fecha/);
+  assert.equal(saleValueOn(s, "p4", dia(3)), 9100);
+  // Y el cierre confirmado sigue guardado tal cual se confirmó.
+  const cerrado = s.days.find((d) => d.date === dia(3));
+  assert.equal(cerrado.status, "closed");
+});

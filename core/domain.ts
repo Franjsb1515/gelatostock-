@@ -1041,12 +1041,23 @@ export function apply(state: State, input: unknown): State {
         !owner || owner.id === r.id,
         `El valor de venta de este gelato ya se lleva en la receta «${owner?.name}».`,
       );
+      // La fecha la elige la persona: hacia atrás si lo escribió tarde, o hacia delante si ya
+      // sabe desde qué día sube. Un valor con fecha futura no cambia ningún día hasta llegar
+      // (saleValueOn coge la entrada con el `from` mayor que no pase del día mirado).
       const before = saleValueOn(s, r.product, a.from);
       r.saleValues = [
         ...r.saleValues.filter((v) => v.from !== a.from),
         { from: a.from, cents: a.cents, at: now() },
       ].sort((x, y) => x.from.localeCompare(y.from));
-      note = `Valor de venta de ${r.name}: ${eur(a.cents)} por kilo desde el ${a.from}${before !== null && before !== a.cents ? ` (antes ${eur(before)})` : ""}. Los días anteriores conservan el valor que tenían.`;
+      // Un día ya cerrado conserva el resumen que se confirmó; el propio día avisa del cambio.
+      const closedAfter = s.days.filter(
+        (d) => d.status === "closed" && d.date >= a.from,
+      ).length;
+      note =
+        `Valor de venta de ${r.name}: ${eur(a.cents)} por kilo desde el ${a.from}${before !== null && before !== a.cents ? ` (antes ${eur(before)})` : ""}. Los días anteriores conservan el valor que tenían.` +
+        (closedAfter
+          ? ` ${closedAfter} día${closedAfter === 1 ? "" : "s"} ya cerrado${closedAfter === 1 ? "" : "s"} desde esa fecha: su resumen confirmado no cambia y avisará de que algo cambió.`
+          : "");
       break;
     }
     case "setGoal": {
