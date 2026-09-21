@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.40.1 — 2026-09-21 · sesión 047 · el acceso de inicio vuelve a abrir la app
+
+Corrección de un fallo que te encontraste al abrir: «ABRIR GELATOSTOCK.vbs» llevaba escrita a mano la carpeta de la versión 0.36.0, y al empaquetar una versión nueva esa carpeta se borra; por eso Windows decía «El sistema no puede encontrar el archivo especificado» (80070002). Ahora el acceso busca solo la última versión que haya en dist, así que no se rompe nunca más al subir de versión; si no encontrara ninguna, lo dice con letras claras en vez de fallar. Una prueba nueva comprueba que el acceso no vuelva a llevar una versión escrita a mano.
+
+Pruebas: 196. El acceso se probó en seco (dice qué ejecutable abriría), después de empaquetar la 0.40.1 sigue la versión nueva sola, y el ejecutable 0.40.1 arranca con un perfil temporal.
+
 ## 0.40.0 — 2026-09-21 · sesión 047 (tercera parte) · objetivo de merma por producto
 
 La otra mitad de tu idea, con lo que decidiste: por producto y en kilos, y además en porcentaje. En cada fila de Inventario, «Objetivo de merma» pone un tope a ese producto: en su unidad («no más de 2 kg») o en porcentaje de lo que salga («no más de un 5 %»). La app mira los últimos 7 días y, si te pasas, lo dice en el Resumen de inicio con las cifras y la fórmula a la vista («0,25 kg de merma en 7 días sobre 0,75 kg que salieron, 33,3 %; tu objetivo es 0,1 kg») y marca la fila como «Merma por encima». Solo avisa: no cambia stock, ni pedidos, ni precios. El porcentaje es la merma dividida entre todo lo que salió del producto (ventas, consumo, mermas e invitaciones); un conteo no cuenta, porque un ajuste de inventario no es una salida. Se quita escribiendo 0, y editar la ficha del producto no lo borra.

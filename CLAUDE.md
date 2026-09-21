@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.40.0
+# Entrada para Claude · entrega vigente 0.40.1
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
