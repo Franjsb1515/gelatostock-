@@ -1,4 +1,4 @@
-# TODO — estado real de 0.41.0
+# TODO — estado real de 0.42.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -7,9 +7,9 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 1. Siguiente, en este orden
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
-- [ ] [tú] Repetir `npm run test:desktop` con el equipo despierto para la 0.41.0: se cortó dos veces en `page.screenshot: Timeout` con el equipo sin nadie delante, así que la comprobación nueva del «Vale desde» dentro del ejecutable no se ha visto pasar.
+- [ ] [tú] Repetir `npm run test:desktop` con el equipo despierto (pendiente desde la 0.41.0 y también para la 0.42.0): se cortó dos veces en `page.screenshot: Timeout` con el equipo sin nadie delante, así que ni el «Vale desde» ni el resto de bloques finales se han visto pasar con los ejecutables nuevos. La última pasada completa fue con el 0.40.2 (21 PASS).
 - [x] Prueba de escritorio al día: 21 PASS con el ejecutable 0.40.2 el 2026-09-21 (salida en reports/desktop-smoke-2026-09-21-v0402.txt). Incluye mermas con motivo, objetivo de merma y aviso de mensajes nuevos dentro del ejecutable.
-- [ ] [tú] Usar unos días la 0.41.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [ ] [tú] Usar unos días la 0.42.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
@@ -34,6 +34,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] Precios: un mensaje con un precio claro y un documento archivado permiten apuntar el precio citando de dónde sale (0.37.0). Falta leer las líneas de una lista de precios: es la fase 4.
 - [x] Aviso de mensajes nuevos (0.38.0). Corrección de esta lista: las reglas ya leían el mensaje **al importarlo**, no al abrir la bandeja; lo que faltaba era enterarse con la app abierta. Ahora un mensaje nuevo avisa en la pantalla (abajo a la derecha, con lo que dice) y en Windows con la misma lectura, sin redibujar lo que estés haciendo.
 - [ ] Notificaciones para entregas previstas (las de mensajes nuevos ya están, y se silencian en Configuración → Aviso de mensajes nuevos).
+- [x] Escribir tú al proveedor desde Mensajes y ver ahí la conversación con los dos lados (0.42.0, pedido por ti el 2026-09-21).
 - [ ] Recuperar adjuntos del historial y mensajes más antiguos que los que carga WhatsApp Web.
 - [ ] Memoria de equivalencias por proveedor (código de albarán → producto), consultada al leer documentos. Fase 4 del plan.
 - [ ] Los precios se apuntan desde un documento escribiendo el importe a mano: leer las líneas de la tarifa es la fase 4.

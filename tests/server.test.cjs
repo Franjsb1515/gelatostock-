@@ -1049,6 +1049,140 @@ test("catálogo por proveedor: el sobre de estado lo trae y apuntar un precio ci
   }
 });
 
+test("escribir a un proveedor desde Mensajes: solo a su chat autorizado y con el canal conectado", async () => {
+  const root = path.resolve(__dirname, "../work");
+  const dir = fs.mkdtempSync(path.join(root, "http-write-"));
+  let app;
+  try {
+    app = await createApp({ dataDir: dir });
+    const origin = new URL(app.url).origin;
+    const login = await fetch(app.url, { redirect: "manual" });
+    const headers = {
+      "Content-Type": "application/json",
+      Origin: origin,
+      Cookie: login.headers.get("set-cookie").split(";")[0],
+    };
+    const post = (p, body) =>
+      fetch(origin + p, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    const envelope = async () =>
+      await (await fetch(origin + "/api/state", { headers })).json();
+    // La demo no trae números: se le pone uno a Fresco Mercado, como haría la persona.
+    const revision = (await envelope()).state.revision;
+    assert.equal(
+      (
+        await post("/api/action", {
+          type: "supplier",
+          id: "s2",
+          name: "Fresco Mercado",
+          initials: "FM",
+          category: "Lácteos y pastelería",
+          delivery: "Lunes a viernes",
+          color: "rose",
+          whatsapp: "+34910000123",
+          revision,
+          operationId: "w-1",
+        })
+      ).status,
+      200,
+    );
+    // Sin WhatsApp conectado no se envía nada.
+    let r = await post("/api/whatsapp", {
+      type: "supplierMessage",
+      supplier: "s2",
+      text: "Hola",
+    });
+    assert.equal(r.status, 400);
+    const account = app.whatsapp.store.bind("+34600000001");
+    app.whatsapp.account = account;
+    app.whatsapp.status = "connected";
+    const calls = [];
+    app.whatsapp.client = {
+      sendMessage: async (to, text) => (
+        calls.push([to, text]),
+        { id: { _serialized: "libre-" + calls.length } }
+      ),
+    };
+    // Un proveedor sin chat autorizado tampoco.
+    r = await post("/api/whatsapp", {
+      type: "supplierMessage",
+      supplier: "s2",
+      text: "Hola",
+    });
+    assert.equal(r.status, 400);
+    assert.equal(calls.length, 0);
+    // Ni un proveedor que no existe, ni un texto vacío.
+    assert.equal(
+      (
+        await post("/api/whatsapp", {
+          type: "supplierMessage",
+          supplier: "nadie",
+          text: "Hola",
+        })
+      ).status,
+      400,
+    );
+    // Fresco Mercado tiene su número en la ficha de la demo: se autoriza ese chat.
+    const state = (await envelope()).state;
+    const fresco = state.suppliers.find((x) => x.id === "s2");
+    app.whatsapp.store.permit(account, fresco.whatsapp, fresco.name, fresco.id);
+    assert.equal(
+      (
+        await post("/api/whatsapp", {
+          type: "supplierMessage",
+          supplier: "s2",
+          text: "   ",
+        })
+      ).status,
+      400,
+    );
+    r = await post("/api/whatsapp", {
+      type: "supplierMessage",
+      supplier: "s2",
+      text: "Buenos días, ¿tenéis nata esta semana?",
+    });
+    assert.equal(r.status, 200);
+    assert.equal(calls.length, 1);
+    assert.match(calls[0][1], /¿tenéis nata esta semana\?$/);
+    // El sobre de estado trae la conversación: lo enviado queda con ese proveedor.
+    const after = await r.json();
+    assert.equal(after.chats.bySupplier.s2.length, 1);
+    assert.equal(
+      after.chats.bySupplier.s2[0].text,
+      "Buenos días, ¿tenéis nata esta semana?",
+    );
+    assert.equal(after.chats.connected, true);
+    assert.ok(after.chats.ready.includes("s2"));
+    // Un chat autorizado sin proveedor no entra en la bandeja, y el sobre lo cuenta.
+    app.whatsapp.store.permit(account, "+34910009999", "Mi otro número");
+    app.whatsapp.readyAt = 0;
+    await app.whatsapp.receive(
+      {
+        from: "34910009999@c.us",
+        id: { _serialized: "suelto-1" },
+        timestamp: 1,
+        body: "mensaje de un chat sin proveedor",
+      },
+      app.whatsapp.generation,
+    );
+    const sinProveedor = await envelope();
+    assert.equal(sinProveedor.chats.unlinked, 1);
+    assert.equal(
+      sinProveedor.state.messages.filter((m) => m.channel === "whatsapp")
+        .length,
+      0,
+      "no entra en la bandeja de proveedores",
+    );
+    app.whatsapp.client = null;
+  } finally {
+    if (app) await new Promise((r) => app.server.close(r));
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("latido: qué ha llegado sin traer todo el estado, con la lectura del último mensaje y el aviso apagable", async () => {
   const root = path.resolve(__dirname, "../work");
   const dir = fs.mkdtempSync(path.join(root, "http-pulse-"));

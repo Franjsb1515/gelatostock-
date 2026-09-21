@@ -351,6 +351,16 @@ const assert = require("node:assert/strict");
       path: path.join(root, "output", "playwright", "v08-movimientos.png"),
     });
     await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
+    // Escribir al proveedor desde Mensajes: sin WhatsApp conectado, la app lo dice y lleva
+    // a la pantalla del canal en vez de abrir un formulario que no podría enviar.
+    await window
+      .getByRole("button", { name: "Escribir a un proveedor", exact: true })
+      .click();
+    await window
+      .locator("#toast.show", { hasText: "Conecta WhatsApp" })
+      .waitFor();
+    assert.equal(await window.evaluate(() => page), "whatsapp");
+    await window.locator('.icon-button[aria-label="Ver mensajes"]').click();
     await window
       .getByRole("button", { name: "Simular mensaje", exact: true })
       .click();

@@ -180,6 +180,12 @@
     "forbid": ["no lo sé"]
   },
   {
+    "id": "escribir_proveedor",
+    "question": "¿Puedo escribirle yo a un proveedor desde la app?",
+    "expect": ["escribir a un proveedor|mensajes"],
+    "forbid": ["no lo sé"]
+  },
+  {
     "id": "valor_desde",
     "question": "Escribí tarde el precio del gelato, ¿puedo ponerlo desde el lunes pasado?",
     "expect": ["vale desde|día anterior|antes"],

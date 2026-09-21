@@ -585,6 +585,50 @@ async function action(name, el) {
     );
     return;
   }
+  // Escribir a un proveedor desde Mensajes: el texto lo escribes tú y lo ves antes de enviar.
+  if (name === "writeSupplier") {
+    const ready = new Set(chats.ready || []);
+    const options = state.suppliers
+      .filter((p) => ready.has(p.id))
+      .map((p) => [p.id, p.name + " · " + p.whatsapp]);
+    if (!chats.connected) {
+      toast("Conecta WhatsApp para escribir a un proveedor.");
+      nav("whatsapp");
+      return;
+    }
+    if (!options.length) {
+      toast(
+        "Ningún proveedor tiene su chat autorizado en esta cuenta. Autorízalo en WhatsApp.",
+      );
+      nav("whatsapp");
+      return;
+    }
+    const chosen = el?.dataset?.supplier;
+    modal(
+      "Escribir a un proveedor",
+      "Se envía por WhatsApp desde tu cuenta, una sola vez, al chat autorizado de ese proveedor. Lo escribes tú: la app no añade nada.",
+      select(
+        "Proveedor",
+        "supplier",
+        options,
+        ready.has(chosen) ? chosen : options[0][0],
+      ) +
+        `<label class="field">Mensaje<textarea name="text" rows="4" maxlength="4000" required placeholder="Escribe aquí lo que quieres decirle…"></textarea></label><p class="fineprint">Lo que escribes no se lee por reglas: la app solo lee lo que te contestan.</p>`,
+      async (f) => {
+        const data = await request("/api/whatsapp", {
+          type: "supplierMessage",
+          supplier: f.get("supplier"),
+          text: f.get("text"),
+        });
+        applyEnvelope(data);
+        render();
+        toast("Mensaje enviado por WhatsApp.");
+        return true;
+      },
+      "Enviar por WhatsApp",
+    );
+    return;
+  }
   if (name === "setSaleValue" || name === "setManualCost") {
     const r = state.recipes.find((x) => x.id === el.dataset.id);
     const sale = name === "setSaleValue";

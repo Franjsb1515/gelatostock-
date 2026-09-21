@@ -1,5 +1,16 @@
 # Registro de parches y sesiones
 
+## 0.42.0 — 2026-09-21 · sesión 047 (sexta parte) · escribir tú en Mensajes
+
+Pediste poder escribirle tú al proveedor desde Mensajes, ver ahí lo que llega y que la app lo lea. Ahora:
+
+- **«Escribir a un proveedor»**, arriba en Mensajes: eliges el proveedor, escribes el texto y se envía por WhatsApp a su chat autorizado, una sola vez, al confirmar. En la lista de conversaciones, «Escribir» hace lo mismo con ese proveedor ya elegido. Si WhatsApp no está conectado, la app te lo dice y te lleva a la pantalla del canal en vez de abrir un formulario que no podría enviar.
+- **La conversación, con los dos lados**: dentro de un mensaje, «Lo que le has escrito» enseña lo último que le mandaste por WhatsApp —incluidos los pedidos y los recordatorios— con su fecha.
+- **Por qué no veías tus mensajes de WhatsApp en Mensajes**: los cuatro que tenías recibidos venían de tu segundo número, autorizado como «Otro contacto», sin proveedor. Un chat sin proveedor no puede entrar en la bandeja de proveedores. Ahora Mensajes lo dice arriba («X mensajes de un chat sin proveedor») y la pantalla WhatsApp marca cada chat con si sus mensajes entran en Mensajes o no. Los chats autorizados **eligiendo un proveedor registrado** sí entran, y se leen por reglas al llegar, como siempre.
+- Lo que escribes tú no se lee por reglas: la app solo lee lo que te contestan.
+
+Pruebas: 200 y chat 35/35, más el camino completo sobre una copia de tus datos. La prueba de escritorio volvió a cortarse en una captura (el equipo se suspende), aunque la comprobación nueva de esta versión sí se ejecutó. Informe reports/2026-09-21T20-10-00-000Z-mensajes-escribir-y-conversacion.md.
+
 ## 0.41.0 — 2026-09-21 · sesión 047 (quinta parte) · el valor de venta se puede fechar
 
 Hasta ahora, el valor de venta de un gelato valía siempre desde el día en que lo escribías: si lo apuntabas el jueves, el lunes anterior se quedaba sin valor y su venta estimada salía «No disponible». Ahora, al escribirlo o cambiarlo, eliges **desde qué día vale**. Por defecto es hoy. Si lo escribes tarde, pones el día en que empezó a valer y la venta estimada de esos días se recalcula; si ya sabes desde cuándo sube, pones un día futuro y no cambia nada hasta que llegue. Los días anteriores a esa fecha conservan el valor que tenían, y un día ya cerrado conserva el resumen que confirmaste: la app te avisa de que algo cambió, como hasta ahora. En el aviso de Actividad se dice cuántos días cerrados quedan dentro de la fecha elegida.

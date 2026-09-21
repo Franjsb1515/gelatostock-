@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.41.0
+# Entrada para Claude · entrega vigente 0.42.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -21,6 +21,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 
 ## WhatsApp (seguridad)
 La sesión se mantiene entre arranques: al quedar «ready» la conexión se recuerda (autoconnect) y solo se olvida con disconnect(), que es «Cerrar sesión» del usuario. close() cierra el navegador pero nunca hace logout. La migración de una vez (autoconnect_v2) enciende el recuerdo si ya había cuenta vinculada y su carpeta de sesión existe; si la persona lo apaga después, se respeta.
+Escribir al proveedor desde Mensajes (0.42.0): POST /api/whatsapp type `supplierMessage` {supplier, text}; resuelve el número de la ficha y pasa por whatsapp.send, que solo envía a chats autorizados. El sobre lleva `chats` {bySupplier, unlinked, connected, ready} leído del registro del canal, no del estado. Un chat autorizado sin proveedor NO entra en la bandeja (messages.supplier es obligatorio): se cuenta en `unlinked` y se dice en pantalla.
 Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, solo a chats autorizados y una vez por pedido. Los números +34XXXXXXXXX y +549XXXXXXXXXX son del usuario y están autorizados para pruebas reales que él lance. Nunca enviar sin su confirmación en pantalla ni desde pruebas automáticas. No exportar data/whatsapp/sessions ni historial privado. No conectar el QR solo por revisar la app. GELATO_TEST_QR=1 solo con prueba explícita.
 
 ## Mapa

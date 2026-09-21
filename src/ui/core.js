@@ -16,6 +16,7 @@ let appVersion = "",
   replyTemplates = {},
   messageNotices = true,
   wasteReasons = {},
+  chats = { bySupplier: {}, unlinked: 0, connected: false, ready: [] },
   cruiseInfo = null,
   weeklyData = null,
   weeklyWeek = "",
@@ -223,6 +224,7 @@ function applyEnvelope(data) {
   if (data.replyTemplates !== undefined) replyTemplates = data.replyTemplates;
   if (data.messageNotices !== undefined) messageNotices = data.messageNotices;
   if (data.wasteReasons) wasteReasons = data.wasteReasons;
+  if (data.chats) chats = data.chats;
   if (data.alerts) alerts = data.alerts;
   if (data.catalog) catalog = data.catalog;
   if (data.cruises) cruiseInfo = data.cruises;

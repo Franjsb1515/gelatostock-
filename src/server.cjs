@@ -32,6 +32,7 @@ const {
 const { recognizeLocal } = require("./ocr.cjs");
 const { readPdfText } = require("./pdftext.cjs");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
+const { normalize: normalizePhone } = require("./whatsapp-store.cjs");
 const { LocalAI } = require("./ai.cjs");
 const { appendLog } = require("./logs.cjs");
 const { csvCell } = require("./csv.cjs");
@@ -211,6 +212,52 @@ function createApp({
   };
   // Aviso de mensaje nuevo: dentro de la app y en el escritorio. Se puede apagar.
   const messageNotices = () => store.setting("message_notices_off") !== "1";
+  // Lo que le has escrito a cada proveedor por WhatsApp, para que la conversación de Mensajes
+  // enseñe los dos lados. Sale del registro del canal (whatsapp.sqlite), no del estado.
+  // También cuenta los mensajes recibidos de chats autorizados sin proveedor: esos no pueden
+  // entrar en la bandeja de proveedores y hay que decirlo en vez de que desaparezcan.
+  const whatsappChats = (state) => {
+    const empty = { bySupplier: {}, unlinked: 0, connected: false, ready: [] };
+    try {
+      const account = whatsapp.account || whatsapp.store.get("active");
+      if (!account) return empty;
+      const view = whatsapp.store.view(account);
+      const supplierOf = new Map();
+      for (const s of state.suppliers)
+        if (s.whatsapp) supplierOf.set(normalizePhone(s.whatsapp), s.id);
+      const allowedOf = new Map(
+        (view.allowed || []).map((c) => [normalizePhone(c.phone), c]),
+      );
+      const bySupplier = {};
+      for (const row of view.sent || []) {
+        const id = supplierOf.get(normalizePhone(row.recipient));
+        if (!id) continue;
+        (bySupplier[id] ||= []).push({
+          id: "sent-" + row.at + "-" + row.recipient,
+          at: row.at,
+          text: String(row.text || "").slice(0, 4000),
+          ...(row.order_id ? { order: row.order_id } : {}),
+        });
+      }
+      for (const list of Object.values(bySupplier)) list.splice(50);
+      const unlinked = (view.messages || []).filter((m) => {
+        const chat = allowedOf.get(normalizePhone(m.sender));
+        return chat && !chat.supplier;
+      }).length;
+      // Proveedores a los que se puede escribir ahora mismo: chat autorizado para esta cuenta.
+      const ready = state.suppliers
+        .filter((s) => s.whatsapp && allowedOf.has(normalizePhone(s.whatsapp)))
+        .map((s) => s.id);
+      return {
+        bySupplier,
+        unlinked,
+        connected: whatsapp.status === "connected",
+        ready,
+      };
+    } catch {
+      return empty;
+    }
+  };
   const purgeNow = () => {
     const days = retentionDays();
     if (!(days > 0)) return { skipped: true };
@@ -316,6 +363,8 @@ function createApp({
     messageNotices: messageNotices(),
     // Los motivos de merma, los mismos para el cierre del día y para Inventario.
     wasteReasons: wasteReasonLabels,
+    // Conversación por proveedor: lo enviado por WhatsApp y a quién se puede escribir.
+    chats: whatsappChats(state),
     cruises: cruiseInfo(),
     // Qué le compra a cada proveedor, a qué precio y desde cuándo (core/inventory.ts).
     catalog: supplierCatalogs(state),
@@ -974,6 +1023,28 @@ function createApp({
               decision: ("Respondido por WhatsApp: " + text).slice(0, 300),
             });
             json(200, envelope(next, { sent }));
+            return;
+          }
+          if (data.type === "supplierMessage") {
+            // Escribir al proveedor desde Mensajes. El texto lo escribe la persona y lo ve
+            // antes de enviar; aquí solo se comprueba a quién va y se envía una vez.
+            const state = store.load();
+            const supplier = state.suppliers.find(
+              (x) => x.id === String(data.supplier || ""),
+            );
+            if (!supplier) throw Error("Proveedor inexistente.");
+            if (!supplier.whatsapp)
+              throw Error(
+                "Este proveedor no tiene WhatsApp en su ficha. Añádelo en Proveedores.",
+              );
+            const text = String(data.text || "").trim();
+            if (!text || text.length > 4000)
+              throw Error("El mensaje debe tener entre 1 y 4.000 caracteres.");
+            const sent = await whatsapp.send({
+              phone: supplier.whatsapp,
+              text,
+            });
+            json(200, envelope(store.load(), { sent }));
             return;
           }
           if (data.type === "sendText") {
