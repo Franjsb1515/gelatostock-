@@ -9,7 +9,7 @@ Pediste poder escribirle tú al proveedor desde Mensajes, ver ahí lo que llega 
 - **Por qué no veías tus mensajes de WhatsApp en Mensajes**: los cuatro que tenías recibidos venían de tu segundo número, autorizado como «Otro contacto», sin proveedor. Un chat sin proveedor no puede entrar en la bandeja de proveedores. Ahora Mensajes lo dice arriba («X mensajes de un chat sin proveedor») y la pantalla WhatsApp marca cada chat con si sus mensajes entran en Mensajes o no. Los chats autorizados **eligiendo un proveedor registrado** sí entran, y se leen por reglas al llegar, como siempre.
 - Lo que escribes tú no se lee por reglas: la app solo lee lo que te contestan.
 
-Pruebas: 200 y chat 35/35, más el camino completo sobre una copia de tus datos. La prueba de escritorio volvió a cortarse en una captura (el equipo se suspende), aunque la comprobación nueva de esta versión sí se ejecutó. Informe reports/2026-09-21T20-10-00-000Z-mensajes-escribir-y-conversacion.md.
+Pruebas: 200 y chat 35/35, más el camino completo sobre una copia de tus datos. La prueba de escritorio pasó entera con este ejecutable: 21 PASS. Informe reports/2026-09-21T20-10-00-000Z-mensajes-escribir-y-conversacion.md.
 
 ## 0.41.0 — 2026-09-21 · sesión 047 (quinta parte) · el valor de venta se puede fechar
 

@@ -7,8 +7,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 1. Siguiente, en este orden
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
-- [ ] [tú] Repetir `npm run test:desktop` con el equipo despierto (pendiente desde la 0.41.0 y también para la 0.42.0): se cortó dos veces en `page.screenshot: Timeout` con el equipo sin nadie delante, así que ni el «Vale desde» ni el resto de bloques finales se han visto pasar con los ejecutables nuevos. La última pasada completa fue con el 0.40.2 (21 PASS).
-- [x] Prueba de escritorio al día: 21 PASS con el ejecutable 0.40.2 el 2026-09-21 (salida en reports/desktop-smoke-2026-09-21-v0402.txt). Incluye mermas con motivo, objetivo de merma y aviso de mensajes nuevos dentro del ejecutable.
+- [x] Prueba de escritorio al día: 21 PASS con el ejecutable 0.42.0 el 2026-09-21, lanzada por ti (salida en reports/desktop-smoke-2026-09-21-v0420.txt). Cubre dentro del ejecutable el «Vale desde» del valor de venta y el botón de escribir al proveedor desde Mensajes.
 - [ ] [tú] Usar unos días la 0.42.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
