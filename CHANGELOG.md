@@ -1,5 +1,11 @@
 # Registro de parches y sesiones
 
+## 0.40.0 — 2026-09-21 · sesión 047 (tercera parte) · objetivo de merma por producto
+
+La otra mitad de tu idea, con lo que decidiste: por producto y en kilos, y además en porcentaje. En cada fila de Inventario, «Objetivo de merma» pone un tope a ese producto: en su unidad («no más de 2 kg») o en porcentaje de lo que salga («no más de un 5 %»). La app mira los últimos 7 días y, si te pasas, lo dice en el Resumen de inicio con las cifras y la fórmula a la vista («0,25 kg de merma en 7 días sobre 0,75 kg que salieron, 33,3 %; tu objetivo es 0,1 kg») y marca la fila como «Merma por encima». Solo avisa: no cambia stock, ni pedidos, ni precios. El porcentaje es la merma dividida entre todo lo que salió del producto (ventas, consumo, mermas e invitaciones); un conteo no cuenta, porque un ajuste de inventario no es una salida. Se quita escribiendo 0, y editar la ficha del producto no lo borra.
+
+Pruebas: 195 y chat 32/32. La prueba de escritorio no termina en este equipo (se corta en una captura de pantalla porque el equipo se suspende): la comprobación nueva pasó, pero hay que repetirla con el equipo despierto. Informe reports/2026-09-21T15-30-00-000Z-objetivo-de-merma-por-producto.md.
+
 ## 0.39.0 — 2026-09-21 · sesión 047 (segunda parte) · mermas de ingredientes con motivo
 
 Pedido tuyo: los mismos motivos que el cierre del día también para los ingredientes. En Inventario, «Entrada / salida» → «Merma / pérdida» pide ahora el motivo de una lista (fin de vida útil, textura o cristalización, vitrina o temperatura, caída o rotura, otro), y lo que antes escribías a mano pasa a ser un detalle opcional («se cayó el bote»). Como los motivos son los mismos, la merma del gelato y la del ingrediente se pueden mirar juntas: el resumen de la Semana trae «Mermas por motivo», con lo apuntado en el cierre y lo apuntado en Inventario, cada producto con su unidad y sin sumar kilos con litros. Las mermas que ya tenías escritas con tus palabras se quedan como están y salen como «Sin motivo»: no se reescribe ningún movimiento. Queda pendiente de acordar contigo la otra mitad de la idea: el objetivo de merma con aviso.

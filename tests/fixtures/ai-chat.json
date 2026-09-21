@@ -180,6 +180,12 @@
     "forbid": ["no lo sé"]
   },
   {
+    "id": "objetivo_merma",
+    "question": "¿Puedo ponerme un tope de merma para un producto?",
+    "expect": ["objetivo de merma|tope"],
+    "forbid": ["no lo sé"]
+  },
+  {
     "id": "merma_ingrediente",
     "question": "¿Puedo poner el motivo cuando se me estropea un ingrediente?",
     "expect": ["motivo"],

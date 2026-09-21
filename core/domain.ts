@@ -56,6 +56,7 @@ import {
 } from "./sales";
 export {
   salesHistory,
+  wasteGoals,
   giftLabel,
   wasteReasons,
   wasteReasonLabels,
@@ -1059,6 +1060,28 @@ export function apply(state: State, input: unknown): State {
       // The purchase minimum can never sit above the goal (validate enforces it).
       if (p.min > p.target) p.min = p.target;
       note = `Objetivo de ${p.name}: tener ${a.target} kg${before ? ` (antes ${before} kg)` : ""}. «Qué producir hoy» propone lo que falte hasta ahí.`;
+      break;
+    }
+    case "setWasteGoal": {
+      const p = item(s.products, a.product);
+      // El objetivo lo escribe la persona; sin número, se quita. No cambia stock ni nada más.
+      if (!a.value) {
+        ensure(p.wasteGoal, "Este producto no tiene objetivo de merma.");
+        delete p.wasteGoal;
+        note = `Objetivo de merma de ${p.name} quitado.`;
+        break;
+      }
+      ensure(
+        a.mode !== "pct" || a.value <= 100,
+        "El porcentaje de merma va entre 0 y 100.",
+      );
+      p.wasteGoal = { mode: a.mode, value: a.value, at: now() };
+      note =
+        `Objetivo de merma de ${p.name}: no más de ` +
+        (a.mode === "pct"
+          ? `${a.value} % de lo que salga`
+          : `${a.value} ${p.unit}`) +
+        " en 7 días. Solo avisa; no cambia stock ni pedidos.";
       break;
     }
     case "setManualCost": {

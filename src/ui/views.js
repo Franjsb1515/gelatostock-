@@ -35,7 +35,7 @@ function home() {
 }
 function productTable(items, compact = false) {
   return items.length
-    ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th>${compact ? "" : "<th>Mín. / objetivo</th><th>Proveedor</th>"}<th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${items.map((p) => `<tr><td><div class="product-cell"><span class="product-icon ${p.category === "Gelatería" ? "sage" : p.category === "Cafetería" ? "sand" : p.category === "Postres" ? "rose" : "lavender"}">${icon(p.icon)}</span><div><strong>${esc(p.name)}</strong><small>${esc(p.detail)}${compact ? "" : " · " + esc(zoneLabel[p.zone || "almacen"])}</small></div></div></td><td><strong>${num(p.stock)} <span class="unit">${p.unit}</span></strong>${pending(p.id) ? `<small class="incoming">+ ${num(pending(p.id))} en pedido</small>` : ""}</td>${compact ? "" : `<td>${num(p.min)} / ${num(p.target)} ${p.unit}</td><td>${esc(supplier(p.supplier).name)}</td>`}<td>${p.stock < p.min ? pill("Stock bajo", "peach") : pill("En orden", "sage")}</td><td>${compact ? `<button class="icon-button bordered" data-add="${p.id}" aria-label="Añadir ${esc(p.name)} al carrito">${icon("plus")}</button>` : `<div class="row-actions"><button class="text-button" data-count="${p.id}">Contar</button><button class="text-button" data-action="editProduct" data-product="${p.id}">Editar</button><button class="text-button" data-action="altSuppliers" data-product="${p.id}">Otros proveedores${p.alternates.length ? " · " + p.alternates.length : ""}</button></div>`}</td></tr>`).join("")}</tbody></table></div>`
+    ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Disponible</th>${compact ? "" : "<th>Mín. / objetivo</th><th>Proveedor</th>"}<th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${items.map((p) => `<tr><td><div class="product-cell"><span class="product-icon ${p.category === "Gelatería" ? "sage" : p.category === "Cafetería" ? "sand" : p.category === "Postres" ? "rose" : "lavender"}">${icon(p.icon)}</span><div><strong>${esc(p.name)}</strong><small>${esc(p.detail)}${compact ? "" : " · " + esc(zoneLabel[p.zone || "almacen"])}</small></div></div></td><td><strong>${num(p.stock)} <span class="unit">${p.unit}</span></strong>${pending(p.id) ? `<small class="incoming">+ ${num(pending(p.id))} en pedido</small>` : ""}</td>${compact ? "" : `<td>${num(p.min)} / ${num(p.target)} ${p.unit}</td><td>${esc(supplier(p.supplier).name)}</td>`}<td>${p.stock < p.min ? pill("Stock bajo", "peach") : pill("En orden", "sage")}${(alerts?.waste || []).some((w) => w.product === p.id && w.over) ? " " + pill("Merma por encima", "peach") : ""}</td><td>${compact ? `<button class="icon-button bordered" data-add="${p.id}" aria-label="Añadir ${esc(p.name)} al carrito">${icon("plus")}</button>` : `<div class="row-actions"><button class="text-button" data-count="${p.id}">Contar</button><button class="text-button" data-action="editProduct" data-product="${p.id}">Editar</button><button class="text-button" data-action="altSuppliers" data-product="${p.id}">Otros proveedores${p.alternates.length ? " · " + p.alternates.length : ""}</button><button class="text-button" data-action="setWasteGoal" data-product="${p.id}">${p.wasteGoal ? `Merma: ${num(p.wasteGoal.value)} ${p.wasteGoal.mode === "pct" ? "%" : p.unit}` : "Objetivo de merma"}</button></div>`}</td></tr>`).join("")}</tbody></table></div>`
     : '<div class="empty">' +
         icon("check") +
         "<h3>Todo en orden</h3><p>No hay productos en esta selección.</p></div>";
@@ -111,6 +111,27 @@ function homeDay() {
       : ""
   }`;
 }
+// Un hecho con su fórmula: merma de los últimos días, lo que salió y el objetivo escrito.
+function wasteOverText(w) {
+  const salida = num(w.out) + " " + w.unit + " que salieron";
+  const share = w.pct === null ? "" : " (" + num(w.pct) + " %)";
+  const objetivo = num(w.goal) + " " + (w.mode === "pct" ? "%" : w.unit);
+  return (
+    w.name +
+    ": " +
+    num(w.waste) +
+    " " +
+    w.unit +
+    " de merma en " +
+    w.days +
+    " días sobre " +
+    salida +
+    share +
+    "; tu objetivo es " +
+    objetivo +
+    "."
+  );
+}
 function homeNotices() {
   const read = toRead().length,
     proposed = proposedProductions().length;
@@ -133,6 +154,7 @@ function homeNotices() {
   const rises = alerts?.prices || [];
   const dueZones = (alerts?.counts || []).filter((z) => z.due);
   const follow = alerts?.orders || [];
+  const wasteOver = (alerts?.waste || []).filter((w) => w.over);
   const port = cruiseInfo?.enabled ? cruiseInfo.today : null;
   const ships = port && port.ships ? port : null;
   if (
@@ -143,7 +165,8 @@ function homeNotices() {
     !backupWarning &&
     !rises.length &&
     !dueZones.length &&
-    !follow.length
+    !follow.length &&
+    !wasteOver.length
   )
     return "";
   return `<div class="notice subtle home-notice">${icon("alert")}<div>${ships ? `<strong>Hoy ${ships.ships === 1 ? "hay 1 crucero" : "hay " + ships.ships + " cruceros"} en Palma · impacto potencial ${esc(ships.impactLabel.toLowerCase())}</strong><span>${esc(ships.names.slice(0, 4).join(", "))}${ships.names.length > 4 ? "…" : ""}. ${ships.passengers === null ? "Pasajeros declarados: no disponible" : num(ships.passengers) + " pasajeros declarados al puerto"}${ships.firstArrival ? ", primera llegada " + ships.firstArrival : ""}${ships.lastDeparture ? ", última salida " + ships.lastDeparture : ""}. </span><button class="text-button" data-nav="cruises">Ver cruceros ${icon("arrow")}</button>` : ""}${backupWarning ? `<strong>${esc(backupWarning)}</strong><span>Revisa las copias en <button class="text-link" data-nav="settings">Configuración</button>.</span>` : ""}${
@@ -164,7 +187,7 @@ function homeNotices() {
             .join(", "),
         )}${rises.length > 3 ? "…" : ""}. </span><button class="text-button" data-nav="suppliers">Ver proveedores ${icon("arrow")}</button>`
       : ""
-  }${dueZones.length ? `<strong>Toca contar: ${esc(dueZones.map((z) => z.label + (z.ageDays === null ? " (nunca)" : " (hace " + z.ageDays + " días)")).join(", "))}</strong><span>Cuenta la zona con la hoja de conteo y el stock queda al día. </span><button class="text-button" data-action="countSheet">Abrir hoja de conteo ${icon("arrow")}</button>` : ""}${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
+  }${wasteOver.length ? `<strong>Merma por encima de tu objetivo: ${esc(wasteOver.map((w) => w.name).join(", "))}</strong><span>${esc(wasteOver.map(wasteOverText).join(" "))} </span><button class="text-button" data-nav="stock">Ver inventario ${icon("arrow")}</button>` : ""}${dueZones.length ? `<strong>Toca contar: ${esc(dueZones.map((z) => z.label + (z.ageDays === null ? " (nunca)" : " (hace " + z.ageDays + " días)")).join(", "))}</strong><span>Cuenta la zona con la hoja de conteo y el stock queda al día. </span><button class="text-button" data-action="countSheet">Abrir hoja de conteo ${icon("arrow")}</button>` : ""}${read ? `<strong>${read} mensaje${read === 1 ? "" : "s"} de proveedores que debes leer</strong><span>Falta de producto, cambios, preguntas o retrasos detectados por reglas. </span><button class="text-button" data-nav="messages" data-filter-messages="toread">Ver mensajes ${icon("arrow")}</button>` : ""}${proposed ? `<strong>${proposed} producción${proposed === 1 ? "" : "es"} por aprobar</strong><span>El consumo estimado no cambia el stock hasta que lo apruebes. </span><button class="text-button" data-nav="production">Ver producción ${icon("arrow")}</button>` : ""}${deliveries}</div></div>`;
 }
 function suppliers() {
   return (

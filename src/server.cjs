@@ -25,6 +25,7 @@ const {
   businessDay,
   recipeCost,
   wasteReasonLabels,
+  wasteGoals,
   replyLabels,
   localDate,
 } = require("../build/domain.js");
@@ -324,6 +325,8 @@ function createApp({
       orders: orderReminders(state),
       // Facts of the business day for the home screen (core/plan.ts); no forecast.
       day: todayBrief(state, new Date(), dayChangeHour()),
+      // Objetivos de merma que la persona escribió, con lo que va de los últimos 7 días.
+      waste: wasteGoals(state, 7),
     },
     ...extra,
   });

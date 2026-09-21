@@ -298,6 +298,55 @@ const assert = require("node:assert/strict");
       }),
       ["waste", "Merma · Caída o rotura · se cayó el bote", 3],
     );
+    // Objetivo de merma de ese producto, en su unidad: la app solo avisa en el inicio.
+    await window
+      .locator('[data-action="setWasteGoal"][data-product="p3"]')
+      .click();
+    await window
+      .getByRole("combobox", { name: "Cómo lo mides", exact: true })
+      .selectOption("quantity");
+    await window
+      .getByRole("spinbutton", { name: "No pasar de", exact: true })
+      .fill("0.1");
+    await window
+      .getByRole("button", { name: "Guardar objetivo", exact: true })
+      .click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.deepEqual(
+      await window.evaluate(() => {
+        const w = alerts.waste.find((x) => x.product === "p3");
+        return [w.mode, w.goal, w.waste, w.over];
+      }),
+      ["quantity", 0.1, 0.2, true],
+    );
+    await window.getByRole("button", { name: "Resumen", exact: true }).click();
+    const avisoMerma = (
+      await window.locator(".home-notice").first().innerText()
+    ).replace(/\s+/g, " ");
+    assert.match(
+      avisoMerma,
+      /Merma por encima de tu objetivo: Pistacho siciliano/,
+    );
+    assert.match(avisoMerma, /0,2 kg de merma en 7 días/);
+    // Se quita escribiendo 0, y el aviso desaparece.
+    await window
+      .getByRole("button", { name: "Inventario", exact: true })
+      .click();
+    await window
+      .locator('[data-action="setWasteGoal"][data-product="p3"]')
+      .click();
+    await window
+      .getByRole("spinbutton", { name: "No pasar de", exact: true })
+      .fill("0");
+    await window.getByRole("button", { name: "Cambiar", exact: true }).click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.deepEqual(
+      await window.evaluate(() => [
+        alerts.waste.length,
+        product("p3").wasteGoal ?? null,
+      ]),
+      [0, null],
+    );
     await window.screenshot({
       path: path.join(root, "output", "playwright", "v08-movimientos.png"),
     });

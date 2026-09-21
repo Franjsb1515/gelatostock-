@@ -404,3 +404,124 @@ test("merma de un ingrediente: los mismos motivos que el cierre del día, y la s
   // El primero de la lista es el motivo con más apuntes.
   assert.equal(week.wasteByReason[0].label, "Caída o rotura");
 });
+
+test("objetivo de merma por producto, en su unidad o en porcentaje: solo avisa", () => {
+  const { wasteGoals } = require("../build/domain.js");
+  // Sin objetivo, no hay nada que mirar.
+  assert.deepEqual(wasteGoals(seed()), []);
+  let s = apply(seed(), {
+    type: "setWasteGoal",
+    product: "p2",
+    mode: "quantity",
+    value: 1,
+  });
+  assert.deepEqual(
+    { ...s.products.find((p) => p.id === "p2").wasteGoal, at: "" },
+    { mode: "quantity", value: 1, at: "" },
+  );
+  assert.match(s.activity[0].text, /no más de 1 L en 7 días/);
+  // Nada ha salido todavía: 0 de merma, sin porcentaje y sin aviso.
+  let [milk] = wasteGoals(s);
+  assert.deepEqual(
+    [milk.waste, milk.out, milk.pct, milk.over],
+    [0, 0, null, false],
+  );
+  // Sale producto: 3 L de consumo y 0,5 L de merma. Por debajo del kilo y medio: sin aviso.
+  s = apply(s, {
+    type: "movement",
+    product: "p2",
+    kind: "exit",
+    value: 3,
+    reason: "Consumo de barra",
+  });
+  s = apply(s, {
+    type: "movement",
+    product: "p2",
+    kind: "waste",
+    value: 0.5,
+    wasteReason: "expiry",
+  });
+  [milk] = wasteGoals(s);
+  assert.deepEqual(
+    [milk.waste, milk.out, milk.pct, milk.over],
+    [0.5, 3.5, 14.3, false],
+  );
+  // Otra merma y ya se pasa del objetivo en litros.
+  s = apply(s, {
+    type: "movement",
+    product: "p2",
+    kind: "waste",
+    value: 0.8,
+    wasteReason: "accident",
+  });
+  [milk] = wasteGoals(s);
+  assert.deepEqual([milk.waste, milk.over], [1.3, true]);
+  // El mismo caso en porcentaje: 1,3 de 4,3 es 30,2 %; con objetivo del 40 % no avisa.
+  s = apply(s, {
+    type: "setWasteGoal",
+    product: "p2",
+    mode: "pct",
+    value: 40,
+  });
+  [milk] = wasteGoals(s);
+  assert.deepEqual([milk.pct, milk.goal, milk.over], [30.2, 40, false]);
+  s = apply(s, { type: "setWasteGoal", product: "p2", mode: "pct", value: 25 });
+  assert.equal(wasteGoals(s)[0].over, true);
+  // Un conteo no es una salida: no cambia ni la merma ni lo que salió.
+  const before = wasteGoals(s)[0];
+  const counted = apply(s, { type: "count", product: "p2", value: 1 });
+  assert.deepEqual(
+    [wasteGoals(counted)[0].waste, wasteGoals(counted)[0].out],
+    [before.waste, before.out],
+  );
+  // Deshacer la merma la saca de la cuenta.
+  const wasteMovement = s.movements.find(
+    (m) => m.kind === "waste" && m.reason.includes("Caída"),
+  );
+  const undone = apply(s, {
+    type: "reverse",
+    id: wasteMovement.id,
+    reason: "apuntada dos veces",
+  });
+  assert.deepEqual(
+    [wasteGoals(undone)[0].waste, wasteGoals(undone)[0].over],
+    [0.5, false],
+  );
+  // Un porcentaje imposible se rechaza, y el objetivo se puede quitar.
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "setWasteGoal",
+        product: "p2",
+        mode: "pct",
+        value: 140,
+      }),
+    /entre 0 y 100/,
+  );
+  const cleared = apply(s, {
+    type: "setWasteGoal",
+    product: "p2",
+    mode: "pct",
+    value: 0,
+  });
+  assert.equal(
+    cleared.products.find((p) => p.id === "p2").wasteGoal,
+    undefined,
+  );
+  assert.deepEqual(wasteGoals(cleared), []);
+  // El objetivo no toca el stock ni se pierde al editar la ficha.
+  assert.equal(stock(s, "p2"), stock(seed(), "p2") - 4.3);
+  const edited = apply(s, {
+    type: "editProduct",
+    product: "p2",
+    name: "Leche entera",
+    detail: "",
+    min: 2,
+    target: 10,
+    pack: 6,
+    price: 100,
+    supplier: s.products.find((p) => p.id === "p2").supplier,
+    zone: "camara",
+  });
+  assert.equal(edited.products.find((p) => p.id === "p2").wasteGoal.value, 25);
+});

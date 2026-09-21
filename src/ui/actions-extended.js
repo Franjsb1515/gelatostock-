@@ -248,6 +248,50 @@ async function extendedAction(name, el) {
     altSuppliersModal(el.dataset.product);
     return true;
   }
+  // Objetivo de merma de un producto: un tope en su unidad o en porcentaje. Solo avisa.
+  if (name === "setWasteGoal") {
+    const p = product(el.dataset.product);
+    const unitName =
+      p.unit === "kg" ? "kilos" : p.unit === "L" ? "litros" : "unidades";
+    const now = (alerts?.waste || []).find((w) => w.product === p.id);
+    const goal = p.wasteGoal;
+    modal(
+      "Objetivo de merma de " + p.name,
+      "La app mira los últimos 7 días y te avisa en el inicio si te pasas. No cambia stock, ni pedidos, ni nada más.",
+      `<p>Estos 7 días: <strong>${num(now?.waste ?? 0)} ${esc(p.unit)}</strong> de merma sobre <strong>${num(now?.out ?? 0)} ${esc(p.unit)}</strong> que salieron${now?.pct === null || now?.pct === undefined ? "" : ` · ${num(now.pct)} %`}.</p>` +
+        select(
+          "Cómo lo mides",
+          "mode",
+          [
+            ["quantity", "En " + unitName + " (no más de X " + p.unit + ")"],
+            ["pct", "En porcentaje de lo que salga (no más de X %)"],
+          ],
+          goal?.mode || "quantity",
+        ) +
+        field(
+          "No pasar de",
+          "value",
+          goal ? goal.value : "",
+          "number",
+          'min="0" max="1000000" step="0.001" required',
+        ) +
+        `<p class="fineprint">El porcentaje es merma ÷ todo lo que salió del producto en esos días (ventas, consumo, mermas e invitaciones). Los conteos no cuentan: un ajuste de inventario no es una salida.${goal ? " Escribe 0 para quitar el objetivo." : ""}</p>`,
+      async (f) => {
+        const value = Number(f.get("value"));
+        return mutate(
+          {
+            type: "setWasteGoal",
+            product: p.id,
+            mode: f.get("mode"),
+            value,
+          },
+          value ? "Objetivo de merma guardado." : "Objetivo de merma quitado.",
+        );
+      },
+      goal ? "Cambiar" : "Guardar objetivo",
+    );
+    return true;
+  }
   if (name === "editProduct") {
     const p = product(el.dataset.product);
     modal(

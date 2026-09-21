@@ -71,10 +71,19 @@ export const productFields = {
     .max(5)
     .default([]),
 };
+// Objetivo de merma del producto, escrito por la persona: un tope en la unidad del producto
+// («no más de 2 kg en 7 días») o en porcentaje de todo lo que salió. Va fuera de productFields
+// a propósito, para que editar el producto no lo borre.
+export const wasteGoalSchema = z.object({
+  mode: z.enum(["quantity", "pct"]),
+  value: z.number().finite().gt(0).max(1_000_000),
+  at,
+});
 export const productSchema = z.object({
   id: idSchema,
   ...productFields,
   icon: z.string().max(30).default("box"),
+  wasteGoal: wasteGoalSchema.optional(),
 });
 const supplierFields = {
   name: text(100),
@@ -467,6 +476,13 @@ export const actionSchema = z.intersection(
       product: idSchema,
       value: quantity,
       reason: text(500).default("Conteo manual"),
+    }),
+    z.object({
+      // Objetivo de merma de un producto; sin `value` (o con 0) se quita.
+      type: z.literal("setWasteGoal"),
+      product: idSchema,
+      mode: z.enum(["quantity", "pct"]),
+      value: z.number().finite().min(0).max(1_000_000).default(0),
     }),
     z.object({
       type: z.literal("movement"),

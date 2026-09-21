@@ -219,3 +219,73 @@ export function salesHistory(s: State, from: string, to: string): SalesHistory {
       .sort((a, b) => b.waste - a.waste),
   };
 }
+
+/**
+ * Objetivo de merma de un producto, comprobado sobre los últimos días.
+ * Dos hechos con su fórmula a la vista, nunca una previsión:
+ *   merma  = lo que se apuntó como merma en esos días (cierre del día e Inventario).
+ *   salió  = todo lo que salió del producto en esos días (ventas, consumo, mermas e
+ *            invitaciones). Los conteos no cuentan: un ajuste de inventario no es una salida.
+ *   pct    = merma ÷ salió × 100; null si no salió nada.
+ * Un movimiento compensado, y su compensación, no cuentan.
+ */
+export type WasteGoalStatus = {
+  product: string;
+  name: string;
+  unit: string;
+  mode: "quantity" | "pct";
+  goal: number;
+  days: number;
+  waste: number;
+  out: number;
+  pct: number | null;
+  over: boolean;
+};
+export function wasteGoals(
+  s: State,
+  days = 7,
+  today = new Date(),
+): WasteGoalStatus[] {
+  const from = new Date(today.getTime() - (days - 1) * 86400000);
+  const fromDay = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, "0")}-${String(from.getDate()).padStart(2, "0")}`;
+  const undone = undoneMovements(s);
+  const sums = new Map<string, { waste: number; out: number }>();
+  for (const m of s.movements) {
+    if (undone.has(m.id) || m.reverses) continue;
+    const at = new Date(m.at);
+    const day =
+      closeLineOf(m)?.date ??
+      `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, "0")}-${String(at.getDate()).padStart(2, "0")}`;
+    if (day < fromDay) continue;
+    if (m.delta >= 0 || m.kind === "count") continue;
+    const row = sums.get(m.product) ?? { waste: 0, out: 0 };
+    sums.set(m.product, row);
+    row.out += Math.abs(m.delta);
+    if (m.kind === "waste") row.waste += Math.abs(m.delta);
+  }
+  return s.products
+    .filter((p) => p.wasteGoal)
+    .map((p) => {
+      const goal = p.wasteGoal!;
+      const row = sums.get(p.id) ?? { waste: 0, out: 0 };
+      const waste = round(row.waste);
+      const out = round(row.out);
+      const share = pct(waste, out);
+      return {
+        product: p.id,
+        name: p.name,
+        unit: p.unit,
+        mode: goal.mode,
+        goal: goal.value,
+        days,
+        waste,
+        out,
+        pct: share,
+        over:
+          goal.mode === "quantity"
+            ? waste > goal.value
+            : share !== null && share > goal.value,
+      };
+    })
+    .sort((a, b) => Number(b.over) - Number(a.over) || b.waste - a.waste);
+}

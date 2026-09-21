@@ -817,6 +817,8 @@ async function action(name, el) {
     render();
     return;
   }
+  // Ojo: todo lo que empiece por «wa» va al canal de WhatsApp. Una acción nueva no puede
+  // llamarse «waste…», o se pierde aquí (le pasó a «wasteGoal», hoy «setWasteGoal»).
   if (name.startsWith("wa")) {
     await whatsappAction(name, el);
     return;
