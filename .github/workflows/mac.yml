@@ -2,7 +2,8 @@
 # Se lanza a mano (Actions → «Instalador de Mac» → Run workflow) o al publicar una etiqueta v*.
 # El .dmg queda como artefacto de la ejecución y, con etiqueta, como archivo de la «release».
 # Todo lo de Mac está preparado desde Windows: la primera ejecución es la primera vez que la app
-# corre en un Mac; si algo falla, el registro de aquí es la evidencia (docs/MAC.md).
+# corre en un Mac; si algo falla, el resumen de la ejecución enseña las últimas líneas del paso
+# (visible sin iniciar sesión) y el registro completo queda como artefacto (docs/MAC.md).
 name: Instalador de Mac
 on:
   workflow_dispatch:
@@ -30,12 +31,10 @@ jobs:
           cache: npm
       - name: Comprobar el Mac
         run: |
-          uname -m
-          sw_vers
-          node -v
-          df -h .
+          mkdir -p work/logs
+          { uname -m; sw_vers; node -v; df -h .; } 2>&1 | tee work/logs/01-mac.log
       - name: Instalar dependencias
-        run: npm ci
+        run: npm ci 2>&1 | tee work/logs/02-npm-ci.log
       - name: Caché del modelo de IA y del Chrome de WhatsApp
         id: cache-runtime
         uses: actions/cache@v4
@@ -46,17 +45,17 @@ jobs:
           key: runtime-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('runtime/ai-model.json') }}
       - name: Descargar el modelo de IA local
         if: steps.cache-runtime.outputs.cache-hit != 'true'
-        run: node scripts/setup-ai-model.cjs
+        run: node scripts/setup-ai-model.cjs 2>&1 | tee work/logs/03-modelo.log
       - name: Descargar Chrome para WhatsApp
-        run: node scripts/setup-browser.cjs
+        run: node scripts/setup-browser.cjs 2>&1 | tee work/logs/04-chrome.log
       - name: Pruebas
-        run: npm test
+        run: npm test 2>&1 | tee work/logs/05-pruebas.log | tail -40
       - name: Empaquetar la app (GelatoStock.app)
-        run: npm run package:mac
+        run: npm run package:mac 2>&1 | tee work/logs/06-empaquetar.log
       - name: Arrancar la app empaquetada
-        run: node scripts/mac-smoke.cjs
+        run: node scripts/mac-smoke.cjs 2>&1 | tee work/logs/07-arranque.log
       - name: Crear el instalador (.dmg)
-        run: npm run installer:mac
+        run: npm run installer:mac 2>&1 | tee work/logs/08-instalador.log
       - name: Guardar el instalador como artefacto
         uses: actions/upload-artifact@v4
         with:
@@ -71,3 +70,22 @@ jobs:
         run: |
           gh release create "${GITHUB_REF_NAME}" --title "GelatoStock ${GITHUB_REF_NAME}" --notes "Instaladores generados en GitHub Actions. Sin firma: ver docs/INSTALADOR.md." 2>/dev/null || true
           gh release upload "${GITHUB_REF_NAME}" dist/instalador/*.dmg --clobber
+      - name: Diagnóstico si algo falla
+        if: failure()
+        run: |
+          {
+            echo "## Diagnóstico (${{ matrix.runner }}, ${{ matrix.arch }})"
+            for f in work/logs/*.log; do
+              echo; echo "### $f (últimas 60 líneas)"; echo '```'; tail -n 60 "$f"; echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          last=$(ls work/logs/*.log | tail -n 1)
+          echo "::error::Falló en $last. $(tail -n 5 "$last" | tr '\n' ' ' | cut -c1-900)"
+      - name: Guardar los registros
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: registros-mac-${{ matrix.arch }}
+          path: work/logs/
+          if-no-files-found: ignore
+          retention-days: 30

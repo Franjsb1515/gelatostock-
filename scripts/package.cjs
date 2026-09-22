@@ -44,13 +44,14 @@ if (platform === "win32") {
   fs.renameSync(oldExe, launcher);
   app = path.join(dest, "resources", "app");
 } else {
-  // Electron.app lleva enlaces simbólicos dentro de sus frameworks: se copian como enlaces.
+  // Electron.app lleva enlaces simbólicos dentro de sus frameworks: se copia con ditto, la
+  // herramienta de macOS para bundles, que los conserva tal cual (fs.cpSync no es fiable ahí).
   launcher = path.join(dest, "GelatoStock.app");
   fs.rmSync(launcher, { recursive: true, force: true });
-  fs.cpSync(path.join(electronDist, "Electron.app"), launcher, {
-    recursive: true,
-    verbatimSymlinks: true,
-  });
+  require("node:child_process").execFileSync("ditto", [
+    path.join(electronDist, "Electron.app"),
+    launcher,
+  ]);
   const plist = path.join(launcher, "Contents", "Info.plist");
   fs.writeFileSync(
     plist,
