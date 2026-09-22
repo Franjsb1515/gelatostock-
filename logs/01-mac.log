@@ -1,0 +1,7 @@
+x86_64
+ProductName:		macOS
+ProductVersion:		15.7.9
+BuildVersion:		24G830
+v24.19.0
+Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk1s1   325Gi   202Gi   108Gi    66%    2.2M  1.1G    0%   /System/Volumes/Data

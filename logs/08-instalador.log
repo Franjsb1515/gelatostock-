@@ -1,0 +1,13 @@
+
+> appgelatostock@0.45.0 installer:mac
+> node scripts/installer.cjs
+
+  • electron-builder  version=26.15.3 os=24.6.0
+  • loaded configuration  file=/Users/runner/work/gelatostock-/gelatostock-/electron-builder.json
+  • author is missed in the package.json  appPackageFile=/Users/runner/work/gelatostock-/gelatostock-/package.json
+  • building        target=DMG arch=x64 file=dist/instalador/GelatoStock-Instalador-0.45.0-x64.dmg
+  • downloaded      label=dmgbuild-bundle-x86_64-75c8a6c.tar.gz progress=100%
+  • building block map  blockMapFile=dist/instalador/GelatoStock-Instalador-0.45.0-x64.dmg.blockmap
+Instalador creado: /Users/runner/work/gelatostock-/gelatostock-/dist/instalador/GelatoStock-Instalador-0.45.0-x64.dmg (854 MB)
+(node:9266) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)

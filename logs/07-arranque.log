@@ -1,0 +1,7 @@
+PASS: existe /Users/runner/work/gelatostock-/gelatostock-/dist/GelatoStock-0.45.0-darwin-x64/GelatoStock.app/Contents/MacOS/Electron
+PASS: Info.plist lleva el nombre GelatoStock
+PASS: el modelo de IA local va dentro del .app
+PASS: la app arranca y dice v0.45.0
+PASS: Configuración enseña la carpeta de datos: /var/folders/20/jp1_0n3n7kndh6rnbqb5344m0000gn/T/gelato-mac-2GfSZj
+PASS: la base de datos se creó ahí
+TODO PASS
