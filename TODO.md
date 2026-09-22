@@ -21,7 +21,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 - [ ] Confirmar productos, proveedores, recetas, unidades y sistema de ventas reales.
 - [ ] Fichas de composición reales de tus ingredientes (el balance técnico usa las de demostración).
-- [ ] Mac (la persona a la que quieres enviar la app usa Mac, dicho el 2026-09-22): ejecutar docs/MAC.md en un Mac del mismo tipo (Apple Silicon o Intel) que el suyo: `npm ci`, modelo, Chrome, `npm run package:mac`, `npm run installer:mac` → `.dmg`. Todo preparado desde Windows en 0.45.0 y sin validar: anotar cada error. Después, la salida de scripts/measure-ai-memory.cjs, adaptar la prueba de escritorio y firma/notarización.
+- [ ] Mac (la persona a la que quieres enviar la app usa Mac, dicho el 2026-09-22): el `.dmg` lo construye GitHub Actions en el repositorio público https://github.com/Franjsb1515/gelatostock al publicar una etiqueta v* (docs/INSTALADOR.md); también se puede hacer en un Mac real con docs/MAC.md. Todo preparado desde Windows en 0.45.0 y sin validar: la primera ejecución en GitHub es la prueba; anotar cada error. Después, la salida de scripts/measure-ai-memory.cjs, adaptar la prueba de escritorio y firma/notarización.
 - [ ] Entre cinco y diez tarifas reales para medir la fase 4 (fotos como las que haces y algún PDF; puedes tapar el nombre del proveedor, pero los precios y formatos han de ser los de verdad).
 - [ ] Documentos y mensajes reales autorizados (anonimizados) para medir OCR, clasificación, lectura de respuestas y chat. Hoy todos los corpus son sintéticos y escritos por la misma sesión que las reglas.
 - [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia).

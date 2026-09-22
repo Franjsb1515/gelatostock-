@@ -32,7 +32,18 @@ El instalador deja `instalado.txt` junto a `GelatoStock.exe`. `src/datadir.cjs` 
 
 `work/check-instalador.cjs` instala en silencio en `work/inst-test`, arranca la app instalada con una carpeta local temporal, comprueba dónde guarda los datos y desinstala: 16 PASS el 2026-09-22 (reports/instalador-2026-09-22-v0440.txt). No se ha probado en el equipo de otra persona.
 
-## Mac (preparado desde Windows; nadie lo ha ejecutado todavía)
+## Mac en GitHub Actions (sin tener un Mac)
+
+El repositorio público https://github.com/Franjsb1515/gelatostock tiene la receta `.github/workflows/mac.yml`: GitHub presta un Mac (Apple Silicon y otro Intel), instala todo, descarga el modelo y Chrome, pasa las pruebas, empaqueta, arranca la app una vez (scripts/mac-smoke.cjs) y crea el `.dmg`.
+
+- Se lanza al publicar una etiqueta de versión (`git tag v0.45.0 && git push origin v0.45.0`) o a mano en la pestaña Actions → «Instalador de Mac» → «Run workflow».
+- Con etiqueta, los `.dmg` quedan en la página de Releases del repositorio: `GelatoStock-Instalador-<versión>-arm64.dmg` (Apple Silicon) y `-x64.dmg` (Intel). Quien lo reciba descarga el que corresponda a su Mac (menú Apple → Acerca de este Mac: «Chip Apple M…» es arm64; «Intel» es x64).
+- Sin etiqueta, el `.dmg` queda como artefacto de la ejecución (30 días) y solo lo puede bajar quien tenga sesión en GitHub.
+- Cada ejecución tarda unos 20–30 minutos y es gratis por ser un repositorio público. El registro de la ejecución es la evidencia de la primera vez que la app corre en un Mac: si algo falla, se lee ahí.
+
+El repositorio no lleva datos del negocio ni los números de teléfono del usuario (se retiraron también del historial antes de publicarlo).
+
+## Mac en un Mac real (preparado desde Windows; nadie lo ha ejecutado todavía)
 
 Hace falta un Mac con macOS 13 o superior y unos 6 GB libres. Los pasos completos, con lo que hay que instalar antes, están en docs/MAC.md. En resumen, en el Mac:
 
