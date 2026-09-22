@@ -1,0 +1,10 @@
+Verificado: config.json
+Verificado: generation_config.json
+Verificado: tokenizer.json
+Verificado: tokenizer_config.json
+Verificado: special_tokens_map.json
+Verificado: added_tokens.json
+Verificado: merges.txt
+Verificado: vocab.json
+Verificado: chat_template.jinja
+Verificado: onnx/model_q4.onnx

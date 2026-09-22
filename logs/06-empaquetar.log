@@ -1,0 +1,11 @@
+
+> appgelatostock@0.45.0 package:mac
+> npm run build && node scripts/package.cjs
+
+
+> appgelatostock@0.45.0 build
+> tsc -p tsconfig.json && node scripts/build-guide.cjs
+
+guía generada: 122 líneas
+Paquetes omitidos por no usarse en darwin arm64: 26
+Aplicación portátil creada en /Users/runner/work/gelatostock-/gelatostock-/dist/GelatoStock-0.45.0-darwin-arm64/GelatoStock.app
