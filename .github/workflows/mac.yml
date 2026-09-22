@@ -39,6 +39,12 @@ jobs:
           { uname -m; sw_vers; node -v; df -h .; } 2>&1 | tee work/logs/01-mac.log
       - name: Instalar dependencias
         run: npm ci 2>&1 | tee work/logs/02-npm-ci.log | tail -20
+      - name: Descargar Electron y los binarios de la IA (npm ya no ejecuta scripts de instalación)
+        run: |
+          node node_modules/electron/install.js 2>&1 | tee work/logs/02b-electron.log
+          ls node_modules/electron/dist | head -5
+          node node_modules/onnxruntime-node/script/install 2>&1 | tee -a work/logs/02b-electron.log
+          ls -R node_modules/onnxruntime-node/bin/napi-v6/darwin | head -20
       - name: Caché del modelo de IA y del Chrome de WhatsApp
         id: cache-runtime
         uses: actions/cache@v4
