@@ -1,5 +1,50 @@
 # Registro de parches y sesiones
 
+## 0.45.0 — 2026-09-22 · sesión 048 (cuarta parte) · instalador de Mac: camino preparado y construcción en GitHub
+
+Me recordaste que la persona que recibirá la app usa Mac. Desde Windows no se puede crear el instalador de Mac; ahora:
+
+- **GitHub construye el .dmg**: el código está publicado en https://github.com/Franjsb1515/gelatostock- (público, sin tus datos ni tus teléfonos, retirados también del historial). Al publicar una etiqueta de versión, los Macs de GitHub (Apple Silicon e Intel) instalan todo, pasan las pruebas, arrancan la app una vez y dejan los `.dmg` en Releases. Gratis por ser público.
+- `npm run package:mac` y `npm run installer:mac`, para hacerlo también en un Mac real (docs/MAC.md). En Mac la app guarda los datos en la carpeta de soporte de la persona; icono de la marca en `.icns`; reglas de empaquetado por plataforma separadas y probadas (205 pruebas).
+- macOS avisará porque la app no está firmada ni notarizada: «Abrir de todos modos» en Privacidad y seguridad (docs/INSTALADOR.md).
+- Windows: mismo instalador que en 0.44.0, reconstruido y vuelto a probar (16 PASS, escritorio 21 PASS).
+
+Todo lo de Mac está sin validar hasta que termine la primera ejecución en GitHub. Informe reports/2026-09-22T19-00-00-000Z-camino-instalador-mac.md.
+
+## 0.44.0 — 2026-09-22 · sesión 048 (tercera parte) · instalador de Windows
+
+Pediste un instalador para enviarle la app a alguien. Ahora:
+
+- **Un solo archivo**: `npm run installer:win` crea `dist/instalador/GelatoStock-Instalador-<versión>.exe` (unos 750 MB) a partir de la carpeta portátil. Quien lo recibe elige carpeta (en su usuario, sin administrador) y le quedan acceso en el escritorio, menú Inicio y desinstalador. Lleva dentro la IA local y el navegador de WhatsApp; no lleva ningún dato tuyo.
+- **Sus datos, a salvo**: la app instalada guarda los datos en la carpeta local de la persona, así que desinstalar o instalar una versión nueva encima no los toca. Tu carpeta portátil sigue guardando en `data/` junto al ejecutable.
+- **Aviso de Windows**: el instalador no está firmado (firmar exige un certificado de pago). Windows dirá «Windows protegió tu PC»: «Más información» y «Ejecutar de todas formas».
+- Icono del cucurucho en el instalador, el desinstalador y la ventana de la app.
+- Corrección: una frase de la guía del chat (0.43.0) desviaba «¿Quién inventó el gelato?»; reescrita, 202 pruebas y chat 35/35.
+
+Pruebas: 202, chat 35/35, instalador 16 PASS instalando y desinstalando en este equipo, escritorio 21 PASS. docs/INSTALADOR.md e informe reports/2026-09-22T17-30-00-000Z-instalador-windows.md.
+
+## 0.43.0 — 2026-09-22 · sesión 048 (segunda parte) · merma de gelato a cualquier hora
+
+Decidiste que la merma de un gelato se pueda apuntar cuando ocurre (por ejemplo, al cambiar el turno), no solo al cerrar el día. Ahora:
+
+- **Inventario → Entrada / salida → «Merma / pérdida»** sobre un gelato cuenta como merma del cierre de ese día: la ven igual el resumen del día, el historial, los informes, la Semana y el objetivo de merma, y «Deshacer» del cierre también la deshace.
+- Pide el motivo de la lista y, si el día ya está confirmado, te manda a reabrirlo.
+- **Lo que guardas para mañana no es merma**: sigue en stock y sale como «queda para mañana». Solo se apunta lo que se tira. El formulario y la guía lo dicen.
+- Los ingredientes no cambian.
+
+Pruebas: 201, chat 35/35 y escritorio 21 PASS con el ejecutable 0.43.0. Informe reports/2026-09-22T16-00-00-000Z-merma-de-gelato-a-cualquier-hora.md.
+
+## 0.42.1 — 2026-09-22 · sesión 048 · auditoría general
+
+Pediste una auditoría. Se recorrieron las 15 pantallas con una copia de tus datos y se probó el ciclo del día con tu gelato (CHOCOLOCO). Lo corregido:
+
+- **Configuración**: la tarjeta «Sobre este prototipo» decía «Datos de ejemplo persistentes. Compras y mensajes simulados»; ahora «Sobre esta versión» explica que tus datos se guardan en este equipo y que «Simular envío» no escribe a nadie. «Primeros pasos» nombraba un botón que ya no existe («Conectar al abrir»): ahora «Mantener la sesión al abrir».
+- **Guía y chat sin jerga**: «producto terminado» pasa a «gelato hecho», «gelato en stock» o «lo producido». La evaluación del chat se repitió: 35/35.
+- **Plurales**: «1 producto en catálogo», «1 movimiento de inventario».
+- **Balance técnico**: sin fichas de composición decía «0 %»; ahora «No disponible».
+
+Pruebas: 200, chat 35/35 y escritorio 21 PASS con el ejecutable 0.42.1. Informe reports/2026-09-22T14-50-00-000Z-auditoria-general-0421.md.
+
 ## 0.42.0 — 2026-09-21 · sesión 047 (sexta parte) · escribir tú en Mensajes
 
 Pediste poder escribirle tú al proveedor desde Mensajes, ver ahí lo que llega y que la app lo lea. Ahora:
