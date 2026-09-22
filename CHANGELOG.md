@@ -9,7 +9,7 @@ Me recordaste que la persona que recibirá la app usa Mac. Desde Windows no se p
 - macOS avisará porque la app no está firmada ni notarizada: «Abrir de todos modos» en Privacidad y seguridad (docs/INSTALADOR.md).
 - Windows: mismo instalador que en 0.44.0, reconstruido y vuelto a probar (16 PASS, escritorio 21 PASS).
 
-Todo lo de Mac está sin validar hasta que termine la primera ejecución en GitHub. Informe reports/2026-09-22T19-00-00-000Z-camino-instalador-mac.md.
+Resultado: al cuarto intento, los Macs de GitHub construyeron los dos instaladores (Apple Silicon e Intel), con las 205 pruebas pasando en macOS y la app arrancando en los dos; están en https://github.com/Franjsb1515/gelatostock-/releases/tag/v0.45.0. Falta que una persona la use en un Mac real. Informe reports/2026-09-22T19-00-00-000Z-camino-instalador-mac.md.
 
 ## 0.44.0 — 2026-09-22 · sesión 048 (tercera parte) · instalador de Windows
 

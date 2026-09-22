@@ -1,6 +1,6 @@
-# GelatoStock en Mac · preparación (sin validar todavía)
+# GelatoStock en Mac
 
-Nadie ha ejecutado GelatoStock en un Mac. Este documento deja listo el camino para hacerlo en un Mac (el del usuario o el de quien vaya a recibir la app), crear ahí el instalador `.dmg` y medir la memoria de la IA. Todo lo de abajo está preparado desde Windows y puede fallar en el primer intento: hay que anotar cada error tal cual en reports/.
+Desde el 2026-09-22 los Macs de GitHub Actions ejecutan estos mismos pasos (.github/workflows/mac.yml) y sacan el `.dmg`: 205 pruebas, la app arranca y los instaladores están en https://github.com/Franjsb1515/gelatostock-/releases/tag/v0.45.0. Ninguna persona la ha usado todavía en un Mac real, y WhatsApp en Mac sigue sin probar. En el Mac de GitHub, `npm ci` no ejecuta los scripts de instalación: hay que lanzar después `node node_modules/electron/install.js` y `node node_modules/onnxruntime-node/script/install` (en un Mac propio con npm antiguo, `npm ci` los ejecuta solo). Este documento deja listo el camino para hacerlo en un Mac (el del usuario o el de quien vaya a recibir la app), crear ahí el instalador `.dmg` y medir la memoria de la IA. Todo lo de abajo está preparado desde Windows y puede fallar en el primer intento: hay que anotar cada error tal cual en reports/.
 
 ## Requisitos
 - macOS 13 o superior, Apple Silicon (arm64) o Intel (x64). El instalador que salga sirve solo para Macs del mismo tipo. 8 GB de memoria es el caso que hay que medir.
