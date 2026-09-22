@@ -34,7 +34,7 @@ El instalador deja `instalado.txt` junto a `GelatoStock.exe`. `src/datadir.cjs` 
 
 ## Mac en GitHub Actions (sin tener un Mac)
 
-El repositorio público https://github.com/Franjsb1515/gelatostock tiene la receta `.github/workflows/mac.yml`: GitHub presta un Mac (Apple Silicon y otro Intel), instala todo, descarga el modelo y Chrome, pasa las pruebas, empaqueta, arranca la app una vez (scripts/mac-smoke.cjs) y crea el `.dmg`.
+El repositorio público https://github.com/Franjsb1515/gelatostock- tiene la receta `.github/workflows/mac.yml`: GitHub presta un Mac (Apple Silicon y otro Intel), instala todo, descarga el modelo y Chrome, pasa las pruebas, empaqueta, arranca la app una vez (scripts/mac-smoke.cjs) y crea el `.dmg`.
 
 - Se lanza al publicar una etiqueta de versión (`git tag v0.45.0 && git push origin v0.45.0`) o a mano en la pestaña Actions → «Instalador de Mac» → «Run workflow».
 - Con etiqueta, los `.dmg` quedan en la página de Releases del repositorio: `GelatoStock-Instalador-<versión>-arm64.dmg` (Apple Silicon) y `-x64.dmg` (Intel). Quien lo reciba descarga el que corresponda a su Mac (menú Apple → Acerca de este Mac: «Chip Apple M…» es arm64; «Intel» es x64).
