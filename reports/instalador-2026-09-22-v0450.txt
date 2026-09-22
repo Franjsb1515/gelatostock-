@@ -1,0 +1,17 @@
+PASS: existe GelatoStock-Instalador-0.45.0.exe (751 MB)
+PASS: instalación silenciosa termina con código 0 en 194 s
+PASS: GelatoStock.exe instalado en D:\CARPETAPROYECTOS\APPGELATOSTOCK\work\inst-test
+PASS: la marca instalado.txt está junto al ejecutable
+PASS: hay desinstalador
+PASS: no hay carpeta data junto al ejecutable antes de arrancar
+PASS: el modelo de IA local va dentro
+PASS: el navegador de WhatsApp va dentro
+PASS: la carpeta portátil de dist no lleva la marca
+PASS: la app instalada arranca y dice v0.45.0
+PASS: Configuración enseña la carpeta de datos en la carpeta local de la persona: D:\CARPETAPROYECTOS\APPGELATOSTOCK\work\inst-local\GelatoStock\data
+PASS: la base de datos se creó ahí
+PASS: y no junto al ejecutable
+PASS: desinstalación silenciosa termina con código 0
+PASS: el ejecutable instalado ya no está
+PASS: los datos de la persona sobreviven a la desinstalación
+FALLO Error: EPERM, Permission denied: \\?\D:\CARPETAPROYECTOS\APPGELATOSTOCK\work\inst-test '\\?\D:\CARPETAPROYECTOS\APPGELATOSTOCK\work\inst-test'

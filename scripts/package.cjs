@@ -1,19 +1,29 @@
+// Aplicación portátil: copia Electron y la app con solo los módulos nativos de esta plataforma.
+// Windows (probado): dist/GelatoStock-<versión>-win32-x64/GelatoStock.exe.
+// Mac (preparado desde Windows, SIN validar en un Mac): dist/GelatoStock-<versión>-darwin-<arch>/
+// GelatoStock.app, a partir de Electron.app con el Info.plist marcado y el icono de la marca.
+// Las reglas de qué se copia viven en scripts/package-rules.cjs (probadas en tests/).
 const fs = require("node:fs");
 const path = require("node:path");
+const rules = require("./package-rules.cjs");
 const root = path.resolve(__dirname, "..");
 const version = require("../package.json").version;
+const platform = process.platform;
+const arch = process.arch;
+if (!rules.supported.includes(platform))
+  throw Error("Este empaquetado es para Windows o Mac.");
 const distRoot = path.join(root, "dist");
-const dest = path.join(distRoot, `GelatoStock-${version}-win32-x64`);
-if (process.platform !== "win32")
-  throw Error(
-    "Este empaquetado requiere Windows. Preparar y probar Mac por separado.",
-  );
-// Old builds are only disk weight (2 GB each): keep the newest two, this one included.
+const dest = path.join(distRoot, rules.outputDirName(version, platform, arch));
+// Old builds are only disk weight (2 GB each): keep the newest two of this platform, this one included.
 const KEEP_BUILDS = 2;
 if (fs.existsSync(distRoot)) {
   const builds = fs
     .readdirSync(distRoot)
-    .filter((n) => /^GelatoStock-\d+\.\d+\.\d+-win32-x64$/.test(n))
+    .filter((n) =>
+      new RegExp(`^GelatoStock-\\d+\\.\\d+\\.\\d+-${platform}-[a-z0-9]+$`).test(
+        n,
+      ),
+    )
     .filter((n) => n !== path.basename(dest))
     .map((n) => ({ n, at: fs.statSync(path.join(distRoot, n)).mtimeMs }))
     .sort((a, b) => b.at - a.at);
@@ -23,17 +33,40 @@ if (fs.existsSync(distRoot)) {
   }
 }
 fs.mkdirSync(dest, { recursive: true });
-fs.cpSync(path.join(root, "node_modules", "electron", "dist"), dest, {
-  recursive: true,
-});
-const oldExe = path.join(dest, "electron.exe");
-const newExe = path.join(dest, "GelatoStock.exe");
-if (fs.existsSync(newExe)) fs.unlinkSync(newExe);
-fs.renameSync(oldExe, newExe);
-const app = path.join(dest, "resources", "app");
+const electronDist = path.join(root, "node_modules", "electron", "dist");
+let app;
+let launcher;
+if (platform === "win32") {
+  fs.cpSync(electronDist, dest, { recursive: true });
+  const oldExe = path.join(dest, "electron.exe");
+  launcher = path.join(dest, "GelatoStock.exe");
+  if (fs.existsSync(launcher)) fs.unlinkSync(launcher);
+  fs.renameSync(oldExe, launcher);
+  app = path.join(dest, "resources", "app");
+} else {
+  // Electron.app lleva enlaces simbólicos dentro de sus frameworks: se copian como enlaces.
+  launcher = path.join(dest, "GelatoStock.app");
+  fs.rmSync(launcher, { recursive: true, force: true });
+  fs.cpSync(path.join(electronDist, "Electron.app"), launcher, {
+    recursive: true,
+    verbatimSymlinks: true,
+  });
+  const plist = path.join(launcher, "Contents", "Info.plist");
+  fs.writeFileSync(
+    plist,
+    rules.brandPlist(fs.readFileSync(plist, "utf8"), version),
+  );
+  const icns = path.join(root, "build-assets", "icon.icns");
+  if (fs.existsSync(icns))
+    fs.copyFileSync(
+      icns,
+      path.join(launcher, "Contents", "Resources", "electron.icns"),
+    );
+  app = path.join(launcher, "Contents", "Resources", "app");
+}
 fs.mkdirSync(app, { recursive: true });
 fs.cpSync(path.join(root, "src"), path.join(app, "src"), { recursive: true });
-// Icono de la ventana (src/desktop.cjs); el .ico lo usa el instalador (scripts/installer.cjs).
+// Icono de la ventana (src/desktop.cjs); el .ico/.icns los usa el instalador (scripts/installer.cjs).
 fs.cpSync(path.join(root, "build-assets"), path.join(app, "build-assets"), {
   recursive: true,
 });
@@ -50,34 +83,21 @@ fs.cpSync(path.join(root, "build"), path.join(app, "build"), {
   recursive: true,
 });
 fs.mkdirSync(path.join(app, "node_modules"), { recursive: true });
-// Not shipped: never executed by this app on Windows x64 (measured 0.17.0/0.17.1).
-// onnxruntime-web is the browser backend (we use onnxruntime-node) and the node build of
-// transformers does not require it; sharp IS required at load by transformers (verified: the
-// pruned package failed with "Cannot find module 'sharp'"), so sharp stays with only its
-// Windows x64 binary; the other @img platform variants and onnxruntime-node binaries for
-// darwin/linux/win32-arm64 are dead weight here.
-const keepPackages = [
-  "node_modules/sharp",
-  "node_modules/@img/colour",
-  "node_modules/@img/sharp-win32-x64",
-];
-const skipPackages = ["node_modules/onnxruntime-web", "node_modules/@img/"];
-const skipFile = (source) => {
-  const rel = path.relative(root, source).split(path.sep).join("/");
-  return (
-    /^node_modules\/onnxruntime-node\/bin\/[^/]+\/(darwin|linux)\//.test(rel) ||
-    /^node_modules\/onnxruntime-node\/bin\/[^/]+\/win32\/arm64/.test(rel)
+// Not shipped: never executed by this app on this platform (measured 0.17.0/0.17.1 on Windows x64).
+// sharp IS required at load by transformers (verified: the pruned package failed with "Cannot
+// find module 'sharp'"), so sharp stays with only this platform's binary.
+const skipFile = (source) =>
+  rules.skipsFile(
+    path.relative(root, source).split(path.sep).join("/"),
+    platform,
+    arch,
   );
-};
 // Copy the locked production dependency graph, including local OCR WASM/language files.
 const lock = require("../package-lock.json");
 let skipped = 0;
 for (const [location, info] of Object.entries(lock.packages)) {
   if (!location || info.dev || !location.startsWith("node_modules/")) continue;
-  if (
-    !keepPackages.some((k) => location === k || location.startsWith(k + "/")) &&
-    skipPackages.some((s) => location === s || location.startsWith(s))
-  ) {
+  if (!rules.keepsPackage(location, platform, arch)) {
     skipped++;
     continue;
   }
@@ -87,7 +107,9 @@ for (const [location, info] of Object.entries(lock.packages)) {
     filter: (source) => !skipFile(source),
   });
 }
-console.log("Paquetes omitidos por no usarse en Windows x64: " + skipped);
+console.log(
+  `Paquetes omitidos por no usarse en ${platform} ${arch}: ` + skipped,
+);
 
 const manifest = require("../runtime/ai-model.json");
 if (!/^[a-zA-Z0-9_-]+$/.test(manifest.directory))
@@ -104,4 +126,4 @@ for (const name of [...Object.keys(manifest.files), "LICENSE"]) {
   fs.mkdirSync(path.dirname(to), { recursive: true });
   fs.copyFileSync(from, to);
 }
-console.log("Aplicación portátil creada en " + newExe);
+console.log("Aplicación portátil creada en " + launcher);

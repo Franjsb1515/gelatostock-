@@ -16,6 +16,9 @@ const data = require("./datadir.cjs").resolveDataDir({
   env: process.env,
   base,
   localAppData: process.env.LOCALAPPDATA || app.getPath("appData"),
+  platform: process.platform,
+  packaged: app.isPackaged,
+  appData: app.getPath("appData"),
 });
 fs.mkdirSync(path.join(data, "runtime"), { recursive: true });
 app.setPath("userData", path.join(data, "runtime"));

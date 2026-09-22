@@ -43,3 +43,40 @@ test("carpeta de datos: portátil junto al ejecutable, instalada en la carpeta l
     fs.rmSync(base, { recursive: true, force: true });
   }
 });
+
+// Mac: un .app en Aplicaciones no es escribible, así que la app empaquetada guarda en la carpeta
+// de soporte de la persona; en desarrollo, en data/ del proyecto. Sin validar en un Mac todavía.
+test("carpeta de datos en Mac: soporte de la persona con la app empaquetada, proyecto en desarrollo", () => {
+  const base = "/Applications/GelatoStock.app/Contents/MacOS";
+  const support = "/Users/ana/Library/Application Support";
+  assert.equal(
+    resolveDataDir({
+      env: {},
+      base,
+      platform: "darwin",
+      packaged: true,
+      appData: support,
+    }),
+    path.join(support, "GelatoStock", "data"),
+  );
+  assert.equal(
+    resolveDataDir({
+      env: {},
+      base: "/Users/ana/proyecto",
+      platform: "darwin",
+      packaged: false,
+      appData: support,
+    }),
+    path.join("/Users/ana/proyecto", "data"),
+  );
+  assert.equal(
+    resolveDataDir({
+      env: { GELATO_DATA_DIR: "/tmp/otra" },
+      base,
+      platform: "darwin",
+      packaged: true,
+      appData: support,
+    }),
+    "/tmp/otra",
+  );
+});

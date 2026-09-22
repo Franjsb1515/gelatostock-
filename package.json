@@ -1,6 +1,6 @@
 {
   "name": "appgelatostock",
-  "version": "0.44.0",
+  "version": "0.45.0",
   "private": true,
   "description": "Prototipo local de inventario y compras para gelateria",
   "main": "src/desktop.cjs",
@@ -18,7 +18,8 @@
     "predev": "npm run build",
     "package:mac": "npm run build && node scripts/package.cjs",
     "installer:win": "node scripts/installer.cjs",
-    "icon": "node scripts/make-icon.cjs"
+    "icon": "node scripts/make-icon.cjs",
+    "installer:mac": "node scripts/installer.cjs"
   },
   "devDependencies": {
     "@playwright/cli": "0.1.19",

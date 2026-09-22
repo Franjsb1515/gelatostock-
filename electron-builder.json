@@ -28,5 +28,18 @@
     "installerLanguages": ["es_ES"],
     "language": "3082",
     "artifactName": "GelatoStock-Instalador-${version}.exe"
+  },
+  "mac": {
+    "target": ["dmg"],
+    "icon": "build-assets/icon.icns",
+    "category": "public.app-category.business",
+    "identity": null,
+    "hardenedRuntime": false,
+    "gatekeeperAssess": false,
+    "artifactName": "GelatoStock-Instalador-${version}-${arch}.dmg"
+  },
+  "dmg": {
+    "sign": false,
+    "artifactName": "GelatoStock-Instalador-${version}-${arch}.dmg"
   }
 }

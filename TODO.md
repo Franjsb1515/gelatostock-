@@ -1,4 +1,4 @@
-# TODO — estado real de 0.44.0
+# TODO — estado real de 0.45.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -7,8 +7,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 1. Siguiente, en este orden
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
-- [x] Prueba de escritorio al día: 21 PASS con el ejecutable 0.44.0 el 2026-09-22 (reports/desktop-smoke-2026-09-22-v0440.txt) y prueba del instalador 16 PASS (reports/instalador-2026-09-22-v0440.txt); antes, 21 PASS con la 0.43.0 y la 0.42.1 el mismo día; antes, 21 PASS con la 0.42.0 lanzada por ti el 2026-09-21. Cubre dentro del ejecutable el «Vale desde» del valor de venta y el botón de escribir al proveedor desde Mensajes.
-- [ ] [tú] Usar unos días la 0.44.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [x] Prueba de escritorio al día: 21 PASS con el ejecutable 0.45.0 el 2026-09-22 (reports/desktop-smoke-2026-09-22-v0450.txt) y prueba del instalador 16 PASS (reports/instalador-2026-09-22-v0450.txt); antes, lo mismo con la 0.44.0; antes, 21 PASS con la 0.43.0 y la 0.42.1 el mismo día; antes, 21 PASS con la 0.42.0 lanzada por ti el 2026-09-21. Cubre dentro del ejecutable el «Vale desde» del valor de venta y el botón de escribir al proveedor desde Mensajes.
+- [ ] [tú] Usar unos días la 0.45.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
@@ -21,7 +21,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 - [ ] Confirmar productos, proveedores, recetas, unidades y sistema de ventas reales.
 - [ ] Fichas de composición reales de tus ingredientes (el balance técnico usa las de demostración).
-- [ ] Mac: ejecutar docs/MAC.md en tu equipo y enviar la salida de scripts/measure-ai-memory.cjs. De ahí salen: ajustar descarga e hilos de la IA, adaptar la prueba de escritorio, nombre e icono del bundle y firma.
+- [ ] Mac (la persona a la que quieres enviar la app usa Mac, dicho el 2026-09-22): ejecutar docs/MAC.md en un Mac del mismo tipo (Apple Silicon o Intel) que el suyo: `npm ci`, modelo, Chrome, `npm run package:mac`, `npm run installer:mac` → `.dmg`. Todo preparado desde Windows en 0.45.0 y sin validar: anotar cada error. Después, la salida de scripts/measure-ai-memory.cjs, adaptar la prueba de escritorio y firma/notarización.
 - [ ] Entre cinco y diez tarifas reales para medir la fase 4 (fotos como las que haces y algún PDF; puedes tapar el nombre del proveedor, pero los precios y formatos han de ser los de verdad).
 - [ ] Documentos y mensajes reales autorizados (anonimizados) para medir OCR, clasificación, lectura de respuestas y chat. Hoy todos los corpus son sintéticos y escritos por la misma sesión que las reglas.
 - [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia).
@@ -61,7 +61,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 - [x] Instalador de Windows (0.44.0, pedido por ti el 2026-09-22 para enviársela a alguien): `npm run installer:win`, docs/INSTALADOR.md. Sin firma.
 - [ ] Firmar la distribución de Windows (certificado de pago; hasta entonces SmartScreen avisa) y actualizaciones seguras. Icono del propio ejecutable (hoy el genérico de Electron; el instalador y la ventana ya llevan el de la marca).
-- [ ] Empaquetar, firmar y probar en el Mac real.
+- [ ] Firmar y notarizar en Mac (cuenta de desarrollador de Apple); hasta entonces, «Abrir de todos modos» en Privacidad y seguridad.
 - [ ] Prueba de disco lleno y validación del corte de corriente en el equipo real.
 - [ ] Autenticación y permisos por persona si la usan varias (hoy: una contraseña opcional para el recetario).
 - [ ] Revisión de arquitectura completa de core/, servidor y WhatsApp con ojos nuevos.
