@@ -66,7 +66,9 @@ export function wasteLabelOf(m: {
 }
 const salePattern = /^Venta del día (\d{4}-\d{2}-\d{2})/;
 const giftPattern = /^Invitación o consumo del día (\d{4}-\d{2}-\d{2})/;
-const wastePattern = /^Merma del día (\d{4}-\d{2}-\d{2})(?: · (.+))?$/;
+// Motivo y, tras otro « · », el detalle opcional de una merma de gelato apuntada en Inventario.
+const wastePattern =
+  /^Merma del día (\d{4}-\d{2}-\d{2})(?: · ([^·]+?))?(?: · (.+))?$/;
 
 export type CloseKind = "sale" | "waste" | "gift";
 /** Una línea viva de un cierre, con su movimiento de origen. */

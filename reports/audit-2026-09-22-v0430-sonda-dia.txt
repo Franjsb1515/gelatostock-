@@ -1,0 +1,431 @@
+
+## día 19 (producción aprobada sin gelato activo)
+{
+ "date": "2026-09-19",
+ "live": {
+  "rows": [],
+  "totals": {
+   "opening": 0,
+   "produced": 0,
+   "sold": 0,
+   "waste": 0,
+   "gift": 0,
+   "adjust": 0,
+   "remaining": 0,
+   "soldCents": 0,
+   "wasteCents": 0,
+   "giftCents": 0
+  }
+ },
+ "close": null,
+ "closed": false,
+ "drift": false,
+ "difference": null
+}
+
+## día 21 (alta con conteo 1 kg)
+[
+ {
+  "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+  "name": "CHOCOLOCO",
+  "opening": 0,
+  "produced": 0,
+  "sold": 0,
+  "waste": 0,
+  "gift": 0,
+  "adjust": 1,
+  "remaining": 1,
+  "saleValue": 20000,
+  "soldCents": 0,
+  "wasteCents": 0,
+  "giftCents": 0
+ }
+]
+
+## valor 15–22 sept
+{
+ "from": "2026-09-15",
+ "to": "2026-09-22",
+ "rows": [],
+ "kg": {
+  "produced": 0,
+  "sold": 0,
+  "waste": 0,
+  "gift": 0
+ },
+ "sale": {
+  "produced": 0,
+  "sold": 0,
+  "waste": 0,
+  "gift": 0
+ },
+ "cost": {
+  "produced": 0,
+  "sold": 0,
+  "waste": 0,
+  "gift": 0
+ },
+ "missingValue": [],
+ "missingCost": []
+}
+
+## plan hoy
+{
+ "today": "2026-09-22",
+ "from": "2026-09-08",
+ "to": "2026-09-21",
+ "closeDays": 0,
+ "rows": [
+  {
+   "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+   "name": "CHOCOLOCO",
+   "recipe": "0a7bf883-dec9-481e-955e-ef7bec4c1c18",
+   "stock": 1,
+   "target": 0,
+   "suggest": null,
+   "avgSold": null,
+   "soldKg": 0,
+   "coverDays": null
+  }
+ ]
+}
+
+## brief
+{
+ "date": "2026-09-22",
+ "closed": false,
+ "totals": {
+  "opening": 1,
+  "produced": 0,
+  "sold": 0,
+  "waste": 0,
+  "gift": 0,
+  "adjust": 0,
+  "remaining": 1,
+  "soldCents": 0,
+  "wasteCents": 0,
+  "giftCents": 0
+ },
+ "yesterdayPending": null,
+ "toProduce": [],
+ "withoutGoal": 1
+}
+OK  setGoal 3 kg
+
+## plan tras objetivo
+[
+ {
+  "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+  "name": "CHOCOLOCO",
+  "recipe": "0a7bf883-dec9-481e-955e-ef7bec4c1c18",
+  "stock": 1,
+  "target": 3,
+  "suggest": 2,
+  "avgSold": null,
+  "soldKg": 0,
+  "coverDays": null
+ }
+]
+OK  wasteGoal 10 %
+OK  cierre hoy: vendido 0.6, merma 0.2 (textura), invitación 0.1
+
+## día 22 tras cierre
+{
+ "date": "2026-09-22",
+ "live": {
+  "rows": [
+   {
+    "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+    "name": "CHOCOLOCO",
+    "opening": 1,
+    "produced": 0,
+    "sold": 0.6,
+    "waste": 0.2,
+    "gift": 0.1,
+    "adjust": 0,
+    "remaining": 0.1,
+    "saleValue": 20000,
+    "soldCents": 12000,
+    "wasteCents": 4000,
+    "giftCents": 2000
+   }
+  ],
+  "totals": {
+   "opening": 1,
+   "produced": 0,
+   "sold": 0.6,
+   "waste": 0.2,
+   "gift": 0.1,
+   "adjust": 0,
+   "remaining": 0.1,
+   "soldCents": 12000,
+   "wasteCents": 4000,
+   "giftCents": 2000
+  }
+ },
+ "close": null,
+ "closed": false,
+ "drift": false,
+ "difference": null
+}
+
+## wasteGoals
+[
+ {
+  "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+  "name": "CHOCOLOCO",
+  "unit": "kg",
+  "mode": "pct",
+  "goal": 10,
+  "days": 7,
+  "waste": 0.2,
+  "out": 0.9,
+  "pct": 22.2,
+  "over": true
+ }
+]
+
+## historial 22
+{
+ "from": "2026-09-22",
+ "to": "2026-09-22",
+ "days": [
+  {
+   "date": "2026-09-22",
+   "lines": [
+    {
+     "id": "04045faa-4d8b-4b14-8e00-1d5e5dbd5dd6",
+     "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+     "name": "CHOCOLOCO",
+     "kind": "gift",
+     "quantity": 0.1,
+     "reason": ""
+    },
+    {
+     "id": "7e78f6c6-2c14-4a93-a1b0-38920017de07",
+     "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+     "name": "CHOCOLOCO",
+     "kind": "waste",
+     "quantity": 0.2,
+     "reason": "Textura o cristalización"
+    },
+    {
+     "id": "7f80ae2f-72ff-473a-8467-01440491058c",
+     "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+     "name": "CHOCOLOCO",
+     "kind": "sale",
+     "quantity": 0.6,
+     "reason": ""
+    }
+   ],
+   "sold": 0.6,
+   "waste": 0.2,
+   "gift": 0.1,
+   "wastePct": 22.2,
+   "products": 1
+  }
+ ],
+ "totals": {
+  "sold": 0.6,
+  "waste": 0.2,
+  "gift": 0.1,
+  "wastePct": 22.2
+ },
+ "byProduct": [
+  {
+   "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+   "name": "CHOCOLOCO",
+   "sold": 0.6,
+   "waste": 0.2,
+   "gift": 0.1
+  }
+ ],
+ "byReason": [
+  {
+   "reason": "Textura o cristalización",
+   "waste": 0.2
+  }
+ ]
+}
+OK  confirmDay 22
+ERR dailySales de nuevo el 22 (debe rechazarse) → El día 2026-09-22 está cerrado. Reábrelo con «Reabrir el día», indicando el motivo, para cambiarlo.
+ERR movimiento manual merma del gelato el 22 (día cerrado: debe rechazarse desde 0.43.0) → El día 2026-09-22 está cerrado. Reábrelo con «Reabrir el día», indicando el motivo, para cambiarlo.
+
+## día 22 tras merma manual con día cerrado
+{
+ "date": "2026-09-22",
+ "live": {
+  "rows": [
+   {
+    "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+    "name": "CHOCOLOCO",
+    "opening": 1,
+    "produced": 0,
+    "sold": 0.6,
+    "waste": 0.2,
+    "gift": 0.1,
+    "adjust": 0,
+    "remaining": 0.1,
+    "saleValue": 20000,
+    "soldCents": 12000,
+    "wasteCents": 4000,
+    "giftCents": 2000
+   }
+  ],
+  "totals": {
+   "opening": 1,
+   "produced": 0,
+   "sold": 0.6,
+   "waste": 0.2,
+   "gift": 0.1,
+   "adjust": 0,
+   "remaining": 0.1,
+   "soldCents": 12000,
+   "wasteCents": 4000,
+   "giftCents": 2000
+  }
+ },
+ "close": {
+  "id": "day-2026-09-22",
+  "date": "2026-09-22",
+  "status": "closed",
+  "confirmedAt": "2026-09-22T14:58:26.512Z",
+  "realSaleCents": 11000,
+  "snapshot": {
+   "rows": [
+    {
+     "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+     "name": "CHOCOLOCO",
+     "opening": 1,
+     "produced": 0,
+     "sold": 0.6,
+     "waste": 0.2,
+     "gift": 0.1,
+     "adjust": 0,
+     "remaining": 0.1,
+     "saleValue": 20000,
+     "soldCents": 12000,
+     "wasteCents": 4000,
+     "giftCents": 2000
+    }
+   ],
+   "totals": {
+    "opening": 1,
+    "produced": 0,
+    "sold": 0.6,
+    "waste": 0.2,
+    "gift": 0.1,
+    "adjust": 0,
+    "remaining": 0.1,
+    "soldCents": 12000,
+    "wasteCents": 4000,
+    "giftCents": 2000
+   }
+  },
+  "log": [
+   {
+    "at": "2026-09-22T14:58:26.512Z",
+    "kind": "confirmed",
+    "r
+OK  setSaleValue 250 € desde 2026-09-22 con día cerrado
+
+## día 22 tras cambiar valor
+{
+ "total": {
+  "opening": 1,
+  "produced": 0,
+  "sold": 0.6,
+  "waste": 0.2,
+  "gift": 0.1,
+  "adjust": 0,
+  "remaining": 0.1,
+  "soldCents": 15000,
+  "wasteCents": 5000,
+  "giftCents": 2500
+ },
+ "closed": true,
+ "drift": true
+}
+OK  reopenDay
+OK  merma manual del gelato 0.05 (vitrina) con el día reabierto
+
+## día 22 tras merma manual: debe ser merma, no ajuste
+[
+ {
+  "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+  "name": "CHOCOLOCO",
+  "opening": 1,
+  "produced": 0,
+  "sold": 0.6,
+  "waste": 0.25,
+  "gift": 0.1,
+  "adjust": 0,
+  "remaining": 0.05,
+  "saleValue": 25000,
+  "soldCents": 15000,
+  "wasteCents": 6250,
+  "giftCents": 2500
+ }
+]
+
+## historial 22 por motivo
+[
+ {
+  "reason": "Textura o cristalización",
+  "waste": 0.2
+ },
+ {
+  "reason": "Vitrina o temperatura",
+  "waste": 0.05
+ }
+]
+OK  undoDailySales 22
+
+## día 22 tras deshacer
+[
+ {
+  "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+  "name": "CHOCOLOCO",
+  "opening": 1,
+  "produced": 0,
+  "sold": 0,
+  "waste": 0,
+  "gift": 0,
+  "adjust": 0,
+  "remaining": 1,
+  "saleValue": 25000,
+  "soldCents": 0,
+  "wasteCents": 0,
+  "giftCents": 0
+ }
+]
+OK  cierre pesando: queda 0.9 con stock 1
+
+## día 22 tras pesar
+[
+ {
+  "product": "53e62523-2784-4a8d-af80-89ff3df2b5c9",
+  "name": "CHOCOLOCO",
+  "opening": 1,
+  "produced": 0,
+  "sold": 0.1,
+  "waste": 0,
+  "gift": 0,
+  "adjust": 0,
+  "remaining": 0.9,
+  "saleValue": 25000,
+  "soldCents": 2500,
+  "wasteCents": 0,
+  "giftCents": 0
+ }
+]
+
+Últimas actividades:
+- Envío SIMULADO de GS-003. Ningún mensaje real enviado.
+- Reposición propuesta descontando pedidos pendientes.
+- Recepción parcial de GS-004.
+- Envío SIMULADO de GS-004. Ningún mensaje real enviado.
+- Pedidos de demostración autorizados. Ningún envío real realizado.
+- Datos migrados a SQLite. Se conserva el JSON original y una copia previa.
+- Reposición propuesta con los pedidos pendientes descontados.
+- Espacio de demostración creado. Los proveedores y precios son ficticios.

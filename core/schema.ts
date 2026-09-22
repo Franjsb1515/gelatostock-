@@ -493,6 +493,8 @@ export const actionSchema = z.intersection(
       // siendo obligatorio (lo comprueba core/domain.ts).
       reason: z.string().trim().max(500).default(""),
       wasteReason: wasteReasonEnum.optional(),
+      // Día de negocio de una merma de gelato (cuenta como merma del cierre de ese día).
+      date: documentDate.optional(),
     }),
     z.object({ type: z.literal("reverse"), id: idSchema, reason: text(500) }),
     z.object({

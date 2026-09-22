@@ -74,6 +74,7 @@ export {
 } from "./value";
 import { computeDay, dayCloseId, isDayClosed } from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
+import { businessDay } from "./plan";
 export { productionPlan, todayBrief, businessDay } from "./plan";
 const eur = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",") + " €";
@@ -487,17 +488,34 @@ export function apply(state: State, input: unknown): State {
         !!a.reason || !!a.wasteReason,
         "Escribe el motivo del movimiento.",
       );
-      // Una merma con motivo se guarda con el texto de core/sales.ts, igual que las del
-      // cierre del día, para poder leer las dos por el mismo motivo.
-      const reason = a.wasteReason
-        ? stockWasteText(a.wasteReason, a.reason)
-        : a.reason;
+      // La merma de un gelato (el producto de una receta) se puede apuntar a cualquier hora,
+      // pero es una merma del cierre de ese día de negocio: se guarda como línea de cierre
+      // («Merma del día AAAA-MM-DD · Motivo · detalle») para que el resumen del día, el
+      // historial, los informes, la Semana y el objetivo de merma la lean igual.
+      const gelato =
+        a.kind === "waste" && s.recipes.some((r) => r.product === p.id);
+      let day: string | undefined;
+      if (gelato) {
+        ensure(!!a.wasteReason, "Elige el motivo de la merma del gelato.");
+        day = a.date ?? businessDay(new Date());
+        ensureDayOpen(s, day);
+      }
+      // Una merma de ingrediente con motivo se guarda con el texto de core/sales.ts, con los
+      // mismos motivos que el cierre del día, para poder leer las dos por el mismo motivo.
+      const detail = a.reason.trim();
+      const reason =
+        gelato && a.wasteReason
+          ? wasteReasonText(day!, a.wasteReason) +
+            (detail ? ` · ${detail}` : "")
+          : a.wasteReason
+            ? stockWasteText(a.wasteReason, a.reason)
+            : a.reason;
       move(s, p.id, a.kind === "entry" ? a.value : -a.value, a.kind, reason);
       // En la actividad ya pone «Merma»: el motivo va sin repetir esa palabra.
       const shown = a.wasteReason
-        ? wasteReasonLabels[a.wasteReason] + (a.reason ? ` · ${a.reason}` : "")
+        ? wasteReasonLabels[a.wasteReason] + (detail ? ` · ${detail}` : "")
         : a.reason;
-      note = `${a.kind === "entry" ? "Entrada" : a.kind === "waste" ? "Merma" : "Salida"}: ${p.name}, ${a.value} ${p.unit}. ${shown}`;
+      note = `${a.kind === "entry" ? "Entrada" : a.kind === "waste" ? "Merma" : "Salida"}: ${p.name}, ${a.value} ${p.unit}. ${shown}${gelato ? ` Cuenta como merma del cierre del día ${day}.` : ""}`;
       break;
     }
     case "reverse": {

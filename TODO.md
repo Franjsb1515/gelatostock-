@@ -1,4 +1,4 @@
-# TODO — estado real de 0.42.1
+# TODO — estado real de 0.43.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -7,8 +7,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 1. Siguiente, en este orden
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
-- [x] Prueba de escritorio al día: 21 PASS con el ejecutable 0.42.1 el 2026-09-22 (salida en reports/desktop-smoke-2026-09-22-v0421.txt); antes, 21 PASS con la 0.42.0 lanzada por ti el 2026-09-21. Cubre dentro del ejecutable el «Vale desde» del valor de venta y el botón de escribir al proveedor desde Mensajes.
-- [ ] [tú] Usar unos días la 0.42.1 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [x] Prueba de escritorio al día: 21 PASS con el ejecutable 0.43.0 el 2026-09-22 (salida en reports/desktop-smoke-2026-09-22-v0430.txt); antes, 21 PASS con la 0.42.1 el mismo día; antes, 21 PASS con la 0.42.0 lanzada por ti el 2026-09-21. Cubre dentro del ejecutable el «Vale desde» del valor de venta y el botón de escribir al proveedor desde Mensajes.
+- [ ] [tú] Usar unos días la 0.43.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
@@ -49,8 +49,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 5. Producción, ventas y planificación
 
 - [ ] Lotes y vencimientos; rendimientos por receta.
-- [ ] Día cerrado: los movimientos manuales de Inventario (conteo, entrada, salida) sobre un gelato no se bloquean; si caen en un día cerrado, el resumen avisa de que algo cambió. Decidir si deben bloquearse.
-- [ ] [decidir] Merma de un gelato apuntada desde Inventario → Entrada / salida (auditoría 0.42.1): la Semana y el objetivo de merma la cuentan como merma, pero el resumen del día la enseña como «ajuste de inventario» y el historial de 30 días y los informes de venta y coste no la cuentan. Opciones: que la merma del gelato se apunte solo en el cierre (y el formulario de Inventario lo diga), o contarla como merma en todas partes. Evidencia en reports/audit-2026-09-22-v0421-sonda-dia.txt.
+- [ ] Día cerrado: los movimientos manuales de Inventario (conteo, entrada, salida) sobre un gelato no se bloquean (la merma sí, desde 0.43.0); si caen en un día cerrado, el resumen avisa de que algo cambió. Decidir si deben bloquearse.
+- [x] Merma de un gelato a cualquier hora (0.43.0, decidido por ti el 2026-09-22: cambia el personal a mitad del día): desde Inventario cuenta como merma del cierre de ese día en todas partes, y con el día confirmado se rechaza. Lo que se guarda para mañana no es merma.
 - [ ] Coste: usa el precio actual de la ficha al aprobar, no el de cada compra recibida (sin lotes no se sabe qué compra se gastó). Las producciones anteriores a 0.30.0 no tienen coste guardado y se valoran con el coste actual de la receta.
 - [x] Valor de venta con fecha de inicio elegible (0.41.0): «Vale desde» en el Recetario, hacia atrás o hacia delante.
 - [ ] Precio de compra fechado hacia atrás: no es lo mismo que el valor de venta y por eso no se hizo con él. El coste de cada producción es una instantánea al aprobarla, así que cambiar la fecha de un precio no cambiaría ningún número pasado: solo movería el historial y los avisos de subida de 30 días. Decidir si merece la pena.

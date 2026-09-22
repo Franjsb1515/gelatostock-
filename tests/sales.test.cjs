@@ -525,3 +525,112 @@ test("objetivo de merma por producto, en su unidad o en porcentaje: solo avisa",
   });
   assert.equal(edited.products.find((p) => p.id === "p2").wasteGoal.value, 25);
 });
+
+test("merma de un gelato desde Inventario: a cualquier hora, y cuenta como merma del cierre de ese día", () => {
+  const { closeLineOf } = require("../build/sales.js");
+  const { daySummary, valueReport, wasteGoals } = require("../build/domain.js");
+  const day = "2026-09-08";
+  const start = stock(seed(), "p4");
+  // Cambio de turno a media mañana: se tira gelato y se apunta desde Inventario.
+  let s = apply(seed(), {
+    type: "movement",
+    product: "p4",
+    kind: "waste",
+    value: 0.3,
+    wasteReason: "display",
+    reason: "cubeta de la vitrina al cambiar el turno",
+    date: day,
+  });
+  const m = s.movements[0];
+  assert.equal(
+    m.reason,
+    "Merma del día 2026-09-08 · Vitrina o temperatura · cubeta de la vitrina al cambiar el turno",
+  );
+  assert.equal(stock(s, "p4"), start - 0.3);
+  // Es una línea de cierre: motivo limpio, detalle aparte.
+  assert.deepEqual(closeLineOf(m), {
+    date: day,
+    kind: "waste",
+    reason: "Vitrina o temperatura",
+  });
+  assert.match(
+    s.activity[0].text,
+    /Cuenta como merma del cierre del día 2026-09-08/,
+  );
+  // El resumen del día la ve como merma (no como ajuste), y el historial y los informes también.
+  const summary = daySummary(s, day).live.rows.find((r) => r.product === "p4");
+  assert.equal(summary.waste, 0.3);
+  assert.equal(summary.adjust, 0);
+  const history = salesHistory(s, day, day);
+  assert.equal(history.totals.waste, 0.3);
+  assert.deepEqual(history.byReason, [
+    { reason: "Vitrina o temperatura", waste: 0.3 },
+  ]);
+  assert.equal(valueReport(s, day, day).kg.waste, 0.3);
+  // La semana y el objetivo de merma la cuentan igual que antes.
+  const week = weeklyReport(s, weekStart(new Date(day + "T12:00:00")));
+  assert.equal(week.wasteByReason[0].label, "Vitrina o temperatura");
+  s = apply(s, {
+    type: "setWasteGoal",
+    product: "p4",
+    mode: "quantity",
+    value: 0.1,
+  });
+  assert.equal(wasteGoals(s, 7, new Date(day + "T12:00:00"))[0].over, true);
+  // El cierre de la tarde se suma a la misma merma del día, y «Deshacer» compensa las dos.
+  s = close(s, day, [
+    { product: "p4", sold: 1, waste: 0.2, wasteReason: "texture" },
+  ]);
+  assert.equal(daySummary(s, day).live.totals.waste, 0.5);
+  s = apply(s, { type: "undoDailySales", date: day });
+  assert.equal(stock(s, "p4"), start);
+  assert.equal(daySummary(s, day).live.totals.waste, 0);
+  // Sin motivo de la lista no se acepta; con el día cerrado, tampoco.
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "movement",
+        product: "p4",
+        kind: "waste",
+        value: 0.1,
+        reason: "se cayó",
+        date: day,
+      }),
+    /Elige el motivo/,
+  );
+  s = close(s, day, [{ product: "p4", sold: 1 }]);
+  s = apply(s, { type: "confirmDay", date: day });
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "movement",
+        product: "p4",
+        kind: "waste",
+        value: 0.1,
+        wasteReason: "accident",
+        date: day,
+      }),
+    /está cerrado/,
+  );
+  // Sin fecha, el día de negocio de ahora (con la hora de cambio por defecto).
+  const { businessDay } = require("../build/domain.js");
+  s = apply(s, {
+    type: "movement",
+    product: "p4",
+    kind: "waste",
+    value: 0.1,
+    wasteReason: "accident",
+  });
+  assert.equal(closeLineOf(s.movements[0]).date, businessDay(new Date()));
+  // Un ingrediente sigue igual: texto de Inventario, sin día.
+  s = apply(s, {
+    type: "movement",
+    product: "p2",
+    kind: "waste",
+    value: 1,
+    wasteReason: "expiry",
+    date: day,
+  });
+  assert.equal(s.movements[0].reason, "Merma · Fin de vida útil");
+  assert.equal(closeLineOf(s.movements[0]), null);
+});

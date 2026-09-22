@@ -147,7 +147,7 @@ async function extendedAction(name, el) {
     const first = product(el?.dataset?.product) || state.products[0];
     modal(
       "Entrada, salida o merma",
-      "Este movimiento ajusta el stock y queda registrado con su motivo.",
+      "Este movimiento ajusta el stock y queda registrado con su motivo. La merma de un gelato cuenta como merma del cierre de hoy, a la hora que la apuntes; lo que guardas para mañana no es merma: sigue en stock.",
       select(
         "Producto",
         "product",
@@ -184,7 +184,10 @@ async function extendedAction(name, el) {
             kind: f.get("kind"),
             value: Number(f.get("value")),
             reason: f.get("reason") || "",
-            ...(waste ? { wasteReason: f.get("wasteReason") } : {}),
+            // Una merma de gelato cuenta en el cierre del día de negocio de hoy.
+            ...(waste
+              ? { wasteReason: f.get("wasteReason"), date: businessToday() }
+              : {}),
           },
           "Movimiento guardado.",
         );
