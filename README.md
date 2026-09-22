@@ -1,12 +1,16 @@
-# GelatoStock · prototipo 0.36.0
+# GelatoStock · 0.45.0
 
 Aplicación local de escritorio para una gelatería con café de especialidad y postres. Sirve para saber qué falta, pedirlo a los proveedores, entender lo que contestan y planificar el día. Es un prototipo para probar el circuito completo; todavía no es la aplicación final de producción.
 
 ## Abrir en este Windows
 
-Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python ni navegador. Si Windows bloquea VBScript, abre `dist/GelatoStock-0.36.0-win32-x64/GelatoStock.exe`; en ese caso los datos se guardan junto al ejecutable.
+Haz doble clic en **ABRIR GELATOSTOCK.vbs**, en esta carpeta. Abre una ventana propia, sin terminal. No requiere Node, Python ni navegador. Si Windows bloquea VBScript, abre `dist/GelatoStock-0.45.0-win32-x64/GelatoStock.exe`; en ese caso los datos se guardan junto al ejecutable.
 
-El acceso principal guarda datos, copias y perfil en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`, y los temporales en `work/`. No mover el ejecutable aislado: necesita el resto de su carpeta. Para llevarlo a otro Windows x64, copia toda la carpeta `dist/GelatoStock-0.36.0-win32-x64`. Arranca con datos de ejemplo salvo que restaures una copia. No sincroniza equipos.
+El acceso principal guarda datos, copias y perfil en `D:/CARPETAPROYECTOS/APPGELATOSTOCK/data`, y los temporales en `work/`. No mover el ejecutable aislado: necesita el resto de su carpeta. Para llevarlo a otro Windows x64, copia toda la carpeta `dist/GelatoStock-0.45.0-win32-x64`. Arranca con datos de ejemplo salvo que restaures una copia. No sincroniza equipos.
+
+## Instaladores para enviar la app
+
+Windows: `npm run package:win` y `npm run installer:win` dejan `dist/instalador/GelatoStock-Instalador-<versión>.exe` (probado). Mac: se construye en un Mac o en los Macs de GitHub Actions (`.github/workflows/mac.yml`) y sale un `.dmg`; preparado sin validar. Ninguno va firmado: Windows y macOS avisan al abrirlos. Detalle en docs/INSTALADOR.md y docs/MAC.md. Este repositorio no contiene datos del negocio, sesiones de WhatsApp, el modelo de IA ni el navegador.
 
 ## Qué hace hoy
 

@@ -1,0 +1,73 @@
+# Construye la app y el instalador .dmg de Mac en los Macs de GitHub (Apple Silicon e Intel).
+# Se lanza a mano (Actions → «Instalador de Mac» → Run workflow) o al publicar una etiqueta v*.
+# El .dmg queda como artefacto de la ejecución y, con etiqueta, como archivo de la «release».
+# Todo lo de Mac está preparado desde Windows: la primera ejecución es la primera vez que la app
+# corre en un Mac; si algo falla, el registro de aquí es la evidencia (docs/MAC.md).
+name: Instalador de Mac
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  dmg:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Comprobar el Mac
+        run: |
+          uname -m
+          sw_vers
+          node -v
+          df -h .
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Caché del modelo de IA y del Chrome de WhatsApp
+        id: cache-runtime
+        uses: actions/cache@v4
+        with:
+          path: |
+            runtime/models
+            runtime/browser
+          key: runtime-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('runtime/ai-model.json') }}
+      - name: Descargar el modelo de IA local
+        if: steps.cache-runtime.outputs.cache-hit != 'true'
+        run: node scripts/setup-ai-model.cjs
+      - name: Descargar Chrome para WhatsApp
+        run: node scripts/setup-browser.cjs
+      - name: Pruebas
+        run: npm test
+      - name: Empaquetar la app (GelatoStock.app)
+        run: npm run package:mac
+      - name: Arrancar la app empaquetada
+        run: node scripts/mac-smoke.cjs
+      - name: Crear el instalador (.dmg)
+        run: npm run installer:mac
+      - name: Guardar el instalador como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: GelatoStock-Instalador-mac-${{ matrix.arch }}
+          path: dist/instalador/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publicar en la release de la etiqueta
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" --title "GelatoStock ${GITHUB_REF_NAME}" --notes "Instaladores generados en GitHub Actions. Sin firma: ver docs/INSTALADOR.md." 2>/dev/null || true
+          gh release upload "${GITHUB_REF_NAME}" dist/instalador/*.dmg --clobber
