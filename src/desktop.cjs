@@ -11,7 +11,12 @@ const fs = require("node:fs");
 const base = app.isPackaged
   ? path.dirname(process.execPath)
   : path.resolve(__dirname, "..");
-const data = process.env.GELATO_DATA_DIR || path.join(base, "data");
+// Portátil: «data» junto al ejecutable. Instalada: en la carpeta local de la persona (src/datadir.cjs).
+const data = require("./datadir.cjs").resolveDataDir({
+  env: process.env,
+  base,
+  localAppData: process.env.LOCALAPPDATA || app.getPath("appData"),
+});
 fs.mkdirSync(path.join(data, "runtime"), { recursive: true });
 app.setPath("userData", path.join(data, "runtime"));
 app.setPath("sessionData", path.join(data, "runtime"));
@@ -58,6 +63,7 @@ if (!app.requestSingleInstanceLock()) {
         minHeight: 700,
         backgroundColor: "#f7f7f2",
         title: "GelatoStock",
+        icon: path.join(__dirname, "..", "build-assets", "icon.png"),
         autoHideMenuBar: true,
         webPreferences: {
           preload: path.join(__dirname, "preload.cjs"),

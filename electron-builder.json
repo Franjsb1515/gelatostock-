@@ -1,0 +1,32 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "es.gelatostock.app",
+  "productName": "GelatoStock",
+  "copyright": "Gelato & Café",
+  "directories": { "output": "dist/instalador" },
+  "compression": "normal",
+  "npmRebuild": false,
+  "nodeGypRebuild": false,
+  "publish": null,
+  "win": {
+    "target": ["nsis"],
+    "icon": "build-assets/icon.ico",
+    "signAndEditExecutable": false,
+    "artifactName": "GelatoStock-Instalador-${version}.exe"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "GelatoStock",
+    "runAfterFinish": true,
+    "deleteAppDataOnUninstall": false,
+    "installerIcon": "build-assets/icon.ico",
+    "uninstallerIcon": "build-assets/icon.ico",
+    "installerLanguages": ["es_ES"],
+    "language": "3082",
+    "artifactName": "GelatoStock-Instalador-${version}.exe"
+  }
+}

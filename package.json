@@ -1,6 +1,6 @@
 {
   "name": "appgelatostock",
-  "version": "0.43.0",
+  "version": "0.44.0",
   "private": true,
   "description": "Prototipo local de inventario y compras para gelateria",
   "main": "src/desktop.cjs",
@@ -16,11 +16,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prestart": "npm run build",
     "predev": "npm run build",
-    "package:mac": "npm run build && node scripts/package.cjs"
+    "package:mac": "npm run build && node scripts/package.cjs",
+    "installer:win": "node scripts/installer.cjs",
+    "icon": "node scripts/make-icon.cjs"
   },
   "devDependencies": {
     "@playwright/cli": "0.1.19",
     "electron": "44.2.0",
+    "electron-builder": "26.15.3",
     "prettier": "3.9.6",
     "typescript": "7.0.2"
   },

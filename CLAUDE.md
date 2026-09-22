@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.43.0
+# Entrada para Claude · entrega vigente 0.44.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -29,6 +29,7 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 - `src/` servidor local (server.cjs, 127.0.0.1 con cookie, CSP y control de Origin), Electron (desktop.cjs, preload mínimo), IA (ai*.cjs), WhatsApp (whatsapp.cjs), cruceros (cruises/), clima y festivos (context/), interfaz en `src/ui/*.js` (scripts clásicos que comparten ámbito global; un archivo nuevo se registra en index.html y en la lista de recursos de server.cjs). La CSP prohíbe estilos en línea: usa clases; para geometría, SVG.
 - Datos en `data/`: gelatostock.sqlite y attachments son canónicos; las carpetas por proveedor son copias derivadas. cruceros.sqlite y contexto.sqlite son registros propios con copia diaria en backups/.
 - Documentos: el texto de un PDF se lee del propio archivo con unpdf (src/pdftext.cjs, sin red, sin OCR); una foto sigue pasando por tesseract (src/ocr.cjs). Un PDF sin texto se declara como tal y no se inventa nada.
+- Instalador de Windows (0.44.0): `npm run installer:win` envuelve la carpeta portátil de dist/ con electron-builder (NSIS, electron-builder.json) y deja dist/instalador/GelatoStock-Instalador-<versión>.exe; deja `instalado.txt` junto al ejecutable solo dentro del instalador y src/datadir.cjs manda entonces los datos a %LOCALAPPDATA%\GelatoStock\data (la portátil sigue en data/ junto al exe). Sin firma: SmartScreen avisa. build-assets/ (icono, scripts/make-icon.cjs) se copia dentro de resources/app. Detalle en docs/INSTALADOR.md.
 - `docs/GUIA_USO.md` genera la pantalla Guía (scripts/build-guide.cjs). `src/ai-help.cjs` es la guía del chat: si cambia, repite `node scripts/evaluate-ai.cjs --chat`.
 
 ## Garantías por módulo (no degradar)

@@ -33,6 +33,10 @@ fs.renameSync(oldExe, newExe);
 const app = path.join(dest, "resources", "app");
 fs.mkdirSync(app, { recursive: true });
 fs.cpSync(path.join(root, "src"), path.join(app, "src"), { recursive: true });
+// Icono de la ventana (src/desktop.cjs); el .ico lo usa el instalador (scripts/installer.cjs).
+fs.cpSync(path.join(root, "build-assets"), path.join(app, "build-assets"), {
+  recursive: true,
+});
 fs.writeFileSync(
   path.join(app, "package.json"),
   JSON.stringify({
