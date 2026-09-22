@@ -2,8 +2,8 @@
 # Se lanza a mano (Actions → «Instalador de Mac» → Run workflow) o al publicar una etiqueta v*.
 # El .dmg queda como artefacto de la ejecución y, con etiqueta, como archivo de la «release».
 # Todo lo de Mac está preparado desde Windows: la primera ejecución es la primera vez que la app
-# corre en un Mac; si algo falla, el resumen de la ejecución enseña las últimas líneas del paso
-# (visible sin iniciar sesión) y el registro completo queda como artefacto (docs/MAC.md).
+# corre en un Mac. Los registros de cada paso se publican en la rama registros-mac-<arch> del
+# propio repositorio (legibles sin iniciar sesión) y como artefacto (docs/MAC.md).
 name: Instalador de Mac
 on:
   workflow_dispatch:
@@ -11,6 +11,10 @@ on:
     tags: ["v*"]
 permissions:
   contents: write
+defaults:
+  run:
+    # bash con pipefail: si un paso falla dentro de «| tee», el paso falla.
+    shell: bash
 jobs:
   dmg:
     strategy:
@@ -34,7 +38,7 @@ jobs:
           mkdir -p work/logs
           { uname -m; sw_vers; node -v; df -h .; } 2>&1 | tee work/logs/01-mac.log
       - name: Instalar dependencias
-        run: npm ci 2>&1 | tee work/logs/02-npm-ci.log
+        run: npm ci 2>&1 | tee work/logs/02-npm-ci.log | tail -20
       - name: Caché del modelo de IA y del Chrome de WhatsApp
         id: cache-runtime
         uses: actions/cache@v4
@@ -73,15 +77,26 @@ jobs:
       - name: Diagnóstico si algo falla
         if: failure()
         run: |
-          {
-            echo "## Diagnóstico (${{ matrix.runner }}, ${{ matrix.arch }})"
-            for f in work/logs/*.log; do
-              echo; echo "### $f (últimas 60 líneas)"; echo '```'; tail -n 60 "$f"; echo '```'
-            done
-          } >> "$GITHUB_STEP_SUMMARY"
+          for f in work/logs/*.log; do
+            echo "::group::$f"; tail -n 80 "$f"; echo "::endgroup::"
+          done
           last=$(ls work/logs/*.log | tail -n 1)
-          echo "::error::Falló en $last. $(tail -n 5 "$last" | tr '\n' ' ' | cut -c1-900)"
-      - name: Guardar los registros
+          echo "::error::Falló en $last. $(grep -m 3 -E 'Error|error|FALLO|FAIL' "$last" | tr '\n' ' ' | cut -c1-700)"
+      - name: Publicar los registros en la rama registros-mac-${{ matrix.arch }}
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          d=$(mktemp -d)
+          cp -R work/logs "$d/logs"
+          cd "$d"
+          git init -q
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add logs
+          git commit -qm "registros de la ejecución ${GITHUB_RUN_ID} (${{ matrix.arch }})"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:registros-mac-${{ matrix.arch }}
+      - name: Guardar los registros como artefacto
         if: always()
         uses: actions/upload-artifact@v4
         with:

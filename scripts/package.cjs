@@ -115,10 +115,24 @@ console.log(
 const manifest = require("../runtime/ai-model.json");
 if (!/^[a-zA-Z0-9_-]+$/.test(manifest.directory))
   throw Error("Directorio de modelo inválido");
+// El navegador de WhatsApp: en Mac es un .app con enlaces simbólicos, así que va con ditto;
+// en Windows, copia normal. Los modelos se copian aparte, solo los del manifiesto.
+const runtimeSkip = [
+  path.join(root, "runtime", "models"),
+  ...(platform === "darwin" ? [path.join(root, "runtime", "browser")] : []),
+];
 fs.cpSync(path.join(root, "runtime"), path.join(app, "runtime"), {
   recursive: true,
-  filter: (source) => source !== path.join(root, "runtime", "models"),
+  filter: (source) => !runtimeSkip.includes(source),
 });
+if (
+  platform === "darwin" &&
+  fs.existsSync(path.join(root, "runtime", "browser"))
+)
+  require("node:child_process").execFileSync("ditto", [
+    path.join(root, "runtime", "browser"),
+    path.join(app, "runtime", "browser"),
+  ]);
 for (const name of [...Object.keys(manifest.files), "LICENSE"]) {
   if (name.includes("..") || path.isAbsolute(name))
     throw Error("Archivo de modelo inválido");
