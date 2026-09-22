@@ -208,7 +208,7 @@ function balanceBlock(r) {
   return `<div class="recipe-block balance"><div class="message-label">BALANCE TÉCNICO · sobre ${num(b.mass)} kg de ingredientes</div><div class="balance-grid">${b.flags
     .map(
       (f) =>
-        `<div class="balance-item ${f.status}"><span>${esc(f.label)}</span><strong>${num(f.value)} %</strong><small>${f.range ? `${f.range[0]}–${f.range[1]} % · ` : ""}${statusLabel[f.status]}</small></div>`,
+        `<div class="balance-item ${f.status}"><span>${esc(f.label)}</span><strong>${f.status === "unknown" ? "No disponible" : `${num(f.value)} %`}</strong><small>${f.range ? `${f.range[0]}–${f.range[1]} % · ` : ""}${statusLabel[f.status]}</small></div>`,
     )
     .join(
       "",
