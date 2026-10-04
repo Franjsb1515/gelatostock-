@@ -1,6 +1,7 @@
 // Calendario: años → meses → días → ficha del día. Solo hechos ya guardados (cierres,
 // producciones, pedidos, entregas y mensajes), contados por día de negocio. Nada se estima:
-// un día sin datos es un día sin datos. La marca «La tienda no abrió» la pone la persona.
+// un día sin datos es un día sin datos. La marca «La tienda no abrió», el horario semanal y las
+// vacaciones los escribe la persona; los avisos del día salen de reglas visibles y solo avisan.
 import type { State } from "./schema.js";
 import { closeLineOf, undoneMovements, wasteLabelOf } from "./sales.js";
 import {
@@ -10,6 +11,7 @@ import {
   type DaySummary,
 } from "./day.js";
 import { localDate } from "./messages.js";
+import { businessDay } from "./plan.js";
 
 export type CalendarDay = {
   date: string;
@@ -26,10 +28,23 @@ export type CalendarDay = {
   receipts: number;
   expected: number;
   messages: number;
+  /** Horario apuntado por la persona (null si no hay) y quién está de vacaciones. */
+  hours: {
+    closed: boolean;
+    open: string | null;
+    close: string | null;
+    shifts: number;
+  } | null;
+  away: string[];
+  /** Avisos de las reglas del día (solo en el mes). */
+  alerts: number;
 };
+/** Aviso de una regla: solo avisa, no cambia nada. */
+export type DayAlert = { date: string; text: string };
 export type CalendarMonth = {
   month: string;
   days: CalendarDay[];
+  alerts: DayAlert[];
   /** Sumas del mes: kilos de gelato y número de días. */
   totals: {
     produced: number;
@@ -57,8 +72,18 @@ const daysIn = (year: number, month: number): number =>
 const dayOf = (at: string, changeHour: number): string =>
   localDate(new Date(Date.parse(at) - changeHour * 3_600_000));
 
+const scheduleOn = (s: State, date: string) =>
+  s.schedule.find((x) => x.date === date) ?? null;
+const awayOn = (s: State, date: string) =>
+  s.vacations.filter((v) => v.from <= date && date <= v.to);
+const samePerson = (a: string, b: string): boolean =>
+  a.trim().toLocaleLowerCase("es") === b.trim().toLocaleLowerCase("es");
+const eur = (cents: number): string =>
+  (cents / 100).toFixed(2).replace(".", ",") + " €";
+
 function blank(date: string, s: State): CalendarDay {
   const mark = notOpenedOn(s, date);
+  const plan = scheduleOn(s, date);
   return {
     date,
     produced: 0,
@@ -71,7 +96,90 @@ function blank(date: string, s: State): CalendarDay {
     receipts: 0,
     expected: 0,
     messages: 0,
+    hours: plan
+      ? {
+          closed: plan.closed,
+          open: plan.open ?? null,
+          close: plan.close ?? null,
+          shifts: plan.shifts.length,
+        }
+      : null,
+    away: awayOn(s, date).map((v) => v.person),
+    alerts: 0,
   };
+}
+
+/** Primer día de negocio con una venta apuntada (viva): antes no se pide nada a los días. */
+function firstSaleDay(s: State): string | null {
+  const undone = undoneMovements(s);
+  let first: string | null = null;
+  for (const m of s.movements) {
+    if (undone.has(m.id) || m.reverses) continue;
+    const line = closeLineOf(m);
+    if (line?.kind === "sale" && (!first || line.date < first))
+      first = line.date;
+  }
+  return first;
+}
+
+/**
+ * Auditoría de un día por reglas visibles. Solo avisa: nunca corrige nada.
+ * today es el día de negocio de hoy; first, el primer día con ventas apuntadas.
+ */
+export function dayAlerts(
+  s: State,
+  date: string,
+  changeHour: number,
+  today: string,
+  first: string | null,
+): DayAlert[] {
+  const out: string[] = [];
+  const summary = daySummary(s, date, changeHour);
+  const live = summary.live.totals;
+  const mark = notOpenedOn(s, date);
+  const plan = scheduleOn(s, date);
+  const moved = !!(live.produced || live.sold || live.waste || live.gift);
+  if (summary.drift)
+    out.push(
+      "El cierre confirmado ya no coincide con lo apuntado después: revisa el día o reábrelo.",
+    );
+  const shown =
+    summary.closed && summary.close ? summary.close.snapshot.totals : live;
+  if (
+    summary.difference !== null &&
+    shown.soldCents &&
+    Math.abs(summary.difference) > shown.soldCents * 0.1
+  )
+    out.push(
+      `La venta real se aparta más de un 10 % de la estimada (diferencia ${summary.difference < 0 ? "−" : "+"}${eur(Math.abs(summary.difference))}).`,
+    );
+  if (date < today && !summary.closed && moved)
+    out.push("Día pasado con gelato apuntado y sin cierre confirmado.");
+  if (
+    date < today &&
+    first !== null &&
+    date >= first &&
+    !moved &&
+    !summary.closed &&
+    !mark &&
+    !plan?.closed
+  )
+    out.push("Día pasado sin ventas apuntadas ni marca «La tienda no abrió».");
+  if (mark && moved)
+    out.push(
+      "Marcado «La tienda no abrió», pero tiene gelato hecho o mermado ese día.",
+    );
+  if (plan?.closed && live.sold)
+    out.push("El horario decía cerrado y hay ventas apuntadas.");
+  if (mark && plan?.shifts.length)
+    out.push("Hay turnos un día que la tienda no abrió.");
+  if (plan && !plan.closed && !plan.open && plan.shifts.length)
+    out.push("Hay turnos pero falta el horario de apertura.");
+  const away = awayOn(s, date);
+  for (const t of plan?.shifts ?? [])
+    if (away.some((v) => samePerson(v.person, t.person)))
+      out.push(`${t.person} tiene turno y está de vacaciones.`);
+  return out.map((text) => ({ date, text }));
 }
 
 /** Todos los días entre from y to (incluidos), en una sola pasada por los registros. */
@@ -147,6 +255,7 @@ export function calendarMonth(
   s: State,
   month: string,
   changeHour = 5,
+  today = businessDay(new Date(), changeHour),
 ): CalendarMonth {
   if (!monthPattern.test(month)) throw new Error("Mes inválido.");
   const [y, m] = month.split("-").map(Number) as [number, number];
@@ -159,7 +268,14 @@ export function calendarMonth(
     const date = `${month}-${pad(i)}`;
     days.push(found.get(date) ?? blank(date, s));
   }
-  return { month, days, totals: totals(days) };
+  const first = firstSaleDay(s);
+  const alerts: DayAlert[] = [];
+  for (const d of days) {
+    const own = dayAlerts(s, d.date, changeHour, today, first);
+    d.alerts = own.length;
+    alerts.push(...own);
+  }
+  return { month, days, alerts, totals: totals(days) };
 }
 
 /** Un año: las sumas de cada uno de sus doce meses. */
@@ -205,10 +321,50 @@ export type DayCard = {
   }[];
   receipts: { name: string; unit: string; quantity: number }[];
   messages: { supplier: string; count: number }[];
+  /** Horario del día (null si no está apuntado) y vacaciones que lo tocan. */
+  schedule: State["schedule"][number] | null;
+  vacations: State["vacations"];
+  /** Stock de cada producto al terminar el día, en su unidad. null si el día aún no ha llegado. */
+  stock:
+    { name: string; unit: string; quantity: number; gelato: boolean }[] | null;
+  alerts: DayAlert[];
 };
 
+/** Lo que había de cada producto al terminar el día: el stock de ahora menos lo de días posteriores. */
+function stockAt(
+  s: State,
+  date: string,
+  changeHour: number,
+): NonNullable<DayCard["stock"]> {
+  const undone = undoneMovements(s);
+  const later = new Map<string, number>();
+  for (const m of s.movements) {
+    if (undone.has(m.id) || m.reverses) continue;
+    if (movementDay(s, m, changeHour) > date)
+      later.set(m.product, (later.get(m.product) ?? 0) + m.delta);
+  }
+  const finished = new Set(s.recipes.map((r) => r.product).filter(Boolean));
+  return s.products
+    .map((p) => ({
+      name: p.name,
+      unit: p.unit,
+      quantity: kg(p.stock - (later.get(p.id) ?? 0)),
+      gelato: finished.has(p.id),
+    }))
+    .sort(
+      (a, b) =>
+        Number(b.gelato) - Number(a.gelato) ||
+        a.name.localeCompare(b.name, "es"),
+    );
+}
+
 /** Ficha de un día: todo lo guardado de ese día de negocio. */
-export function dayCard(s: State, date: string, changeHour = 5): DayCard {
+export function dayCard(
+  s: State,
+  date: string,
+  changeHour = 5,
+  today = businessDay(new Date(), changeHour),
+): DayCard {
   if (
     !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
     localDate(new Date(date + "T12:00:00")) !== date
@@ -292,5 +448,9 @@ export function dayCard(s: State, date: string, changeHour = 5): DayCard {
         (a, b) =>
           b.count - a.count || a.supplier.localeCompare(b.supplier, "es"),
       ),
+    schedule: scheduleOn(s, date),
+    vacations: awayOn(s, date),
+    stock: date > today ? null : stockAt(s, date, changeHour),
+    alerts: dayAlerts(s, date, changeHour, today, firstSaleDay(s)),
   };
 }

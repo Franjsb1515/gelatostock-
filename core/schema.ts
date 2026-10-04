@@ -29,6 +29,23 @@ const documentDate = z
     return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
   }, "Fecha inválida.");
 const at = z.string().datetime();
+// Hora del día «HH:MM» (horario de apertura y turnos del Calendario).
+const clock = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora inválida (HH:MM).");
+const shiftSchema = z.object({
+  person: text(60),
+  from: clock,
+  to: clock,
+});
+// Un día del horario semanal: cerrado, o apertura de-a y turnos del personal.
+export const scheduleDaySchema = z.object({
+  date: documentDate,
+  closed: z.boolean().default(false),
+  open: clock.optional(),
+  close: clock.optional(),
+  shifts: z.array(shiftSchema).max(30).default([]),
+});
 const cents = z.number().int().min(0).max(100_000_000);
 // Composition per 100 g or 100 mL, in percent. Optional: only what the ingredient sheet says.
 const pct = z.number().min(0).max(100);
@@ -428,6 +445,22 @@ export const stateSchema = z.object({
     )
     .max(20000)
     .default([]),
+  // Weekly schedule written by the person (Calendar): one entry per day with data. Kept in meta.
+  schedule: z.array(scheduleDaySchema.extend({ at })).max(20000).default([]),
+  // Holidays per person (Calendar): no shift those days. Kept in meta.
+  vacations: z
+    .array(
+      z.object({
+        id: idSchema,
+        person: text(60),
+        from: documentDate,
+        to: documentDate,
+        note: z.string().max(200).default(""),
+        at,
+      }),
+    )
+    .max(5000)
+    .default([]),
   // Price history per product (cents per pack): every change of the card price, oldest first.
   prices: z
     .array(
@@ -706,6 +739,20 @@ export const actionSchema = z.intersection(
       reason: z.string().trim().max(200).default(""),
     }),
     z.object({ type: z.literal("unmarkNotOpened"), date: documentDate }),
+    // A whole week of the schedule (Monday first). An empty day is removed. No stock change.
+    z.object({
+      type: z.literal("setWeekSchedule"),
+      week: documentDate,
+      days: z.array(scheduleDaySchema).length(7),
+    }),
+    z.object({
+      type: z.literal("addVacation"),
+      person: text(60),
+      from: documentDate,
+      to: documentDate,
+      note: z.string().trim().max(200).default(""),
+    }),
+    z.object({ type: z.literal("removeVacation"), id: idSchema }),
     // Annul an applied production; with redo, a new proposal with the same data is left to fix.
     z.object({
       type: z.literal("voidProduction"),

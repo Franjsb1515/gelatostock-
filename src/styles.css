@@ -4154,3 +4154,37 @@ button.text-link:focus-visible {
 .cal-crumbs .btn::first-letter {
   text-transform: uppercase;
 }
+/* Calendario: avisos y horario de la semana */
+.cal-mark.warn {
+  color: var(--rosa-texto);
+}
+.cal-alerts ul {
+  margin: var(--s-3) 0 0;
+  padding-left: 1.2em;
+}
+.cal-alerts li {
+  border-left: 3px solid var(--rosa);
+  list-style: none;
+  padding: 4px 0 4px var(--s-3);
+  color: var(--rosa-texto);
+}
+.cal-week th small {
+  display: block;
+  font-weight: 400;
+  color: var(--rosa-texto);
+}
+.cal-week-day::first-letter {
+  text-transform: uppercase;
+}
+.cal-week input[type="time"] {
+  min-width: 96px;
+}
+.cal-shifts {
+  display: grid;
+  gap: 6px;
+}
+.cal-shift {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 96px 96px;
+  gap: 6px;
+}

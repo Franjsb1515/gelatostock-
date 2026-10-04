@@ -1,5 +1,16 @@
 # Registro de parches y sesiones
 
+## 0.49.0 — 2026-10-04 · sesión 051 · Calendario (fase 2)
+
+Pediste seguir con el Calendario. Ahora:
+
+- **Horario de la semana**: de lunes a domingo, la hora de abrir y cerrar (o «Cerrado») y los turnos (persona, desde, hasta). «Copiar la semana anterior» la trae sin guardar; un turno a medias se avisa.
+- **Vacaciones** por persona, de un día a otro. Si alguien de vacaciones tiene turno, el Calendario avisa.
+- **En cada día**: horario y turnos, quién está de vacaciones y el stock de cada producto al terminar el día.
+- **Avisos** del día y del mes, solo avisan: día pasado sin cerrar o sin ventas, cierre que ya no coincide, venta real a más de un 10 % de la estimada, turnos sin horario o de alguien de vacaciones.
+
+La clave queda para después, como dijiste. Informe reports/2026-10-05T00-30-00-000Z-calendario-fase2.md.
+
 ## 0.48.0 — 2026-10-04 · sesión 050 · «Ayudante» y Calendario (fase 1)
 
 Pediste dos cosas. Ahora:

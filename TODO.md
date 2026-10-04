@@ -1,4 +1,4 @@
-# TODO — estado real de 0.48.0
+# TODO — estado real de 0.49.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -13,7 +13,9 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] [tú] Cambiar el nombre del negocio a «Artello Gelato» en Configuración → Identidad del negocio (es un dato tuyo; no se tocó con la app abierta). Si prefieres otra grafía que «Pozzetti», dímelo.
 - [x] [app] Calendario, fase 1 (0.48.0): año → mes → día con la ficha de cada día, y «La tienda no abrió» (adelantado de la fase 2 a petición tuya).
 - [ ] [decidir] Aplazado por ti el 2026-10-04 (también la clave del Calendario). Datos con clave (pedido por ti el 2026-10-04: «que no puedan abrir los datos sin la clave»). Dos caminos: (a) la app cifra con tu clave la base, las fotos y las copias; si olvidas la clave y no tienes el código de recuperación, se pierden todos los datos; las carpetas por proveedor dejarían de existir en claro; sesión propia con pruebas de corte de corriente. (b) Contraseña de Windows y cifrado del dispositivo en el ordenador de la tienda: protege todo el equipo y lo activas tú. Falta que elijas.
-- [ ] [tú] Calendario, fase 2: contesta las tres preguntas de docs/PLAN_CALENDARIO.md (horarios de apertura, turnos o los dos; qué más ver cada día; fotos impresas o a mano, con un ejemplo). Sin eso no se hacen los apuntes por día ni las fotos.
+- [x] [app] Calendario, fase 2 (0.49.0): horario de la semana (apertura y turnos, copiar la anterior), vacaciones por persona, stock al terminar el día y avisos del día y del mes.
+- [ ] [tú] Calendario, fase 3 (fotos): manda 3–5 fotos reales (una escrita a mano) para medir la lectura antes de construirla. Dime también si el umbral del 10 % de la venta real te vale.
+- [ ] [app] El Ayudante no sabe explicar el horario ni las vacaciones (src/ai-help.cjs; exige repetir la evaluación del chat) y la prueba de escritorio no recorre todavía el horario de la semana.
 - [ ] [tú] Usar unos días la 0.46.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.

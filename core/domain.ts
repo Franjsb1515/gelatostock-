@@ -82,6 +82,7 @@ import {
 } from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
 import { businessDay } from "./plan";
+import { addDays } from "./cruises";
 export { productionPlan, todayBrief, businessDay } from "./plan";
 const eur = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",") + " €";
@@ -1404,6 +1405,82 @@ export function apply(state: State, input: unknown): State {
       ensure(notOpenedOn(s, a.date), "Ese día no estaba marcado.");
       s.closures = s.closures.filter((c) => c.date !== a.date);
       note = `Día ${a.date}: quitada la marca «La tienda no abrió».`;
+      break;
+    }
+    case "setWeekSchedule": {
+      ensure(
+        new Date(a.week + "T12:00:00Z").getUTCDay() === 1,
+        "La semana empieza en lunes.",
+      );
+      const dates = a.days.map((_, i) => addDays(a.week, i));
+      const written: State["schedule"] = [];
+      for (const [i, d] of a.days.entries()) {
+        ensure(d.date === dates[i], "Los días no son los de esa semana.");
+        const label = `El ${d.date}`;
+        if (d.closed) {
+          ensure(
+            !d.open && !d.close && !d.shifts.length,
+            `${label} está marcado como cerrado: quita la hora de apertura y los turnos.`,
+          );
+        } else {
+          ensure(
+            !d.open === !d.close,
+            `${label}: escribe la hora de abrir y la de cerrar, o ninguna.`,
+          );
+          ensure(
+            !d.open || d.open !== d.close,
+            `${label}: abre y cierra a la misma hora.`,
+          );
+        }
+        for (const t of d.shifts)
+          ensure(
+            t.from !== t.to,
+            `${label}: el turno de ${t.person} empieza y acaba a la misma hora.`,
+          );
+        // Un día sin nada escrito no se guarda: queda «sin horario apuntado».
+        if (d.closed || d.open || d.shifts.length)
+          written.push({ ...d, at: now() });
+      }
+      s.schedule = [
+        ...s.schedule.filter((x) => !dates.includes(x.date)),
+        ...written,
+      ].sort((x, y) => y.date.localeCompare(x.date));
+      note = `Horario de la semana del ${a.week} guardado: ${written.length} ${written.length === 1 ? "día apuntado" : "días apuntados"}. No cambia el stock ni las ventas.`;
+      break;
+    }
+    case "addVacation": {
+      ensure(a.from <= a.to, "La fecha «hasta» va después de «desde».");
+      ensure(
+        addDays(a.from, 366) > a.to,
+        "Unas vacaciones de más de un año: revisa las fechas.",
+      );
+      const same = (p: string) =>
+        p.toLocaleLowerCase("es") === a.person.toLocaleLowerCase("es");
+      ensure(
+        !s.vacations.some(
+          (v) => same(v.person) && v.from <= a.to && a.from <= v.to,
+        ),
+        `${a.person} ya tiene vacaciones en esas fechas.`,
+      );
+      s.vacations = [
+        {
+          id: randomUUID(),
+          person: a.person,
+          from: a.from,
+          to: a.to,
+          note: a.note,
+          at: now(),
+        },
+        ...s.vacations,
+      ].sort((x, y) => y.from.localeCompare(x.from));
+      note = `Vacaciones de ${a.person} del ${a.from} al ${a.to} apuntadas. Si tiene turnos esos días, el Calendario lo avisa.`;
+      break;
+    }
+    case "removeVacation": {
+      const v = s.vacations.find((x) => x.id === a.id);
+      ensure(v, "Esas vacaciones ya no están.");
+      s.vacations = s.vacations.filter((x) => x.id !== a.id);
+      note = `Quitadas las vacaciones de ${v.person} del ${v.from} al ${v.to}.`;
       break;
     }
     case "reopenDay": {
