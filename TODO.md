@@ -20,8 +20,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] Objetivo de merma con aviso (0.40.0): por producto, en su unidad o en porcentaje, mirando los últimos 7 días (decidido por ti el 2026-09-21). Solo avisa.
 - [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Hechas la 1 (0.34.0, otro proveedor del mismo producto), la 2 (0.35.0, reclamar respuesta y textos editables), la 3 (0.36.0, texto de los PDF) y la 5 (0.37.0, catálogo y precios por proveedor). Queda solo la 4, listas de precios en foto, parada hasta que mandes tus tarifas reales.
 - [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
-- [ ] [tú] Auditoría 0.47.0 (reports/2026-10-04T23-00-00-000Z-auditoria-guia-local.md): **hora de Palma**. El día de negocio y las horas salen del reloj del ordenador; en este (zona de Buenos Aires) lo de antes de las 10:00 de Palma cuenta como el día anterior. Si la app se usará en un ordenador de la tienda en Palma, no pasa. Dime dónde se usará antes de cambiarlo (afecta a todo el cálculo de días).
-- [ ] [tú] ¿«Guía local» y «Guía» juntas en el menú, o le cambio el nombre a una?
+- [x] Hora de Palma: decidido por ti el 2026-10-04: la app se usará cada día en un ordenador de la tienda en Palma, con su hora; no se cambia. (Si algún día se usa a diario en un equipo de otra zona, revisar reports/2026-10-04T23-00-00-000Z-auditoria-guia-local.md.)
+- [ ] [app] Decidido por ti el 2026-10-04: «Guía local» pasa a llamarse «Ayudante» (menú, pantalla, botones, avisos, guía y chat); «Guía» sigue siendo el manual.
 - [ ] [app] Pendiente menor de la auditoría 0.47.0: confirmación de WhatsApp cuando no devuelve id (puede tomar un mensaje antiguo con el mismo texto; plausible), respuestas externas leídas enteras antes de mirar el tamaño, /api/cruises/range acepta 2026-02-31.
 
 ## 2. Depende de ti
@@ -57,7 +57,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 ## 5. Producción, ventas y planificación
 
 - [ ] Lotes y vencimientos; rendimientos por receta.
-- [ ] [decidir] Día cerrado (la auditoría 0.47.0 lo vuelve a señalar: un conteo o una salida de gelato en un día cerrado lo descuadra; el aviso lo muestra): los movimientos manuales de Inventario (conteo, entrada, salida) sobre un gelato no se bloquean (la merma sí, desde 0.43.0); si caen en un día cerrado, el resumen avisa de que algo cambió. Decidir si deben bloquearse.
+- [x] Día cerrado y movimientos manuales de un gelato: decidido por ti el 2026-10-04: NO se bloquean (los hace el administrador a propósito); el resumen sigue avisando si el día deja de cuadrar.
 - [x] Merma de un gelato a cualquier hora (0.43.0, decidido por ti el 2026-09-22: cambia el personal a mitad del día): desde Inventario cuenta como merma del cierre de ese día en todas partes, y con el día confirmado se rechaza. Lo que se guarda para mañana no es merma.
 - [ ] Coste: usa el precio actual de la ficha al aprobar, no el de cada compra recibida (sin lotes no se sabe qué compra se gastó). Las producciones anteriores a 0.30.0 no tienen coste guardado y se valoran con el coste actual de la receta.
 - [x] Valor de venta con fecha de inicio elegible (0.41.0): «Vale desde» en el Recetario, hacia atrás o hacia delante.
