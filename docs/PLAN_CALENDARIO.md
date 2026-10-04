@@ -31,8 +31,8 @@ Lo que se le dijo que no es viable tal cual: «cargar automáticamente» las ven
 
 ## Fase 2 revisada (siguiente sesión)
 - Clave del Calendario: mismo mecanismo que la del Recetario (hash en settings, 30 min desbloqueado, espera creciente tras fallos), clave propia «calendar_lock»; /api/calendar* responde 423 sin desbloquear.
-- Horario semanal: semana a semana, apertura por día (o «cerrado») y turnos (persona, de-a); «Copiar la semana anterior». Datos nuevos en zod con pruebas. Pendiente de confirmar: formulario escrito (recomendado) o foto.
-- Vacaciones: pendiente de confirmar si son de la tienda (se marcan como «no abrió» por rango de fechas) o del personal (van en los turnos).
+- Horario semanal: semana a semana, apertura por día (o «cerrado») y turnos (persona, de-a); «Copiar la semana anterior». Datos nuevos en zod con pruebas. Decidido por el usuario (2026-10-04): formulario escrito con «Copiar la semana anterior», no foto.
+- Vacaciones: decidido por el usuario (2026-10-04): son por persona y van en los turnos (persona de vacaciones del día X al Y, sin turno esos días). Si la tienda cierra, la marca «La tienda no abrió» con su motivo, que ya existe.
 - Stock en la ficha: stock de cada producto al terminar el día (stockAtDayEnd de core/day.ts), en su unidad.
 - Auditoría del día y del mes: lista de avisos por reglas con su motivo; solo avisa.
 
