@@ -4042,3 +4042,115 @@ button.text-link:focus-visible {
 .sales-body .report-grid > section.sales-by-day {
   grid-column: 1 / -1;
 }
+/* Calendario */
+.cal-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--s-3);
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+.cal-crumbs::first-letter {
+  text-transform: uppercase;
+}
+.cal-summary {
+  margin: 0 0 12px;
+  color: var(--ink-soft);
+}
+.cal-year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.cal-month-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cal-month-card strong::first-letter {
+  text-transform: uppercase;
+}
+.cal-month-card span {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.cal-month-card.has-data {
+  background: var(--pistacho-suave);
+}
+.cal-month-card:hover,
+.cal-month-card:focus-visible {
+  border-color: var(--accent);
+}
+.cal-cell.has-sales {
+  background: var(--pistacho-suave);
+}
+.cal-cell.not-opened {
+  background: var(--arena-claro);
+  border-style: dashed;
+}
+.cal-key {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+}
+.cal-key.has-sales {
+  background: var(--pistacho-suave);
+}
+.cal-key.not-opened {
+  background: var(--arena-claro);
+  border-style: dashed;
+}
+.cal-closed-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--arena-claro);
+}
+.cal-closed-note p {
+  margin: 0;
+}
+.cal-closed-note.quiet {
+  background: transparent;
+  border: 1px dashed var(--line);
+}
+.cal-day-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin-top: var(--s-4);
+}
+.cal-day-grid h3 {
+  margin: 12px 0 4px;
+  font-size: 14px;
+}
+@media (max-width: 1100px) {
+  .cal-year-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cal-day-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.cal-crumbs .btn {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pistacho);
+}
+.cal-crumbs .btn::first-letter {
+  text-transform: uppercase;
+}

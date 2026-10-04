@@ -217,28 +217,25 @@ class LocalAI {
     });
     await new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        reject(Error("La Guía local tardó demasiado en cargar."));
+        reject(Error("El Ayudante tardó demasiado en cargar."));
       }, 120000);
       worker.once("message", (m) => {
         clearTimeout(timer);
         if (m.ready) resolve();
         else
           reject(
-            Object.assign(
-              Error(m.error || "No se pudo iniciar la Guía local."),
-              {
-                detail: m.detail || "",
-              },
-            ),
+            Object.assign(Error(m.error || "No se pudo iniciar el Ayudante."), {
+              detail: m.detail || "",
+            }),
           );
       });
       worker.once("error", () => {
         clearTimeout(timer);
-        reject(Error("No se pudo iniciar la Guía local."));
+        reject(Error("No se pudo iniciar el Ayudante."));
       });
       worker.once("exit", () => {
         clearTimeout(timer);
-        reject(Error("La Guía local se interrumpió antes de responder."));
+        reject(Error("El Ayudante se interrumpió antes de responder."));
       });
     }).catch(async (e) => {
       await this.terminateWorker();
@@ -247,7 +244,7 @@ class LocalAI {
     return worker;
   }
   async run(workerData, expectedOutputs) {
-    if (this.job) throw Error("Ya hay una lectura de la Guía local en curso.");
+    if (this.job) throw Error("Ya hay una lectura del Ayudante en curso.");
     const job = { cancelled: false };
     this.job = job;
     clearTimeout(this.idleTimer);
@@ -263,9 +260,7 @@ class LocalAI {
         job.timer = setTimeout(
           () =>
             reject(
-              Error(
-                "La Guía local superó 4 minutos. Prueba un texto más corto.",
-              ),
+              Error("El Ayudante superó 4 minutos. Prueba un texto más corto."),
             ),
           240000,
         );
@@ -281,18 +276,18 @@ class LocalAI {
             m.outputs.length !== expectedOutputs ||
             m.outputs.some((x) => typeof x !== "string" || x.length > 8000)
           ) {
-            reject(Error("Respuesta interna de la Guía local no válida."));
+            reject(Error("Respuesta interna del Ayudante no válida."));
             return;
           }
           resolve(m.outputs);
         };
         const onError = () => {
           cleanup();
-          reject(Error("No se pudo iniciar la Guía local."));
+          reject(Error("No se pudo iniciar el Ayudante."));
         };
         const onExit = () => {
           cleanup();
-          reject(Error("La Guía local se interrumpió antes de responder."));
+          reject(Error("El Ayudante se interrumpió antes de responder."));
         };
         const cleanup = () => {
           worker.off("message", onMessage);

@@ -849,6 +849,38 @@ const { appName } = require("./package-rules.cjs");
     console.log(
       "PASS: «Qué producir hoy» propone objetivo − stock (2 kg) y abre la producción con esos kilos; el inicio muestra producido, venta estimada y merma del día.",
     );
+    // Calendario (0.48.0): el día de hoy sale con ventas; un día con ventas no se puede marcar
+    // «la tienda no abrió»; un día vacío sí, sin tocar el stock, y la marca se quita.
+    await window
+      .getByRole("button", { name: "Calendario", exact: true })
+      .click();
+    const calToday = await window.evaluate(() => businessToday());
+    await window
+      .locator(`.cal-cell.has-sales[data-date="${calToday}"]`)
+      .click();
+    await window.locator(".cal-day-grid", { hasText: "Reabierto" }).waitFor();
+    await window.locator('[data-action="calNotOpened"]').click();
+    await window.locator('#modal button[type="submit"]').click();
+    await window
+      .locator("#form-error", { hasText: "ventas apuntadas" })
+      .waitFor();
+    await window.locator('#modal [data-action="close"]').first().click();
+    const calEmpty = await window.evaluate(() =>
+      calShiftDay(businessToday(), -20),
+    );
+    await window.evaluate((d) => calGo("day", d), calEmpty);
+    await window.locator('[data-action="calNotOpened"]').click();
+    await window.locator('#modal input[name="reason"]').fill("Vacaciones");
+    await window.locator('#modal button[type="submit"]').click();
+    await window
+      .locator(".cal-closed-note", { hasText: "Motivo: Vacaciones" })
+      .waitFor();
+    assert.equal(savedStock("p4"), chocolateAfter - 1.5);
+    await window.locator('[data-action="calOpenedAgain"]').click();
+    await window.locator('[data-action="calNotOpened"]').waitFor();
+    console.log(
+      "PASS: calendario: hoy sale con ventas y reabierto; un día con ventas no se marca «la tienda no abrió»; un día vacío se marca con motivo sin tocar el stock y la marca se quita.",
+    );
     // Cruceros: sin red la pantalla abre, dice que faltan datos (no inventa nada) y cita la fuente.
     await window.getByRole("button", { name: "Cruceros", exact: true }).click();
     await window.getByRole("heading", { name: /^Hoy · / }).waitFor();
@@ -912,14 +944,12 @@ const { appName } = require("./package-rules.cjs");
     );
     // Let the open handler finish (it awaits a read mutation) before leaving the screen.
     await window.waitForTimeout(500);
-    await window
-      .getByRole("button", { name: "Guía local", exact: true })
-      .click();
+    await window.getByRole("button", { name: "Ayudante", exact: true }).click();
     const text =
       "FACTURA F-123\nOrigen Coffee\nBase imponible: 100,00 EUR\nIVA: 21,00 EUR\nTotal: 125,00 EUR";
     await window.locator("#ai-text").fill(text);
     await window
-      .getByRole("button", { name: "Analizar con Guía local", exact: true })
+      .getByRole("button", { name: "Analizar con el Ayudante", exact: true })
       .click();
     try {
       await window.locator(".ai-result").waitFor({ timeout: 245000 });
@@ -971,7 +1001,7 @@ const { appName } = require("./package-rules.cjs");
     assert.equal(await window.locator(".ai-result").count(), 0);
     await window.locator("#ai-mode").selectOption("standard");
     await window
-      .getByRole("button", { name: "Analizar con Guía local", exact: true })
+      .getByRole("button", { name: "Analizar con el Ayudante", exact: true })
       .click();
     await window.locator(".ai-result").waitFor({ timeout: 245000 });
     assert.ok(
@@ -984,7 +1014,7 @@ const { appName } = require("./package-rules.cjs");
       .locator("#ai-chat-input")
       .fill("¿Qué hace la pantalla Control de entregas?");
     await window
-      .getByRole("button", { name: "Preguntar a la Guía local", exact: true })
+      .getByRole("button", { name: "Preguntar al Ayudante", exact: true })
       .click();
     await window.locator(".ai-chat-answer").waitFor({ timeout: 245000 });
     const answer = (await window.locator(".ai-chat-answer").innerText()).trim();
@@ -1007,32 +1037,30 @@ const { appName } = require("./package-rules.cjs");
     await window.locator(".more-actions summary").click();
     await window
       .getByRole("button", {
-        name: "Segunda lectura con Guía local",
+        name: "Segunda lectura con el Ayudante",
         exact: true,
       })
       .click();
     await window
       .locator(".reply-reading")
-      .filter({ hasText: "Guía local" })
+      .filter({ hasText: "Ayudante" })
       .first()
       .waitFor({ timeout: 245000 });
     const second = await window.locator(".reply-reading").first().innerText();
     assert.equal(savedStock(), 4.25);
     console.log(
       "PASS: segunda lectura de respuesta de proveedor con modelo REAL anotada sin cambiar stock: " +
-        JSON.stringify(second.split(/Guía local/i)[1]?.slice(0, 120)),
+        JSON.stringify(second.split(/Ayudante/i)[1]?.slice(0, 120)),
     );
+    await window.getByRole("button", { name: "Ayudante", exact: true }).click();
     await window
-      .getByRole("button", { name: "Guía local", exact: true })
-      .click();
-    await window
-      .getByRole("button", { name: "Analizar con Guía local", exact: true })
+      .getByRole("button", { name: "Analizar con el Ayudante", exact: true })
       .click();
     await window
       .getByRole("button", { name: "Detener lectura", exact: true })
       .click();
     await window
-      .getByRole("button", { name: "Analizar con Guía local", exact: true })
+      .getByRole("button", { name: "Analizar con el Ayudante", exact: true })
       .waitFor();
     await window.getByRole("alert").filter({ hasText: "cancelada" }).waitFor();
     console.log("PASS: cancelación desde la interfaz.");

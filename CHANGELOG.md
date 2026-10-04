@@ -1,5 +1,16 @@
 # Registro de parches y sesiones
 
+## 0.48.0 — 2026-10-04 · sesión 050 · «Ayudante» y Calendario (fase 1)
+
+Pediste dos cosas. Ahora:
+
+- **«Ayudante»** en lugar de «Guía local» en el menú, los botones, los avisos, la Guía y el chat. «Guía» sigue siendo el manual.
+- **Calendario** (nuevo, en el menú): año → mes → día. El año resume cada mes; el mes es una cuadrícula con lo vendido, lo hecho, pedidos, entregas, cierres, festivos y cruceros; cada día abre su ficha con el gelato del día (la misma cuenta que el cierre), mermas por motivo, producciones, pedidos, entregas, mensajes, festivo, clima y cruceros con su fuente. Lo que no está apuntado sale vacío: no estima nada.
+- **«La tienda no abrió»**: en la ficha de un día se marca con motivo opcional. No cambia el stock; quita el aviso de «ayer sin cerrar»; mientras esté marcado no se apuntan ventas de ese día; un día con ventas o cerrado no se puede marcar. Se quita con un botón.
+- Corregido: los cruceros aceptaban fechas imposibles (31 de febrero). Y el Ayudante decía «Incluida en el equipo».
+
+Las tres preguntas del plan (horarios, qué más ver, fotos) siguen sin respuesta: hacen falta para la fase 2. Informe reports/2026-10-04T23-30-00-000Z-calendario-fase1.md.
+
 ## 0.47.0 — 2026-10-04 · sesión 049 (segunda parte) · «Guía local» y auditoría
 
 Pediste quitar la IA de la pantalla y revisar la app. Ahora:

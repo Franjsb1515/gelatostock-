@@ -37,7 +37,7 @@ async function action(name, el) {
   }
   if (name === "aiPhoto" || name === "aiMessage" || name === "aiWhatsApp") {
     if (aiBusy) {
-      toast("Espera o detén la lectura actual desde Guía local.");
+      toast("Espera o detén la lectura actual desde el Ayudante.");
       return;
     }
     aiSourcePhoto = name === "aiPhoto" ? el.dataset.id : "";
@@ -67,7 +67,7 @@ async function action(name, el) {
     } finally {
       aiBusy = false;
       if (page === "ai") render();
-      else toast("La lectura ha terminado. Consulta Guía local.");
+      else toast("La lectura ha terminado. Consulta el Ayudante.");
     }
     return;
   }
@@ -231,7 +231,7 @@ async function action(name, el) {
     } finally {
       aiBusy = false;
       if (page === "ai") render();
-      else toast("La Guía local ha respondido. Consulta Guía local.");
+      else toast("El Ayudante ha respondido. Consulta el Ayudante.");
     }
     return;
   }
@@ -900,6 +900,7 @@ async function action(name, el) {
     await whatsappAction(name, el);
     return;
   }
+  if (await calendarAction(name, el)) return;
   if (await extendedAction(name, el)) return;
   if (name === "close") {
     $("#modal").close();

@@ -801,3 +801,22 @@ test("cruceros: rutas del servidor, permisos, umbrales e interruptor, sin red en
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("cruceros: una fecha imposible (31 de febrero) se rechaza en el rango y en el día (0.48.0)", () => {
+  const dir = tmp("cruises-");
+  const service = new CruiseService(dir, {
+    provider: fakeProvider({}),
+    clock: () => new Date("2026-09-10T08:00:00Z"),
+  });
+  try {
+    assert.throws(
+      () => service.range("2026-02-01", "2026-02-31"),
+      /Intervalo inválido/,
+    );
+    assert.throws(() => service.day("2026-02-31"), /Día inválido/);
+    assert.equal(service.range("2026-02-01", "2026-02-28").days.length, 28);
+  } finally {
+    service.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

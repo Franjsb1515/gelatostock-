@@ -1,4 +1,4 @@
-# TODO — estado real de 0.47.0
+# TODO — estado real de 0.48.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -11,7 +11,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] «Guía local» en lugar de «IA local» y auditoría con 26 arreglos (0.47.0, pedido por ti el 2026-10-04).
 - [x] Marca Artello (0.46.0, pedido por ti el 2026-10-04): la app se llama ArtelloAPP, la ventana «Artello Gelato Control System», tu logo en la barra lateral, un sello pequeño en lugar del recuadro verde del cucurucho, icono nuevo y la zona «Vitrina» pasa a «Pozzetti». Por dentro la carpeta de datos sigue llamándose GelatoStock para no perder nada.
 - [ ] [tú] Cambiar el nombre del negocio a «Artello Gelato» en Configuración → Identidad del negocio (es un dato tuyo; no se tocó con la app abierta). Si prefieres otra grafía que «Pozzetti», dímelo.
-- [ ] [app] Calendario de planificación (pedido por ti el 2026-10-04): plan en docs/PLAN_CALENDARIO.md, tres fases; antes, tus respuestas a sus tres preguntas.
+- [x] [app] Calendario, fase 1 (0.48.0): año → mes → día con la ficha de cada día, y «La tienda no abrió» (adelantado de la fase 2 a petición tuya).
+- [ ] [tú] Calendario, fase 2: contesta las tres preguntas de docs/PLAN_CALENDARIO.md (horarios de apertura, turnos o los dos; qué más ver cada día; fotos impresas o a mano, con un ejemplo). Sin eso no se hacen los apuntes por día ni las fotos.
 - [ ] [tú] Usar unos días la 0.46.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
@@ -21,8 +22,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] [app] Compras y Mensajes II: plan por fases en docs/PLAN_COMPRAS_MENSAJES_II.md. Hechas la 1 (0.34.0, otro proveedor del mismo producto), la 2 (0.35.0, reclamar respuesta y textos editables), la 3 (0.36.0, texto de los PDF) y la 5 (0.37.0, catálogo y precios por proveedor). Queda solo la 4, listas de precios en foto, parada hasta que mandes tus tarifas reales.
 - [ ] [tú] Prueba real del ciclo completo con tus dos números: envío por lotes, respuesta directa desde el mensaje, respuesta rápida y confirmación automática del pedido. Todo eso solo está probado con cliente simulado.
 - [x] Hora de Palma: decidido por ti el 2026-10-04: la app se usará cada día en un ordenador de la tienda en Palma, con su hora; no se cambia. (Si algún día se usa a diario en un equipo de otra zona, revisar reports/2026-10-04T23-00-00-000Z-auditoria-guia-local.md.)
-- [ ] [app] Decidido por ti el 2026-10-04: «Guía local» pasa a llamarse «Ayudante» (menú, pantalla, botones, avisos, guía y chat); «Guía» sigue siendo el manual.
-- [ ] [app] Pendiente menor de la auditoría 0.47.0: confirmación de WhatsApp cuando no devuelve id (puede tomar un mensaje antiguo con el mismo texto; plausible), respuestas externas leídas enteras antes de mirar el tamaño, /api/cruises/range acepta 2026-02-31.
+- [x] «Ayudante» en lugar de «Guía local» (0.48.0, decidido por ti el 2026-10-04); «Guía» sigue siendo el manual.
+- [ ] [app] Pendiente menor de la auditoría 0.47.0: confirmación de WhatsApp cuando no devuelve id (puede tomar un mensaje antiguo con el mismo texto; plausible), respuestas externas leídas enteras antes de mirar el tamaño. (Hecho en 0.48.0: los cruceros ya rechazan 2026-02-31.)
 
 ## 2. Depende de ti
 

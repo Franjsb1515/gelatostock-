@@ -34,6 +34,8 @@ const { ApbProvider } = require("./provider-apb.cjs");
 
 const HISTORY_PAGE = 1000;
 const dayPattern = /^\d{4}-\d{2}-\d{2}$/;
+// 0.48.0: una fecha imposible (2026-02-31) no pasa: al ir y volver un día cambiaría.
+const realDay = (d) => dayPattern.test(d) && addDays(addDays(d, 1), -1) === d;
 
 class CruiseService {
   constructor(
@@ -294,7 +296,7 @@ class CruiseService {
   }
   /** Resumen por día de un intervalo (calendario, próximos 7 y 30 días). */
   range(from, to) {
-    if (!dayPattern.test(from) || !dayPattern.test(to) || to < from)
+    if (!realDay(from) || !realDay(to) || to < from)
       throw Error("Intervalo inválido.");
     if (addDays(from, 100) < to) throw Error("Intervalo demasiado largo.");
     const calls = this.repo.between(addDays(from, -1), addDays(to, 1));
@@ -305,7 +307,7 @@ class CruiseService {
   }
   /** Detalle de un día: resumen, tarjetas, línea temporal y barras. */
   day(day) {
-    if (!dayPattern.test(day)) throw Error("Día inválido.");
+    if (!realDay(day)) throw Error("Día inválido.");
     const calls = this.repo.between(addDays(day, -1), addDays(day, 1));
     const nowWall = portNow(this.clock());
     const modified = this.repo.changedSince(

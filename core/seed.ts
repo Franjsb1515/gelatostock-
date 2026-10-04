@@ -303,5 +303,6 @@ export function seed(): State {
     learned: [],
     prices: [],
     days: [],
+    closures: [],
   };
 }

@@ -46,6 +46,11 @@ const {
 } = require("../build/context.js");
 const version = require("../package.json").version;
 const { Store } = require("../build/store.js");
+const {
+  calendarMonth,
+  calendarYear,
+  dayCard,
+} = require("../build/calendar.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
   port = 0,
@@ -732,6 +737,50 @@ function createApp({
         return;
       }
       json(200, daySummary(store.load(), day, dayChangeHour()));
+      return;
+    }
+    if (u.pathname.startsWith("/api/calendar") && req.method === "GET") {
+      // Calendario: hechos guardados por día de negocio, con cruceros, festivos y clima al lado.
+      const outside = (fn) => {
+        try {
+          return cruisesOn() ? fn() : null;
+        } catch {
+          return null;
+        }
+      };
+      try {
+        const q = (k) => u.searchParams.get(k) || "";
+        const full = store.load();
+        if (u.pathname === "/api/calendar/day") {
+          const day = q("date");
+          const card = dayCard(full, day, dayChangeHour());
+          json(200, {
+            ...card,
+            cruise: outside(() => cruises.brief(day)),
+            context: outside(() => context.range(day, day).days[day] || null),
+          });
+        } else if (u.pathname === "/api/calendar" && q("month")) {
+          const month = calendarMonth(full, q("month"), dayChangeHour());
+          const from = month.days[0].date;
+          const to = month.days.at(-1).date;
+          json(200, {
+            ...month,
+            cruises: outside(() => cruises.range(from, to).days),
+            context: outside(() => context.range(from, to).days),
+          });
+        } else if (u.pathname === "/api/calendar")
+          json(
+            200,
+            calendarYear(
+              full,
+              Number(q("year")) || new Date().getFullYear(),
+              dayChangeHour(),
+            ),
+          );
+        else json(404, { error: "No encontrado." });
+      } catch (e) {
+        json(400, { error: String(e?.message || e) });
+      }
       return;
     }
     if (u.pathname === "/api/report" && req.method === "GET") {
@@ -1491,6 +1540,7 @@ function createApp({
       "/ui/views-sales.js": "ui/views-sales.js",
       "/ui/views-weekly.js": "ui/views-weekly.js",
       "/ui/views-cruises.js": "ui/views-cruises.js",
+      "/ui/views-calendar.js": "ui/views-calendar.js",
       "/ui/forms.js": "ui/forms.js",
       "/ui/actions.js": "ui/actions.js",
       "/ui/events.js": "ui/events.js",

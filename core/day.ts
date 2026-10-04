@@ -28,7 +28,7 @@ const euros = (quantity: number, perKg: number | null): number | null =>
 export const dayCloseId = (date: string): string => "day-" + date;
 
 /** Día de negocio de un movimiento: el del cierre o la producción; si no, su hora menos el cambio de día. */
-function movementDay(s: State, m: Movement, changeHour: number): string {
+export function movementDay(s: State, m: Movement, changeHour: number): string {
   const line = closeLineOf(m);
   if (line) return line.date;
   if (m.production) {
@@ -165,6 +165,12 @@ export function computeDay(
     },
   };
 }
+/** Marca de la persona: la tienda no abrió ese día (Calendario). null si no está marcado. */
+export const notOpenedOn = (
+  s: State,
+  date: string,
+): State["closures"][number] | null =>
+  s.closures.find((c) => c.date === date) ?? null;
 export const isDayClosed = (s: State, date: string): boolean =>
   s.days.some((d) => d.date === date && d.status === "closed");
 

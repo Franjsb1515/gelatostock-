@@ -6,7 +6,7 @@
 // Sin objetivo escrito o sin cierres en el periodo, el dato es null («No disponible»).
 import type { State } from "./schema.js";
 import { closeLineOf, undoneMovements } from "./sales.js";
-import { computeDay, isDayClosed } from "./day.js";
+import { computeDay, isDayClosed, notOpenedOn } from "./day.js";
 import { localDate } from "./messages.js";
 
 export const PLAN_WINDOW_DAYS = 14;
@@ -112,7 +112,10 @@ export function todayBrief(s: State, now: Date, changeHour = 5): TodayBrief {
     date,
     closed,
     totals: closed && stored ? stored.snapshot.totals : live.totals,
-    yesterdayPending: busy && !isDayClosed(s, yesterday) ? yesterday : null,
+    yesterdayPending:
+      busy && !isDayClosed(s, yesterday) && !notOpenedOn(s, yesterday)
+        ? yesterday
+        : null,
     toProduce: plan.rows
       .filter((r) => r.suggest)
       .map((r) => ({ name: r.name, suggest: r.suggest ?? 0 })),

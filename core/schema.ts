@@ -417,6 +417,17 @@ export const stateSchema = z.object({
     .default([]),
   // Confirmed day closes, newest first.
   days: z.array(dayCloseSchema).max(100000).default([]),
+  // Days the shop did not open (marked by the person in the Calendar). Kept in meta.
+  closures: z
+    .array(
+      z.object({
+        date: documentDate,
+        reason: z.string().max(200).default(""),
+        at,
+      }),
+    )
+    .max(20000)
+    .default([]),
   // Price history per product (cents per pack): every change of the card price, oldest first.
   prices: z
     .array(
@@ -688,6 +699,13 @@ export const actionSchema = z.intersection(
       date: documentDate,
       reason: text(200),
     }),
+    // The shop did not open that day (Calendar). Changes no stock; it only labels the day.
+    z.object({
+      type: z.literal("markNotOpened"),
+      date: documentDate,
+      reason: z.string().trim().max(200).default(""),
+    }),
+    z.object({ type: z.literal("unmarkNotOpened"), date: documentDate }),
     // Annul an applied production; with redo, a new proposal with the same data is left to fix.
     z.object({
       type: z.literal("voidProduction"),

@@ -73,7 +73,13 @@ export {
   costPerKgOn,
   valueReport,
 } from "./value";
-import { computeDay, dayCloseId, isDayClosed, stockAtDayEnd } from "./day";
+import {
+  computeDay,
+  dayCloseId,
+  isDayClosed,
+  notOpenedOn,
+  stockAtDayEnd,
+} from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
 import { businessDay } from "./plan";
 export { productionPlan, todayBrief, businessDay } from "./plan";
@@ -1253,6 +1259,10 @@ export function apply(state: State, input: unknown): State {
     case "dailySales": {
       ensureDayOpen(s, a.date);
       ensure(
+        !notOpenedOn(s, a.date),
+        `El día ${a.date} está marcado como «La tienda no abrió». Quita la marca en el Calendario para apuntar su cierre.`,
+      );
+      ensure(
         new Set(a.lines.map((l) => l.product)).size === a.lines.length,
         "Productos repetidos.",
       );
@@ -1368,6 +1378,32 @@ export function apply(state: State, input: unknown): State {
               ? ""
               : ` (diferencia ${a.realSaleCents - t.soldCents < 0 ? "−" : "+"}${eur(Math.abs(a.realSaleCents - t.soldCents))})`);
       note = `Día ${a.date} cerrado${previous ? " de nuevo" : ""}: vendido ${t.sold} kg, merma ${t.waste} kg, invitación o consumo ${t.gift} kg, quedan ${t.remaining} kg para mañana; ${estimated}${real}. Para cambiar algo de ese día hay que reabrirlo.`;
+      break;
+    }
+    case "markNotOpened": {
+      ensure(
+        !notOpenedOn(s, a.date),
+        "Ese día ya está marcado como «La tienda no abrió».",
+      );
+      ensure(
+        !isDayClosed(s, a.date),
+        "Ese día tiene un cierre confirmado: no se puede marcar como «La tienda no abrió».",
+      );
+      ensure(
+        !closeMovements(s, a.date).some((m) => closeLineOf(m)?.kind === "sale"),
+        "Ese día tiene ventas apuntadas. Deshaz su cierre antes de marcar que la tienda no abrió.",
+      );
+      s.closures = [
+        { date: a.date, reason: a.reason, at: now() },
+        ...s.closures,
+      ].sort((x, y) => y.date.localeCompare(x.date));
+      note = `Día ${a.date} marcado: la tienda no abrió${a.reason ? ". Motivo: " + a.reason : ""}. No cambia el stock.`;
+      break;
+    }
+    case "unmarkNotOpened": {
+      ensure(notOpenedOn(s, a.date), "Ese día no estaba marcado.");
+      s.closures = s.closures.filter((c) => c.date !== a.date);
+      note = `Día ${a.date}: quitada la marca «La tienda no abrió».`;
       break;
     }
     case "reopenDay": {

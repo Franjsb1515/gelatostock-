@@ -1,6 +1,6 @@
 # Guía de uso de ArtelloAPP (Artello Gelato)
 
-Esta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «Guía local», que responde solo con esta guía y con el texto que le pegues.
+Esta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas del Ayudante, que responde solo con esta guía y con el texto que le pegues.
 
 ## Ideas clave
 - Todo funciona sin internet, salvo WhatsApp.
@@ -66,7 +66,7 @@ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y men
 - Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.
 - Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».
 - Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.
-- Segunda lectura con Guía local: opcional; propone una categoría, no actúa.
+- Segunda lectura con el Ayudante: opcional; propone una categoría, no actúa.
 - Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.
 
 ## WhatsApp
@@ -89,21 +89,25 @@ Ficha con nombre, NIF, WhatsApp con prefijo internacional y otros nombres con lo
 ## Semana
 Resumen semanal en una página: kilos producidos, vendidos y en mermas por día y por producto, mermas por motivo (las del cierre y las de Inventario juntas, sin sumar unidades distintas), recepciones, pedidos y gasto estimado, mensajes y productos bajo mínimo al cierre. «Imprimir» abre el diálogo del sistema (también sirve para guardar en PDF). Se navega semana a semana.
 
+## Calendario
+Cada día en su sitio: eliges un año, después un mes y después un día. El año enseña, mes a mes, el gelato vendido, hecho y mermado, los días con ventas, los cierres confirmados, los días sin abrir y los pedidos, entregas y mensajes. El mes es una cuadrícula: cada día dice lo vendido y lo hecho, y lleva las marcas de cierre confirmado, festivo y cruceros. Al tocar un día se abre su ficha: el gelato del día con la misma cuenta que el cierre (al empezar + hecho − vendido − merma − invitación + ajustes = queda), la venta estimada, las mermas por motivo, las producciones, los pedidos hechos, las entregas previstas y recibidas, los mensajes de proveedores y, fuera de la tienda, festivo, clima y cruceros con su fuente. «Ir al cierre del día» abre ese día en Producción. Lo que no está apuntado sale vacío o «No disponible»: el calendario no estima nada.
+La tienda no abrió: en la ficha de un día, «Marcar: la tienda no abrió» (con motivo opcional: festivo, vacaciones, avería…) deja ese día marcado en el calendario. No cambia el stock ni ninguna cifra; el Resumen ya no avisa de que ese día quedó sin cerrar, y mientras esté marcado no se pueden apuntar ventas de ese día. Un día con ventas apuntadas o con el cierre confirmado no se puede marcar. «Quitar la marca» lo deja como estaba.
+
 ## Cruceros
 Herramienta de planificación con datos oficiales de la Autoridad Portuaria de Baleares. Arriba, el panel de hoy: cuántos cruceros hay, pasajeros declarados al puerto, la franja de mayor concentración, el impacto potencial y la próxima llegada; debajo, mañana de un vistazo. Pestañas: próximos 7 días, próximos 30 días, calendario mensual (se navega a meses pasados: el histórico oficial desde 2014 se importa solo) y registro con buscador por barco, naviera, puerto o IMO y filtro por estado. Al tocar un día se abre su detalle: resumen, línea temporal de cruceros en puerto por hora, máxima coincidencia y una tarjeta por barco con llegada, salida, duración de la escala, pasajeros declarados, tipo de escala, muelle, puerto anterior y siguiente, consignatario y fuente. «Historial y origen» enseña de dónde sale cada dato y qué cambió; «Ficha del barco» permite anotar naviera y capacidad indicando la fuente. Reglas: nada se inventa; lo que el puerto no publica (naviera, capacidad, terminal) aparece como «No disponible»; «pasajeros declarados» no es la capacidad del barco ni los clientes esperados; el impacto potencial (Bajo, Medio, Alto, Muy alto) es la mayor suma de pasajeros declarados que coinciden a la vez en puerto, con umbrales que se cambian en Configuración; las horas son siempre las de Palma. Los estados son los del puerto (atraque solicitado, concedido, iniciado, finalizado); una escala anunciada que desaparece queda como «Retirada de la previsión». La franja superior dice si los datos están actualizados, actualizándose, posiblemente desactualizados o con error; sin internet se muestran los últimos datos disponibles. La app solo lee: no envía ningún dato tuyo, y la consulta se apaga en Configuración → Cruceros en Palma. Contexto del día: cada día muestra además el clima previsto para Palma (MET Norway, unos 9 días; de un día pasado solo queda la previsión que había, nunca una observación), si es festivo según el calendario laboral oficial del Govern de les Illes Balears (autonómicos y los dos locales de Palma) y los eventos que anotes tú con «Añadir evento». La pestaña «Ventas e impacto» pone los kilos vendidos de cada día con ventas registradas junto al nivel de impacto de ese día: días, media, mínimo y máximo por nivel; con menos de 8 días de un nivel la app dice que la media todavía no es fiable; no calcula correlaciones ni predice ventas. En Configuración → Cruceros en Palma, «Restaurar copia del registro» recupera el registro de cruceros (y tus fichas de barcos) desde la copia diaria; el registro actual queda guardado al lado.
 
 ## Actividad
 Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.
 
-## Guía local
+## Ayudante
 - Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.
 - Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.
 - Confirmar el tipo en la foto: guarda tu decisión en el documento.
 
 ## Guía
-Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de la Guía local responde a partir de ella.
+Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas del Ayudante responde a partir de ella.
 
-## Guía local, un guiño
+## Ayudante, un guiño
 El chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa.
 
 ## Configuración
