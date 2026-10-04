@@ -38,6 +38,28 @@ function movementDay(s: State, m: Movement, changeHour: number): string {
   return localDate(new Date(Date.parse(m.at) - changeHour * 3_600_000));
 }
 
+/**
+ * Lo que había de un producto al terminar un día de negocio: el stock de ahora menos lo que
+ * movieron los días posteriores. Cerrar ayer pesando la cubeta («queda») debe restar de lo que
+ * había ayer, no de lo que hay hoy después de producir más.
+ */
+export function stockAtDayEnd(
+  s: State,
+  productId: string,
+  date: string,
+  changeHour = 5,
+): number {
+  const p = s.products.find((x) => x.id === productId);
+  if (!p) return 0;
+  const undone = undoneMovements(s);
+  let later = 0;
+  for (const m of s.movements) {
+    if (m.product !== productId || undone.has(m.id) || m.reverses) continue;
+    if (movementDay(s, m, changeHour) > date) later += m.delta;
+  }
+  return kg(p.stock - later);
+}
+
 /** Cálculo vivo de un día de negocio para los productos terminados (los que produce una receta). */
 export function computeDay(
   s: State,

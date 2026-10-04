@@ -28,7 +28,7 @@ function whatsapp() {
      .map((m) =>
        m.outgoing
          ? `<article class="message-bubble outgoing"><strong>Tú → ${esc(w.allowed.find((c) => c.phone === m.recipient)?.label || m.recipient)}</strong><small> · ${esc(m.recipient)} · ${date(m.at)} ${time(m.at)}${m.order_id ? " · pedido enviado" : ""}</small><p>${esc(m.text)}</p></article>`
-         : `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.interpretation ? `<div class="wa-reading">${pill(replyLabel[m.interpretation.category], m.interpretation.needsReading ? "peach" : "sage")} <small>${esc(m.interpretation.summary)}</small></div>` : ""}${m.text ? btn("Leer con IA local", "aiWhatsApp", "secondary", `data-id="${esc(m.id)}"`) : ""}${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`,
+         : `<article class="message-bubble"><strong>${esc(w.allowed.find((c) => c.phone === m.sender)?.label || m.sender)}</strong><small> · ${esc(m.sender)} · ${date(m.at)} ${time(m.at)}</small><p>${esc(m.text)}</p>${m.interpretation ? `<div class="wa-reading">${pill(replyLabel[m.interpretation.category], m.interpretation.needsReading ? "peach" : "sage")} <small>${esc(m.interpretation.summary)}</small></div>` : ""}${m.text ? btn("Leer con Guía local", "aiWhatsApp", "secondary", `data-id="${esc(m.id)}"`) : ""}${m.file ? `<small>${esc(m.name)}</small><code class="path">${esc(dataDir)}/whatsapp/${esc(m.file)}</code>` : ""}</article>`,
      )
      .join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'
  }</section>

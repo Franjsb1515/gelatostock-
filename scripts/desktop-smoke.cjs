@@ -912,12 +912,14 @@ const { appName } = require("./package-rules.cjs");
     );
     // Let the open handler finish (it awaits a read mutation) before leaving the screen.
     await window.waitForTimeout(500);
-    await window.getByRole("button", { name: "IA local", exact: true }).click();
+    await window
+      .getByRole("button", { name: "Guía local", exact: true })
+      .click();
     const text =
       "FACTURA F-123\nOrigen Coffee\nBase imponible: 100,00 EUR\nIVA: 21,00 EUR\nTotal: 125,00 EUR";
     await window.locator("#ai-text").fill(text);
     await window
-      .getByRole("button", { name: "Analizar con IA local", exact: true })
+      .getByRole("button", { name: "Analizar con Guía local", exact: true })
       .click();
     try {
       await window.locator(".ai-result").waitFor({ timeout: 245000 });
@@ -946,7 +948,7 @@ const { appName } = require("./package-rules.cjs");
     );
     assert.ok(
       (await window.locator(".ai-result").innerText()).includes(
-        "Dos lecturas del modelo coinciden",
+        "Dos lecturas coinciden",
       ),
     );
     assert.ok(
@@ -969,7 +971,7 @@ const { appName } = require("./package-rules.cjs");
     assert.equal(await window.locator(".ai-result").count(), 0);
     await window.locator("#ai-mode").selectOption("standard");
     await window
-      .getByRole("button", { name: "Analizar con IA local", exact: true })
+      .getByRole("button", { name: "Analizar con Guía local", exact: true })
       .click();
     await window.locator(".ai-result").waitFor({ timeout: 245000 });
     assert.ok(
@@ -982,7 +984,7 @@ const { appName } = require("./package-rules.cjs");
       .locator("#ai-chat-input")
       .fill("¿Qué hace la pantalla Control de entregas?");
     await window
-      .getByRole("button", { name: "Preguntar a la IA local", exact: true })
+      .getByRole("button", { name: "Preguntar a la Guía local", exact: true })
       .click();
     await window.locator(".ai-chat-answer").waitFor({ timeout: 245000 });
     const answer = (await window.locator(".ai-chat-answer").innerText()).trim();
@@ -1005,30 +1007,32 @@ const { appName } = require("./package-rules.cjs");
     await window.locator(".more-actions summary").click();
     await window
       .getByRole("button", {
-        name: "Segunda lectura con IA local",
+        name: "Segunda lectura con Guía local",
         exact: true,
       })
       .click();
     await window
       .locator(".reply-reading")
-      .filter({ hasText: "IA local" })
+      .filter({ hasText: "Guía local" })
       .first()
       .waitFor({ timeout: 245000 });
     const second = await window.locator(".reply-reading").first().innerText();
     assert.equal(savedStock(), 4.25);
     console.log(
       "PASS: segunda lectura de respuesta de proveedor con modelo REAL anotada sin cambiar stock: " +
-        JSON.stringify(second.split(/IA local/i)[1]?.slice(0, 120)),
+        JSON.stringify(second.split(/Guía local/i)[1]?.slice(0, 120)),
     );
-    await window.getByRole("button", { name: "IA local", exact: true }).click();
     await window
-      .getByRole("button", { name: "Analizar con IA local", exact: true })
+      .getByRole("button", { name: "Guía local", exact: true })
+      .click();
+    await window
+      .getByRole("button", { name: "Analizar con Guía local", exact: true })
       .click();
     await window
       .getByRole("button", { name: "Detener lectura", exact: true })
       .click();
     await window
-      .getByRole("button", { name: "Analizar con IA local", exact: true })
+      .getByRole("button", { name: "Analizar con Guía local", exact: true })
       .waitFor();
     await window.getByRole("alert").filter({ hasText: "cancelada" }).waitFor();
     console.log("PASS: cancelación desde la interfaz.");

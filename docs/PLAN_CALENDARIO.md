@@ -18,9 +18,9 @@ Pantalla propia «Calendario»: años → meses → días → ficha del día con
 ## Fases propuestas (una por sesión, una versión por fase)
 1. Navegación año → mes → día y ficha del día solo con lo que ya existe (ventas, producción, mermas, cierre, pedidos y entregas, cruceros, clima, festivo). Sin datos nuevos.
 2. Apuntes a mano por día: horario (de apertura y/o turnos, según respuesta), notas y eventos. Datos nuevos en el esquema (zod) con pruebas; un día cerrado no cambia por esto (ensureDayOpen solo si toca ventas).
-3. Fotos: subir una foto o PDF al día; se archiva en Documentos con su texto leído y la app propone qué apuntar (horarios, cifras) para que la persona lo confirme línea a línea.
+3. Fotos desde el propio Calendario (aclarado por el usuario el 2026-10-04): un botón «Subir foto» en el calendario; la app lee la foto, decide a qué día y a qué apartado va (horario, ventas, factura o albarán de un proveedor, nota) y lo coloca, siempre como propuesta que la persona confirma antes de guardar. Una factura o albarán va además a Documentos, como hoy. Si la foto no dice la fecha, se pregunta: no se adivina.
 
 ## Preguntas abiertas (al usuario)
 1. «Horarios»: ¿horario de apertura de la tienda, turnos del personal (quién y de qué hora a qué hora) o los dos?
 2. ¿Qué más quieres ver en cada día además de horarios y ventas? (notas, eventos, pedidos y entregas, cruceros, clima…)
-3. Las fotos que subirías: ¿impresas o de una pantalla, o escritas a mano? ¿Me mandas una de ejemplo?
+3. Las fotos que subirías: ¿impresas o de una pantalla, o escritas a mano? ¿Me mandas una o dos de ejemplo? (sin ejemplos reales no se puede medir si la lectura acierta).

@@ -50,6 +50,11 @@ document.addEventListener("click", async (e) => {
   }
   if (el.dataset.nav) {
     e.preventDefault();
+    // «Ver mensajes» del Resumen lleva también su filtro: antes se perdía al navegar.
+    if (el.dataset.filterMessages) {
+      messageFilter = el.dataset.filterMessages;
+      selectedMessage = null;
+    }
     nav(el.dataset.nav);
   } else if (el.dataset.action) {
     await action(el.dataset.action, el);

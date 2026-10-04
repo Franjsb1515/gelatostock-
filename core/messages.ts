@@ -172,8 +172,11 @@ export function readPriceChange(text: string): PriceReading | undefined {
     )
   )
     return undefined;
+  // Con un porcentaje no se sabe qué precio queda: no se propone nada.
+  if (/\d\s*%|por ciento/.test(t)) return undefined;
   const euro = "(?:€|eur\\b|euros?\\b)";
-  const num = "(\\d{1,6}(?:[.,]\\d{1,2})?)";
+  // Un importe no empieza en medio de otro: «1.250,00 €» no se lee como 250 €.
+  const num = "(?<![\\d.,])(\\d{1,6}(?:[.,]\\d{1,2})?)";
   const pair = t.match(
     new RegExp(
       "\\bde\\s+" + num + "\\s*" + euro + "?\\s+a\\s+" + num + "\\s*" + euro,

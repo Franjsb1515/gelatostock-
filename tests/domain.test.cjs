@@ -1077,7 +1077,9 @@ test("resumen semanal: ventas, mermas, producción, pedidos y avisos de la seman
   assert.equal(r.start, start);
   assert.ok(r.days.some((d) => d.date === today));
   assert.equal(r.totals.sales, 1);
-  assert.equal(r.totals.waste, 0.75);
+  // 0.47.0: antes 0,75 «kg» sumando 0,5 kg de gelato y 0,25 L de leche. kg, L y ud no se suman.
+  assert.equal(r.totals.waste, 0.5);
+  assert.deepEqual(r.totals.wasteOther, [{ unit: "L", quantity: 0.25 }]);
   assert.equal(r.sales[0].name, "Chocolate 70 %");
   assert.equal(r.orders.created, 1);
   assert.ok(r.orders.spent > 0);

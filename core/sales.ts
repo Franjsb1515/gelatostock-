@@ -117,6 +117,9 @@ export const undoneMovements = (s: State): Set<string> =>
   new Set(
     s.movements.map((m) => m.reverses).filter((id): id is string => !!id),
   );
+/** Detalle que escribió la persona en una merma de gelato apuntada en Inventario («… · Motivo · detalle»). */
+export const closeDetailOf = (m: { kind: string; reason: string }): string =>
+  m.kind === "waste" ? (wastePattern.exec(m.reason)?.[3] ?? "") : "";
 /** Día de negocio y categoría de un movimiento de cierre; null si no es de un cierre. */
 export function closeLineOf(m: {
   kind: string;

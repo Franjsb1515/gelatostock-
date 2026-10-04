@@ -1,5 +1,28 @@
 # Registro de parches y sesiones
 
+## 0.47.0 — 2026-10-04 · sesión 049 (segunda parte) · «Guía local» y auditoría
+
+Pediste quitar la IA de la pantalla y revisar la app. Ahora:
+
+- **«Guía local»** en lugar de «IA local»: el menú, los botones y los avisos ya no hablan de IA ni de «modelo».
+- **Fotos en el Calendario**: anotado en el plan como lo explicaste (subes la foto en el Calendario y la app propone dónde va; tú confirmas).
+- **Auditoría**: tres revisiones (cálculos, servidor y pantallas) y 26 arreglos, cada uno comprobado. Los que más se notan:
+  - «Revertir» ya no puede cambiar un día cerrado.
+  - Cerrar un día pasado pesando la cubeta ya no infla la venta.
+  - La Semana no suma kilos con litros y unidades.
+  - Si entra un WhatsApp mientras escribes, lo que guardas ya no falla ni se pierde. Antes algunos formularios se cerraban sin guardar y sin avisar.
+  - En «Sin leer», al abrir un mensaje se veía otro.
+  - En la hoja de conteo, una casilla vacía ponía el stock a 0.
+  - «Ninguno» en una receta no la separaba de su gelato.
+  - «Autorizar pedidos» se quedaba bloqueado.
+  - Un PDF muy largo congelaba la app.
+  - Un archivo de cruceros dañado impedía abrirla.
+  - Una copia vacía podía sustituir a la buena.
+  - El total del carrito contaba como 0 € lo que no tiene precio.
+  - Textos de «simulación» en pedidos reales.
+
+Queda por decidir contigo: la hora de Palma (este ordenador está en otra zona horaria) y si un día cerrado bloquea también los conteos. Pruebas: 213, chat 35/35. Informe reports/2026-10-04T23-00-00-000Z-auditoria-guia-local.md.
+
 ## 0.46.0 — 2026-10-04 · sesión 049 · marca Artello
 
 Pediste cambiar la imagen de la app a la de Artello. Ahora:

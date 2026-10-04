@@ -34,7 +34,10 @@ export type WeeklyReport = {
   production: { date: string; name: string; quantity: number }[];
   totals: {
     sales: number;
+    /** Merma en kilos (gelato e ingredientes en kg). */
     waste: number;
+    /** Merma en litros y en unidades, cada una aparte: kg, L y ud nunca se suman. */
+    wasteOther: { unit: "L" | "ud"; quantity: number }[];
     gifts: number;
     production: number;
     receipts: number;
@@ -115,8 +118,9 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
       if (row) row.gift += qty;
     } else if (m.kind === "waste") {
       add(waste, m.product, qty);
+      // La fila del día y el total van en kilos: una merma en L o en ud va en su línea.
       const row = dayRow(day);
-      if (row) row.waste += qty;
+      if (row && product(m.product)?.unit === "kg") row.waste += qty;
       const label = wasteLabelOf(m);
       if (label) {
         const group = byReason.get(label) ?? { lines: [], movements: 0 };
@@ -197,7 +201,13 @@ export function weeklyReport(s: State, start: string): WeeklyReport {
     production,
     totals: {
       sales: sum(sales),
-      waste: sum(waste),
+      waste: sum(waste.filter((l) => l.unit === "kg")),
+      wasteOther: (["L", "ud"] as const)
+        .map((unit) => ({
+          unit,
+          quantity: sum(waste.filter((l) => l.unit === unit)),
+        }))
+        .filter((x) => x.quantity > 0),
       gifts: sum(gifts),
       production: sum(production),
       receipts: sum(receipts),

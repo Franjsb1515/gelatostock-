@@ -169,7 +169,7 @@ function reviewReading(text, first, second, mode) {
     );
   if (injection)
     warnings.push(
-      "El texto contiene posibles instrucciones dirigidas a una IA; se trata como contenido no fiable.",
+      "El texto contiene posibles instrucciones dirigidas a un asistente automático; se trata como contenido no fiable.",
     );
   const rules = classifyDocument(text);
   const headings = rules.headings;

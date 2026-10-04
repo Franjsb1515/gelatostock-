@@ -83,11 +83,21 @@ if (!app.requestSingleInstanceLock()) {
       win.webContents.setWindowOpenHandler(({ url }) => {
         try {
           const u = new URL(url);
-          const known = backend.store
-            .load()
-            .suppliers.some(
-              (s) => s.web && u.protocol === "https:" && url.startsWith(s.web),
-            );
+          const known = backend.store.load().suppliers.some((s) => {
+            // Mismo sitio que la ficha (mismo host), no solo el mismo comienzo de texto:
+            // «https://prov.es» no debe abrir «https://prov.es.otro.com».
+            if (!s.web || u.protocol !== "https:") return false;
+            try {
+              const known = new URL(s.web);
+              return (
+                known.protocol === "https:" &&
+                known.host === u.host &&
+                u.pathname.startsWith(known.pathname)
+              );
+            } catch {
+              return false;
+            }
+          });
           if (known) shell.openExternal(url);
         } catch {}
         return { action: "deny" };

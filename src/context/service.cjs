@@ -47,8 +47,14 @@ class ContextService {
     fs.mkdirSync(dataDir, { recursive: true });
     this.file = path.join(dataDir, "contexto.sqlite");
     this.db = new DatabaseSync(this.file);
-    this.db.exec("PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL;");
-    this.db.exec(SCHEMA);
+    try {
+      this.db.exec("PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL;");
+      this.db.exec(SCHEMA);
+    } catch (e) {
+      // Un archivo dañado: cerrar antes de fallar, para que se pueda apartar (server.cjs).
+      this.close();
+      throw e;
+    }
     this.weatherProvider = weather;
     this.holidayProvider = holidays;
     this.log = log;
@@ -78,6 +84,13 @@ class ContextService {
   backupTo(dir) {
     fs.mkdirSync(dir, { recursive: true });
     const target = path.join(dir, "contexto-copia.sqlite");
+    // 0.47.0: copia vacía no sustituye a una buena. Un registro sin datos (perdido o recién
+    // creado tras un fallo) dejaría la única copia buena en blanco.
+    const rows = ["events", "weather", "holidays"].reduce(
+      (n, t) => n + this.db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get().n,
+      0,
+    );
+    if (rows === 0 && fs.existsSync(target)) return target;
     const tmp = target + ".tmp";
     fs.rmSync(tmp, { force: true });
     this.db.exec("VACUUM INTO '" + tmp.replace(/'/g, "''") + "'");

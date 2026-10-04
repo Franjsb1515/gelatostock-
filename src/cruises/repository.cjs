@@ -89,10 +89,16 @@ class CruiseRepository {
     fs.mkdirSync(dataDir, { recursive: true });
     this.file = path.join(dataDir, "cruceros.sqlite");
     this.db = new DatabaseSync(this.file);
-    this.db.exec(
-      "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL;",
-    );
-    this.db.exec(SCHEMA);
+    try {
+      this.db.exec(
+        "PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL;",
+      );
+      this.db.exec(SCHEMA);
+    } catch (e) {
+      // Un archivo dañado: cerrar antes de fallar, para que se pueda apartar (server.cjs).
+      this.close();
+      throw e;
+    }
     // 0.24.0 kept a JSON cache; every call in it comes back from the source with better data.
     const legacy = path.join(dataDir, "cruceros.json");
     if (fs.existsSync(legacy))
@@ -113,6 +119,13 @@ class CruiseRepository {
   backupTo(dir) {
     fs.mkdirSync(dir, { recursive: true });
     const target = path.join(dir, "cruceros-copia.sqlite");
+    // 0.47.0: copia vacía no sustituye a una buena. Un registro sin datos (perdido o recién
+    // creado tras un fallo) dejaría la única copia buena en blanco.
+    const rows = ["calls"].reduce(
+      (n, t) => n + this.db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get().n,
+      0,
+    );
+    if (rows === 0 && fs.existsSync(target)) return target;
     const tmp = target + ".tmp";
     fs.rmSync(tmp, { force: true });
     this.db.exec("VACUUM INTO '" + tmp.replace(/'/g, "''") + "'");

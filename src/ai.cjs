@@ -217,25 +217,28 @@ class LocalAI {
     });
     await new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        reject(Error("La IA local tardó demasiado en cargar el modelo."));
+        reject(Error("La Guía local tardó demasiado en cargar."));
       }, 120000);
       worker.once("message", (m) => {
         clearTimeout(timer);
         if (m.ready) resolve();
         else
           reject(
-            Object.assign(Error(m.error || "No se pudo iniciar la IA local."), {
-              detail: m.detail || "",
-            }),
+            Object.assign(
+              Error(m.error || "No se pudo iniciar la Guía local."),
+              {
+                detail: m.detail || "",
+              },
+            ),
           );
       });
       worker.once("error", () => {
         clearTimeout(timer);
-        reject(Error("No se pudo iniciar la IA local."));
+        reject(Error("No se pudo iniciar la Guía local."));
       });
       worker.once("exit", () => {
         clearTimeout(timer);
-        reject(Error("El proceso de IA se interrumpió antes de responder."));
+        reject(Error("La Guía local se interrumpió antes de responder."));
       });
     }).catch(async (e) => {
       await this.terminateWorker();
@@ -244,7 +247,7 @@ class LocalAI {
     return worker;
   }
   async run(workerData, expectedOutputs) {
-    if (this.job) throw Error("Ya hay una lectura de IA en curso.");
+    if (this.job) throw Error("Ya hay una lectura de la Guía local en curso.");
     const job = { cancelled: false };
     this.job = job;
     clearTimeout(this.idleTimer);
@@ -259,7 +262,11 @@ class LocalAI {
         job.reject = reject;
         job.timer = setTimeout(
           () =>
-            reject(Error("La IA superó 4 minutos. Prueba un texto más corto.")),
+            reject(
+              Error(
+                "La Guía local superó 4 minutos. Prueba un texto más corto.",
+              ),
+            ),
           240000,
         );
         const onMessage = (m) => {
@@ -274,18 +281,18 @@ class LocalAI {
             m.outputs.length !== expectedOutputs ||
             m.outputs.some((x) => typeof x !== "string" || x.length > 8000)
           ) {
-            reject(Error("Respuesta interna de IA inválida."));
+            reject(Error("Respuesta interna de la Guía local no válida."));
             return;
           }
           resolve(m.outputs);
         };
         const onError = () => {
           cleanup();
-          reject(Error("No se pudo iniciar la IA local."));
+          reject(Error("No se pudo iniciar la Guía local."));
         };
         const onExit = () => {
           cleanup();
-          reject(Error("El proceso de IA se interrumpió antes de responder."));
+          reject(Error("La Guía local se interrumpió antes de responder."));
         };
         const cleanup = () => {
           worker.off("message", onMessage);

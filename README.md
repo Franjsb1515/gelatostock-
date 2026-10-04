@@ -1,4 +1,4 @@
-# ArtelloAPP (antes GelatoStock) · 0.46.0
+# ArtelloAPP (antes GelatoStock) · 0.47.0
 
 Aplicación local de escritorio para una gelatería con café de especialidad y postres. Sirve para saber qué falta, pedirlo a los proveedores, entender lo que contestan y planificar el día. Es un prototipo para probar el circuito completo; todavía no es la aplicación final de producción.
 

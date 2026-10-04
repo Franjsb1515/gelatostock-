@@ -46,6 +46,8 @@ export function recipeBalance(s: State, r: Recipe): RecipeBalance {
     msnf: 0,
   };
   const missing: string[] = [];
+  // Un dato que la ficha no trae no es 0: ese valor queda «sin datos» (No disponible).
+  const lacking = new Set<BalanceKey>();
   for (const i of r.ingredients) {
     const p = s.products.find((x) => x.id === i.product);
     if (!p || p.unit === "ud") continue;
@@ -56,7 +58,10 @@ export function recipeBalance(s: State, r: Recipe): RecipeBalance {
       continue;
     }
     covered += i.quantity;
-    for (const k of keys) totals[k] += (i.quantity * (c[k] ?? 0)) / 100;
+    for (const k of keys) {
+      if (c[k] === undefined) lacking.add(k);
+      totals[k] += (i.quantity * (c[k] ?? 0)) / 100;
+    }
   }
   const pct = (n: number) => (mass ? Math.round((n / mass) * 1000) / 10 : 0);
   const values = {
@@ -66,19 +71,20 @@ export function recipeBalance(s: State, r: Recipe): RecipeBalance {
     msnf: pct(totals.msnf),
   };
   const ranges = balanceRanges[r.family ?? "crema"] ?? null;
-  const complete = mass > 0 && missing.length === 0;
+  const complete = mass > 0 && missing.length === 0 && lacking.size === 0;
   const flags: BalanceFlag[] = keys.map((key) => {
     const range = ranges ? ranges[key] : null;
     const value = values[key];
-    const status: BalanceFlag["status"] = !complete
-      ? "unknown"
-      : !range
-        ? "info"
-        : value < range[0]
-          ? "low"
-          : value > range[1]
-            ? "high"
-            : "ok";
+    const status: BalanceFlag["status"] =
+      !complete && (missing.length > 0 || mass === 0 || lacking.has(key))
+        ? "unknown"
+        : !range
+          ? "info"
+          : value < range[0]
+            ? "low"
+            : value > range[1]
+              ? "high"
+              : "ok";
     return { key, label: balanceLabels[key], value, range, status };
   });
   return {

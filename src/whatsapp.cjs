@@ -619,7 +619,7 @@ class WhatsAppConnection {
         throw Error(
           "WhatsApp no confirmó el envío: esta cuenta no encuentra un chat con " +
             recipient +
-            ". Abrí una conversación con ese número desde el teléfono y volvé a intentarlo.",
+            ". Abre una conversación con ese número desde el teléfono y vuelve a intentarlo.",
         );
       }
       this.log("enviado a " + recipient + " id " + messageId);

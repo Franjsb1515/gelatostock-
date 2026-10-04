@@ -198,7 +198,25 @@ function toast(text) {
     5000,
   );
 }
-async function mutate(a, msg) {
+// Lo que puede cambiar solo mientras la pantalla está abierta (un WhatsApp que entra: el mensaje,
+// su adjunto y la actividad). Si solo cambió eso, lo que la persona tiene delante sigue valiendo.
+const incomingOnly = [
+  "revision",
+  "processed",
+  "messages",
+  "activity",
+  "photos",
+];
+const sameExceptIncoming = (a, b) =>
+  JSON.stringify({
+    ...a,
+    ...Object.fromEntries(incomingOnly.map((k) => [k, 0])),
+  }) ===
+  JSON.stringify({
+    ...b,
+    ...Object.fromEntries(incomingOnly.map((k) => [k, 0])),
+  });
+async function mutate(a, msg, retried = false) {
   if (busy) return false;
   busy = true;
   try {
@@ -215,8 +233,20 @@ async function mutate(a, msg) {
     if (e.status === 409) {
       try {
         const fresh = await request("/api/state");
-        state = fresh.state;
-        render();
+        // Solo entró un mensaje: se repite la operación con la revisión nueva, sin molestar.
+        if (!retried && sameExceptIncoming(state, fresh.state)) {
+          applyEnvelope(fresh);
+          busy = false;
+          return await mutate(
+            a.revision === undefined ? a : { ...a, revision: state.revision },
+            msg,
+            true,
+          );
+        }
+        // Cambió algo de verdad: se guarda lo nuevo para el siguiente intento, pero la pantalla
+        // no se redibuja ahora (se perdería lo escrito); se redibuja al cambiar de pantalla.
+        applyEnvelope(fresh);
+        staleState = true;
       } catch {}
     }
     if ($("#modal").open && $("#form-error"))
@@ -277,7 +307,7 @@ const pageLabel = {
   suppliers: "Proveedores",
   activity: "Actividad",
   settings: "Configuración",
-  ai: "IA local",
+  ai: "Guía local",
   production: "Producción",
   recipes: "Recetario",
   weekly: "Resumen semanal",
@@ -348,7 +378,7 @@ function render() {
       ["activity", "clock", "Actividad"],
       ["weekly", "check", "Semana"],
       ["cruises", "ship", "Cruceros"],
-      ["ai", "leaf", "IA local"],
+      ["ai", "leaf", "Guía local"],
       ["guide", "shield", "Guía"],
     ]
       .map(
@@ -412,6 +442,15 @@ function hideIncoming(seen) {
 }
 
 // Name shown on printed pages.
+// «Revertir» no se ofrece en las líneas del cierre del día ni en el gelato hecho en una producción:
+// se corrigen desde su sitio (mismo criterio que la acción reverse de core/domain.ts).
+const closeLinePattern =
+  /^(Venta del día|Invitación o consumo del día|Merma del día) \d{4}-\d{2}-\d{2}/;
+const reversible = (m) =>
+  m.kind !== "receipt" &&
+  m.kind !== "output" &&
+  !m.reverses &&
+  !(["exit", "waste"].includes(m.kind) && closeLinePattern.test(m.reason));
 function businessName() {
   return state?.business || "ArtelloAPP";
 }

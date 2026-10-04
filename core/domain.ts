@@ -52,6 +52,7 @@ import {
   giftText,
   closeMovements,
   closeLineOf,
+  closeDetailOf,
   undoneMovements,
 } from "./sales";
 export {
@@ -72,7 +73,7 @@ export {
   costPerKgOn,
   valueReport,
 } from "./value";
-import { computeDay, dayCloseId, isDayClosed } from "./day";
+import { computeDay, dayCloseId, isDayClosed, stockAtDayEnd } from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
 import { businessDay } from "./plan";
 export { productionPlan, todayBrief, businessDay } from "./plan";
@@ -114,7 +115,8 @@ export function pending(s: State, id: string): number {
 export function needed(s: State, p: Product): number {
   return Math.max(
     0,
-    Math.ceil(round(p.target - p.stock - pending(s, p.id)) / p.pack),
+    // Redondeo antes de subir al paquete: 2,1 / 0,7 da 3,0000000000000004 en coma flotante.
+    Math.ceil(round(round(p.target - p.stock - pending(s, p.id)) / p.pack)),
   );
 }
 // Exact text a real send carries. Deterministic so the person authorizes what is sent.
@@ -525,6 +527,18 @@ export function apply(state: State, input: unknown): State {
           m.kind !== "receipt" &&
           !s.movements.some((x) => x.reverses === m.id),
         "Este movimiento no se puede revertir por esta vía.",
+      );
+      // Las líneas del cierre del día y el gelato hecho en una producción tienen su propio camino
+      // («Deshacer» del cierre y «Anular producción»), que respeta el día cerrado y deja cuadrados
+      // el valor, el coste y la Semana. Revertirlos aquí esquivaba las dos cosas. El consumo de un
+      // ingrediente sí se puede compensar (corrige un error de cálculo sin tocar lo producido).
+      ensure(
+        !closeLineOf(m),
+        "Es una línea del cierre del día: corrígela o deshazla desde el cierre de ese día, en Producción.",
+      );
+      ensure(
+        m.kind !== "output",
+        "Es el gelato hecho en una producción: anula la producción en Producción.",
       );
       move(s, m.product, -m.delta, "reversal", a.reason, { reverses: m.id });
       note =
@@ -962,7 +976,15 @@ export function apply(state: State, input: unknown): State {
       break;
     }
     case "recipe": {
-      const { type, revision, operationId, id, createProduct, ...fields } = a;
+      const {
+        type,
+        revision,
+        operationId,
+        id,
+        createProduct,
+        noProduct,
+        ...fields
+      } = a;
       let created = "";
       if (createProduct && !fields.product) {
         // The gelato made in house is a product of its own: sales, waste and value hang from it.
@@ -1024,8 +1046,12 @@ export function apply(state: State, input: unknown): State {
           "El gelato que sale de la receta debe medirse en kg.",
         );
       }
-      if (id) Object.assign(item(s.recipes, id), fields);
-      else s.recipes.push({ id: randomUUID(), ...fields, saleValues: [] });
+      if (id) {
+        const r = item(s.recipes, id);
+        Object.assign(r, fields);
+        // Sin esto, «Ninguno» guardaba la receta y seguía unida al gelato de antes.
+        if (noProduct) delete r.product;
+      } else s.recipes.push({ id: randomUUID(), ...fields, saleValues: [] });
       note =
         `Receta guardada: ${fields.name} (rinde ${fields.yield} kg).` + created;
       break;
@@ -1238,18 +1264,20 @@ export function apply(state: State, input: unknown): State {
           `${p.name}: indica lo vendido o lo que queda, no las dos cosas.`,
         );
         // Closing by weighing the tub: what is missing and was not thrown away was sold.
+        // Se resta de lo que había al acabar ese día, no del stock de ahora (que puede llevar
+        // producciones o movimientos de días posteriores si se cierra un día pasado).
+        const had = stockAtDayEnd(s, p.id, a.date);
         const sold =
           l.remaining === undefined
             ? (l.sold ?? 0)
-            : Math.round((p.stock - l.waste - l.gift - l.remaining) * 1000) /
-              1000;
+            : Math.round((had - l.waste - l.gift - l.remaining) * 1000) / 1000;
         ensure(
           sold >= 0,
-          `${p.name}: queda más de lo que había (${p.stock} ${p.unit}). Si se produjo más, aprueba antes esa producción.`,
+          `${p.name}: queda más de lo que había (${had} ${p.unit}). Si se produjo más, aprueba antes esa producción.`,
         );
         ensure(
-          sold + l.waste + l.gift <= p.stock,
-          `${p.name}: vendido, merma e invitación suman más que el stock (${p.stock} ${p.unit}).`,
+          round(sold + l.waste + l.gift) <= had,
+          `${p.name}: vendido, merma e invitación suman más que el stock de ese día (${had} ${p.unit}).`,
         );
         if (sold) move(s, p.id, -sold, "exit", `Venta del día ${a.date}`);
         if (l.waste)
@@ -1445,7 +1473,9 @@ export function apply(state: State, input: unknown): State {
         line.kind !== "waste"
           ? m.reason
           : a.wasteReason
-            ? wasteReasonText(line.date, a.wasteReason)
+            ? // Con otro motivo se conserva el detalle que escribió la persona.
+              wasteReasonText(line.date, a.wasteReason) +
+              (closeDetailOf(m) ? ` · ${closeDetailOf(m)}` : "")
             : m.reason;
       move(s, m.product, -a.quantity, m.kind, reason);
       note = `${what} corregida: ${prod.name} de ${before} a ${a.quantity} ${prod.unit} (${line.date}). Stock disponible: ${prod.stock} ${prod.unit}.`;

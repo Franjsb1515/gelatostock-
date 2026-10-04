@@ -37,7 +37,7 @@ async function action(name, el) {
   }
   if (name === "aiPhoto" || name === "aiMessage" || name === "aiWhatsApp") {
     if (aiBusy) {
-      toast("Espera o detén la lectura actual desde IA local.");
+      toast("Espera o detén la lectura actual desde Guía local.");
       return;
     }
     aiSourcePhoto = name === "aiPhoto" ? el.dataset.id : "";
@@ -67,7 +67,7 @@ async function action(name, el) {
     } finally {
       aiBusy = false;
       if (page === "ai") render();
-      else toast("La lectura de IA ha terminado. Consulta IA local.");
+      else toast("La lectura ha terminado. Consulta Guía local.");
     }
     return;
   }
@@ -199,7 +199,7 @@ async function action(name, el) {
     const docType = aiResult.proposedType || aiResult.tipo;
     await mutate(
       { type: "photoType", id: photo.id, docType },
-      "Tipo guardado en la foto. Es tu confirmación, no la de la IA.",
+      "Tipo guardado en la foto. Es tu confirmación, no una lectura automática.",
     );
     return;
   }
@@ -231,7 +231,7 @@ async function action(name, el) {
     } finally {
       aiBusy = false;
       if (page === "ai") render();
-      else toast("La IA local ha respondido. Consulta IA local.");
+      else toast("La Guía local ha respondido. Consulta Guía local.");
     }
     return;
   }
@@ -321,7 +321,7 @@ async function action(name, el) {
               ? { createProduct: true }
               : f.get("product")
                 ? { product: f.get("product") }
-                : {}),
+                : { noProduct: true }),
             yield: Number(f.get("yield")),
             ingredients,
             steps: f.get("steps") || "",
@@ -528,12 +528,14 @@ async function action(name, el) {
         'min="0" max="100000" step="0.001" required',
       ),
       async (f) => {
-        await mutate(
+        const saved = await mutate(
           { type: "setGoal", product: p.id, target: Number(f.get("target")) },
           "Objetivo guardado.",
         );
         salesData = null;
         render();
+        // Si no se guardó, el formulario sigue abierto con el aviso del error.
+        if (!saved) return false;
         return true;
       },
     );
@@ -565,7 +567,7 @@ async function action(name, el) {
           ),
       async (f) => {
         const real = f.get("real");
-        await mutate(
+        const saved = await mutate(
           confirm
             ? {
                 type: "confirmDay",
@@ -579,6 +581,8 @@ async function action(name, el) {
         );
         salesData = null;
         render();
+        // Si no se guardó, el formulario sigue abierto con el aviso del error.
+        if (!saved) return false;
         return true;
       },
       confirm ? "Confirmar cierre" : "Reabrir",
@@ -667,7 +671,7 @@ async function action(name, el) {
       async (f) => {
         const cents = Math.round(Number(f.get("euros")) * 100);
         if (!sale && !cents && !r.cost?.manual) return true;
-        await mutate(
+        const saved = await mutate(
           sale
             ? {
                 type: "setSaleValue",
@@ -688,6 +692,8 @@ async function action(name, el) {
         );
         salesData = null;
         render();
+        // Si no se guardó, el formulario sigue abierto con el aviso del error.
+        if (!saved) return false;
         return true;
       },
     );
@@ -710,7 +716,7 @@ async function action(name, el) {
         'maxlength="200" placeholder="Duplicada, peso mal apuntado…"',
       ),
       async (f) => {
-        await mutate(
+        const saved = await mutate(
           {
             type: "voidProduction",
             id: p.id,
@@ -723,6 +729,8 @@ async function action(name, el) {
         );
         salesData = null;
         render();
+        // Si no se guardó, el formulario sigue abierto con el aviso del error.
+        if (!saved) return false;
         return true;
       },
       fix ? "Anular y corregir" : "Anular producción",
@@ -769,7 +777,7 @@ async function action(name, el) {
             )
           : ""),
       async (f) => {
-        await mutate(
+        const saved = await mutate(
           {
             type: "editCloseLine",
             id: line.id,
@@ -782,6 +790,8 @@ async function action(name, el) {
         );
         salesData = null;
         render();
+        // Si no se guardó, el formulario sigue abierto con el aviso del error.
+        if (!saved) return false;
         return true;
       },
     );
@@ -795,12 +805,14 @@ async function action(name, el) {
       `Se compensan todas las ventas y mermas de ese día (${day ? num(day.sold) + " kg vendidos, " + num(day.waste) + " kg de merma y " + num(day.gift) + " kg de invitación o consumo" : "ese cierre"}) y el stock vuelve a su sitio. Los movimientos originales se conservan en Actividad. Después puedes registrar el cierre correcto.`,
       "",
       async () => {
-        await mutate(
+        const saved = await mutate(
           { type: "undoDailySales", date },
           "Cierre deshecho. El stock volvió a su sitio.",
         );
         salesData = null;
         render();
+        // Si no se guardó, el formulario sigue abierto con el aviso del error.
+        if (!saved) return false;
         return true;
       },
       "Deshacer cierre",
@@ -858,7 +870,7 @@ async function action(name, el) {
           ? "Segunda lectura anotada: " +
               replyLabel[data.reading.category] +
               ". Solo es una propuesta."
-          : "La IA no dio una lectura consistente; se anota como sin interpretar.",
+          : "La lectura automática no fue consistente; se anota como sin interpretar.",
       );
     } catch (e) {
       toast(e.message);
@@ -1021,7 +1033,8 @@ async function action(name, el) {
     return;
   }
   if (name === "checkout") {
-    const revision = state.revision;
+    // Se autoriza el carrito que se ve: si cambiara mientras el aviso está abierto, no se autoriza.
+    const cartSeen = JSON.stringify(state.cart);
     modal(
       "Autorizar pedidos",
       "Se crean los pedidos, uno por proveedor. No se envía nada todavía: el envío por WhatsApp es el paso siguiente y lo confirmas tú.",
@@ -1030,10 +1043,15 @@ async function action(name, el) {
         return n === 1
           ? "Se creará 1 pedido pendiente de envío."
           : `Se crearán ${n} pedidos pendientes de envío, uno por cada proveedor elegido en el carrito.`;
-      })()}</p><div class="review-total">Total estimado <strong>${money(state.cart.reduce((n, l) => n + l.packs * cartSupply(l).price, 0))}</strong></div><p class="fineprint">Envío e impuestos por confirmar. En el siguiente paso podrás simular el envío.</p>`,
+      })()}</p><div class="review-total">Total estimado <strong>${cartTotalText(state.cart)}</strong></div><p class="fineprint">Envío e impuestos por confirmar. En el siguiente paso se envía por WhatsApp, siempre con tu confirmación.</p>`,
       async () => {
+        if (JSON.stringify(state.cart) !== cartSeen) {
+          $("#form-error").textContent =
+            "El carrito cambió mientras tanto. Cierra este aviso y revísalo.";
+          return false;
+        }
         const ok = await mutate(
-          { type: "authorize", revision },
+          { type: "authorize", revision: state.revision },
           "Pedidos creados y pendientes de envío.",
         );
         // The natural next step: send them one by one by WhatsApp, in one decision.
@@ -1173,7 +1191,7 @@ async function action(name, el) {
           "tel",
           'placeholder="+34…" maxlength="40"',
         ) +
-        `<p class="detection-status" role="status">Pega un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». No hay IA conectada.</p>`,
+        `<p class="detection-status" role="status">Pega un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». Son reglas fijas, sin nada conectado fuera.</p>`,
       async (f) => {
         const ok = await mutate(
           { type: "message", supplier: f.get("supplier"), text: f.get("text") },
@@ -1603,7 +1621,7 @@ async function action(name, el) {
         "order",
         orders.map((o) => [
           o.id,
-          `${o.number} · ${supplier(o.supplier).name} · ${date(o.at)} · ${statusLabel[o.status]}`,
+          `${o.number} · ${supplier(o.supplier).name} · ${date(o.at)} · ${o.status === "sent" && o.dispatch ? "Enviado por WhatsApp" : statusLabel[o.status]}`,
         ]),
         ph.suggestion?.order || ph.order || orders[0].id,
       ),
@@ -1717,8 +1735,19 @@ async function action(name, el) {
       `<label class="field">Zona<select id="count-zone" name="zone">${zonesInUse.map((z) => `<option value="${z}" ${z === initial ? "selected" : ""}>${esc(zoneLabel[z] || z)}</option>`).join("")}</select></label><div id="count-rows">${countRows(initial)}</div>`,
       async (f) => {
         const zone = f.get("zone");
-        const lines = state.products
-          .filter((p) => (p.zone || "almacen") === zone)
+        const inZone = state.products.filter(
+          (p) => (p.zone || "almacen") === zone,
+        );
+        // Una casilla vacía no es un 0: antes ponía ese stock a cero sin avisar.
+        const empty = inZone.filter(
+          (p) => String(f.get("count_" + p.id) ?? "").trim() === "",
+        );
+        if (empty.length) {
+          $("#form-error").textContent =
+            `Falta lo contado de ${empty.map((p) => p.name).join(", ")}. Si no queda nada, escribe 0.`;
+          return false;
+        }
+        const lines = inZone
           .map((p) => ({
             product: p.id,
             value: Number(f.get("count_" + p.id)),
@@ -2038,7 +2067,7 @@ async function action(name, el) {
   if (name === "restore") {
     modal(
       "Restaurar una copia",
-      "Reemplaza los datos de demostración actuales. Guardaremos una copia previa.",
+      "Reemplaza los datos actuales por los de la copia. Antes se guarda una copia de lo que hay ahora.",
       `<label class="field">Archivo de copia (.json)<input type="file" name="backup" accept=".json,application/json" required></label><label class="check-label"><input type="checkbox" required> Entiendo que se reemplazarán los datos actuales.</label>`,
       async (f) => {
         const file = f.get("backup");

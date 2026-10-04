@@ -99,9 +99,10 @@ function createApp({
       const own = () =>
         fs.readdirSync(backupDir).filter(isBackupFile).sort(byStamp);
       const files = own();
-      const last = files.length
+      const stamp = files.length
         ? Number(files[files.length - 1].split("-")[1])
         : 0;
+      const last = stamp > Date.now() ? 0 : stamp;
       if (Date.now() - last > 24 * 3600 * 1000) {
         const created = store.backup();
         for (const f of own().slice(0, -30))
@@ -293,20 +294,53 @@ function createApp({
     }
     return defaultThresholds;
   };
-  const cruises = new CruiseService(dataDir, {
-    ...(cruiseProvider ? { provider: cruiseProvider } : {}),
-    thresholds: cruiseThresholds,
-    log: (line) =>
-      appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
-  });
+  // Cruceros y contexto son registros opcionales: si su archivo está dañado (corte de luz, copia
+  // a medias), se aparta con otro nombre, se anota y se empieza uno vacío. El inventario abre igual
+  // y la copia de backups/ se puede restaurar desde Cruceros.
+  const openRegistry = (file, open) => {
+    try {
+      return open();
+    } catch (e) {
+      const broken = path.join(dataDir, file);
+      const aside = broken + ".danado-" + Date.now();
+      for (const ext of ["", "-wal", "-shm"])
+        if (fs.existsSync(broken + ext))
+          fs.renameSync(broken + ext, aside + ext);
+      appendLog(
+        path.join(dataDir, "runtime", "logs", "cruceros.log"),
+        `${file} no se pudo abrir (${e.message}); apartado como ${path.basename(aside)}`,
+      );
+      return open();
+    }
+  };
+  const cruises = openRegistry(
+    "cruceros.sqlite",
+    () =>
+      new CruiseService(dataDir, {
+        ...(cruiseProvider ? { provider: cruiseProvider } : {}),
+        thresholds: cruiseThresholds,
+        log: (line) =>
+          appendLog(
+            path.join(dataDir, "runtime", "logs", "cruceros.log"),
+            line,
+          ),
+      }),
+  );
   const cruisesOn = () => store.setting("cruises_off") !== "1";
   // Day context (weather forecast, official holidays, the user's own events). Same switch as the
   // cruise query: one setting turns off every outbound read.
-  const context = new ContextService(dataDir, {
-    ...(contextProviders || {}),
-    log: (line) =>
-      appendLog(path.join(dataDir, "runtime", "logs", "cruceros.log"), line),
-  });
+  const context = openRegistry(
+    "contexto.sqlite",
+    () =>
+      new ContextService(dataDir, {
+        ...(contextProviders || {}),
+        log: (line) =>
+          appendLog(
+            path.join(dataDir, "runtime", "logs", "cruceros.log"),
+            line,
+          ),
+      }),
+  );
   // The timer only asks «is it due?»: intervals and backoff live in the service.
   const autoCruises = () => {
     if (cruisesOn()) {
@@ -386,10 +420,14 @@ function createApp({
   whatsapp.ocr = (data) => recognizeLocal(data);
   whatsapp.pdfText = (bytes) => readPdfText(bytes);
   const token = randomBytes(32).toString("hex");
-  const sameToken = (value) =>
-    typeof value === "string" &&
-    value.length === token.length &&
-    timingSafeEqual(Buffer.from(value), Buffer.from(token));
+  const tokenBytes = Buffer.from(token);
+  const sameToken = (value) => {
+    if (typeof value !== "string") return false;
+    const bytes = Buffer.from(value);
+    return (
+      bytes.length === tokenBytes.length && timingSafeEqual(bytes, tokenBytes)
+    );
+  };
   // Rules only: category, resolved date and "needs reading" for each imported message.
   // One batch of order sends at a time; the UI polls this while it runs.
   const batch = {
@@ -500,7 +538,7 @@ function createApp({
       interpretation: m.text ? interpretReply(m.text, m.at) : undefined,
     })),
   });
-  const server = http.createServer(async (req, res) => {
+  const handle = async (req, res) => {
     const origin = `http://127.0.0.1:${server.address().port}`;
     const json = (status, value) => {
       res.writeHead(status, {
@@ -514,14 +552,20 @@ function createApp({
       json(403, { error: "Origen inválido." });
       return;
     }
-    const u = new URL(req.url, origin);
+    let u;
+    try {
+      u = new URL(req.url, origin);
+    } catch {
+      json(400, { error: "Dirección no válida." });
+      return;
+    }
     const authenticated = (req.headers.cookie || "")
       .split("; ")
       .some((c) => c.startsWith("gelato=") && sameToken(c.slice(7)));
     if (u.pathname === "/" && req.method === "GET") {
       const key = u.searchParams.get("key");
       if (key !== null && !sameToken(key)) {
-        json(403, { error: "Abrí la aplicación desde su acceso de inicio." });
+        json(403, { error: "Abre la aplicación desde su acceso de inicio." });
         return;
       }
       if (key !== null) {
@@ -535,7 +579,7 @@ function createApp({
         return;
       }
       if (!authenticated) {
-        json(403, { error: "Abrí la aplicación desde su acceso de inicio." });
+        json(403, { error: "Abre la aplicación desde su acceso de inicio." });
         return;
       }
     } else if (!authenticated) {
@@ -1478,6 +1522,27 @@ function createApp({
           : "text/html; charset=utf-8",
     );
     res.end(fs.readFileSync(path.join(__dirname, assets[u.pathname])));
+  };
+  // Una ruta que falla responde con su mensaje (nunca la pila) en lugar de dejar la pantalla
+  // cargando para siempre o de tumbar el proceso con un rechazo sin atender.
+  const server = http.createServer((req, res) => {
+    handle(req, res).catch((e) => {
+      appendLog(
+        path.join(dataDir, "runtime", "logs", "servidor.log"),
+        `${req.method} ${String(req.url).slice(0, 120)} · ${e?.message || e}`,
+      );
+      if (res.headersSent) return res.end();
+      res.writeHead(500, {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store",
+      });
+      res.end(
+        JSON.stringify({
+          error:
+            "No se pudo completar: " + String(e?.message || e).slice(0, 300),
+        }),
+      );
+    });
   });
   return new Promise((resolve, reject) => {
     server.once("error", (error) => {

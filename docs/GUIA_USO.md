@@ -1,6 +1,6 @@
 # Guía de uso de ArtelloAPP (Artello Gelato)
 
-Esta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.
+Esta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «Guía local», que responde solo con esta guía y con el texto que le pegues.
 
 ## Ideas clave
 - Todo funciona sin internet, salvo WhatsApp.
@@ -66,7 +66,7 @@ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y men
 - Cada mensaje trae una lectura por reglas: falta de producto, cancelación, cierre o vacaciones, pago pendiente, cambio de condiciones, pregunta, documento enviado, fecha de entrega o confirmación. «Debes leer» marca lo que requiere tu atención.
 - Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».
 - Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.
-- Segunda lectura con IA local: opcional; el modelo propone una categoría, no actúa.
+- Segunda lectura con Guía local: opcional; propone una categoría, no actúa.
 - Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.
 
 ## WhatsApp
@@ -95,16 +95,16 @@ Herramienta de planificación con datos oficiales de la Autoridad Portuaria de B
 ## Actividad
 Historial de movimientos con motivo y corrección: revertir crea una compensación, nunca borra. Registro de actividad de todo lo que pasa.
 
-## IA local
+## Guía local
 - Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.
 - Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.
 - Confirmar el tipo en la foto: guarda tu decisión en el documento.
 
 ## Guía
-Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de IA local responde a partir de ella.
+Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de la Guía local responde a partir de ella.
 
-## IA local, un guiño
-El chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa, sin modelo.
+## Guía local, un guiño
+El chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa.
 
 ## Configuración
 Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos. También los textos que envía la app: plantilla del pedido, plantilla del recordatorio y respuestas rápidas.

@@ -96,7 +96,7 @@ function production() {
       btn(icon("plus") + " Nueva receta", "recipeEditor") +
         btn(icon("plus") + " Registrar producción", "produce", "primary"),
     ) +
-    `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta, no por IA</strong><span>La app propone el consumo de ingredientes y los kilos de gelato hecho. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div>${planPanel()}<section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Al aprobar, los ingredientes salen del stock y el gelato hecho entra.</p></div></div>${
+    `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta</strong><span>La app propone el consumo de ingredientes y los kilos de gelato hecho. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div>${planPanel()}<section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Al aprobar, los ingredientes salen del stock y el gelato hecho entra.</p></div></div>${
       proposed.length
         ? proposed
             .map(
