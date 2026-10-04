@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "es.gelatostock.app",
-  "productName": "GelatoStock",
-  "copyright": "Gelato & Café",
+  "productName": "ArtelloAPP",
+  "copyright": "Artello Gelato",
   "directories": { "output": "dist/instalador" },
   "compression": "normal",
   "npmRebuild": false,
@@ -12,7 +12,7 @@
     "target": ["nsis"],
     "icon": "build-assets/icon.ico",
     "signAndEditExecutable": false,
-    "artifactName": "GelatoStock-Instalador-${version}.exe"
+    "artifactName": "ArtelloAPP-Instalador-${version}.exe"
   },
   "nsis": {
     "oneClick": false,
@@ -20,14 +20,14 @@
     "allowToChangeInstallationDirectory": true,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "GelatoStock",
+    "shortcutName": "ArtelloAPP",
     "runAfterFinish": true,
     "deleteAppDataOnUninstall": false,
     "installerIcon": "build-assets/icon.ico",
     "uninstallerIcon": "build-assets/icon.ico",
     "installerLanguages": ["es_ES"],
     "language": "3082",
-    "artifactName": "GelatoStock-Instalador-${version}.exe"
+    "artifactName": "ArtelloAPP-Instalador-${version}.exe"
   },
   "mac": {
     "target": ["dmg"],
@@ -36,10 +36,10 @@
     "identity": null,
     "hardenedRuntime": false,
     "gatekeeperAssess": false,
-    "artifactName": "GelatoStock-Instalador-${version}-${arch}.dmg"
+    "artifactName": "ArtelloAPP-Instalador-${version}-${arch}.dmg"
   },
   "dmg": {
     "sign": false,
-    "artifactName": "GelatoStock-Instalador-${version}-${arch}.dmg"
+    "artifactName": "ArtelloAPP-Instalador-${version}-${arch}.dmg"
   }
 }

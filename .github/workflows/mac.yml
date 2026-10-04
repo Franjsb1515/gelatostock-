@@ -60,7 +60,7 @@ jobs:
         run: node scripts/setup-browser.cjs 2>&1 | tee work/logs/04-chrome.log
       - name: Pruebas
         run: npm test 2>&1 | tee work/logs/05-pruebas.log | tail -40
-      - name: Empaquetar la app (GelatoStock.app)
+      - name: Empaquetar la app (ArtelloAPP.app)
         run: npm run package:mac 2>&1 | tee work/logs/06-empaquetar.log
       - name: Arrancar la app empaquetada
         run: node scripts/mac-smoke.cjs 2>&1 | tee work/logs/07-arranque.log
@@ -69,7 +69,7 @@ jobs:
       - name: Guardar el instalador como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: GelatoStock-Instalador-mac-${{ matrix.arch }}
+          name: ArtelloAPP-Instalador-mac-${{ matrix.arch }}
           path: dist/instalador/*.dmg
           if-no-files-found: error
           retention-days: 30
@@ -78,7 +78,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" --title "GelatoStock ${GITHUB_REF_NAME}" --notes "Instaladores generados en GitHub Actions. Sin firma: ver docs/INSTALADOR.md." 2>/dev/null || true
+          gh release create "${GITHUB_REF_NAME}" --title "ArtelloAPP ${GITHUB_REF_NAME}" --notes "Instaladores generados en GitHub Actions. Sin firma: ver docs/INSTALADOR.md." 2>/dev/null || true
           gh release upload "${GITHUB_REF_NAME}" dist/instalador/*.dmg --clobber
       - name: Diagnóstico si algo falla
         if: failure()

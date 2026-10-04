@@ -65,7 +65,7 @@ if (!app.requestSingleInstanceLock()) {
         minWidth: 1000,
         minHeight: 700,
         backgroundColor: "#f7f7f2",
-        title: "GelatoStock",
+        title: "Artello Gelato Control System",
         icon: path.join(__dirname, "..", "build-assets", "icon.png"),
         autoHideMenuBar: true,
         webPreferences: {
@@ -147,7 +147,7 @@ if (!app.requestSingleInstanceLock()) {
           .catch((e) => logError("conexión WhatsApp", e));
     })
     .catch((e) => {
-      dialog.showErrorBox("No se pudo abrir GelatoStock", e.message);
+      dialog.showErrorBox("No se pudo abrir ArtelloAPP", e.message);
       app.quit();
     });
   app.on("window-all-closed", () => {

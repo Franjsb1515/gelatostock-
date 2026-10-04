@@ -1,4 +1,4 @@
-# TODO — estado real de 0.45.0
+# TODO — estado real de 0.46.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -8,7 +8,10 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 
 - [x] [app] Producción, ventas, mermas y caja: plan por fases en docs/PLAN_PRODUCCION_VENTAS_CAJA.md. Hechas las seis fases (0.28.0 a 0.33.0).
 - [x] Prueba de escritorio al día: 21 PASS con el ejecutable 0.45.0 el 2026-09-22 (reports/desktop-smoke-2026-09-22-v0450.txt) y prueba del instalador 16 PASS (reports/instalador-2026-09-22-v0450.txt); antes, lo mismo con la 0.44.0; antes, 21 PASS con la 0.43.0 y la 0.42.1 el mismo día; antes, 21 PASS con la 0.42.0 lanzada por ti el 2026-09-21. Cubre dentro del ejecutable el «Vale desde» del valor de venta y el botón de escribir al proveedor desde Mensajes.
-- [ ] [tú] Usar unos días la 0.45.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [x] Marca Artello (0.46.0, pedido por ti el 2026-10-04): la app se llama ArtelloAPP, la ventana «Artello Gelato Control System», tu logo en la barra lateral, un sello pequeño en lugar del recuadro verde del cucurucho, icono nuevo y la zona «Vitrina» pasa a «Pozzetti». Por dentro la carpeta de datos sigue llamándose GelatoStock para no perder nada.
+- [ ] [tú] Cambiar el nombre del negocio a «Artello Gelato» en Configuración → Identidad del negocio (es un dato tuyo; no se tocó con la app abierta). Si prefieres otra grafía que «Pozzetti», dímelo.
+- [ ] [app] Calendario de planificación (pedido por ti el 2026-10-04): plan en docs/PLAN_CALENDARIO.md, tres fases; antes, tus respuestas a sus tres preguntas.
+- [ ] [tú] Usar unos días la 0.46.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
@@ -25,7 +28,7 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] [tú] Mac real: que la persona instale el `.dmg` (Privacidad y seguridad → «Abrir de todos modos»), lo use y diga qué falla; WhatsApp en Mac no se ha probado; enviar la salida de scripts/measure-ai-memory.cjs si el Mac tiene 8 GB. Después, la salida de scripts/measure-ai-memory.cjs, adaptar la prueba de escritorio y firma/notarización.
 - [ ] Entre cinco y diez tarifas reales para medir la fase 4 (fotos como las que haces y algún PDF; puedes tapar el nombre del proveedor, pero los precios y formatos han de ser los de verdad).
 - [ ] Documentos y mensajes reales autorizados (anonimizados) para medir OCR, clasificación, lectura de respuestas y chat. Hoy todos los corpus son sintéticos y escritos por la misma sesión que las reglas.
-- [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia).
+- [ ] Paleta exacta de Artello si la facilitan (hoy es una interpretación propia). El logo ya está (0.46.0, sacado de tu .ai en negro): corazón y logotipo en la barra lateral, el sello del Resumen, el arranque y el icono.
 - [ ] Makro u otro proveedor web: aplazado por ti el 2026-09-09, sin cuenta todavía. No avanzar hasta que lo pidas; la web se puede guardar en la ficha del proveedor.
 
 ## 3. Compras, mensajes y WhatsApp

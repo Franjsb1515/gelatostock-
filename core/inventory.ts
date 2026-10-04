@@ -2,7 +2,7 @@
 import type { State } from "./schema";
 
 export const zoneLabels: Record<string, string> = {
-  vitrina: "Vitrina",
+  vitrina: "Pozzetti",
   camara: "Cámara",
   congelador: "Congelador",
   almacen: "Almacén",

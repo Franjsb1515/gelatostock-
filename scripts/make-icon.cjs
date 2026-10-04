@@ -1,8 +1,7 @@
-// Genera build-assets/icon.ico, icon.icns e icon.png a partir del cucurucho de la marca
-// (src/ui/core.js, icono «ice») con sharp, sin herramientas externas.
+// Genera build-assets/icon.ico, icon.icns e icon.png a partir del corazón de Artello
+// (build-assets/marca/artello-simbolo.svg, sacado del logo original) con sharp, sin herramientas externas.
 // - .ico (Windows): PNG por tamaño, como admite Windows desde Vista.
-// - .icns (Mac): contenedor con PNG por tamaño (ic07…ic14). Preparado desde Windows; que macOS
-//   lo acepte queda por comprobar en un Mac.
+// - .icns (Mac): contenedor con PNG por tamaño (ic07…ic14).
 // Se ejecuta a mano cuando cambie la marca; el resultado va en git.
 const fs = require("node:fs");
 const path = require("node:path");
@@ -11,13 +10,19 @@ const out = path.join(__dirname, "..", "build-assets");
 fs.mkdirSync(out, { recursive: true });
 const pistacho = "#35604a";
 const crema = "#fbf7f0";
-const cone =
-  '<path d="m7 13 5 9 5-9Z M5 13h14a4 4 0 0 0-2-7 5 5 0 0 0-10 0 4 4 0 0 0-2 7Z"/>';
+const mark = fs.readFileSync(
+  path.join(out, "marca", "artello-simbolo.svg"),
+  "utf8",
+);
+const [, , w, h] = /viewBox="([^"]+)"/.exec(mark)[1].split(" ").map(Number);
+const d = / d="([^"]+)"/.exec(mark)[1];
+// El corazón ocupa el 60 % del ancho, centrado en el cuadrado redondeado.
+const k = 14.4 / w;
 const svg = (size) =>
   Buffer.from(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24">` +
       `<rect x="0" y="0" width="24" height="24" rx="5.5" fill="${pistacho}"/>` +
-      `<g transform="translate(1.2 1.2) scale(0.9)" fill="none" stroke="${crema}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${cone}</g>` +
+      `<path transform="translate(${(24 - w * k) / 2} ${(24 - h * k) / 2 + 0.4}) scale(${k})" fill="${crema}" d="${d}"/>` +
       `</svg>`,
   );
 const render = async (size) => sharp(svg(size)).png().toBuffer();

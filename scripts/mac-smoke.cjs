@@ -1,5 +1,5 @@
 // Primera comprobación de la app empaquetada en un Mac (GitHub Actions o un Mac real):
-// arranca dist/GelatoStock-<versión>-darwin-<arch>/GelatoStock.app con una carpeta de datos
+// arranca dist/ArtelloAPP-<versión>-darwin-<arch>/ArtelloAPP.app con una carpeta de datos
 // temporal, espera la ventana, comprueba la versión en pantalla y que Configuración enseñe la
 // carpeta de datos, y cierra. No toca datos de nadie. Escrito desde Windows, sin validar.
 const fs = require("node:fs");
@@ -13,7 +13,7 @@ const app = path.join(
   root,
   "dist",
   rules.outputDirName(version, process.platform, process.arch),
-  "GelatoStock.app",
+  rules.appName + ".app",
 );
 const executable = path.join(app, "Contents", "MacOS", "Electron");
 const data = fs.mkdtempSync(path.join(os.tmpdir(), "gelato-mac-"));
@@ -30,8 +30,8 @@ const check = (ok, t) => {
     "utf8",
   );
   check(
-    /<string>GelatoStock<\/string>/.test(plist),
-    "Info.plist lleva el nombre GelatoStock",
+    plist.includes("<string>" + rules.appName + "</string>"),
+    "Info.plist lleva el nombre " + rules.appName,
   );
   check(
     fs.existsSync(

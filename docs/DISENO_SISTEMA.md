@@ -1,5 +1,6 @@
-# Sistema de diseño «Mediterraneo» · GelatoStock para Artello
+# Sistema de diseño «Mediterraneo» · ArtelloAPP (antes GelatoStock) para Artello
 
+> 0.46.0: marca Artello. Barra lateral con el corazón y el logotipo ARTELLO (build-assets/marca, del .ai del usuario); el hero verde con bolas y cucurucho se sustituyó por un panel claro (`--crema-panel`, borde `--line`) con un sello de 112 px en pistacho. Lo que este documento dice del hero en degradado es histórico.
 Documento de referencia de la interfaz (src/styles.css, src/ui/*.js, src/index.html). Describe los tokens, la escala tipográfica, los componentes y sus estados, la identidad por pantalla, el inventario de defectos encontrado antes de la revisión de 2026-09-09 y lo que cambió en cada pantalla. Sin fuentes web ni recursos externos: la CSP exige `'self'`, así que la tipografía es de sistema (Segoe UI en Windows) y Georgia para títulos.
 
 ## 1. Principios
@@ -69,7 +70,7 @@ Interlineados: `--lh-title: 1.2`, `--lh-text: 1.55`. Ancho de lectura: `p { max-
 
 | Pantalla      | `--accent` | Texto de acento | Carácter                                  |
 | ------------- | ---------- | --------------- | ----------------------------------------- |
-| Resumen       | pistacho   | `#35604a`       | Rótulo «TU NEGOCIO, EN ORDEN», hero verde |
+| Resumen       | pistacho   | `#35604a`       | Rótulo «GELATO CONTROL SYSTEM»; desde 0.46.0 panel claro con sello de Artello (antes hero verde con cucurucho) |
 | Inventario    | `#5c8a4c`  | `#2f5a44`       | Pestañas verdes, tabla                    |
 | Compras       | azafrán    | `#7f5410`       | Ejemplo de entregas en azafrán claro      |
 | Producción    | `#7f9b5a`  | `#3f6a2f`       | Tarjetas de receta en serif               |

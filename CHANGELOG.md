@@ -1,5 +1,18 @@
 # Registro de parches y sesiones
 
+## 0.46.0 — 2026-10-04 · sesión 049 · marca Artello
+
+Pediste cambiar la imagen de la app a la de Artello. Ahora:
+
+- **Nombre**: la app se llama **ArtelloAPP** y la ventana, **«Artello Gelato Control System»**. También el programa, el acceso «ABRIR ARTELLOAPP.vbs», el instalador (`ArtelloAPP-Instalador-<versión>.exe`) y el acceso del escritorio.
+- **Tu logo**: sacado de tu archivo de Illustrator, nítido a cualquier tamaño. Corazón y ARTELLO arriba a la izquierda con «GELATO CONTROL SYSTEM», en la pantalla de arranque y en el icono del programa.
+- **Resumen más tranquilo**: el recuadro verde grande con el cucurucho y las bolas pasa a un panel claro con el mismo texto y un sello pequeño con tu corazón y «Artello Gelato · Gelato Control System» alrededor.
+- **Pozzetti**: en la hoja de conteo por zona (y en la ficha del producto) «Vitrina» pasa a llamarse «Pozzetti». No cambia ningún dato.
+- Tus datos no se mueven: por dentro la carpeta sigue llamándose GelatoStock.
+- Corregido: en el Resumen, los mensajes reales de WhatsApp salían marcados como «Demostración»; ahora dicen «WhatsApp». Y empaquetar una versión nueva ya no puede borrar una carpeta antigua que tenga datos dentro.
+
+Falta que pongas el nombre «Artello Gelato» en Configuración → Identidad del negocio (es tuyo; no lo toqué con la app abierta). Pruebas: 206, chat 35/35, escritorio y instalador en reports/2026-10-04T20-30-00-000Z-marca-artello.md.
+
 ## 0.45.0 — 2026-09-22 · sesión 048 (cuarta parte) · instalador de Mac: camino preparado y construcción en GitHub
 
 Me recordaste que la persona que recibirá la app usa Mac. Desde Windows no se puede crear el instalador de Mac; ahora:

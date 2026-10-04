@@ -8,7 +8,7 @@ const loreLines = require("./ai-lore.cjs")
   .split(/\r?\n/)
   .filter((l) => l.trim());
 const stopWords = new Set(
-  "que como para con por los las del una uno unos unas hace hay esta este esto puede puedo desde sobre entre tiene cuando donde cual cuales sirve app aplicacion gelatostock cuanto cuantos cuanta cuantas hacer hago tengo ahora mismo quien quienes todo todos".split(
+  "que como para con por los las del una uno unos unas hace hay esta este esto puede puedo desde sobre entre tiene cuando donde cual cuales sirve app aplicacion gelatostock artelloapp cuanto cuantos cuanta cuantas hacer hago tengo ahora mismo quien quienes todo todos".split(
     " ",
   ),
 );
@@ -182,7 +182,7 @@ function chatMessages(messages, document) {
   const question = messages[messages.length - 1].content;
   const r = relevantGuide(question, 3);
   const system =
-    "Eres el asistente de dudas de GelatoStock, una app local para una heladería. Contesta en español, en 2 a 4 frases, usando únicamente la GUÍA que acompaña a la pregunta" +
+    "Eres el asistente de dudas de ArtelloAPP, una app local para una heladería. Contesta en español, en 2 a 4 frases, usando únicamente la GUÍA que acompaña a la pregunta" +
     (document ? " y el TEXTO DEL EDITOR" : "") +
     ". Si la GUÍA no trata el asunto de la pregunta, responde solo: " +
     NO_ANSWER_CHAT +

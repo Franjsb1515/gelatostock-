@@ -114,7 +114,7 @@ class WhatsAppConnection {
         webVersionCache: { type: "none" },
         authTimeoutMs: 60000,
         qrMaxRetries: 6,
-        deviceName: "GelatoStock",
+        deviceName: "ArtelloAPP",
         takeoverOnConflict: false,
       });
       this.client = client;

@@ -6,11 +6,11 @@ const rules = require("../scripts/package-rules.cjs");
 test("empaquetado: cada plataforma lleva solo sus binarios nativos y su nombre de carpeta", () => {
   assert.equal(
     rules.outputDirName("0.45.0", "win32", "x64"),
-    "GelatoStock-0.45.0-win32-x64",
+    "ArtelloAPP-0.45.0-win32-x64",
   );
   assert.equal(
     rules.outputDirName("0.45.0", "darwin", "arm64"),
-    "GelatoStock-0.45.0-darwin-arm64",
+    "ArtelloAPP-0.45.0-darwin-arm64",
   );
   // sharp y su binario de la plataforma se quedan; las otras variantes de @img y onnxruntime-web no.
   for (const [platform, arch, keep, drop] of [
@@ -97,8 +97,8 @@ test("empaquetado Mac: el Info.plist de Electron.app queda con nombre, identific
   const out = rules.brandPlist(sample, "0.45.0");
   const value = (key) =>
     new RegExp(`<key>${key}</key>\\s*<string>([^<]*)</string>`).exec(out)?.[1];
-  assert.equal(value("CFBundleName"), "GelatoStock");
-  assert.equal(value("CFBundleDisplayName"), "GelatoStock");
+  assert.equal(value("CFBundleName"), "ArtelloAPP");
+  assert.equal(value("CFBundleDisplayName"), "ArtelloAPP");
   assert.equal(value("CFBundleIdentifier"), "es.gelatostock.app");
   assert.equal(value("CFBundleShortVersionString"), "0.45.0");
   assert.equal(value("CFBundleVersion"), "0.45.0");
@@ -110,8 +110,38 @@ test("empaquetado Mac: el Info.plist de Electron.app queda con nombre, identific
   const added = rules.brandPlist(minimal, "0.45.0");
   assert.match(
     added,
-    /<key>CFBundleName<\/key>\s*<string>GelatoStock<\/string>/,
+    /<key>CFBundleName<\/key>\s*<string>ArtelloAPP<\/string>/,
   );
   assert.match(added, /<\/dict>\s*<\/plist>\s*$/);
   assert.equal((added.match(/<\/dict>/g) || []).length, 1);
+});
+
+// 0.46.0: el programa pasa a llamarse ArtelloAPP. El identificador (es.gelatostock.app) y la
+// carpeta de datos (GelatoStock) no cambian: así una instalación anterior se actualiza encima y
+// la persona sigue viendo sus datos. Las carpetas viejas de dist/ con el nombre anterior se
+// reconocen como versiones antiguas, y nunca las de otra plataforma ni otras carpetas.
+test("empaquetado: nombre ArtelloAPP sin perder la identidad ni los datos de antes", () => {
+  assert.equal(rules.appName, "ArtelloAPP");
+  assert.ok(rules.isBuildDir("GelatoStock-0.45.0-win32-x64", "win32"));
+  assert.ok(rules.isBuildDir("ArtelloAPP-0.46.0-win32-x64", "win32"));
+  assert.ok(!rules.isBuildDir("ArtelloAPP-0.46.0-darwin-arm64", "win32"));
+  assert.ok(!rules.isBuildDir("instalador", "win32"));
+  assert.ok(!rules.isBuildDir("ArtelloAPP-0.46.0-win32-x64-copia", "win32"));
+  const builder = require("../electron-builder.json");
+  assert.equal(builder.appId, "es.gelatostock.app");
+  assert.equal(builder.productName, "ArtelloAPP");
+  const { resolveDataDir } = require("../src/datadir.cjs");
+  assert.equal(
+    resolveDataDir({
+      env: {},
+      base: "/Applications/ArtelloAPP.app/Contents/MacOS",
+      platform: "darwin",
+      appData: "/Users/x/Library/Application Support",
+    }),
+    require("node:path").join(
+      "/Users/x/Library/Application Support",
+      "GelatoStock",
+      "data",
+    ),
+  );
 });

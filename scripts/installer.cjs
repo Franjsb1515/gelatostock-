@@ -1,11 +1,11 @@
 // Instalador a partir de la carpeta portátil que deja scripts/package.cjs, con electron-builder
 // y sin volver a empaquetar nada (--prepackaged).
-// - Windows (probado): NSIS → dist/instalador/GelatoStock-Instalador-<versión>.exe. Deja
+// - Windows (probado): NSIS → dist/instalador/ArtelloAPP-Instalador-<versión>.exe. Deja
 //   «instalado.txt» junto al ejecutable solo dentro del instalador: así la app instalada guarda
 //   los datos en la carpeta local de la persona (src/datadir.cjs) y desinstalar o actualizar
 //   nunca los toca. La carpeta portátil queda como estaba al terminar.
 // - Mac (preparado desde Windows, SIN validar en un Mac; se ejecuta EN un Mac): DMG →
-//   dist/instalador/GelatoStock-Instalador-<versión>-<arch>.dmg. Sin marca: en Mac la app
+//   dist/instalador/ArtelloAPP-Instalador-<versión>-<arch>.dmg. Sin marca: en Mac la app
 //   empaquetada guarda siempre en ~/Library/Application Support/GelatoStock/data.
 // Sin firma de código en ninguno: Windows (SmartScreen) y macOS (Gatekeeper) avisan; se explica
 // en docs/INSTALADOR.md.
@@ -27,8 +27,8 @@ const dir = path.join(
 );
 const bundle =
   platform === "win32"
-    ? path.join(dir, "GelatoStock.exe")
-    : path.join(dir, "GelatoStock.app");
+    ? path.join(dir, rules.appName + ".exe")
+    : path.join(dir, rules.appName + ".app");
 if (!fs.existsSync(bundle))
   throw Error(
     "Falta " +
@@ -46,7 +46,9 @@ fs.mkdirSync(tmp, { recursive: true });
 if (platform === "win32")
   fs.writeFileSync(
     marker,
-    "Instalado con el instalador de GelatoStock.\r\n" +
+    "Instalado con el instalador de " +
+      rules.appName +
+      ".\r\n" +
       "Los datos de la app están en %LOCALAPPDATA%\\GelatoStock\\data (no en esta carpeta).\r\n" +
       "Este archivo indica a la app que está instalada; si lo borras, guardará los datos aquí.\r\n",
   );
@@ -94,8 +96,8 @@ const out = path.join(
   "dist",
   "instalador",
   platform === "win32"
-    ? `GelatoStock-Instalador-${version}.exe`
-    : `GelatoStock-Instalador-${version}-${arch}.dmg`,
+    ? `${rules.appName}-Instalador-${version}.exe`
+    : `${rules.appName}-Instalador-${version}-${arch}.dmg`,
 );
 if (!fs.existsSync(out)) throw Error("No se encuentra el instalador en " + out);
 const mb = Math.round(fs.statSync(out).size / 1048576);

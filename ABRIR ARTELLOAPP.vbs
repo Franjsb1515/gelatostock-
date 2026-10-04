@@ -1,4 +1,4 @@
-' Abre GelatoStock con los datos y los archivos temporales dentro de esta carpeta.
+' Abre ArtelloAPP (antes GelatoStock) con los datos y los archivos temporales dentro de esta carpeta.
 ' Busca sola la última versión que haya en dist: así no se rompe cada vez que sube de versión
 ' (hasta la 0.40.0 la ruta estaba escrita a mano y dejó de existir al empaquetar la siguiente).
 Set fso = CreateObject("Scripting.FileSystemObject")
@@ -12,7 +12,7 @@ dist = root & "\dist"
 exe = ""
 If fso.FolderExists(dist) Then
   For Each carpeta In fso.GetFolder(dist).SubFolders
-    candidato = carpeta.Path & "\GelatoStock.exe"
+    candidato = carpeta.Path & "\ArtelloAPP.exe"
     If fso.FileExists(candidato) Then
       If exe = "" Then
         exe = candidato
@@ -25,9 +25,9 @@ If fso.FolderExists(dist) Then
   Next
 End If
 If exe = "" Then
-  MsgBox "No encuentro GelatoStock.exe dentro de " & dist & "." & vbCrLf & vbCrLf & _
+  MsgBox "No encuentro ArtelloAPP.exe dentro de " & dist & "." & vbCrLf & vbCrLf & _
     "Vuelve a crear el programa desde la carpeta del proyecto con:" & vbCrLf & _
-    "npm run package:win", 48, "GelatoStock"
+    "npm run package:win", 48, "ArtelloAPP"
 Else
   shell.Run Chr(34) & exe & Chr(34), 1, False
 End If

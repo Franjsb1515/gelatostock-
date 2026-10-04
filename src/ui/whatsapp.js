@@ -60,7 +60,7 @@ async function whatsappAction(name, el) {
         "phone",
         waState.allowed.map((c) => [c.phone, c.label + " · " + c.phone]),
       ) +
-        `<label class="field">Texto<textarea name="text" maxlength="4000" required>Prueba desde GelatoStock. Responde a este mensaje para comprobar la recepción.</textarea></label>`,
+        `<label class="field">Texto<textarea name="text" maxlength="4000" required>Prueba desde ArtelloAPP. Responde a este mensaje para comprobar la recepción.</textarea></label>`,
       async (f) => {
         waState = await request("/api/whatsapp", {
           type: "sendText",

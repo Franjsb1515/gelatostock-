@@ -2,8 +2,16 @@
 // tests/package-rules.test.cjs en cualquier sistema: qué módulos nativos se llevan según la
 // plataforma, cómo se llama la carpeta de salida y cómo se marca el Info.plist del .app en Mac.
 const supported = ["win32", "darwin"];
+// Nombre del programa (ventana, ejecutable, .app, instalador). Hasta la 0.45.0 era «GelatoStock»;
+// los datos siguen en la carpeta «GelatoStock» (src/datadir.cjs) para no perder nada al cambiarlo.
+const appName = "ArtelloAPP";
+// Carpetas de versiones anteriores en dist/, con el nombre de ahora o el de antes.
+const isBuildDir = (name, platform) =>
+  new RegExp(
+    `^(ArtelloAPP|GelatoStock)-\\d+\\.\\d+\\.\\d+-${platform}-[a-z0-9]+$`,
+  ).test(name);
 const outputDirName = (version, platform, arch) =>
-  `GelatoStock-${version}-${platform}-${arch}`;
+  `${appName}-${version}-${platform}-${arch}`;
 // sharp se carga siempre (lo exige transformers) y solo hace falta el binario de esta
 // plataforma; el resto de variantes de @img son peso muerto.
 const keepPackages = (platform, arch) =>
@@ -35,8 +43,8 @@ const skipsFile = (rel, platform, arch) => {
 // Solo cambia claves de texto; si falta una, la añade antes del cierre del diccionario.
 function brandPlist(xml, version) {
   const values = {
-    CFBundleName: "GelatoStock",
-    CFBundleDisplayName: "GelatoStock",
+    CFBundleName: appName,
+    CFBundleDisplayName: appName,
     CFBundleIdentifier: "es.gelatostock.app",
     CFBundleShortVersionString: version,
     CFBundleVersion: version,
@@ -54,6 +62,8 @@ function brandPlist(xml, version) {
   return out;
 }
 module.exports = {
+  appName,
+  isBuildDir,
   supported,
   outputDirName,
   keepPackages,

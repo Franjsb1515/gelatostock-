@@ -2,6 +2,7 @@ const { _electron: electron } = require("playwright");
 const path = require("node:path");
 const fs = require("node:fs");
 const assert = require("node:assert/strict");
+const { appName } = require("./package-rules.cjs");
 (async () => {
   const root = path.resolve(__dirname, "..");
   const dir = fs.mkdtempSync(path.join(root, "work", "desktop-v8-"));
@@ -37,8 +38,8 @@ const assert = require("node:assert/strict");
       executablePath: path.join(
         root,
         "dist",
-        `GelatoStock-${require("../package.json").version}-win32-x64`,
-        "GelatoStock.exe",
+        `${appName}-${require("../package.json").version}-win32-x64`,
+        appName + ".exe",
       ),
       env,
     });
@@ -61,7 +62,14 @@ const assert = require("node:assert/strict");
     await window
       .getByRole("heading", { name: "Un buen día empieza en orden." })
       .waitFor();
-    assert.equal(await window.title(), "GelatoStock · Tu negocio, en orden");
+    assert.equal(await window.title(), "Artello Gelato Control System");
+    // 0.46.0: marca Artello en la barra lateral y sello pequeño en lugar del cucurucho verde.
+    assert.equal(
+      await window.locator(".brand-row").getAttribute("aria-label"),
+      "ArtelloAPP",
+    );
+    assert.equal(await window.locator(".hero-seal .seal").count(), 1);
+    assert.equal(await window.locator(".hero-art, .scoop").count(), 0);
     // Diagnóstico: quién llama a render y con qué página (se imprime solo si falla la IA).
     await window.evaluate(() => {
       window.__navLog = [];
@@ -1034,8 +1042,8 @@ const assert = require("node:assert/strict");
       executablePath: path.join(
         root,
         "dist",
-        `GelatoStock-${require("../package.json").version}-win32-x64`,
-        "GelatoStock.exe",
+        `${appName}-${require("../package.json").version}-win32-x64`,
+        appName + ".exe",
       ),
       env,
     });

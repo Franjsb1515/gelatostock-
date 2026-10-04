@@ -1,7 +1,7 @@
 // Aplicación portátil: copia Electron y la app con solo los módulos nativos de esta plataforma.
-// Windows (probado): dist/GelatoStock-<versión>-win32-x64/GelatoStock.exe.
-// Mac (preparado desde Windows, SIN validar en un Mac): dist/GelatoStock-<versión>-darwin-<arch>/
-// GelatoStock.app, a partir de Electron.app con el Info.plist marcado y el icono de la marca.
+// Windows (probado): dist/ArtelloAPP-<versión>-win32-x64/ArtelloAPP.exe.
+// Mac (construido en GitHub Actions, sin usar aún en un Mac real): dist/ArtelloAPP-<versión>-darwin-<arch>/
+// ArtelloAPP.app, a partir de Electron.app con el Info.plist marcado y el icono de la marca.
 // Las reglas de qué se copia viven en scripts/package-rules.cjs (probadas en tests/).
 const fs = require("node:fs");
 const path = require("node:path");
@@ -15,15 +15,13 @@ if (!rules.supported.includes(platform))
 const distRoot = path.join(root, "dist");
 const dest = path.join(distRoot, rules.outputDirName(version, platform, arch));
 // Old builds are only disk weight (2 GB each): keep the newest two of this platform, this one included.
+// A build with a data/ folder inside was used as a portable copy: it holds real data and is never deleted.
 const KEEP_BUILDS = 2;
 if (fs.existsSync(distRoot)) {
   const builds = fs
     .readdirSync(distRoot)
-    .filter((n) =>
-      new RegExp(`^GelatoStock-\\d+\\.\\d+\\.\\d+-${platform}-[a-z0-9]+$`).test(
-        n,
-      ),
-    )
+    .filter((n) => rules.isBuildDir(n, platform))
+    .filter((n) => !fs.existsSync(path.join(distRoot, n, "data")))
     .filter((n) => n !== path.basename(dest))
     .map((n) => ({ n, at: fs.statSync(path.join(distRoot, n)).mtimeMs }))
     .sort((a, b) => b.at - a.at);
@@ -39,14 +37,14 @@ let launcher;
 if (platform === "win32") {
   fs.cpSync(electronDist, dest, { recursive: true });
   const oldExe = path.join(dest, "electron.exe");
-  launcher = path.join(dest, "GelatoStock.exe");
+  launcher = path.join(dest, rules.appName + ".exe");
   if (fs.existsSync(launcher)) fs.unlinkSync(launcher);
   fs.renameSync(oldExe, launcher);
   app = path.join(dest, "resources", "app");
 } else {
   // Electron.app lleva enlaces simbólicos dentro de sus frameworks: se copia con ditto, la
   // herramienta de macOS para bundles, que los conserva tal cual (fs.cpSync no es fiable ahí).
-  launcher = path.join(dest, "GelatoStock.app");
+  launcher = path.join(dest, rules.appName + ".app");
   fs.rmSync(launcher, { recursive: true, force: true });
   require("node:child_process").execFileSync("ditto", [
     path.join(electronDist, "Electron.app"),

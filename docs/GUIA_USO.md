@@ -1,4 +1,4 @@
-# Guía de uso de GelatoStock (Artello)
+# Guía de uso de ArtelloAPP (Artello Gelato)
 
 Esta guía explica, pantalla por pantalla, cómo se usa la app en el día a día. La misma información la conoce el chat de dudas de «IA local», que responde solo con esta guía y con el texto que le pegues.
 
@@ -14,7 +14,7 @@ Lo importante de hoy: productos bajo mínimo, mensajes que debes leer, produccio
 ## Inventario
 Cada producto se mide en kilos, litros o unidades y tiene mínimo, objetivo y presentación de compra (por ejemplo, caja de 6 L).
 - Registrar stock: conteo real. Reemplaza la cantidad y queda registrado.
-- Hoja de conteo por zona: eliges la zona (vitrina, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.
+- Hoja de conteo por zona: eliges la zona (pozzetti, cámara, congelador, almacén, obrador, barra), cuentas y escribes cada cantidad; al guardar, cada producto queda contado y el stock se ajusta. Resumen avisa cuando una zona lleva más días sin contar de los que fijes en Configuración (recordatorio de conteo). La zona de cada producto se asigna en Editar producto.
 - Historial de precios: cada cambio de precio en la ficha del producto queda registrado; la ficha del proveedor muestra los últimos cambios y Resumen avisa de las subidas de los últimos 30 días.
 - Entrada / salida: entradas de mercancía, salidas por consumo y mermas, siempre con motivo.
 - Objetivo de merma: en cada fila de Inventario, «Objetivo de merma» pone un tope para ese producto, en su unidad (no más de 2 kg) o en porcentaje (no más de un 5 % de lo que salga). La app mira los últimos 7 días y, si te pasas, lo dice en el Resumen de inicio y marca la fila como «Merma por encima»: no cambia stock, ni pedidos, ni nada más. El porcentaje es la merma dividida entre todo lo que salió del producto en esos días (ventas, consumo, mermas e invitaciones); los conteos no cuentan, porque un ajuste de inventario no es una salida. Escribe 0 para quitar el objetivo.

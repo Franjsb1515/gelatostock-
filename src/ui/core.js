@@ -113,6 +113,24 @@ const icons = {
 };
 const icon = (name) =>
   `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.box}</svg>`;
+// Marca Artello: trazos del logo original (build-assets/marca, sacados del .ai del usuario).
+const artello = {
+  mark: {
+    w: 208.2,
+    h: 185.6,
+    d: "M146.8 117L117 87.3L130 74.3L159.7 104.1ZM74.3 130L104.1 100.2L133.8 130L104.1 159.7ZM35.5 35.5C50.8 20.1 75.8 20.1 91.1 35.5L78.8 47.8L35.5 91.1C20.1 75.8 20.1 50.8 35.5 35.5M91.1 61.4L104.1 48.4L117 61.4L104.1 74.3ZM78.2 74.3L91.1 87.3L61.4 117L48.4 104.1ZM172.7 35.5C188 50.8 188 75.8 172.7 91.1L129.4 47.8L117 35.5C132.4 20.1 157.3 20.1 172.7 35.5M185.6 22.5C163.1 0 126.6 0 104.1 22.5C81.6 0 45.1 0 22.5 22.5C0 45 0 81.5 22.5 104.1L47.8 129.4L91.1 172.7L91.1 172.7L104.1 185.6L160.3 129.4L172.7 117L172.7 117L185.6 104.1L185.6 104.1C208.2 81.5 208.2 45 185.6 22.5",
+  },
+  word: {
+    w: 644.3,
+    h: 177.6,
+    d: "M278.2 22.7L261.5 22.7L261.5 6L313.2 6L313.2 22.7L296.5 22.7L296.5 173L278.2 173ZM366 173L323.3 173L323.3 6L363.2 6L363.2 22.7L341.7 22.7L341.7 76.5L361.1 76.5L361.1 94.4L341.7 94.4L341.7 156.3L366 156.3ZM380.5 173L380.5 6L398.8 6L398.8 156.3L418.7 156.3L418.7 173ZM428.3 173L428.3 6L446.6 6L446.6 156.3L466.5 156.3L466.5 173ZM555.5 160C516.2 160 484.3 128.1 484.3 88.8C484.3 49.5 516.2 17.6 555.5 17.6C594.8 17.6 626.7 49.5 626.7 88.8C626.7 128.1 594.8 160 555.5 160M555.5 0C506.4 0 466.7 39.8 466.7 88.8C466.7 137.9 506.4 177.6 555.5 177.6C604.6 177.6 644.3 137.9 644.3 88.8C644.3 39.8 604.6 0 555.5 0M155.2 109.6C155.3 109.7 155.4 109.8 155.5 109.9L155.2 109.9ZM197.9 17.2C223.2 17.2 243.8 37.8 243.8 63.1C243.8 88.5 223.2 109 197.9 109C172.5 109 152 88.5 152 63.1C152 37.8 172.5 17.2 197.9 17.2M261 63.1C261 28.3 232.7 0 197.9 0C181.4 0 166.4 6.3 155.2 16.6L155.2 6L136.9 6L136.9 46.9L136.9 63.1L136.9 79.3L136.9 173L155.2 173L155.2 110.3L244.2 176.2L255 161.3L205.3 125.8C236.7 122.1 261 95.4 261 63.1M18.3 94.3L18.3 57.7C18.3 36 36 18.3 57.7 18.3C79.4 18.3 97 36 97 57.7L97 94.3ZM115.3 57.7C115.3 25.8 89.5 0 57.7 0C25.8 0 0 25.8 0 57.7L0 93.5L0 173L18.3 173L18.3 112.6L97 112.6L97 173L115.3 173L115.3 93.5Z",
+  },
+};
+const artelloSvg = (part, cls) =>
+  `<svg class="${cls}" viewBox="0 0 ${artello[part].w} ${artello[part].h}" fill="currentColor" aria-hidden="true"><path d="${artello[part].d}"/></svg>`;
+// Sello del Resumen: el corazón de Artello dentro de dos aros con el nombre alrededor.
+const artelloSeal = () =>
+  `<svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><circle class="seal-ring" cx="60" cy="60" r="57"/><circle class="seal-ring thin" cx="60" cy="60" r="43"/><path id="seal-path" fill="none" d="M60 60m-50 0a50 50 0 1 1 100 0a50 50 0 1 1-100 0"/><text class="seal-text"><textPath href="#seal-path" textLength="304" lengthAdjust="spacing">ARTELLO GELATO · GELATO CONTROL SYSTEM ·</textPath></text><svg x="37" y="40" width="46" height="41" viewBox="0 0 ${artello.mark.w} ${artello.mark.h}"><path fill="currentColor" d="${artello.mark.d}"/></svg></svg>`;
 const btn = (label, action, cls = "secondary", extra = "") =>
   `<button class="btn ${cls}" data-action="${action}" ${extra}>${label}</button>`;
 const supplier = (id) => state.suppliers.find((s) => s.id === id);
@@ -271,7 +289,7 @@ function header(title, description, actions = "") {
   // Rótulo por pantalla: el acento de color lo pone main.page-… en styles.css.
   const eyebrow =
     page === "home"
-      ? "TU NEGOCIO, EN ORDEN"
+      ? "GELATO CONTROL SYSTEM"
       : (pageLabel[page] || "").toUpperCase();
   return `<div class="page-heading"><div><div class="eyebrow"><i class="dot"></i>${esc(eyebrow)}</div><h1>${title}</h1><p>${description}</p></div><div class="heading-actions">${actions}</div></div>`;
 }
@@ -290,8 +308,7 @@ function dismissSplash() {
   if (!splash) return;
   // The splash shows the business name and place from the data, then fades.
   splash.querySelector(".splash-name").textContent = state.business;
-  splash.querySelector(".splash-place").textContent =
-    state.place || "Tu negocio, en orden";
+  splash.querySelector(".splash-place").textContent = state.place || "";
   setTimeout(() => {
     splash.classList.add("hide");
     setTimeout(() => splash.remove(), 700);
@@ -318,7 +335,7 @@ function render() {
   };
   dismissSplash();
   $("#app").innerHTML =
-    `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brand-row"><span class="brandmark">${icon("ice")}</span><span>gelato<span class="brand-light">stock</span></span></span><small>ARTE + GELATO · EN ORDEN</small></a><div class="workspace"><div class="workspace-icon">${esc(initials(state.business))}</div><div><strong>${esc(state.business)}</strong><small>${esc(state.place || "Tu negocio, en orden")}</small></div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
+    `<aside class="sidebar"><a href="#" class="brand" data-nav="home"><span class="brand-row" aria-label="ArtelloAPP">${artelloSvg("mark", "brandmark")}${artelloSvg("word", "brandword")}<span class="brand-light">APP</span></span><small>GELATO CONTROL SYSTEM</small></a><div class="workspace"><div class="workspace-icon">${esc(initials(state.business))}</div><div><strong>${esc(state.business)}</strong>${state.place ? `<small>${esc(state.place)}</small>` : ""}</div></div><div class="nav-label">MI NEGOCIO</div><nav>${[
       ["home", "home", "Resumen"],
       ["stock", "box", "Inventario"],
       ["orders", "cart", "Compras"],
@@ -340,7 +357,7 @@ function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>GelatoStock · v${esc(appVersion)}</small></div></div></div></aside><main class="page-${esc(page)}"><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${esc(pageLabel[page] || "")}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-card">${icon("shield")}<strong>Tu información se queda aquí</strong><p>Datos guardados en este equipo. Sin depender de internet.</p><span><i class="dot"></i> Almacenamiento local</span></div><button data-nav="settings" class="nav-item ${page === "settings" ? "active" : ""}">${icon("settings")}<span>Configuración</span></button><div class="profile"><span class="avatar">${esc(initials(state.business))}</span><div><strong>${esc(state.business)}</strong><small>ArtelloAPP · v${esc(appVersion)}</small></div></div></div></aside><main class="page-${esc(page)}"><header class="topbar"><div class="breadcrumb">${esc(state.business)} <span>/</span> ${esc(pageLabel[page] || "")}</div><div class="top-right"><span class="local-status"><i class="dot"></i> Modo local</span><button class="icon-button" aria-label="Ver mensajes" data-nav="messages">${icon("bell")}${unread ? '<i class="notification-dot"></i>' : ""}</button><span class="avatar small">${esc(initials(state.business))}</span></div></header><div class="content">${views[page]()}</div><footer>Hecho para ${esc(state.business)}${state.place ? ", " + esc(state.place) : ""}.<span>Pedidos reales solo por WhatsApp con tu confirmación</span></footer></main>`;
 }
 async function refreshWhatsApp() {
   if (page !== "whatsapp" || waBusy || document.querySelector("#modal")?.open)
@@ -396,7 +413,7 @@ function hideIncoming(seen) {
 
 // Name shown on printed pages.
 function businessName() {
-  return state?.business || "GelatoStock";
+  return state?.business || "ArtelloAPP";
 }
 
 // De dónde sale cada precio del catálogo de un proveedor.
@@ -407,7 +424,7 @@ const priceSourceLabel = {
 };
 
 const zoneLabel = {
-  vitrina: "Vitrina",
+  vitrina: "Pozzetti",
   camara: "Cámara",
   congelador: "Congelador",
   almacen: "Almacén",

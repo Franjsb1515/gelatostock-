@@ -12,7 +12,7 @@ npm run package:win
 npm run installer:win
 ```
 
-El primero deja la carpeta portátil `dist/GelatoStock-<versión>-win32-x64`. El segundo la envuelve tal cual con electron-builder (NSIS) y deja `dist/instalador/GelatoStock-Instalador-<versión>.exe` (unos 750 MB; tarda varios minutos comprimiendo 1,9 GB: modelo de IA local, navegador de WhatsApp y la app). `package:win` siempre antes de `installer:win`: el instalador lleva lo que haya en `dist/`.
+El primero deja la carpeta portátil `dist/ArtelloAPP-<versión>-win32-x64`. El segundo la envuelve tal cual con electron-builder (NSIS) y deja `dist/instalador/ArtelloAPP-Instalador-<versión>.exe` (unos 750 MB; tarda varios minutos comprimiendo 1,9 GB: modelo de IA local, navegador de WhatsApp y la app). `package:win` siempre antes de `installer:win`: el instalador lleva lo que haya en `dist/`.
 
 Solo la primera vez, electron-builder descarga su NSIS y 7-Zip a `work/electron-builder-cache` (caché de construcción en el mismo disco; con la caché en otro disco fallaba). Es una herramienta de construcción: la app instalada no descarga nada.
 
@@ -26,7 +26,7 @@ Solo la primera vez, electron-builder descarga su NSIS y 7-Zip a `work/electron-
 
 ### Cómo lo sabe la app
 
-El instalador deja `instalado.txt` junto a `GelatoStock.exe`. `src/datadir.cjs` lo mira al arrancar: con la marca, los datos van a la carpeta local de la persona; sin ella (carpeta portátil), siguen en `data/` junto al ejecutable, como hasta ahora. `GELATO_DATA_DIR` manda siempre (pruebas y acceso de inicio del proyecto).
+El instalador deja `instalado.txt` junto a `ArtelloAPP.exe`. `src/datadir.cjs` lo mira al arrancar: con la marca, los datos van a la carpeta local de la persona; sin ella (carpeta portátil), siguen en `data/` junto al ejecutable, como hasta ahora. `GELATO_DATA_DIR` manda siempre (pruebas y acceso de inicio del proyecto).
 
 ### Probado
 
@@ -34,12 +34,12 @@ El instalador deja `instalado.txt` junto a `GelatoStock.exe`. `src/datadir.cjs` 
 
 ## Mac en GitHub Actions (sin tener un Mac) · funciona desde el 2026-09-22
 
-Primera construcción conseguida el 2026-09-22 (cuarto intento): https://github.com/Franjsb1515/gelatostock-/releases/tag/v0.45.0 trae `GelatoStock-Instalador-0.45.0-arm64.dmg` (Apple Silicon, 852 MB) y `GelatoStock-Instalador-0.45.0-x64.dmg` (Intel, 854 MB). En los Macs de GitHub pasaron las 205 pruebas y la app arrancó y creó su base de datos (scripts/mac-smoke.cjs). Lo que sigue sin probar: una persona usándola en un Mac real y WhatsApp en Mac.
+Primera construcción conseguida el 2026-09-22 (cuarto intento): https://github.com/Franjsb1515/gelatostock-/releases/tag/v0.45.0 trae `ArtelloAPP-Instalador-0.45.0-arm64.dmg` (Apple Silicon, 852 MB) y `ArtelloAPP-Instalador-0.45.0-x64.dmg` (Intel, 854 MB). En los Macs de GitHub pasaron las 205 pruebas y la app arrancó y creó su base de datos (scripts/mac-smoke.cjs). Lo que sigue sin probar: una persona usándola en un Mac real y WhatsApp en Mac.
 
 El repositorio público https://github.com/Franjsb1515/gelatostock- tiene la receta `.github/workflows/mac.yml`: GitHub presta un Mac (Apple Silicon y otro Intel), instala todo, descarga el modelo y Chrome, pasa las pruebas, empaqueta, arranca la app una vez (scripts/mac-smoke.cjs) y crea el `.dmg`.
 
 - Se lanza al publicar una etiqueta de versión (`git tag v0.45.0 && git push origin v0.45.0`) o a mano en la pestaña Actions → «Instalador de Mac» → «Run workflow».
-- Con etiqueta, los `.dmg` quedan en la página de Releases del repositorio: `GelatoStock-Instalador-<versión>-arm64.dmg` (Apple Silicon) y `-x64.dmg` (Intel). Quien lo reciba descarga el que corresponda a su Mac (menú Apple → Acerca de este Mac: «Chip Apple M…» es arm64; «Intel» es x64).
+- Con etiqueta, los `.dmg` quedan en la página de Releases del repositorio: `ArtelloAPP-Instalador-<versión>-arm64.dmg` (Apple Silicon) y `-x64.dmg` (Intel). Quien lo reciba descarga el que corresponda a su Mac (menú Apple → Acerca de este Mac: «Chip Apple M…» es arm64; «Intel» es x64).
 - Sin etiqueta, el `.dmg` queda como artefacto de la ejecución (30 días) y solo lo puede bajar quien tenga sesión en GitHub.
 - Cada ejecución tarda unos 17–20 minutos y es gratis por ser un repositorio público. Los registros de cada paso se publican en las ramas `registros-mac-arm64` y `registros-mac-x64` del repositorio (se leen sin iniciar sesión) y como artefacto de la ejecución.
 - El npm de los Macs de GitHub no ejecuta los scripts de instalación de los paquetes: por eso la receta descarga Electron y los binarios de la IA con un paso propio después de `npm ci`.
@@ -70,18 +70,18 @@ npm run package:mac
 npm run installer:mac
 ```
 
-`package:mac` copia `Electron.app`, lo marca (nombre, identificador, versión e icono) y mete la app con solo los módulos nativos de ese Mac (Apple Silicon o Intel). `installer:mac` lo envuelve en un `.dmg`: `dist/instalador/GelatoStock-Instalador-<versión>-<arm64|x64>.dmg`. Un `.dmg` de Apple Silicon no sirve para un Mac Intel ni al revés: hay que crearlo en un Mac del mismo tipo que el de quien lo recibe.
+`package:mac` copia `Electron.app`, lo marca (nombre, identificador, versión e icono) y mete la app con solo los módulos nativos de ese Mac (Apple Silicon o Intel). `installer:mac` lo envuelve en un `.dmg`: `dist/instalador/ArtelloAPP-Instalador-<versión>-<arm64|x64>.dmg`. Un `.dmg` de Apple Silicon no sirve para un Mac Intel ni al revés: hay que crearlo en un Mac del mismo tipo que el de quien lo recibe.
 
 ### Qué recibe la otra persona (Mac)
 
-- Un archivo `.dmg`: lo abre y arrastra GelatoStock a Aplicaciones.
-- **Aviso de macOS**: la app **no está firmada ni notarizada** (exige una cuenta de desarrollador de Apple, de pago). La primera vez macOS dirá que no puede comprobarla. En macOS 15 (Sequoia) o posterior: intentar abrirla, ir a Ajustes del Sistema → Privacidad y seguridad, y pulsar «Abrir de todos modos» junto al aviso de GelatoStock. En macOS anteriores: botón derecho sobre la app → Abrir → Abrir. Hay que avisar a quien lo reciba.
+- Un archivo `.dmg`: lo abre y arrastra ArtelloAPP a Aplicaciones.
+- **Aviso de macOS**: la app **no está firmada ni notarizada** (exige una cuenta de desarrollador de Apple, de pago). La primera vez macOS dirá que no puede comprobarla. En macOS 15 (Sequoia) o posterior: intentar abrirla, ir a Ajustes del Sistema → Privacidad y seguridad, y pulsar «Abrir de todos modos» junto al aviso de ArtelloAPP. En macOS anteriores: botón derecho sobre la app → Abrir → Abrir. Hay que avisar a quien lo reciba.
 - **Sus datos** van a `~/Library/Application Support/GelatoStock/data` (la app instalada en Aplicaciones no puede escribir en su propia carpeta). Configuración enseña la ruta.
 - Igual que en Windows: empieza con el espacio de demostración y no lleva ningún dato tuyo.
 
 ### Qué queda por comprobar en un Mac
 
-Todo lo anterior está escrito desde Windows sin ejecutarlo. Al hacerlo por primera vez hay que anotar cada error en reports/. Puntos que pueden fallar: que `npm ci` traiga los binarios de sharp y onnxruntime para ese Mac; que el `.icns` generado con sharp lo acepte macOS; que electron-builder acepte la carpeta preempaquetada con `GelatoStock.app`; que WhatsApp arranque con el Chrome de macOS; la memoria de la IA en un Mac de 8 GB (docs/MAC.md explica cómo medirla).
+Todo lo anterior está escrito desde Windows sin ejecutarlo. Al hacerlo por primera vez hay que anotar cada error en reports/. Puntos que pueden fallar: que `npm ci` traiga los binarios de sharp y onnxruntime para ese Mac; que el `.icns` generado con sharp lo acepte macOS; que electron-builder acepte la carpeta preempaquetada con `ArtelloAPP.app`; que WhatsApp arranque con el Chrome de macOS; la memoria de la IA en un Mac de 8 GB (docs/MAC.md explica cómo medirla).
 
 ## Actualizar a la otra persona
 
