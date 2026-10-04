@@ -21,6 +21,21 @@ Estado: fase 1 hecha en 0.48.0 (2026-10-04), con la marca «La tienda no abrió�
 2. Día sin abrir (pedido del usuario el 2026-10-04): poder marcar en el calendario que la tienda cerró ese día (con motivo opcional), para que no cuente como un día sin ventas ni salte el aviso de cierre pendiente. Apuntes a mano por día: horario (de apertura y/o turnos, según respuesta), notas y eventos. Datos nuevos en el esquema (zod) con pruebas; un día cerrado no cambia por esto (ensureDayOpen solo si toca ventas).
 3. Fotos desde el propio Calendario (aclarado por el usuario el 2026-10-04): un botón «Subir foto» en el calendario; la app lee la foto, decide a qué día y a qué apartado va (horario, ventas, factura o albarán de un proveedor, nota) y lo coloca, siempre como propuesta que la persona confirma antes de guardar. Una factura o albarán va además a Documentos, como hoy. Si la foto no dice la fecha, se pregunta: no se adivina.
 
+## Respuestas del usuario (2026-10-04, tras la 0.48.0)
+1. Horarios: los dos (apertura de la tienda y turnos del personal). Los hace por semanas y por ahora los sube él a mano.
+2. Ver cada día: ventas, producción del día, vacaciones si las hay, cruceros y stock. Quiere además que la app «audite y cargue automáticamente».
+3. Fotos: sin contestar.
+4. Nuevo: el Calendario («la agenda») va con clave; sin clave no se entra.
+
+Lo que se le dijo que no es viable tal cual: «cargar automáticamente» las ventas no se puede sin caja ni TPV conectado (dijo el 2026-09-18 que no hay caja): la app carga sola lo que ya está en ella (cierres, producción, stock, pedidos, cruceros, clima) y las ventas siguen saliendo del cierre del día. «Auditar» se hace con reglas visibles por día (no cuadra la cuenta, día sin cerrar, cierre confirmado que ya no coincide, venta real lejos de la estimada, día marcado sin abrir con movimientos, turno sin apertura), nunca corrigiendo nada solo. La clave protege la pantalla en este equipo, no el archivo de datos: quien tenga el ordenador y sepa buscar la carpeta puede abrir la base.
+
+## Fase 2 revisada (siguiente sesión)
+- Clave del Calendario: mismo mecanismo que la del Recetario (hash en settings, 30 min desbloqueado, espera creciente tras fallos), clave propia «calendar_lock»; /api/calendar* responde 423 sin desbloquear.
+- Horario semanal: semana a semana, apertura por día (o «cerrado») y turnos (persona, de-a); «Copiar la semana anterior». Datos nuevos en zod con pruebas. Pendiente de confirmar: formulario escrito (recomendado) o foto.
+- Vacaciones: pendiente de confirmar si son de la tienda (se marcan como «no abrió» por rango de fechas) o del personal (van en los turnos).
+- Stock en la ficha: stock de cada producto al terminar el día (stockAtDayEnd de core/day.ts), en su unidad.
+- Auditoría del día y del mes: lista de avisos por reglas con su motivo; solo avisa.
+
 ## Preguntas abiertas (al usuario)
 1. «Horarios»: ¿horario de apertura de la tienda, turnos del personal (quién y de qué hora a qué hora) o los dos?
 2. ¿Qué más quieres ver en cada día además de horarios y ventas? (notas, eventos, pedidos y entregas, cruceros, clima…)
