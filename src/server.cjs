@@ -51,6 +51,7 @@ const {
   calendarYear,
   dayCard,
 } = require("../build/calendar.js");
+const { readDayPhoto } = require("../build/dayphoto.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
   port = 0,
@@ -844,6 +845,7 @@ function createApp({
         "/api/identify",
         "/api/whatsapp",
         "/api/ocr",
+        "/api/calendar/photo",
         "/api/pdf",
       ].includes(u.pathname)
     ) {
@@ -863,7 +865,8 @@ function createApp({
             size >
             (u.pathname.startsWith("/api/ai")
               ? 20000
-              : u.pathname === "/api/ocr"
+              : u.pathname === "/api/ocr" ||
+                  u.pathname === "/api/calendar/photo"
                 ? 8_100_000
                 : u.pathname === "/api/pdf"
                   ? 14_000_000
@@ -1167,6 +1170,21 @@ function createApp({
             detection: result.text
               ? identifySupplier(store.load(), { text: result.text })
               : { reason: result.reason },
+          });
+          return;
+        }
+        if (u.pathname === "/api/calendar/photo") {
+          // Foto del Calendario: lectura local y propuesta por reglas. No guarda nada.
+          const result = await recognizeLocal(data.data);
+          json(200, {
+            text: result.text,
+            confidence: result.confidence,
+            reading: readDayPhoto(
+              store.load(),
+              result.text,
+              result.confidence,
+              businessDay(new Date(), dayChangeHour()),
+            ),
           });
           return;
         }
@@ -1541,6 +1559,7 @@ function createApp({
       "/ui/views-weekly.js": "ui/views-weekly.js",
       "/ui/views-cruises.js": "ui/views-cruises.js",
       "/ui/views-calendar.js": "ui/views-calendar.js",
+      "/ui/calendar-photo.js": "ui/calendar-photo.js",
       "/ui/forms.js": "ui/forms.js",
       "/ui/actions.js": "ui/actions.js",
       "/ui/events.js": "ui/events.js",

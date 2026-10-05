@@ -1,5 +1,16 @@
 # Registro de parches y sesiones
 
+## 0.50.0 — 2026-10-05 · sesión 052 · Fotos en el Calendario y Ayudante
+
+Pediste las fotos y mejorar el Ayudante. Ahora:
+
+- **«Subir foto»** en el Calendario: la app lee la foto en este equipo y propone el día y dónde va (horario de la semana, ventas del día, factura o albarán, o nota). Tú lo revisas y pulsas «Guardar».
+- Si la foto no dice la fecha, pregunta. Lo que no entiende no lo rellena: lo dice. Si no lee nada, la foto se guarda en su día para que escribas lo que pone.
+- **Notas y fotos** en cada día.
+- **El Ayudante** ya explica el horario, las vacaciones y las fotos. Y ya no confunde «el horario del aeropuerto» con el de la tienda.
+
+Probado con 12 fotos de prueba hechas por la app: 8 exactas y ninguna inventa nada; la letra a mano imitada falla más. Faltan fotos tuyas para medir de verdad. Informe reports/2026-10-05T01-00-00-000Z-calendario-fotos.md.
+
 ## 0.49.0 — 2026-10-04 · sesión 051 · Calendario (fase 2)
 
 Pediste seguir con el Calendario. Ahora:

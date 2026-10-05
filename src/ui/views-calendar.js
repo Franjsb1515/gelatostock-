@@ -124,6 +124,12 @@ function calendarPage() {
       "Elige un año, un mes y un día para ver lo que se apuntó ese día: gelato hecho, vendido y mermado, cierre, stock, horario y turnos, vacaciones, compras, mensajes, cruceros, clima y festivos. Lo que no está apuntado sale como «No disponible».",
       btn("Hoy", "calToday", "secondary") +
         btn(
+          "Subir foto",
+          "calPhoto",
+          "secondary",
+          calView === "day" ? `data-date="${esc(calDay)}"` : "",
+        ) +
+        btn(
           "Horario de la semana",
           "calWeek",
           "secondary",
@@ -182,6 +188,10 @@ function calMonthView(m) {
         );
       if (d.away.length)
         lines.push(`<span>Vacaciones: ${d.away.map(esc).join(", ")}</span>`);
+      if (d.notes)
+        lines.push(
+          `<span>${calCount(d.notes, "nota o foto", "notas o fotos")}</span>`,
+        );
       if (!lines.length) lines.push("<span>—</span>");
       const marks = [
         d.alerts
@@ -299,7 +309,7 @@ function calDayView(d) {
       ),
     ),
     "Ninguno.",
-  )}</section>${calSchedulePanel(d)}${calStockPanel(d)}<section class="panel"><h2>Fuera de la tienda</h2>${outside}</section></div>`;
+  )}</section>${calNotesPanel(d)}${calSchedulePanel(d)}${calStockPanel(d)}<section class="panel"><h2>Fuera de la tienda</h2>${outside}</section></div>`;
 }
 
 function calSchedulePanel(d) {
@@ -595,5 +605,5 @@ async function calendarAction(name, el) {
     }
     return true;
   }
-  return false;
+  return calendarPhotoAction(name, el);
 }

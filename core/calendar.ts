@@ -36,6 +36,8 @@ export type CalendarDay = {
     shifts: number;
   } | null;
   away: string[];
+  /** Notas y fotos apuntadas ese día. */
+  notes: number;
   /** Avisos de las reglas del día (solo en el mes). */
   alerts: number;
 };
@@ -105,6 +107,7 @@ function blank(date: string, s: State): CalendarDay {
         }
       : null,
     away: awayOn(s, date).map((v) => v.person),
+    notes: s.dayNotes.filter((n) => n.date === date).length,
     alerts: 0,
   };
 }
@@ -324,6 +327,8 @@ export type DayCard = {
   /** Horario del día (null si no está apuntado) y vacaciones que lo tocan. */
   schedule: State["schedule"][number] | null;
   vacations: State["vacations"];
+  /** Notas del día, con su foto si salen de una (la foto se sirve por /api/photos/id). */
+  notes: State["dayNotes"];
   /** Stock de cada producto al terminar el día, en su unidad. null si el día aún no ha llegado. */
   stock:
     { name: string; unit: string; quantity: number; gelato: boolean }[] | null;
@@ -450,6 +455,7 @@ export function dayCard(
       ),
     schedule: scheduleOn(s, date),
     vacations: awayOn(s, date),
+    notes: s.dayNotes.filter((n) => n.date === date),
     stock: date > today ? null : stockAt(s, date, changeHour),
     alerts: dayAlerts(s, date, changeHour, today, firstSaleDay(s)),
   };

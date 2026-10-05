@@ -17,9 +17,12 @@ const fold = (s) =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
+const foldedGuide = guideLines.map(fold);
 // Word prefixes people use that the guide spells differently. Longest prefix wins.
 const synonyms = [
   ["backup", ["copia"]],
+  ["emplea", ["personal", "persona"]],
+  ["trabaja", ["personal", "persona"]],
   ["guard", ["copia", "archiv"]],
   ["factur", ["docum"]],
   ["albar", ["docum"]],
@@ -97,10 +100,18 @@ function relevantGuide(question, limit = 4) {
     .slice(0, limit)
     .map((x) => x.i);
   const keep = new Set([0, ...top]);
+  // Una sola palabra en común no basta si la pregunta trae otra que la guía no nombra nunca:
+  // «el horario del aeropuerto» no lo cubre el párrafo del horario de la tienda.
+  const inLine = (i, g) => g.some((t) => hasTerm(foldedGuide[i], t));
+  const best = Math.max(
+    0,
+    ...top.map((i) => groups.filter((g) => inLine(i, g)).length),
+  );
+  const foreign = groups.some((g) => !foldedGuide.some((_, i) => inLine(i, g)));
   return {
     text: guideLines.filter((_, i) => keep.has(i)).join("\n"),
     indexes: [...keep].sort((a, b) => a - b),
-    covered: top.length > 0,
+    covered: top.length > 0 && !(best === 1 && foreign),
   };
 }
 const NO_ANSWER_CHAT = "No lo sé: la guía de la app no lo cubre.";

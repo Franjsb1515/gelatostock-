@@ -214,5 +214,29 @@
     "question": "¿Puedo quitar el aviso de mensajes nuevos?",
     "expect": ["configuración"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "horario_semana",
+    "question": "¿Dónde apunto el horario y los turnos de la semana?",
+    "expect": ["horario de la semana|calendario"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "vacaciones",
+    "question": "¿Cómo apunto las vacaciones de una empleada?",
+    "expect": ["vacaciones"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "foto_calendario",
+    "question": "¿Puedo subir una foto del cuadrante de turnos?",
+    "expect": ["foto"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "foto_sin_fecha",
+    "question": "¿Qué pasa si la foto no tiene fecha?",
+    "expect": ["día|fecha"],
+    "forbid": ["no lo sé"]
   }
 ]

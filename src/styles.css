@@ -4188,3 +4188,43 @@ button.text-link:focus-visible {
   grid-template-columns: minmax(120px, 1fr) 96px 96px;
   gap: 6px;
 }
+/* Calendario: notas y fotos del día, propuesta de una foto */
+.cal-notes {
+  list-style: none;
+  margin: var(--s-3) 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+.cal-note {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+}
+.cal-note img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  flex: none;
+}
+.cal-note p {
+  white-space: pre-line;
+}
+.cal-reasons {
+  margin: 0 0 var(--s-3);
+  padding-left: 1.2em;
+  font-size: var(--fs-13);
+  color: var(--ink-soft);
+}
+.cal-sale {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+.cal-sale legend {
+  font-weight: 700;
+  padding: 0 4px;
+}

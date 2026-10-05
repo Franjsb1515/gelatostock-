@@ -289,6 +289,9 @@ const photoSchema = z
     docType: documentTypes.optional(),
     order: idSchema.optional(),
     source: z.enum(["photo", "whatsapp"]).default("photo"),
+    // Foto subida desde el Calendario para un día (horario, ventas o nota): no es un documento
+    // de proveedor y no sale en Documentos.
+    calendarDate: documentDate.optional(),
     suggestion: z
       .object({
         supplier: idSchema.optional(),
@@ -447,6 +450,19 @@ export const stateSchema = z.object({
     .default([]),
   // Weekly schedule written by the person (Calendar): one entry per day with data. Kept in meta.
   schedule: z.array(scheduleDaySchema.extend({ at })).max(20000).default([]),
+  // Notes per business day (Calendar), written by the person or read from a photo she confirmed.
+  dayNotes: z
+    .array(
+      z.object({
+        id: idSchema,
+        date: documentDate,
+        text: z.string().max(4000).default(""),
+        photo: idSchema.optional(),
+        at,
+      }),
+    )
+    .max(50000)
+    .default([]),
   // Holidays per person (Calendar): no shift those days. Kept in meta.
   vacations: z
     .array(
@@ -753,6 +769,22 @@ export const actionSchema = z.intersection(
       note: z.string().trim().max(200).default(""),
     }),
     z.object({ type: z.literal("removeVacation"), id: idSchema }),
+    // A photo for one day of the Calendar, with an optional note (what it says, confirmed by the
+    // person). Without a note the photo is kept on its day to write it later.
+    z.object({
+      type: z.literal("calendarPhoto"),
+      date: documentDate,
+      name: text(200),
+      data: z.string().max(14_000_000),
+      ocrText: z.string().max(20000).optional(),
+      note: z.string().trim().max(4000).default(""),
+    }),
+    z.object({
+      type: z.literal("addDayNote"),
+      date: documentDate,
+      text: text(4000),
+    }),
+    z.object({ type: z.literal("removeDayNote"), id: idSchema }),
     // Annul an applied production; with redo, a new proposal with the same data is left to fix.
     z.object({
       type: z.literal("voidProduction"),

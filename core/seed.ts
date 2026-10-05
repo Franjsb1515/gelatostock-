@@ -306,5 +306,6 @@ export function seed(): State {
     closures: [],
     schedule: [],
     vacations: [],
+    dayNotes: [],
   };
 }

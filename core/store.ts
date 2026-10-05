@@ -180,11 +180,13 @@ export class Store {
       }
       for (const p of s.photos) {
         ensure(p.file && p.mime, "Adjunto sin archivo.");
-        const date = p.documentDate || p.at.slice(0, 10);
+        const date = p.calendarDate || p.documentDate || p.at.slice(0, 10);
         const dir = path.join(
-          p.supplier
-            ? this.supplierFolder(p.supplier)
-            : path.join(root, "sin-proveedor"),
+          p.calendarDate
+            ? path.join(root, "calendario")
+            : p.supplier
+              ? this.supplierFolder(p.supplier)
+              : path.join(root, "sin-proveedor"),
           "fotos",
           date,
         );

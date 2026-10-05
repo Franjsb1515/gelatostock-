@@ -1483,6 +1483,54 @@ export function apply(state: State, input: unknown): State {
       note = `Quitadas las vacaciones de ${v.person} del ${v.from} al ${v.to}.`;
       break;
     }
+    case "calendarPhoto": {
+      ensure(
+        /^data:image\/(png|jpeg|webp);base64,/.test(a.data),
+        "En el Calendario se suben fotos (JPG, PNG o WebP).",
+      );
+      const photo = {
+        id: randomUUID(),
+        name: a.name,
+        ocrText: a.ocrText,
+        data: a.data,
+        note: "Foto del Calendario",
+        at: now(),
+        source: "photo" as const,
+        calendarDate: a.date,
+      };
+      s.photos.unshift(photo);
+      s.dayNotes = [
+        {
+          id: randomUUID(),
+          date: a.date,
+          text: a.note,
+          photo: photo.id,
+          at: now(),
+        },
+        ...s.dayNotes,
+      ];
+      note = `Foto guardada en el día ${a.date}${a.note ? " con su nota" : ""}. No cambia el stock.`;
+      break;
+    }
+    case "addDayNote": {
+      s.dayNotes = [
+        { id: randomUUID(), date: a.date, text: a.text, at: now() },
+        ...s.dayNotes,
+      ];
+      note = `Nota apuntada en el día ${a.date}.`;
+      break;
+    }
+    case "removeDayNote": {
+      const n = s.dayNotes.find((x) => x.id === a.id);
+      ensure(n, "Esa nota ya no está.");
+      // La foto no se borra: se queda en su día sin texto.
+      if (n.photo) n.text = "";
+      else s.dayNotes = s.dayNotes.filter((x) => x.id !== a.id);
+      note = n.photo
+        ? `Quitado el texto de una foto del día ${n.date}; la foto se conserva.`
+        : `Quitada una nota del día ${n.date}.`;
+      break;
+    }
     case "reopenDay": {
       const d = s.days.find((x) => x.date === a.date);
       ensure(d && d.status === "closed", "Ese día no está cerrado.");
