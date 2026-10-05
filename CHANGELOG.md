@@ -1,5 +1,16 @@
 # Registro de parches y sesiones
 
+## 0.54.0 — 2026-10-05 · sesión 053 (cuarta parte) · Cuadrante de turnos en foto
+
+Tu foto del cuadrante no se leía. Ahora:
+
+- «Subir foto» reconoce un cuadrante (personas y días en una tabla) y lo lee casilla por casilla: mes, año, personas y turnos.
+- Te enseña una tabla para revisar, con lo dudoso en ámbar; corriges y guardas.
+- Los turnos pueden tener nombre (Apertura, Cierre, Libre…), horas o las dos cosas.
+- Con tu cuadrante: 55 de 56 casillas bien y ninguna mal dada por segura.
+
+Informe reports/2026-10-05T23-00-00-000Z-cuadrante-en-foto.md.
+
 ## 0.53.1 — 2026-10-05 · sesión 053 (tercera parte) · Textos para entregar
 
 Pediste textos que se entiendan sin conocerte. Ahora:

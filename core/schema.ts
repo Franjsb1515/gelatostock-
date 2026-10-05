@@ -33,11 +33,22 @@ const at = z.string().datetime();
 const clock = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora inválida (HH:MM).");
-const shiftSchema = z.object({
-  person: text(60),
-  from: clock,
-  to: clock,
-});
+// Un turno: la persona y su tipo («Apertura», «Cierre», «Libre»…), sus horas, o las dos cosas.
+const shiftSchema = z
+  .object({
+    person: text(60),
+    label: z.string().trim().min(1).max(40).optional(),
+    from: clock.optional(),
+    to: clock.optional(),
+  })
+  .refine(
+    (t) => !t.from === !t.to,
+    "Un turno lleva hora de empezar y de acabar, o ninguna.",
+  )
+  .refine(
+    (t) => !!t.label || !!t.from,
+    "Un turno necesita un tipo o unas horas.",
+  );
 // Un día del horario semanal: cerrado, o apertura de-a y turnos del personal.
 export const scheduleDaySchema = z.object({
   date: documentDate,
@@ -800,6 +811,20 @@ export const actionSchema = z.intersection(
       type: z.literal("setWeekSchedule"),
       week: documentDate,
       days: z.array(scheduleDaySchema).length(7),
+    }),
+    // Several days of a roster read from a photo: each day's shifts are replaced; its opening
+    // hours and «cerrado» are kept.
+    z.object({
+      type: z.literal("setScheduleDays"),
+      days: z
+        .array(
+          z.object({
+            date: documentDate,
+            shifts: z.array(shiftSchema).max(30),
+          }),
+        )
+        .min(1)
+        .max(62),
     }),
     z.object({
       type: z.literal("addVacation"),

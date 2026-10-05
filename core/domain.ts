@@ -84,7 +84,7 @@ import {
 } from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
 import { businessDay } from "./plan";
-import { addDays } from "./util";
+import { addDays, isOff } from "./util";
 export { productionPlan, todayBrief, businessDay } from "./plan";
 const eur = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",") + " €";
@@ -1444,7 +1444,7 @@ export function apply(state: State, input: unknown): State {
         }
         for (const t of d.shifts)
           ensure(
-            t.from !== t.to,
+            !t.from || t.from !== t.to,
             `${label}: el turno de ${t.person} empieza y acaba a la misma hora.`,
           );
         // Un día sin nada escrito no se guarda: queda «sin horario apuntado».
@@ -1456,6 +1456,41 @@ export function apply(state: State, input: unknown): State {
         ...written,
       ].sort((x, y) => y.date.localeCompare(x.date));
       note = `Horario de la semana del ${a.week} guardado: ${written.length} ${written.length === 1 ? "día apuntado" : "días apuntados"}. No cambia el stock ni las ventas.`;
+      break;
+    }
+    case "setScheduleDays": {
+      ensure(
+        new Set(a.days.map((d) => d.date)).size === a.days.length,
+        "Un día aparece dos veces.",
+      );
+      for (const d of a.days) {
+        for (const t of d.shifts)
+          ensure(
+            !t.from || t.from !== t.to,
+            `El ${d.date}: el turno de ${t.person} empieza y acaba a la misma hora.`,
+          );
+        const old = s.schedule.find((x) => x.date === d.date);
+        ensure(
+          !old?.closed || !d.shifts.some((t) => !isOff(t)),
+          `El ${d.date} está marcado como cerrado en el horario: quita «Cerrado» antes de poner turnos.`,
+        );
+        const next = {
+          date: d.date,
+          closed: old?.closed ?? false,
+          ...(old?.open ? { open: old.open, close: old.close } : {}),
+          shifts: d.shifts,
+          at: now(),
+        };
+        s.schedule = [
+          ...s.schedule.filter((x) => x.date !== d.date),
+          ...(next.closed || next.open || next.shifts.length ? [next] : []),
+        ];
+      }
+      s.schedule.sort((x, y) => y.date.localeCompare(x.date));
+      const people = new Set(
+        a.days.flatMap((d) => d.shifts.map((t) => t.person)),
+      );
+      note = `Cuadrante guardado: ${a.days.length} ${a.days.length === 1 ? "día" : "días"} (del ${a.days[0]!.date} al ${a.days.at(-1)!.date}), ${people.size} ${people.size === 1 ? "persona" : "personas"}. No cambia el stock ni las ventas.`;
       break;
     }
     case "addVacation": {

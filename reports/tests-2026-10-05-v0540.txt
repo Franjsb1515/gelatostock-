@@ -1,0 +1,517 @@
+
+> appgelatostock@0.54.0 test
+> npm run build && node --test tests/*.test.cjs
+
+
+> appgelatostock@0.54.0 build
+> tsc -p tsconfig.json && node scripts/build-guide.cjs
+
+guía generada: 131 líneas
+✔ importes: formatos inequívocos y centavos, sin interpretación de separadores ambiguos (1.6741ms)
+✔ sumas: detecta descuadre sin cálculos del modelo (0.6008ms)
+✔ sumas: se abstiene con bases múltiples, impuestos porcentuales, gastos o datos ausentes (0.7442ms)
+✔ doble lectura: discrepancia o respuesta inválida exige revisión sin sustituir por una predicción segura (1.1159ms)
+✔ proforma y rectificación prevalecen sobre un modelo que dice factura; las instrucciones incrustadas bloquean (0.1686ms)
+✔ coincidencia de lecturas no oculta importes incoherentes (0.1154ms)
+✔ mencionar factura en una conversación no respalda un documento de cobro (0.431ms)
+✔ un encabezado distinto impide aceptar una clasificación coincidente pero incorrecta (1.4198ms)
+✔ documentos mezclados exigen revisión (0.1592ms)
+✔ sumas: etiquetas habituales en facturas españolas se reconocen sin ampliar la interpretación (0.3244ms)
+✔ reglas de documentos: normalización de OCR y títulos en cualquier línea inicial (0.1778ms)
+✔ reglas de documentos: los dos corpus sintéticos se leen sin errores (regresión) (2.6892ms)
+✔ reglas primero: el modelo solo decide cuando no hay título ni rasgos de mensaje (0.1469ms)
+✔ IA: entradas limitadas, sin rutas, instrucciones ejecutables ni campos extra (5.3822ms)
+✔ IA: resultado inválido o con acciones queda por revisar (2.6651ms)
+✔ IA: un solo trabajo y cancelación durante verificación (4.5808ms)
+✔ IA: jamás muestra texto inventado por el modelo como evidencia (0.4933ms)
+✔ IA: tolera mayúsculas y devuelve el fragmento literal original (0.2581ms)
+✔ chat: entradas acotadas, roles limitados y último mensaje del usuario (2.8274ms)
+✔ chat: la respuesta se limpia a texto plano acotado y nunca queda vacía (1.2764ms)
+✔ respuestas de proveedor: contrato cerrado y discrepancia sin inventar (1.3695ms)
+✔ respuestas de proveedor: etiquetas en español del modelo se traducen al contrato interno (0.4787ms)
+✔ chat: la guía se recorta a los párrafos relacionados con la pregunta y detecta lo que no cubre (6.6591ms)
+✔ chat: las reglas prevalecen sobre el modelo en peticiones de acción y cuando la guía cubre la duda (8.9079ms)
+✔ chat: cultura del gelato (easter egg) responde por reglas y no desplaza las dudas de la app (7.8771ms)
+✔ «Revertir» no deshace una línea de un día cerrado ni la salida de una producción (50.3449ms)
+✔ cerrar ayer pesando la cubeta resta de lo que había ayer, no del stock de hoy (4.6528ms)
+✔ pedido sugerido: 2,1 kg en paquetes de 0,7 son 3 paquetes, no 4 (0.2774ms)
+✔ la Semana no suma kilos, litros y unidades de merma (6.0268ms)
+✔ cambiar el motivo de una merma de gelato conserva el detalle escrito (5.3992ms)
+✔ precio en un mensaje: con porcentaje o con miles no se propone nada equivocado (3.0384ms)
+✔ equilibrio: un dato que falta en la ficha no cuenta como 0 (1.9418ms)
+✔ calendario: el mes y el año suman lo mismo que los cierres, por día de negocio (41.5744ms)
+✔ ficha del día: cierre, mermas por motivo, producciones y pedidos (16.0822ms)
+✔ la tienda no abrió: se marca y se quita sin tocar el stock, y bloquea apuntar ventas (7.4921ms)
+✔ la marca se guarda en la base y vuelve al abrirla (230.017ms)
+✔ horario de la semana: valida, guarda solo los días con algo y reemplaza la semana (11.2431ms)
+✔ vacaciones por persona: sin solapes, se quitan y avisan si hay turno (7.3465ms)
+✔ avisos del día: días pasados sin cierre o sin ventas, marca con producción y venta real lejos (33.1822ms)
+✔ stock al terminar el día: el de ahora menos lo de días posteriores; un día futuro no lo tiene (4.6189ms)
+✔ horario y vacaciones se guardan en la base y vuelven al abrirla (236.2143ms)
+✔ contexto: la previsión se agrupa por día de Palma y nada se inventa (6.9226ms)
+✔ contexto: festivos del calendario oficial, solo los que afectan a Palma (2.4983ms)
+✔ contexto: ventas por nivel de impacto, hechos sin correlación (0.8181ms)
+✔ contexto: servicio con fuentes simuladas, caídas, año sin publicar y eventos propios (203.5539ms)
+✔ cruceros: la copia del registro se inspecciona y se restaura sin perder el registro actual (185.7532ms)
+✔ contexto: rutas del servidor, ventas junto al impacto, eventos e interruptor (788.0342ms)
+✔ fase 1: anular una producción duplicada devuelve todo a su sitio y deja rastro (37.775ms)
+✔ fase 1: corregir una producción deja una propuesta igual; lo ya vendido bloquea con explicación (14.8406ms)
+✔ fase 1: corregir y eliminar una línea del cierre recalcula stock, día e historial (8.6348ms)
+✔ fase 1: el cambio de día de negocio se guarda, se valida y viaja a la interfaz (844.8245ms)
+✔ cruceros: la hora es siempre la de Palma, con verano, invierno y cambios de hora (2.3336ms)
+✔ cruceros: pasajeros declarados, sin confundir «cero» con «no disponible» (2.015ms)
+✔ cruceros: la respuesta externa se valida; la basura no entra (4.3841ms)
+✔ cruceros: día normal, escala nocturna, simultaneidad e impacto auditable (9.6264ms)
+✔ cruceros: estados solo los que la fuente permite afirmar, e integridad (1.7744ms)
+✔ cruceros: cambios y retiradas actualizan la escala, sin duplicados ni pérdida de histórico (166.4487ms)
+✔ cruceros: el histórico oficial se importa por páginas y una sola vez (91.9453ms)
+✔ cruceros: rutas del servidor, permisos, umbrales e interruptor, sin red en pruebas (645.9568ms)
+✔ cruceros: una fecha imposible (31 de febrero) se rechaza en el rango y en el día (0.48.0) (101.2471ms)
+✔ carpeta de datos: portátil junto al ejecutable, instalada en la carpeta local de la persona (8.3806ms)
+✔ carpeta de datos en Mac: soporte de la persona con la app empaquetada, proyecto en desarrollo (0.6124ms)
+✔ resumen del día: al empezar + producido − salidas + ajustes = queda para mañana (64.0079ms)
+✔ sin valor de venta la venta estimada es «No disponible», no cero (1.1298ms)
+✔ confirmar el cierre congela el día; reabrir exige motivo y deja rastro (45.7797ms)
+✔ el cierre confirmado persiste en SQLite (user_version 5) y la instantánea no deriva (241.0665ms)
+✔ una base de la versión anterior (user_version 4, sin tabla days) abre sin perder nada (240.7102ms)
+✔ servidor: GET /api/day resume el día y una acción sobre un día cerrado se rechaza (771.5674ms)
+✔ fotos de prueba (texto leído guardado): ninguna propuesta inventa nada (79.216ms)
+✔ lectura real de una foto ladeada con ruido: cuadrante de turnos de la semana (1376.2891ms)
+✔ fechas: escritas de varias formas; una fecha imposible o ausente no se adivina (4.9288ms)
+✔ horario: el día propuesto es el lunes de la semana; una hora rota no se convierte en turno (1.4931ms)
+✔ ventas: gramos a kilos, merma e invitación aparte, y lo dudoso se dice sin apuntarlo (2.0261ms)
+✔ documento de proveedor y foto ilegible (3.7711ms)
+✔ foto del Calendario: se guarda en su día con su nota, fuera de Documentos, y no toca el stock (8.2201ms)
+✔ la foto del Calendario se guarda como archivo y vuelve al abrir la base (211.2874ms)
+✔ conteo reemplaza stock, persiste historial y no muta estado original (20.9089ms)
+✔ rechaza cantidades negativas, NaN e infinitas (1.9842ms)
+✔ reposición considera pedidos en camino y respeta cajas (19.8368ms)
+✔ autorizar separa proveedores y vacía carrito sin tocar stock (3.4829ms)
+✔ doble autorización y doble envío no duplican pedidos (2.8919ms)
+✔ rechaza autorización con versión obsoleta (2.1275ms)
+✔ recepción parcial y total convierten cajas a litros una sola vez (5.3857ms)
+✔ reintentar la misma recepción es idempotente (2.6896ms)
+✔ recepciones imposibles y líneas duplicadas se rechazan sin cambios (2.5775ms)
+✔ mensajes relevantes y promociones se distinguen sin modificar stock (10.344ms)
+✔ no vincula mensajes a otro proveedor (4.9876ms)
+✔ copias inválidas se rechazan (1.6477ms)
+✔ alta de producto valida presentación y objetivo (5.3034ms)
+✔ copia con identificadores capaces de inyectar HTML se rechaza (0.8171ms)
+✔ entrada, salida y corrección conservan un historial compensado (4.1111ms)
+✔ cancelar pendiente libera reposición y no altera stock (2.3107ms)
+✔ editar presentación no cambia los pedidos ya autorizados (3.7129ms)
+✔ no admite fracciones de unidades ni estados recibidos inconsistentes (2.4259ms)
+✔ relevancia por referencia exacta no cambia prioridad ni pedidos (2.1713ms)
+✔ referencias ajenas, desconocidas o múltiples requieren revisión (3.5791ms)
+✔ pedido abierto sin referencia no basta para vincular un mensaje (34.3153ms)
+✔ corrección manual conserva original y prioridad y registra motivo (4.647ms)
+✔ eventos repetidos no duplican y un ID con otro contenido se rechaza (2.1073ms)
+✔ copia anterior sin relevancia conserva mensajes para revisión (0.8856ms)
+✔ respuestas de proveedor: falta de producto, confirmación y fecha resuelta (0.574ms)
+✔ fechas relativas: mañana, día del mes, dd/mm, en N días y sin fecha exacta (0.3195ms)
+✔ mensaje nuevo guarda interpretación y la anotación de IA no cambia stock ni pedidos (3.0349ms)
+✔ receta: valida productos, unidades enteras y producto terminado en kg (3.1235ms)
+✔ producción: propuesta escalada, aprobación editable, terminado y descarte (10.867ms)
+✔ producción no deja stock negativo y avisa de mínimos (2.6235ms)
+✔ respuestas rutinarias: el corpus de desarrollo se lee por reglas con la categoría esperada (9.564ms)
+✔ envío real registra destino, texto y hora en el pedido sin tocar stock (4.5039ms)
+✔ una respuesta de WhatsApp al número del pedido enviado se vincula sola y fija la entrega prevista (5.4169ms)
+✔ el tipo de documento de una foto lo confirma la persona y se puede retirar (5.1953ms)
+✔ ventas y mermas del día crean salidas trazables de producto terminado y avisan de mínimos (3.6646ms)
+✔ limpieza de actividad conserva las entradas recientes y nunca toca movimientos (47.6494ms)
+✔ escenarios ampliados: cierre, pago, documento, tipografía y horas se leen por reglas (2.9665ms)
+✔ corregir una lectura la recuerda y se aplica a mensajes iguales o casi iguales (8.287ms)
+✔ la identidad del negocio se edita y aparece en el texto de los pedidos (2.8142ms)
+✔ documentos: propuesta por número de pedido, por único pedido o por importe; vínculo confirmado por la persona (11.1309ms)
+✔ un PDF se guarda como documento y se acepta como origen WhatsApp (0.7051ms)
+✔ decidir sobre un mensaje lo cierra con la decisión anotada, sin tocar pedidos ni stock (1.7329ms)
+✔ proveedor: la web de compra solo admite direcciones https completas (3.3182ms)
+✔ recetario: familia, elaboración y alérgenos se guardan; la familia por defecto es crema (1.3848ms)
+✔ fechas locales: «mañana» se resuelve con el día del calendario local, no UTC (0.235ms)
+✔ balance técnico: porcentajes sobre la masa, rangos por familia y fichas que faltan (1.8537ms)
+✔ resumen semanal: ventas, mermas, producción, pedidos y avisos de la semana local (4.0414ms)
+✔ historial de precios: editar el precio deja rastro y avisa de subidas recientes (2.8762ms)
+✔ conteo por zonas: la hoja ajusta el stock, deja conteos y el recordatorio sabe qué zona toca (13.2302ms)
+✔ respuestas vinculadas: confirmación y fecha marcan el pedido; acciones desde el mensaje (10.8427ms)
+✔ otro proveedor: se apunta con su formato y su precio, y no cambia la ficha (2.472ms)
+✔ el carrito compra a quien se elija y el pedido va a ese proveedor (2.7968ms)
+✔ volver al proveedor habitual y quitar la alternativa deja el carrito limpio (3.1759ms)
+✔ un recordatorio deja rastro sin tocar el pedido y no se repite el mismo día (9.5334ms)
+✔ el texto del recordatorio sale de la plantilla y dice cuántos días lleva (2.1376ms)
+✔ lee un precio del mensaje solo cuando el texto no deja dudas (0.3098ms)
+✔ un precio leído viaja en la interpretación y no cambia nada por su cuenta (7.5092ms)
+✔ apuntar el precio de un mensaje deja origen, documento citado y stock intacto (2.4322ms)
+✔ apuntar el precio de un documento cita el documento archivado (2.5781ms)
+✔ el catálogo del proveedor dice «No disponible» cuando nada fecha el precio (0.3103ms)
+✔ el catálogo incluye los productos que también compra a ese proveedor (14.189ms)
+✔ nombre y alias completos identifican sin depender de tildes (8.0202ms)
+✔ varios nombres quedan por revisar y el NIF distingue al emisor (0.5436ms)
+✔ WhatsApp usa el remitente conocido y no una mención en el mensaje (0.5078ms)
+✔ Makro se reconoce cuando existe una ficha local con ese nombre (21.1245ms)
+✔ el identificador no modifica el estado ni acepta entradas ilimitadas (3.246ms)
+✔ OCR real con idioma incluido y fetch bloqueado reconoce proveedor (713.7634ms)
+✔ el acceso de inicio no lleva ninguna versión escrita a mano (3.3026ms)
+✔ empaquetado: cada plataforma lleva solo sus binarios nativos y su nombre de carpeta (1.4358ms)
+✔ empaquetado Mac: el Info.plist de Electron.app queda con nombre, identificador y versión de la app (1.2629ms)
+✔ empaquetado: nombre ArtelloAPP sin perder la identidad ni los datos de antes (6.5617ms)
+✔ el texto de un PDF sale del propio archivo, sin OCR (312.0731ms)
+✔ un PDF escaneado no trae texto y la app lo dice en vez de inventarlo (18.8636ms)
+✔ acepta el archivo tal cual y rechaza lo que no es un PDF (34.7512ms)
+✔ qué producir hoy: objetivo − stock, con la venta media reciente como dato (65.1864ms)
+✔ indicadores del día para el inicio: hechos de hoy y aviso de ayer sin confirmar (27.1737ms)
+✔ servidor: /api/plan y el día en el sobre de estado (638.4147ms)
+✔ cuadrante (lecturas guardadas): fechas, año deducido por los días de la semana y personas (160.188ms)
+✔ cuadrante: reglas de casillas (letras mal leídas, horas dudosas, tinta sin leer) (1.6813ms)
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+Warning: Invalid resolution 25 dpi. Using 70 instead.
+✔ lectura real de un cuadrante sintético grande: cuadrícula y casillas (9363.0248ms)
+✔ turnos con nombre y horas opcionales; un cuadrante se guarda por días sin tocar el horario de apertura (53.2363ms)
+✔ cierre del día: vendido, o lo que queda, con motivo de merma (33.8601ms)
+✔ cierre del día: deshacer compensa todo el día y el historial no cuenta lo deshecho (14.7619ms)
+✔ resumen semanal: cuenta por día de negocio y no cuenta lo deshecho (6.0595ms)
+✔ cierre del día: ruta del historial con permisos y motivos (647.332ms)
+✔ fase 2: invitación o consumo sale del stock, pero no es merma ni venta (7.4898ms)
+✔ fase 2: las degustaciones apuntadas antes como merma se leen como invitación, sin reescribir nada (1.8981ms)
+✔ merma de un ingrediente: los mismos motivos que el cierre del día, y la semana los junta (5.2053ms)
+✔ objetivo de merma por producto, en su unidad o en porcentaje: solo avisa (12.5702ms)
+✔ merma de un gelato desde Inventario: a cualquier hora, y cuenta como merma del cierre de ese día (13.1549ms)
+✔ servidor SQLite: autenticación, revisión, persistencia y restauración (879.9053ms)
+✔ envío real por WhatsApp desde el servidor: vista previa exacta, un envío y estado enviado (425.6016ms)
+✔ copia automática al arrancar, con retención de copias automáticas y aviso en el estado (311.9312ms)
+✔ la preferencia de conectar WhatsApp al abrir se guarda y se refleja en la vista (152.3353ms)
+✔ exportación CSV de inventario y movimientos con BOM y punto y coma (198.3408ms)
+✔ recetario con contraseña: oculta recetas, bloquea acciones, desbloquea y limpieza configurable (667.0995ms)
+✔ responder a un mensaje de WhatsApp desde la bandeja envía el texto y anota la decisión (247.9129ms)
+✔ CSV: las celdas que empezarían una fórmula llevan apóstrofo; los números no cambian (0.5039ms)
+✔ registros locales: pasado 1 MB el archivo rota a .anterior y sigue escribiendo (19.9352ms)
+✔ copia secundaria: se valida la carpeta, se copia cada copia y se avisa en el estado (225.1859ms)
+✔ historial paginado: la interfaz recibe solo lo reciente y pide lo demás a /api/history (399.8401ms)
+✔ envío por lotes: lista completa, selección, envío uno a uno con pausa y progreso consultable (416.3558ms)
+✔ exportación CSV a una carpeta elegida: ruta absoluta obligatoria, archivos creados allí (183.1887ms)
+✔ plantilla del pedido: se guarda, exige {lineas} y la vista previa la usa (259.2653ms)
+✔ un PDF con texto se lee en el servidor y propone proveedor; un escaneo lo dice (374.2004ms)
+✔ catálogo por proveedor: el sobre de estado lo trae y apuntar un precio cita el mensaje (230.6997ms)
+✔ escribir a un proveedor desde Mensajes: solo a su chat autorizado y con el canal conectado (236.7946ms)
+✔ latido: qué ha llegado sin traer todo el estado, con la lectura del último mensaje y el aviso apagable (225.2183ms)
+✔ pesadas: gramos y kilos se guardan en kg sin errores; lo imposible se rechaza (63.7627ms)
+✔ venta estimada por sabor con cada componente, facturación con su precio y con el de referencia (107.6997ms)
+✔ si falta una pesada no hay estimación: se dice cuál falta; un sabor sin datos no cuenta (9.3527ms)
+✔ un conteo no entra en la cuenta; una cuenta negativa se marca como imposible (5.3469ms)
+✔ resúmenes: día anterior, semana de lunes a domingo e histórico desde el primer dato (5.3272ms)
+✔ alta rápida de sabores: sin ingredientes, se producen y su coste es «No disponible» (5.7385ms)
+✔ pesadas y precio de referencia se guardan y vuelven al abrir la base (298.6599ms)
+✔ igualar el stock a la pesada de hoy: conteo solo en sabores sin movimientos hoy (4.8415ms)
+✔ tras igualar el stock a la pesada, la app y la pesada coinciden y se puede seguir el día (2.1859ms)
+✔ mínimos de la mañana: avisa por debajo, cuenta lo producido y respeta «hoy no se hace» y la pausa (12.3359ms)
+✔ editar la ficha del producto no borra su mínimo ni la pausa (3.5302ms)
+✔ migración conserva JSON, datos y fotografías en adjuntos separados (269.9783ms)
+✔ JSON inválido no se reemplaza por datos de ejemplo (85.8364ms)
+✔ un fallo a mitad de transacción revierte stock, movimiento y operación (241.8223ms)
+✔ dos conexiones detectan versión obsoleta y no pisan cambios (259.9953ms)
+✔ idempotencia persiste al reiniciar y rechaza reutilizar ID con otro contenido (179.6824ms)
+✔ adjuntos se deduplican por contenido y las copias son portables (243.0728ms)
+✔ no acepta un archivo falso con extensión de imagen (149.2002ms)
+✔ restauración reemplaza relaciones en una sola transacción (117.7991ms)
+✔ terminación del proceso sin commit no deja cambios parciales (174.0022ms)
+✔ guardar un movimiento no reescribe el historial previo (354.7595ms)
+✔ clasificación corregida y texto original persisten tras reinicio SQLite (125.1103ms)
+✔ crear proveedor crea carpeta estable y ficha aunque cambie el nombre (114.9557ms)
+✔ foto por proveedor y fecha se conserva al reclasificar y restaurar (186.2943ms)
+✔ fotos antiguas quedan sin proveedor y fechas inexistentes se rechazan (69.7191ms)
+✔ fallo del archivo derivado avisa sin perder la transacción y permite recuperar (72.6213ms)
+✔ datos identificativos y OCR persisten y están en la copia portable (143.4801ms)
+✔ recetas y producciones persisten en SQLite y sobreviven al reinicio (109.0475ms)
+✔ corte brusco del proceso a mitad de escrituras deja la base íntegra y consistente (20106.7615ms)
+✔ las frases aprendidas persisten y la base pasa a versión 3 sin perder datos (120.422ms)
+✔ un PDF se almacena por huella, se sirve con su tipo y se archiva por proveedor (102.4768ms)
+✔ historial de precios persiste en SQLite (user_version 5) y sobrevive a reabrir (128.538ms)
+✔ después de guardar, lo que queda en memoria es idéntico a releer la base (237.3844ms)
+✔ ejemplo del usuario: chocolate a 50 €/kg de coste y 100 €/kg de venta (37.8177ms)
+✔ el valor de venta tiene historial: cambiarlo hoy no toca los días pasados (35.0025ms)
+✔ coste calculado con los precios de compra; instantánea en cada producción (6.4312ms)
+✔ sin precio de compra el coste es «No disponible», salvo que se escriba a mano (11.8527ms)
+✔ el valor de venta exige que el gelato esté dado de alta para vender (1.6766ms)
+✔ servidor: la receta trae su coste con fórmula y /api/sales los dos informes (775.8348ms)
+✔ una receta nueva da de alta su gelato sola: ya admite valor, ventas y mermas (6.0595ms)
+✔ fase 6: los apuntes hablan claro y el cambio de texto no rompe ningún cálculo (4.705ms)
+✔ el valor de venta se puede fechar hacia atrás, nunca hacia delante, y avisa de los días cerrados (14.0793ms)
+✔ cambiar cuenta registra número anterior/nuevo y no mezcla conversaciones (91.4709ms)
+✔ eventos se deduplican dentro de una cuenta y no entre números propios (62.8863ms)
+✔ revocar contacto detiene importación y conserva lo importado (81.1712ms)
+✔ remitente ajeno no dispara descarga ni deja mensajes (54.8185ms)
+✔ evento de sesión anterior se ignora tras un cambio (57.4624ms)
+✔ mensaje autorizado conserva la cuenta y el remitente (81.4367ms)
+✔ sesión y cuentas persisten al reiniciar sin contener QR (51.0336ms)
+✔ respaldo conserva conversaciones sin copiar credenciales (67.2756ms)
+✔ envío real: solo conectado, solo a chats autorizados, una vez por pedido y con registro (69.5238ms)
+✔ diagnóstico local registra motivos sin contenido y resuelve remitentes por LID (77.4343ms)
+✔ envío real: usa el chat resuelto por WhatsApp y falla de forma visible si no existe chat (59.6477ms)
+✔ entrante con identificador sin _serialized se importa con clave reconstruida y no se duplica (45.5796ms)
+✔ un mensaje autorizado de un proveedor entra en la bandeja principal una sola vez (65.3593ms)
+✔ preferencia de conexión automática y evento local al recibir un mensaje autorizado (47.7821ms)
+✔ el aviso de un mensaje autorizado dice lo que las reglas han leído (53.3579ms)
+✔ la sesión se recuerda al conectar y solo se olvida al cerrarla (73.7145ms)
+✔ una sesión ya vinculada se recuerda una sola vez, y apagarlo después se respeta (58.0211ms)
+✔ recuperación del historial reciente importa solo lo que falta y respeta autorizaciones (46.1163ms)
+✔ reconexión automática se programa solo con la preferencia activa y sin cierre de sesión (40.9897ms)
+✔ limpieza del canal borra mensajes, envíos, notas y adjuntos antiguos y conserva lo reciente (48.6593ms)
+✔ un adjunto de proveedor autorizado se archiva en Documentos con texto OCR si está disponible (51.0983ms)
+ℹ tests 247
+ℹ suites 0
+ℹ pass 247
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24401.8431

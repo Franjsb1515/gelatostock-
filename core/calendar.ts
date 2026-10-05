@@ -13,7 +13,7 @@ import {
 } from "./day.js";
 import { localDate } from "./messages.js";
 import { businessDay } from "./plan.js";
-import { kg, pad } from "./util.js";
+import { isOff, kg, pad } from "./util.js";
 
 export type CalendarDay = {
   date: string;
@@ -174,12 +174,13 @@ export function dayAlerts(
     );
   if (plan?.closed && live.sold)
     out.push("El horario decía cerrado y hay ventas apuntadas.");
-  if (mark && plan?.shifts.length)
+  const working = (plan?.shifts ?? []).filter((t) => !isOff(t));
+  if (mark && working.length)
     out.push("Hay turnos un día que la tienda no abrió.");
-  if (plan && !plan.closed && !plan.open && plan.shifts.length)
+  if (plan && !plan.closed && !plan.open && working.some((t) => t.from))
     out.push("Hay turnos pero falta el horario de apertura.");
   const away = awayOn(s, date);
-  for (const t of plan?.shifts ?? [])
+  for (const t of working)
     if (away.some((v) => samePerson(v.person, t.person)))
       out.push(`${t.person} tiene turno y está de vacaciones.`);
   return out.map((text) => ({ date, text }));

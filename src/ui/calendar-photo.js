@@ -36,8 +36,71 @@ function calNotesPanel(d) {
   );
 }
 
+/** Texto de una casilla del cuadrante para editarla: «Apertura», «11:00-16:00», «Cierre 10:00-17:00». */
+const rosterText = (v) =>
+  v
+    ? [v.label, v.from ? v.from + "-" + v.to : ""].filter(Boolean).join(" ")
+    : "";
+/** Lo escrito en una casilla → turno: horas «11:00-16:00» (o «11 a 16») y/o un tipo. */
+function rosterParse(person, raw) {
+  const text = raw.trim();
+  if (!text) return null;
+  const m =
+    /(\d{1,2})(?::(\d{2}))?\s*(?:-|–|a|A|hasta)\s*(\d{1,2})(?::(\d{2}))?/.exec(
+      text,
+    );
+  const clock = (h, mm) =>
+    String(Number(h) % 24).padStart(2, "0") + ":" + (mm || "00");
+  const label = (m ? text.replace(m[0], "") : text).trim();
+  if (
+    m &&
+    (Number(m[1]) > 24 ||
+      Number(m[3]) > 24 ||
+      Number(m[2] || 0) > 59 ||
+      Number(m[4] || 0) > 59)
+  )
+    throw Error(`${person}: «${text}» no es una hora válida.`);
+  return {
+    person,
+    ...(label ? { label: label.charAt(0).toUpperCase() + label.slice(1) } : {}),
+    ...(m ? { from: clock(m[1], m[2]), to: clock(m[3], m[4]) } : {}),
+  };
+}
+/** Tabla de revisión del cuadrante leído. */
+function rosterReview(r) {
+  const ro = r.roster;
+  const days = ro.dates.length
+    ? ro.dates
+    : ro.weekdays.map((_, i) => "día " + (i + 1));
+  const head = days
+    .map((d, i) => {
+      const w = ro.weekdays[i];
+      const name =
+        w === null || w === undefined
+          ? ""
+          : ["L", "M", "X", "J", "V", "S", "D"][w];
+      return `<th>${esc(name)}<br><small>${esc(ro.dates.length ? Number(d.slice(8)) + "/" + Number(d.slice(5, 7)) : d)}</small></th>`;
+    })
+    .join("");
+  const rows = ro.people
+    .map(
+      (p, pi) =>
+        `<tr><th><label class="check"><input type="checkbox" name="rp:${pi}" checked> ${esc(p.name)}</label></th>${p.cells
+          .map(
+            (c, ci) =>
+              `<td class="${c.sure ? "" : "roster-unsure"}"><input type="text" name="rc:${pi}:${ci}" value="${esc(rosterText(c.value))}" list="cal-shift-types" aria-label="${esc(p.name)}, ${esc(days[ci])}" title="${esc(c.sure ? "Leído: " + c.raw : "Revisar. Leído: «" + c.raw + "»" + (c.options ? " (lecturas: " + c.options.join(", ") + ")" : ""))}"></td>`,
+          )
+          .join("")}</tr>`,
+    )
+    .join("");
+  return `<div class="roster-review"><p class="fineprint">Cada casilla se puede corregir: un tipo de turno (Apertura, Cierre, Libre…), unas horas («11:00-16:00») o las dos cosas; vacía, sin turno. <span class="roster-key">Así</span> van las casillas dudosas: míralas con la foto. Quita la marca de quien no quieras guardar.</p><div class="table-scroll"><table class="roster-table"><thead><tr><th>Persona</th>${head}</tr></thead><tbody>${rows}</tbody></table></div><datalist id="cal-shift-types">${calShiftTypes()
+    .map((x) => `<option value="${esc(x)}">`)
+    .join("")}</datalist></div>`;
+}
+
 /** Detalle de la propuesta según el apartado elegido. */
 function calPhotoDetail(r, kind) {
+  if (kind === "schedule" && r.roster) return rosterReview(r);
   if (kind === "schedule")
     return r.schedule.length
       ? `<table class="report-table"><tbody>${r.schedule
@@ -143,6 +206,32 @@ function calPhotoModal(preset) {
       );
       if (!saved) return false;
       calData = null;
+      if (kind === "schedule" && reading.reading.roster) {
+        // Cuadrante: un día por columna, desde el primero (el leído, o el que elija la persona).
+        const ro = reading.reading.roster;
+        const dates = ro.dates.length
+          ? ro.dates
+          : ro.weekdays.map((_, i) => shiftDay(day, i));
+        if (ro.dates.length && day !== ro.dates[0])
+          for (let i = 0; i < dates.length; i++) dates[i] = shiftDay(day, i);
+        const days = dates.map((date, ci) => ({
+          date,
+          shifts: ro.people
+            .map((p, pi) =>
+              f.get("rp:" + pi) === "on"
+                ? rosterParse(p.name, String(f.get(`rc:${pi}:${ci}`) || ""))
+                : null,
+            )
+            .filter(Boolean),
+        }));
+        const kept = await mutate({ type: "setScheduleDays", days }, "");
+        if (!kept) return false;
+        calGo("week", calMonday(dates[0]));
+        toast(
+          `Cuadrante guardado: ${dates.length} días, del ${dates[0]} al ${dates.at(-1)}.`,
+        );
+        return true;
+      }
       if (kind === "schedule") {
         const week = calMonday(day);
         calGo("week", week);
@@ -168,10 +257,12 @@ function calPhotoModal(preset) {
   const box = form.querySelector("#cal-photo-proposal");
   const draw = (kind) => {
     const r = reading.reading;
+    // Un cuadrante necesita sitio: el diálogo se ensancha.
+    $("#modal").classList.toggle("wide", !!(r.roster && kind === "schedule"));
     box.innerHTML = `<label class="field">Apartado<select name="kind">${options(
       Object.entries(calKindLabel),
       kind,
-    )}</select></label><label class="field">Día${r.date ? "" : preset ? " (la foto no lo dice: es el día que tenías abierto)" : " (la foto no lo dice: elígelo)"}<input name="date" type="date" value="${esc(r.date || preset || "")}" required></label><ul class="cal-reasons">${r.reasons.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${r.skipped.length ? `<div class="ai-warning"><p>No se usa (revísalo mirando la foto):</p><ul>${r.skipped.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}${calPhotoDetail(r, kind)}<img class="photo-preview" src="${esc(data)}" alt="La foto que se está leyendo"><details><summary>Texto leído de la foto</summary><textarea readonly rows="6">${esc(reading.text)}</textarea></details>`;
+    )}</select></label><label class="field">${r.roster && kind === "schedule" ? "Primer día del cuadrante" : "Día"}${r.date ? "" : preset ? " (la foto no lo dice: es el día que tenías abierto)" : " (la foto no lo dice: elígelo)"}<input name="date" type="date" value="${esc(r.date || preset || "")}" required></label><ul class="cal-reasons">${r.reasons.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>${r.skipped.length ? `<div class="ai-warning"><p>No se usa (revísalo mirando la foto):</p><ul>${r.skipped.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}${calPhotoDetail(r, kind)}<img class="photo-preview" src="${esc(data)}" alt="La foto que se está leyendo"><details><summary>Texto leído de la foto</summary><textarea readonly rows="6">${esc(reading.text)}</textarea></details>`;
     box
       .querySelector("select[name=kind]")
       .addEventListener("change", (e) => draw(e.target.value));
@@ -187,7 +278,8 @@ function calPhotoModal(preset) {
       box.innerHTML = "";
       if (!file) return;
       button.disabled = true;
-      status.textContent = "Leyendo la foto en este equipo…";
+      status.textContent =
+        "Leyendo la foto en este equipo… Si es un cuadrante, se lee casilla por casilla y puede tardar hasta un minuto.";
       try {
         if (
           !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
@@ -201,6 +293,8 @@ function calPhotoModal(preset) {
         data = read;
         name = file.name;
         reading = result;
+        // Leída la foto, la zona de subida se queda pequeña: lo importante es la propuesta.
+        form.querySelector(".upload-zone")?.classList.add("compact");
         status.textContent = result.reading.kind
           ? "Propuesta: revisa el apartado, el día y lo leído antes de guardar."
           : "No se pudo leer: la foto se guarda en su día y puedes escribir lo que dice.";

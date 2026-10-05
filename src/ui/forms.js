@@ -46,6 +46,7 @@ function select(label, name, items, current) {
 }
 function modal(title, description, body, onSubmit, label = "Guardar") {
   const d = $("#modal");
+  d.classList.remove("wide");
   d.innerHTML = `<form id="modal-form"><div class="modal-heading"><div><h2>${esc(title)}</h2><p>${esc(description)}</p></div><button type="button" class="icon-button" data-action="close" aria-label="Cerrar">${icon("close")}</button></div><div class="modal-body">${body}<p id="form-error" role="alert"></p></div><div class="modal-footer"><button type="button" class="btn secondary" data-action="close">Cancelar</button><button class="btn primary" type="submit">${label}</button></div></form>`;
   d.showModal();
   $("#modal-form").addEventListener("submit", async (e) => {

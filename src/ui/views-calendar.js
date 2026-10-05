@@ -50,6 +50,27 @@ async function loadCalendar() {
     if (page === "calendar") render();
   }
 }
+/** Un turno «Libre» no es trabajo (como isOff en core/util.ts). */
+const calIsOff = (t) =>
+  /^(libre|descanso|d[ií]a libre)$/i.test((t.label || "").trim());
+/** «Apertura · 10:00–17:00», «Cierre», «11:00–16:00». */
+const calShiftText = (t) =>
+  [t.label, t.from ? `${t.from}–${t.to}` : ""].filter(Boolean).join(" · ");
+/** Tipos de turno para elegir: los habituales y los que ya se han escrito. */
+const calShiftTypes = () => [
+  ...new Set([
+    "Apertura",
+    "Cierre",
+    "Partido",
+    "Producción",
+    "Mise en place",
+    "Logística",
+    "Libre",
+    ...state.schedule.flatMap((d) =>
+      d.shifts.map((x) => x.label).filter(Boolean),
+    ),
+  ]),
+];
 /** Lunes de la semana de un día. */
 const calMonday = (day) =>
   shiftDay(day, -((new Date(day + "T12:00:00").getDay() + 6) % 7));
@@ -512,15 +533,21 @@ function calSchedulePanel(d) {
     h
       ? `<p class="cal-lead">${esc(calHoursText(h))}</p>`
       : calNone("No disponible: el horario de esta semana no está apuntado."),
-    h?.shifts.length
+    h?.shifts.some((t) => !calIsOff(t))
       ? calSection(
           "Turnos",
           calList(
-            h.shifts.map((t) =>
-              calRow(esc(t.person), `${esc(t.from)}–${esc(t.to)}`),
-            ),
+            h.shifts
+              .filter((t) => !calIsOff(t))
+              .map((t) => calRow(esc(t.person), esc(calShiftText(t)))),
           ),
         )
+      : "",
+    h?.shifts.some(calIsOff)
+      ? `<p class="cal-none">Libran: ${h.shifts
+          .filter(calIsOff)
+          .map((t) => esc(t.person))
+          .join(", ")}.</p>`
       : "",
     d.vacations.length
       ? calSection(
@@ -591,7 +618,7 @@ function calWeekView() {
       return `<div class="cal-week-row ${d.closed ? "is-closed" : ""}" data-week-day="${esc(date)}"><div class="cal-week-date"><strong>${esc(weekday)}</strong><span>${esc(rest.join(", "))}</span>${away.length ? `<small>De vacaciones: ${away.map(esc).join(", ")}</small>` : ""}</div><div class="cal-week-hours"><label class="check"><input type="checkbox" data-k="closed" ${d.closed ? "checked" : ""}> Cerrado</label><div class="cal-time-range"><label>Abre${time("open", d.open, "Abre el " + day)}</label><label>Cierra${time("close", d.close, "Cierra el " + day)}</label></div></div><div class="cal-shifts"><span class="cal-shifts-label">Turnos</span>${slots
         .map(
           (t, j) =>
-            `<div class="cal-shift" data-shift><input type="text" data-k="person" maxlength="60" value="${esc(t.person)}" placeholder="Persona" aria-label="Turno ${j + 1} del ${esc(day)}: persona">${time("from", t.from, `Turno ${j + 1} del ${day}: desde`)}<span aria-hidden="true">–</span>${time("to", t.to, `Turno ${j + 1} del ${day}: hasta`)}</div>`,
+            `<div class="cal-shift" data-shift><input type="text" data-k="person" maxlength="60" value="${esc(t.person)}" placeholder="Persona" aria-label="Turno ${j + 1} del ${esc(day)}: persona"><input type="text" data-k="label" maxlength="40" list="cal-shift-types" value="${esc(t.label || "")}" placeholder="Turno (Apertura…)" aria-label="Turno ${j + 1} del ${esc(day)}: tipo">${time("from", t.from, `Turno ${j + 1} del ${day}: desde`)}<span aria-hidden="true">–</span>${time("to", t.to, `Turno ${j + 1} del ${day}: hasta`)}</div>`,
         )
         .join("")}</div></div>`;
     })
@@ -613,7 +640,11 @@ function calWeekView() {
       "calWeek",
       `data-week="${shiftDay(calWeek, 7)}"`,
     ),
-  )}<div class="cal-card-body"><p class="cal-help">Escribe la hora de abrir y la de cerrar de cada día, o marca «Cerrado». En cada turno, la persona y de qué hora a qué hora; si acaba después de medianoche, pon la hora tal cual. Un día sin nada escrito queda «sin horario apuntado». No cambia el stock ni las ventas.</p>${calWeekDraft ? '<p class="ai-warning">Copiado de la semana anterior: revísalo y pulsa «Guardar la semana». Aún no está guardado.</p>' : ""}<div class="cal-week-list">${rows}</div><div class="setting-actions cal-week-actions">${btn("Guardar la semana", "calSaveWeek", "primary")}${btn("Copiar la semana anterior", "calCopyWeek", "secondary")}</div></div></section>${calCard(
+  )}<div class="cal-card-body"><p class="cal-help">Escribe la hora de abrir y la de cerrar de cada día, o marca «Cerrado». En cada turno, la persona y su tipo (Apertura, Cierre, Libre…), sus horas o las dos cosas; si acaba después de medianoche, pon la hora tal cual. Un día sin nada escrito queda «sin horario apuntado». No cambia el stock ni las ventas.</p>${calWeekDraft ? '<p class="ai-warning">Copiado de la semana anterior: revísalo y pulsa «Guardar la semana». Aún no está guardado.</p>' : ""}<div class="cal-week-list">${rows}</div><datalist id="cal-shift-types">${calShiftTypes()
+    .map((x) => `<option value="${esc(x)}">`)
+    .join(
+      "",
+    )}</datalist><div class="setting-actions cal-week-actions">${btn("Guardar la semana", "calSaveWeek", "primary")}${btn("Copiar la semana anterior", "calCopyWeek", "secondary")}</div></div></section>${calCard(
     "Vacaciones de esta semana",
     "Van por persona: esos días no lleva turno. Si alguien de vacaciones tiene turno, el Calendario lo avisa.",
     calList(
@@ -642,14 +673,27 @@ function calReadWeek(panel) {
     const shifts = [];
     for (const sh of row.querySelectorAll("[data-shift]")) {
       const person = k(sh, "person").value.trim();
+      const label = k(sh, "label").value.trim();
       const from = k(sh, "from").value;
       const to = k(sh, "to").value;
-      if (!person && !from && !to) continue;
-      if (!person || !from || !to)
+      if (!person && !label && !from && !to) continue;
+      if (!person)
         throw new Error(
-          `${calShortDay(date)}: a un turno le falta la persona o una de las horas.`,
+          `${calShortDay(date)}: a un turno le falta la persona.`,
         );
-      shifts.push({ person, from, to });
+      if (!from !== !to)
+        throw new Error(
+          `${calShortDay(date)}: el turno de ${person} lleva hora de empezar y de acabar, o ninguna.`,
+        );
+      if (!label && !from)
+        throw new Error(
+          `${calShortDay(date)}: al turno de ${person} le falta el tipo (Apertura, Cierre…) o las horas.`,
+        );
+      shifts.push({
+        person,
+        ...(label ? { label } : {}),
+        ...(from ? { from, to } : {}),
+      });
     }
     const open = k(row, "open").value;
     const close = k(row, "close").value;

@@ -268,5 +268,17 @@
     "question": "¿Qué hago con un sabor que no hago en invierno para que no avise?",
     "expect": ["pausa"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "cuadrante_foto",
+    "question": "¿Puedo subir la foto del cuadrante de turnos del mes?",
+    "expect": ["cuadrante|casilla"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "cuadrante_mejor",
+    "question": "¿Cómo hago para que lea mejor el cuadrante?",
+    "expect": ["zoom|grande|captura"],
+    "forbid": ["no lo sé"]
   }
 ]

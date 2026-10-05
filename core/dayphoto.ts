@@ -6,6 +6,7 @@ import type { State } from "./schema";
 import { guessDocType, type DocType } from "./documents";
 import { identifySupplier } from "./identify";
 import { fold, kg as kgRound, pad } from "./util";
+import type { Roster } from "./roster";
 
 export type PhotoKind = "schedule" | "sales" | "document" | "note";
 export type ReadShift = { person: string; from: string; to: string };
@@ -42,7 +43,42 @@ export type DayPhotoReading = {
   skipped: string[];
   document: { docType?: DocType; supplier?: string } | null;
   note: string;
+  /** Cuadrante de turnos leído como tabla (persona × día), si la foto lo es. */
+  roster?: Roster;
 };
+
+/** Propuesta de una foto que es un cuadrante de turnos (leído casilla por casilla). */
+export function rosterReading(r: Roster): DayPhotoReading {
+  const unsure = r.people.reduce(
+    (n, p) => n + p.cells.filter((c) => !c.sure).length,
+    0,
+  );
+  const cells = r.people.reduce((n, p) => n + p.cells.length, 0);
+  const reasons = [
+    `Es un cuadrante: ${r.people.length} ${r.people.length === 1 ? "persona" : "personas"} y ${r.dates.length || r.weekdays.length} días, leídos casilla por casilla. Revísalo antes de guardar.`,
+    unsure
+      ? `${unsure} de ${cells} casillas están marcadas para revisar (lectura dudosa).`
+      : "Todas las casillas se leyeron con seguridad.",
+    ...(r.dates.length
+      ? [`Del ${r.dates[0]} al ${r.dates.at(-1)}. ${r.yearReason}`]
+      : []),
+    ...r.problems,
+    ...(r.skipped.length ? [`No se usan: ${r.skipped.join(", ")}.`] : []),
+  ];
+  return {
+    kind: "schedule",
+    date: r.dates[0] ?? null,
+    dateText: null,
+    reasons,
+    schedule: [],
+    sales: [],
+    unknown: [],
+    skipped: [],
+    document: null,
+    note: "",
+    roster: r,
+  };
+}
 
 const months: Record<string, number> = {
   enero: 1,

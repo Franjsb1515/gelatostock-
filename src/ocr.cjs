@@ -2,9 +2,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createWorker } = require("tesseract.js");
 let running = false;
-async function recognizeLocal(data) {
-  if (running)
-    throw Error("Ya hay una lectura en curso. Espera a que termine.");
+/** Bytes de una imagen JPG, PNG o WebP en data URL, comprobando que lo es (máx. 5 MB). */
+function imageBytes(data) {
   if (
     typeof data !== "string" ||
     data.length > 8000000 ||
@@ -29,6 +28,12 @@ async function recognizeLocal(data) {
         : webp)
   )
     throw Error("El contenido no corresponde a una imagen válida.");
+  return bytes;
+}
+async function recognizeLocal(data) {
+  if (running)
+    throw Error("Ya hay una lectura en curso. Espera a que termine.");
+  const bytes = imageBytes(data);
   const langPath = path.join(
     path.dirname(require.resolve("@tesseract.js-data/spa/package.json")),
     "4.0.0",
@@ -74,4 +79,4 @@ async function recognizeLocal(data) {
     running = false;
   }
 }
-module.exports = { recognizeLocal };
+module.exports = { recognizeLocal, imageBytes };

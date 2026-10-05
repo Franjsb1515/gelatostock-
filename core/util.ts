@@ -16,3 +16,7 @@ export function addDays(day: string, n: number): string {
   const x = new Date(Date.UTC(y ?? 1970, (m ?? 1) - 1, (d ?? 1) + n));
   return `${x.getUTCFullYear()}-${pad(x.getUTCMonth() + 1)}-${pad(x.getUTCDate())}`;
 }
+
+/** Un turno «Libre» (o «Descanso») no es trabajo: no cuenta como turno en los avisos. */
+export const isOff = (t: { label?: string | undefined }): boolean =>
+  /^(libre|descanso|d[ií]a libre)$/i.test((t.label ?? "").trim());

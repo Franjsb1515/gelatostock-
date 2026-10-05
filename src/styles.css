@@ -5134,3 +5134,78 @@ button.text-link:focus-visible {
   align-items: center;
   white-space: nowrap;
 }
+
+/* ---------- Cuadrante leído de una foto (0.54.0) ---------- */
+dialog.wide {
+  width: min(1240px, calc(100vw - 48px));
+}
+.roster-review .fineprint {
+  margin-bottom: var(--s-3);
+}
+.roster-key {
+  padding: 1px 6px;
+  border-radius: var(--r-sm);
+  background: var(--azafran-claro);
+  color: var(--azafran-texto);
+  font-weight: 600;
+}
+.roster-table {
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: var(--fs-12);
+}
+.roster-table th {
+  padding: 2px 4px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-align: center;
+  white-space: nowrap;
+}
+.roster-table tbody th {
+  text-align: left;
+}
+.roster-table tbody th .check {
+  margin: 0;
+  align-items: center;
+  font-size: var(--fs-13);
+  color: var(--ink);
+}
+.roster-table td input {
+  width: 92px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: var(--fs-12);
+}
+.roster-table td.roster-unsure input {
+  border-color: var(--azafran);
+  background: var(--azafran-claro);
+}
+.cal .cal-shift {
+  grid-template-columns: minmax(100px, 1fr) minmax(120px, 1fr) 104px auto 104px;
+}
+.upload-zone.compact {
+  padding: var(--s-2) var(--s-3);
+  flex-direction: row;
+  gap: var(--s-3);
+}
+.upload-zone.compact > svg,
+.upload-zone.compact > span {
+  display: none;
+}
+.roster-table td,
+.roster-table th {
+  padding: 2px;
+  border: 0;
+  background: none;
+}
+.roster-table thead th {
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  padding: 4px 2px;
+}
+.roster-table td input {
+  width: 104px;
+}

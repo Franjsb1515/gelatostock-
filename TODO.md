@@ -1,4 +1,4 @@
-# TODO — estado real de 0.53.1
+# TODO — estado real de 0.54.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -24,6 +24,9 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] El Ayudante explica horario, vacaciones y fotos (0.50.0, chat 39/39).
 - [ ] [app] La prueba de escritorio no recorre todavía el horario de la semana ni la subida de fotos (lo cubren work/check-calendario-fase2.cjs y work/check-calendario-fotos.cjs).
 - [ ] [tú] Usar unos días la 0.46.0 con tus gelatos y decir qué no se entiende o estorba: esas correcciones van antes que nada.
+- [x] [app] Cuadrante de turnos en foto (0.54.0): lectura por casillas con revisión; tu cuadrante 55/56, ninguna mal dada por segura.
+- [ ] [tú] Más cuadrantes reales (otro mes, otra persona) para medir; mejor captura con zoom.
+- [ ] [app] Guardar también la foto del cuadrante en su primer día; tipos de turno con horas por defecto (Apertura = 10:00–17:00) si los quieres.
 - [ ] [tú] Antes de entregar la app: quitar «Envío simulado» y los mensajes y pedidos de demostración (siguen por tu decisión del 2026-09-20).
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
