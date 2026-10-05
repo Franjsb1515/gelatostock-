@@ -2,6 +2,8 @@
 // person must read and extract a delivery date when the text states one. The local
 // model can add a second, revisable opinion; neither changes orders or stock.
 // Corrections made by the person are remembered (learned phrases) and applied first.
+import { fold } from "./util";
+export { fold };
 export const replyCategories = [
   "out_of_stock",
   "cancellation",
@@ -29,8 +31,6 @@ export type Interpretation = {
   corrected?: boolean;
 };
 export type LearnedPhrase = { pattern: string; category: ReplyCategory };
-export const fold = (v: string) =>
-  v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 // Canonical form used to remember and match corrected messages.
 export const normalizePhrase = (v: string) =>
   fold(v)

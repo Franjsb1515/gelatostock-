@@ -8,6 +8,7 @@ import type { State } from "./schema.js";
 import { closeLineOf, undoneMovements } from "./sales.js";
 import { computeDay, isDayClosed, notOpenedOn } from "./day.js";
 import { localDate } from "./messages.js";
+import { addDays as shift, kg } from "./util.js";
 
 export const PLAN_WINDOW_DAYS = 14;
 export type PlanRow = {
@@ -32,12 +33,6 @@ export type ProductionPlan = {
   /** Días con algún cierre registrado dentro del periodo (el divisor de la media). */
   closeDays: number;
   rows: PlanRow[];
-};
-const kg = (n: number): number => Math.round(n * 1000) / 1000;
-const shift = (date: string, days: number): string => {
-  const d = new Date(date + "T12:00:00");
-  d.setDate(d.getDate() + days);
-  return localDate(d);
 };
 /** Día de negocio de ahora mismo: antes de la hora de cambio todavía es «ayer». */
 export const businessDay = (now: Date, changeHour = 5): string =>

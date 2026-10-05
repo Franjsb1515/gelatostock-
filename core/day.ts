@@ -9,6 +9,7 @@ import type { State, Movement, DayClose, DaySnapshot } from "./schema.js";
 import { closeLineOf, undoneMovements } from "./sales.js";
 import { saleValueOn } from "./value.js";
 import { localDate } from "./messages.js";
+import { kg } from "./util.js";
 
 export type DaySummary = {
   date: string;
@@ -22,18 +23,31 @@ export type DaySummary = {
   /** DERIVADO: venta real − venta estimada de la instantánea (o del cálculo vivo). null si falta alguna. */
   difference: number | null;
 };
-const kg = (n: number): number => Math.round(n * 1000) / 1000;
 const euros = (quantity: number, perKg: number | null): number | null =>
   perKg === null ? null : Math.round(quantity * perKg);
 export const dayCloseId = (date: string): string => "day-" + date;
 
-/** Día de negocio de un movimiento: el del cierre o la producción; si no, su hora menos el cambio de día. */
-export function movementDay(s: State, m: Movement, changeHour: number): string {
+/** Día de negocio de cada producción, para no buscarla movimiento a movimiento en un bucle. */
+export const productionDays = (s: State): Map<string, string> =>
+  new Map(s.productions.map((p) => [p.id, p.date]));
+
+/**
+ * Día de negocio de un movimiento: el del cierre o la producción; si no, su hora menos el cambio
+ * de día. En un bucle, pásale productionDays(s) hecho una vez.
+ */
+export function movementDay(
+  s: State,
+  m: Movement,
+  changeHour: number,
+  days?: Map<string, string>,
+): string {
   const line = closeLineOf(m);
   if (line) return line.date;
   if (m.production) {
-    const p = s.productions.find((x) => x.id === m.production);
-    if (p) return p.date;
+    const d = days
+      ? days.get(m.production)
+      : s.productions.find((x) => x.id === m.production)?.date;
+    if (d) return d;
   }
   return localDate(new Date(Date.parse(m.at) - changeHour * 3_600_000));
 }
@@ -52,10 +66,11 @@ export function stockAtDayEnd(
   const p = s.products.find((x) => x.id === productId);
   if (!p) return 0;
   const undone = undoneMovements(s);
+  const days = productionDays(s);
   let later = 0;
   for (const m of s.movements) {
     if (m.product !== productId || undone.has(m.id) || m.reverses) continue;
-    if (movementDay(s, m, changeHour) > date) later += m.delta;
+    if (movementDay(s, m, changeHour, days) > date) later += m.delta;
   }
   return kg(p.stock - later);
 }
@@ -79,6 +94,7 @@ export function computeDay(
     after: number;
     touched: boolean;
   };
+  const days = productionDays(s);
   const acc = new Map<string, Acc>();
   for (const id of finished)
     acc.set(id, {
@@ -94,7 +110,7 @@ export function computeDay(
     const a = acc.get(m.product);
     // A compensated movement and its compensation add up to zero: neither counts anywhere.
     if (!a || undone.has(m.id) || m.reverses) continue;
-    const day = movementDay(s, m, changeHour);
+    const day = movementDay(s, m, changeHour, days);
     if (day > date) {
       a.after += m.delta;
       continue;

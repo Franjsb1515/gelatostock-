@@ -1,5 +1,15 @@
 # Registro de parches y sesiones
 
+## 0.50.1 — 2026-10-05 · sesión 052 (segunda parte) · Limpieza y velocidad
+
+Pediste limpiar y optimizar después del commit. Ahora, con un año de datos (medido con datos simulados; con los tuyos de hoy ya iba al instante):
+
+- El mes del Calendario carga en 0,05 s en vez de 1,3 s; la ficha de un día, en 0,008 s en vez de 0,16 s.
+- Guardar cualquier cosa tarda un tercio que antes.
+- Código repetido en nueve archivos, juntado en uno. Nada cambia en lo que ves ni en lo que se guarda.
+
+Informe reports/2026-10-05T02-00-00-000Z-limpieza-y-velocidad.md.
+
 ## 0.50.0 — 2026-10-05 · sesión 052 · Fotos en el Calendario y Ayudante
 
 Pediste las fotos y mejorar el Ayudante. Ahora:

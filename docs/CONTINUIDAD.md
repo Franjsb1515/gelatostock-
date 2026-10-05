@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.50.1
+Lee reports/2026-10-05T02-00-00-000Z-limpieza-y-velocidad.md. Limpieza medida (work/bench-core.cjs con un año simulado en work/bench-state.json, work/bench-store.cjs, work/bench-apply.cjs): movementDay acepta productionDays(s) (índice) y los bucles lo usan (mes del Calendario 1.292 → 52 ms); Store.dispatch usa el estado en memoria sin copia, write(next, true) no revalida lo que viene de apply y deja en memoria lo guardado normalizado con JSON (guardado 908 → 273 ms con 40.000 movimientos; prueba en tests/store.test.cjs de que memoria = releer la base). core/util.ts reúne kg, pad, fold y addDays (messages y cruises reexportan). Pantalla: ymd y shiftDay en src/ui/core.js. La validación zod completa por acción se mantiene (garantía). Pruebas 232, escritorio 22 PASS.
+
 ## Punto de continuidad 0.50.0
 Lee reports/2026-10-05T01-00-00-000Z-calendario-fotos.md. Fase 3 del Calendario: core/dayphoto.ts (readDayPhoto, findDates, readSchedule, readSales; solo reglas; sin fecha → null; horario → lunes de su semana; números sueltos, más de 50 kg y gelatos sin cantidad van a skipped), POST /api/calendar/photo (lectura + propuesta, no guarda), photo.calendarDate y state.dayNotes, acciones calendarPhoto/addDayNote/removeDayNote, src/ui/calendar-photo.js. Fotos sintéticas en tests/fixtures/fotos-calendario (casos.cjs con lo esperado y score; textos.json con lo leído; regenerar con scripts/make-calendar-photos.cjs, medir con scripts/evaluate-calendar-photos.cjs): 8/12, 0 inventos. Ayudante: cuatro párrafos en ai-help.cjs, cuatro preguntas (39/39); relevantGuide ya no cubre una pregunta con una sola palabra en común si trae otra que la guía no nombra (prueba del aeropuerto). Pruebas 231, escritorio 22 PASS.
 

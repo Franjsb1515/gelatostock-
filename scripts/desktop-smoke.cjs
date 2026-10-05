@@ -866,7 +866,7 @@ const { appName } = require("./package-rules.cjs");
       .waitFor();
     await window.locator('#modal [data-action="close"]').first().click();
     const calEmpty = await window.evaluate(() =>
-      calShiftDay(businessToday(), -20),
+      shiftDay(businessToday(), -20),
     );
     await window.evaluate((d) => calGo("day", d), calEmpty);
     await window.locator('[data-action="calNotOpened"]').click();

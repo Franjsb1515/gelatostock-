@@ -536,3 +536,31 @@ test("historial de precios persiste en SQLite (user_version 5) y sobrevive a rea
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("después de guardar, lo que queda en memoria es idéntico a releer la base", () =>
+  fixture((dir, open) => {
+    const store = open();
+    const go = (a) => store.dispatch({ ...a, revision: store.load().revision });
+    go({ type: "count", product: "p1", value: 3, reason: "Conteo" });
+    go({ type: "photo", name: "f.png", data: png, note: "", supplier: "s1" });
+    go({ type: "cart", product: "p2", packs: 2 });
+    go({ type: "produce", recipe: "r1", quantity: 1, date: "2026-10-06" });
+    go({
+      type: "calendarPhoto",
+      date: "2026-10-06",
+      name: "n.png",
+      data: png,
+      note: "Nota",
+    });
+    go({
+      type: "addVacation",
+      person: "Ana",
+      from: "2026-10-06",
+      to: "2026-10-07",
+    });
+    const cached = store.load();
+    // Un guardado no debe dejar el adjunto en línea en memoria: se guarda como archivo.
+    assert.ok(cached.photos.every((p) => p.file && !p.data));
+    const fresh = open().load();
+    assert.deepEqual(cached, fresh);
+  }));

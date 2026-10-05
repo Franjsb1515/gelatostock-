@@ -5,6 +5,7 @@
 import type { State } from "./schema";
 import { guessDocType, type DocType } from "./documents";
 import { identifySupplier } from "./identify";
+import { fold, kg as kgRound, pad } from "./util";
 
 export type PhotoKind = "schedule" | "sales" | "document" | "note";
 export type ReadShift = { person: string; from: string; to: string };
@@ -43,9 +44,6 @@ export type DayPhotoReading = {
   note: string;
 };
 
-const fold = (v: string): string =>
-  v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-const pad = (n: number): string => String(n).padStart(2, "0");
 const months: Record<string, number> = {
   enero: 1,
   ene: 1,
@@ -304,7 +302,6 @@ function gelatos(s: State) {
 
 /** Tope de lo que un sabor puede vender en un día; por encima, la cantidad se da por mal leída. */
 const MAX_KG = 50;
-const kgRound = (n: number): number => Math.round(n * 1000) / 1000;
 const qtyRe =
   /(?<![\d.,])(\d+(?:[.,]\d{1,3})?)\s*(kg|kilos?|k(?![a-z])|gr|g(?![a-z])|gramos)/gu;
 

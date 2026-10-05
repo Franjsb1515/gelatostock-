@@ -64,7 +64,8 @@ const wallFormat = new Intl.DateTimeFormat("en-CA", {
   hour: "2-digit",
   minute: "2-digit",
 });
-const pad = (n: number): string => String(n).padStart(2, "0");
+import { addDays, pad } from "./util";
+export { addDays };
 /** Instante → hora de pared del puerto "AAAA-MM-DDTHH:mm". */
 export function wallFromInstant(ms: number): string {
   const p: Record<string, string> = {};
@@ -111,12 +112,6 @@ export const portToday = (now: Date = new Date()): string =>
   wallFromInstant(now.getTime()).slice(0, 10);
 export const portNow = (now: Date = new Date()): string =>
   wallFromInstant(now.getTime());
-/** Aritmética de calendario sobre "AAAA-MM-DD" (sin zonas: son fechas, no instantes). */
-export function addDays(day: string, n: number): string {
-  const [y, m, d] = day.split("-").map(Number);
-  const x = new Date(Date.UTC(y ?? 1970, (m ?? 1) - 1, (d ?? 1) + n));
-  return `${x.getUTCFullYear()}-${pad(x.getUTCMonth() + 1)}-${pad(x.getUTCDate())}`;
-}
 const dayWindow = (day: string): [number, number] => [
   instantFromWall(day + "T00:00"),
   instantFromWall(addDays(day, 1) + "T00:00"),

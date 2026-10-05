@@ -6,6 +6,7 @@
 // cada producción aprobada guarda una instantánea de su coste.
 import type { State, Recipe, Production } from "./schema.js";
 import { closeLineOf, undoneMovements, type CloseKind } from "./sales.js";
+import { kg } from "./util.js";
 
 export type CostSource = "calculated" | "manual";
 export type RecipeCostLine = {
@@ -28,7 +29,6 @@ export type RecipeCost = {
   perKg: number | null;
   source: CostSource | null;
 };
-const kg = (n: number): number => Math.round(n * 1000) / 1000;
 const euros = (quantity: number, centsPerKg: number): number =>
   Math.round(quantity * centsPerKg);
 

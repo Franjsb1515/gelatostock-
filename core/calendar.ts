@@ -8,10 +8,12 @@ import {
   daySummary,
   movementDay,
   notOpenedOn,
+  productionDays,
   type DaySummary,
 } from "./day.js";
 import { localDate } from "./messages.js";
 import { businessDay } from "./plan.js";
+import { kg, pad } from "./util.js";
 
 export type CalendarDay = {
   date: string;
@@ -65,14 +67,12 @@ export type CalendarYear = {
   months: (CalendarMonth["totals"] & { month: string })[];
 };
 
-const kg = (n: number): number => Math.round(n * 1000) / 1000;
 const monthPattern = /^\d{4}-(0[1-9]|1[0-2])$/;
-const pad = (n: number): string => String(n).padStart(2, "0");
 const daysIn = (year: number, month: number): number =>
   new Date(year, month, 0).getDate();
 /** Día de negocio de una hora guardada: antes de la hora de cambio todavía es «ayer». */
 const dayOf = (at: string, changeHour: number): string =>
-  localDate(new Date(Date.parse(at) - changeHour * 3_600_000));
+  businessDay(new Date(at), changeHour);
 
 const scheduleOn = (s: State, date: string) =>
   s.schedule.find((x) => x.date === date) ?? null;
@@ -201,9 +201,10 @@ function collect(
     s.recipes.map((r) => r.product).filter((id): id is string => !!id),
   );
   const undone = undoneMovements(s);
+  const days = productionDays(s);
   for (const m of s.movements) {
     if (undone.has(m.id) || m.reverses) continue;
-    const day = movementDay(s, m, changeHour);
+    const day = movementDay(s, m, changeHour, days);
     if (m.kind === "receipt") {
       const d = slot(day);
       if (d) d.receipts++;
@@ -342,10 +343,11 @@ function stockAt(
   changeHour: number,
 ): NonNullable<DayCard["stock"]> {
   const undone = undoneMovements(s);
+  const days = productionDays(s);
   const later = new Map<string, number>();
   for (const m of s.movements) {
     if (undone.has(m.id) || m.reverses) continue;
-    if (movementDay(s, m, changeHour) > date)
+    if (movementDay(s, m, changeHour, days) > date)
       later.set(m.product, (later.get(m.product) ?? 0) + m.delta);
   }
   const finished = new Set(s.recipes.map((r) => r.product).filter(Boolean));
@@ -376,6 +378,7 @@ export function dayCard(
   )
     throw new Error("Día inválido.");
   const undone = undoneMovements(s);
+  const days = productionDays(s);
   const product = (id: string) => s.products.find((p) => p.id === id);
   const supplier = (id: string) =>
     s.suppliers.find((x) => x.id === id)?.name ?? "Proveedor desconocido";
@@ -384,7 +387,7 @@ export function dayCard(
   for (const m of s.movements) {
     if (undone.has(m.id) || m.reverses) continue;
     if (m.kind !== "waste" && m.kind !== "receipt") continue;
-    if (movementDay(s, m, changeHour) !== date) continue;
+    if (movementDay(s, m, changeHour, days) !== date) continue;
     const p = product(m.product);
     if (!p) continue;
     if (m.kind === "receipt") {

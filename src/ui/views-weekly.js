@@ -13,11 +13,6 @@ async function loadWeekly(week) {
     if (page === "weekly") render();
   }
 }
-function shiftWeek(start, days) {
-  const [y, m, d] = start.split("-").map(Number);
-  const x = new Date(y, m - 1, d + days);
-  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
-}
 // Cruise facts next to the sales of each day. Facts only: no correlation is claimed yet.
 function cruiseWeekCell(c) {
   if (!c || !c.ships) return "—";

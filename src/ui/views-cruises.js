@@ -27,11 +27,6 @@ const cnum = (n) =>
     maximumFractionDigits: 2,
   }).format(n);
 const NA = '<span class="na">No disponible</span>';
-const cruiseShift = (day, n) => {
-  const [y, m, d] = day.split("-").map(Number);
-  const x = new Date(Date.UTC(y, m - 1, d + n));
-  return x.toISOString().slice(0, 10);
-};
 // Dates are port dates: formatted in UTC so the computer's zone can never move them a day.
 const cruiseDate = (day, options) =>
   new Date(day + "T12:00:00Z").toLocaleDateString("es-ES", {
@@ -68,7 +63,7 @@ function cruiseRangeBounds() {
     const last = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
     return [first, last];
   }
-  return [today, cruiseShift(today, cruiseTab === "month" ? 29 : 6)];
+  return [today, shiftDay(today, cruiseTab === "month" ? 29 : 6)];
 }
 async function loadCruises({ sync = false } = {}) {
   if (cruiseBusy) return;
@@ -102,9 +97,9 @@ async function loadCruises({ sync = false } = {}) {
       // Day context (weather forecast, official holidays, own events) for what is on screen.
       const selected = cruiseDay || cruiseDash.today;
       const lo = [from, selected, cruiseDash.today].sort()[0];
-      const hi = [to, selected, cruiseShift(cruiseDash.today, 1)].sort().at(-1);
+      const hi = [to, selected, shiftDay(cruiseDash.today, 1)].sort().at(-1);
       cruiseContext = {};
-      if (cruiseShift(lo, 100) >= hi) {
+      if (shiftDay(lo, 100) >= hi) {
         const ctx = await request(`/api/cruises/context?from=${lo}&to=${hi}`);
         cruiseContext = ctx.days;
         cruiseContextStatus = ctx.status;

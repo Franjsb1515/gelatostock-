@@ -29,11 +29,6 @@ function calShiftMonth(month, n) {
   const d = new Date(y, m - 1 + n, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
-function calShiftDay(day, n) {
-  const [y, m, d] = day.split("-").map(Number);
-  const x = new Date(y, m - 1, d + n);
-  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
-}
 function calUrl() {
   if (calView === "year") return "/api/calendar?year=" + calYear;
   if (calView === "day") return "/api/calendar/day?date=" + calDay;
@@ -57,7 +52,7 @@ async function loadCalendar() {
 }
 /** Lunes de la semana de un día. */
 const calMonday = (day) =>
-  calShiftDay(day, -((new Date(day + "T12:00:00").getDay() + 6) % 7));
+  shiftDay(day, -((new Date(day + "T12:00:00").getDay() + 6) % 7));
 const calShortDay = (day) =>
   new Date(day + "T12:00:00").toLocaleDateString("es-ES", {
     weekday: "long",
@@ -270,7 +265,7 @@ function calDayView(d) {
     d.cruise === null && d.context === null
       ? '<p class="muted">Cruceros, clima y festivos: desactivados en Configuración o no disponibles.</p>'
       : `<table class="report-table"><tbody>${calRow("Festivo", x?.holidays?.length ? x.holidays.map((h) => esc(h.name)).join(", ") : "No")}${x?.events?.length ? calRow("Evento", x.events.map((e) => esc(e.name)).join(", ")) : ""}${calRow("Clima", x?.weather ? `${esc(x.weather.label || "—")} · ${num(x.weather.tMin)}–${num(x.weather.tMax)} °C · ${esc(x.weather.kind)}` : "No disponible")}${calRow("Cruceros", c ? (c.ships ? `${c.ships} · ${esc(c.names.join(", "))} · impacto ${esc(c.impactLabel.toLowerCase())}` : "Ninguno registrado") : "No disponible")}</tbody></table><small>Fuentes: festivos del Govern balear, clima de MET Norway, cruceros de la Autoridad Portuaria de Baleares.</small>`;
-  return `<section class="panel"><div class="cal-nav">${btn("← Día anterior", "calDay", "secondary", `data-date="${calShiftDay(d.date, -1)}"`)}<h3>${esc(calLong(d.date))}</h3>${btn("Día siguiente →", "calDay", "secondary", `data-date="${calShiftDay(d.date, 1)}"`)}</div>${mark}</section>${calAlertsPanel(d.alerts, false)}<div class="cal-day-grid"><section class="panel"><div class="panel-heading"><div><h2>Gelato del día</h2><p>Al empezar + hecho − vendido − merma − invitación + ajustes = queda. Los ajustes son conteos y entradas o salidas a mano.</p></div>${status}</div>${gelato}${btn("Ir al cierre del día", "calToClose", "secondary", `data-date="${esc(d.date)}"`)}</section><section class="panel"><h2>Mermas por motivo</h2>${calList(
+  return `<section class="panel"><div class="cal-nav">${btn("← Día anterior", "calDay", "secondary", `data-date="${shiftDay(d.date, -1)}"`)}<h3>${esc(calLong(d.date))}</h3>${btn("Día siguiente →", "calDay", "secondary", `data-date="${shiftDay(d.date, 1)}"`)}</div>${mark}</section>${calAlertsPanel(d.alerts, false)}<div class="cal-day-grid"><section class="panel"><div class="panel-heading"><div><h2>Gelato del día</h2><p>Al empezar + hecho − vendido − merma − invitación + ajustes = queda. Los ajustes son conteos y entradas o salidas a mano.</p></div>${status}</div>${gelato}${btn("Ir al cierre del día", "calToClose", "secondary", `data-date="${esc(d.date)}"`)}</section><section class="panel"><h2>Mermas por motivo</h2>${calList(
     d.waste.map((w) =>
       calRow(
         `${esc(w.name)} · ${esc(w.reason)}`,
@@ -355,7 +350,7 @@ function calStockPanel(d) {
 
 /** Formulario del horario de una semana: apertura por día (o cerrado) y turnos. */
 function calWeekView() {
-  const dates = Array.from({ length: 7 }, (_, i) => calShiftDay(calWeek, i));
+  const dates = Array.from({ length: 7 }, (_, i) => shiftDay(calWeek, i));
   const source =
     calWeekDraft ||
     dates.map(
@@ -388,7 +383,7 @@ function calWeekView() {
   const vacations = state.vacations.filter(
     (v) => v.from <= dates[6] && dates[0] <= v.to,
   );
-  return `<section class="panel" data-week="${esc(calWeek)}"><div class="cal-nav">${btn("← Semana anterior", "calWeek", "secondary", `data-week="${calShiftDay(calWeek, -7)}"`)}<h3>Semana del ${esc(calShortDay(dates[0]))} al ${esc(calShortDay(dates[6]))}</h3>${btn("Semana siguiente →", "calWeek", "secondary", `data-week="${calShiftDay(calWeek, 7)}"`)}</div><p>Escribe la hora de abrir y la de cerrar de cada día, o marca «Cerrado». En cada turno: la persona y de qué hora a qué hora; si un turno acaba después de medianoche, pon la hora tal cual. Un día sin nada escrito queda «sin horario apuntado». No cambia el stock ni las ventas.</p>${calWeekDraft ? '<p class="ai-warning">Copiado de la semana anterior: revísalo y pulsa «Guardar la semana». Aún no está guardado.</p>' : ""}<div class="table-scroll"><table class="report-table cal-week"><thead><tr><th>Día</th><th></th><th>Abre</th><th>Cierra</th><th>Turnos (persona, desde, hasta)</th></tr></thead><tbody>${rows}</tbody></table></div><div class="setting-actions">${btn("Guardar la semana", "calSaveWeek", "primary")}${btn("Copiar la semana anterior", "calCopyWeek", "secondary")}</div></section><section class="panel"><h2>Vacaciones de esta semana</h2><p>Van por persona: esos días no lleva turno. Si alguien de vacaciones tiene turno, el Calendario lo avisa.</p>${calList(
+  return `<section class="panel" data-week="${esc(calWeek)}"><div class="cal-nav">${btn("← Semana anterior", "calWeek", "secondary", `data-week="${shiftDay(calWeek, -7)}"`)}<h3>Semana del ${esc(calShortDay(dates[0]))} al ${esc(calShortDay(dates[6]))}</h3>${btn("Semana siguiente →", "calWeek", "secondary", `data-week="${shiftDay(calWeek, 7)}"`)}</div><p>Escribe la hora de abrir y la de cerrar de cada día, o marca «Cerrado». En cada turno: la persona y de qué hora a qué hora; si un turno acaba después de medianoche, pon la hora tal cual. Un día sin nada escrito queda «sin horario apuntado». No cambia el stock ni las ventas.</p>${calWeekDraft ? '<p class="ai-warning">Copiado de la semana anterior: revísalo y pulsa «Guardar la semana». Aún no está guardado.</p>' : ""}<div class="table-scroll"><table class="report-table cal-week"><thead><tr><th>Día</th><th></th><th>Abre</th><th>Cierra</th><th>Turnos (persona, desde, hasta)</th></tr></thead><tbody>${rows}</tbody></table></div><div class="setting-actions">${btn("Guardar la semana", "calSaveWeek", "primary")}${btn("Copiar la semana anterior", "calCopyWeek", "secondary")}</div></section><section class="panel"><h2>Vacaciones de esta semana</h2><p>Van por persona: esos días no lleva turno. Si alguien de vacaciones tiene turno, el Calendario lo avisa.</p>${calList(
     vacations.map((v) =>
       calRow(
         `${esc(v.person)} · del ${esc(v.from)} al ${esc(v.to)}${v.note ? " · " + esc(v.note) : ""}`,
@@ -460,10 +455,8 @@ async function calendarAction(name, el) {
     // vacaciones ese día y lo dice.
     const skipped = [];
     calWeekDraft = Array.from({ length: 7 }, (_, i) => {
-      const date = calShiftDay(calWeek, i);
-      const before = state.schedule.find(
-        (x) => x.date === calShiftDay(date, -7),
-      );
+      const date = shiftDay(calWeek, i);
+      const before = state.schedule.find((x) => x.date === shiftDay(date, -7));
       if (!before) return { date, closed: false, shifts: [] };
       const away = calAway(date).map((v) => v.person.toLocaleLowerCase("es"));
       const shifts = before.shifts.filter((t) => {

@@ -1767,7 +1767,7 @@ async function action(name, el) {
     const start = weeklyWeek || (weeklyData && weeklyData.start);
     if (!start) return;
     weeklyData = null;
-    weeklyWeek = shiftWeek(start, name === "weeklyPrev" ? -7 : 7);
+    weeklyWeek = shiftDay(start, name === "weeklyPrev" ? -7 : 7);
     render();
     return;
   }
@@ -1783,7 +1783,7 @@ async function action(name, el) {
         ? ""
         : name === "cruiseDay"
           ? el.dataset.day
-          : cruiseShift(current, name === "cruisePrev" ? -1 : 1);
+          : shiftDay(current, name === "cruisePrev" ? -1 : 1);
     if (page !== "cruises") page = "cruises";
     if (cruiseTab === "calendar" && cruiseDay)
       cruiseMonth = cruiseDay.slice(0, 7);

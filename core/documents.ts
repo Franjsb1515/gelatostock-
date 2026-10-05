@@ -2,8 +2,7 @@
 // document and which order it belongs to. Proposals are shown to the person and
 // applied only when confirmed. No model is involved here.
 import type { State, Photo } from "./schema";
-const fold = (v: string) =>
-  v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+import { fold } from "./util";
 export type DocType = NonNullable<Photo["docType"]>;
 export type DocumentSuggestion = {
   supplier?: string;

@@ -82,7 +82,7 @@ import {
 } from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
 import { businessDay } from "./plan";
-import { addDays } from "./cruises";
+import { addDays } from "./util";
 export { productionPlan, todayBrief, businessDay } from "./plan";
 const eur = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",") + " €";

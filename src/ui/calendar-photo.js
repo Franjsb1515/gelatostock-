@@ -142,7 +142,7 @@ function calPhotoModal(preset) {
         calWeekDraft = Array.from({ length: 7 }, (_, i) => {
           const r = reading.reading.schedule.find((x) => x.weekday === i);
           return {
-            date: calShiftDay(week, i),
+            date: shiftDay(week, i),
             closed: !!r?.closed,
             ...(r?.open ? { open: r.open, close: r.close } : {}),
             shifts: r?.shifts || [],

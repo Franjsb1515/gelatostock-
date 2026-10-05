@@ -7,6 +7,7 @@
 // La merma es producto que se perdió; la invitación o el consumo del equipo es producto que se
 // aprovechó sin cobrarlo. El porcentaje de merma se calcula solo con merma.
 import type { State } from "./schema.js";
+import { kg as round } from "./util.js";
 
 export const wasteReasons = [
   "expiry",
@@ -109,7 +110,6 @@ export type SalesHistory = {
   }[];
   byReason: { reason: string; waste: number }[];
 };
-const round = (n: number): number => Math.round(n * 1000) / 1000;
 const pct = (waste: number, out: number): number | null =>
   out > 0 ? Math.round((waste / out) * 1000) / 10 : null;
 /** Identificadores de movimientos que fueron compensados después. */

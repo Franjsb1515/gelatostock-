@@ -127,7 +127,8 @@ export class Store {
   syncArchive(): void {
     // A derived archive: SQLite and attachments remain authoritative. Retry on restart/save.
     try {
-      const s = this.load();
+      // Read only: the cached state, without a copy.
+      const s = this.current();
       const root = path.join(this.dataDir, "proveedores");
       const mkdir = (dir: string) => {
         const base = path.resolve(this.dataDir);
@@ -227,6 +228,10 @@ export class Store {
       .map((row) => JSON.parse(String(row.data)));
   }
   load(): State {
+    return structuredClone(this.current());
+  }
+  /** The cached state itself, refreshed if another connection wrote. Callers must not mutate it. */
+  private current(): State {
     // Another connection may have written: the meta revision is the cheap check.
     if (this.cached) {
       const row = this.db
@@ -235,14 +240,14 @@ export class Store {
         )
         .get();
       if (row && Number(row.revision) === this.cached.revision)
-        return structuredClone(this.cached);
+        return this.cached;
       this.cached = undefined;
       this.rowCache = undefined;
       this.knownOperations = undefined;
     }
     const state = this.read();
     this.cached = state;
-    return structuredClone(state);
+    return state;
   }
   private read(): State {
     const meta = this.db.prepare("SELECT data FROM meta WHERE id=1").get();
@@ -345,10 +350,14 @@ export class Store {
     }
     return rows;
   }
-  private write(input: State): void {
+  /**
+   * Writes a state and returns it as stored (attachments as files). trusted: the state comes
+   * straight from apply(), which already validated it; anything else is validated here.
+   */
+  private write(input: State, trusted = false): State {
     this.cached = undefined;
     this.db.exec("PRAGMA defer_foreign_keys=ON");
-    const s = validate(input);
+    const s = trusted ? input : validate(input);
     s.photos = s.photos.map((p) => this.storePhoto(p));
     const basic = (list: { id: string }[], newestFirst = false) =>
       list.map((x, position): Row => ({
@@ -481,6 +490,7 @@ export class Store {
           .run(id, position);
         this.knownOperations.add(id);
       }
+    return s;
   }
   dispatch(input: unknown): State {
     const a = parseAction(input);
@@ -488,7 +498,7 @@ export class Store {
     const fingerprint = digest(JSON.stringify(semantic));
     this.db.exec("BEGIN IMMEDIATE");
     try {
-      const current = this.load();
+      const current = this.current();
       if (operationId) {
         const previous = this.db
           .prepare("SELECT fingerprint FROM operations WHERE id=?")
@@ -499,16 +509,18 @@ export class Store {
             "Ese identificador ya corresponde a otra operación.",
           );
           this.db.exec("COMMIT");
-          return current;
+          return structuredClone(current);
         }
       }
       const next = apply(current, a);
-      this.write(next);
+      const stored = this.write(next, true);
       if (operationId)
         this.db
           .prepare("UPDATE operations SET fingerprint=? WHERE id=?")
           .run(fingerprint, operationId);
       this.db.exec("COMMIT");
+      // Igual que al releer la base: JSON quita las claves sin valor.
+      this.cached = JSON.parse(JSON.stringify(stored)) as State;
       this.syncArchive();
       return this.load();
     } catch (error) {

@@ -64,15 +64,17 @@ const money = (n) =>
     n / 100,
   );
 // Today's calendar date in local time (never toISOString, which is UTC).
-const todayLocal = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+// "AAAA-MM-DD" of a local date.
+const ymd = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+// Calendar arithmetic on "AAAA-MM-DD" (dates, not instants: no zone can move them a day).
+const shiftDay = (day, n) => {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 };
+const todayLocal = () => ymd(new Date());
 // Business day: before the change hour (05:00 by default) the shop is still on yesterday.
-const businessToday = () => {
-  const d = new Date(Date.now() - dayChangeHour * 3600000);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
+const businessToday = () => ymd(new Date(Date.now() - dayChangeHour * 3600000));
 const num = (n) =>
   new Intl.NumberFormat("es-ES", { maximumFractionDigits: 3 }).format(n);
 const date = (v) =>
