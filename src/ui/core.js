@@ -326,7 +326,7 @@ function header(title, description, actions = "") {
     page === "home"
       ? "GELATO CONTROL SYSTEM"
       : (pageLabel[page] || "").toUpperCase();
-  return `<div class="page-heading"><div><div class="eyebrow"><i class="dot"></i>${esc(eyebrow)}</div><h1>${title}</h1><p>${description}</p></div><div class="heading-actions">${actions}</div></div>`;
+  return `<div class="page-heading"><div><div class="eyebrow"><i class="dot"></i>${esc(eyebrow)}</div><h1>${title}</h1>${description ? `<p>${description}</p>` : ""}</div><div class="heading-actions">${actions}</div></div>`;
 }
 const initials = (name) =>
   (name || "")

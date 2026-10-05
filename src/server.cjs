@@ -194,6 +194,7 @@ function createApp({
     "setManualCost",
     "quickFlavors",
     "setBatches",
+    "setProcess",
   ]);
   // Business day: a shop that closes at 2:00 is still living «yesterday» until this hour.
   const dayChangeHour = () => {

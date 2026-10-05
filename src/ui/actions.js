@@ -701,7 +701,7 @@ async function action(name, el) {
               "date",
               `min="${oldest}" max="${latest}" required`,
             ) +
-            '<p class="fineprint">Por defecto, hoy. Si lo escribes tarde, pon el día en que empezó a valer y la venta estimada de esos días se recalcula; si ya sabes desde qué día sube, pon el día futuro y no cambia nada hasta que llegue. Un día ya cerrado conserva el resumen que confirmaste y avisa de que algo cambió.</p>'
+            '<p class="fineprint">Por defecto, hoy. Una fecha pasada recalcula la venta estimada de esos días; una futura no cambia nada hasta que llegue. Un día ya cerrado conserva su resumen y avisa del cambio.</p>'
           : ""),
       async (f) => {
         const cents = Math.round(Number(f.get("euros")) * 100);

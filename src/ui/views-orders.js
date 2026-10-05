@@ -26,7 +26,7 @@ function orderTracking() {
     ["received", "cancelled"].includes(o.status),
   );
   const list = orderFilter === "open" ? open : closed;
-  return `<section class="orders-panel"><div class="tracking-intro"><div><span class="eyebrow">DESPUÉS DEL CARRITO</span><h2>Control de entregas</h2><p>Comprueba qué llegó y qué falta en cada pedido. Solo las cantidades que registres como recibidas se suman al inventario.</p></div><div class="tracking-example"><strong>Un ejemplo</strong><p>Pides 6 cajas y llegan 4: registras esas 4. Las otras 2 siguen pendientes.</p><small>Los envíos reales van por WhatsApp y siempre los confirmas tú.</small></div></div>${
+  return `<section class="orders-panel"><div class="tracking-intro"><div><span class="eyebrow">DESPUÉS DEL CARRITO</span><h2>Control de entregas</h2><p>Registra lo que llega: solo eso se suma al inventario. Lo que falte sigue pendiente.</p></div></div>${
     state.orders.some((o) => o.status === "pending")
       ? `<div class="row-actions batch-row">${btn(icon("message") + " Enviar pendientes por WhatsApp", "orderBatch", "primary")}<small>Eliges la lista completa una vez; la app los envía uno a uno con pausa.</small></div>`
       : ""
@@ -58,12 +58,12 @@ function orderTracking() {
           return docs.length
             ? `<div class="order-replies"><strong>Documentos vinculados</strong>${docs.map((d) => `<p>${pill(docTypeLabel(d.docType), "sage")} ${esc(d.name)} · ${esc(d.documentDate || d.at.slice(0, 10))}</p>`).join("")}</div>`
             : "";
-        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. ${o.confirmedAt ? `Confirmado por el proveedor el ${date(o.confirmedAt)}.` : "Pendiente de confirmación del proveedor."}${(o.nudges || []).length ? ` Recordatorio enviado ${o.nudges.length === 1 ? "una vez" : o.nudges.length + " veces"}, el último el ${date(o.nudges[o.nudges.length - 1].at)} a las ${time(o.nudges[o.nudges.length - 1].at)}.` : ""}` : o.status === "pending" ? "Todavía no se ha enviado al proveedor." : o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Apuntado a mano en la app: no se envió ningún mensaje ni hay pagos."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "danger", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) + btn("Fijar fecha de entrega", "setExpected", "secondary", `data-order="${esc(o.id)}"`) + (o.confirmedAt ? "" : btn("Marcar confirmado", "confirmOrder", "secondary", `data-order="${esc(o.id)}"`) + (o.dispatch ? btn(nudgedToday(o) ? "Reclamado hoy" : "Reclamar respuesta", "orderNudge", "secondary", `data-order="${esc(o.id)}" ${nudgedToday(o) ? "disabled" : ""}`) : "")) : ""}</div></footer></article>`;
+        })()}<footer class="delivery-next"><div><strong>${hint}</strong><small>${o.dispatch ? `Enviado por WhatsApp a ${esc(o.dispatch.to)} el ${date(o.dispatch.at)} ${time(o.dispatch.at)}. ${o.confirmedAt ? `Confirmado por el proveedor el ${date(o.confirmedAt)}.` : "Pendiente de confirmación del proveedor."}${(o.nudges || []).length ? ` Recordatorio enviado ${o.nudges.length === 1 ? "una vez" : o.nudges.length + " veces"}, el último el ${date(o.nudges[o.nudges.length - 1].at)} a las ${time(o.nudges[o.nudges.length - 1].at)}.` : ""}` : o.status === "pending" ? "Todavía no se ha enviado al proveedor." : o.status === "sent" ? "Simulación: no se ha contactado al proveedor." : "Apuntado a mano: no se envió ningún mensaje."}</small></div><div class="row-actions">${o.status === "pending" ? btn("Enviar por WhatsApp", "orderWhatsApp", "primary", `data-order="${esc(o.id)}"`) + btn("Simular envío", "send", "secondary", `data-order="${esc(o.id)}"`) + btn("Cancelar pedido", "cancelOrder", "danger", `data-order="${esc(o.id)}"`) : ["sent", "partial"].includes(o.status) ? btn("Registrar lo que llegó", "receive", "primary", `data-order="${esc(o.id)}"`) + btn("Fijar fecha de entrega", "setExpected", "secondary", `data-order="${esc(o.id)}"`) + (o.confirmedAt ? "" : btn("Marcar confirmado", "confirmOrder", "secondary", `data-order="${esc(o.id)}"`) + (o.dispatch ? btn(nudgedToday(o) ? "Reclamado hoy" : "Reclamar respuesta", "orderNudge", "secondary", `data-order="${esc(o.id)}" ${nudgedToday(o) ? "disabled" : ""}`) : "")) : ""}</div></footer></article>`;
       })
       .join("") ||
     '<div class="panel empty compact">' +
       (orderFilter === "open"
-        ? "No hay entregas pendientes. Los nuevos pedidos aparecerán aquí al autorizar el carrito."
+        ? "No hay entregas pendientes."
         : "Los pedidos completados y cancelados aparecerán aquí.") +
       "</div>"
   }</div></section>`;
@@ -115,7 +115,7 @@ function orders() {
       "Prepara el carrito, revisa el pedido y registra lo que llega.",
       btn("Sugerir reposición", "suggest", "primary"),
     ) +
-    `<div class="notice">${icon("shield")}<div><strong>Pedidos reales solo por WhatsApp</strong><span>El carrito crea pedidos por proveedor; se envían por WhatsApp uno a uno cuando tú lo confirmas. La app nunca realiza pagos.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${
+    `<div class="notice">${icon("shield")}<div><strong>Pedidos reales solo por WhatsApp</strong><span>Solo se envían cuando tú lo confirmas. La app nunca paga.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${
       state.cart.length
         ? `<div class="cart-lines">${state.cart
             .map((l) => {
@@ -141,6 +141,6 @@ function orders() {
       )
       .join(
         "",
-      )}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${total}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${total}</strong></div><p>Precios de tus fichas de Inventario. Se creará un pedido independiente por proveedor.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div>${orderTracking()}`
+      )}</div></section><aside class="panel order-summary"><h2>Resumen del carrito</h2><div class="summary-row"><span>Productos</span><strong>${total}</strong></div><div class="summary-row"><span>Envío e impuestos</span><span>Por confirmar</span></div><div class="summary-total"><span>Total estimado</span><strong>${total}</strong></div><p>Un pedido por proveedor, con los precios de Inventario.</p>${btn("Revisar y autorizar " + icon("arrow"), "checkout", "primary full", state.cart.length ? "" : "disabled")}<small>Se guardará como pendiente de envío.</small></aside></div>${orderTracking()}`
   );
 }

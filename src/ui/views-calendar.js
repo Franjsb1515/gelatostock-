@@ -202,7 +202,7 @@ function calendarPage() {
   return (
     header(
       "Cada día, en su sitio.",
-      "Elige un año, un mes y un día para ver lo que se apuntó: gelato, cierre, stock, horario, vacaciones, compras, notas, cruceros, clima y festivos. Lo que no está apuntado sale como «No disponible».",
+      "Elige un día para ver lo que se apuntó. Lo que no está apuntado sale como «No disponible».",
       btn("Hoy", "calToday", "secondary") +
         btn(
           "Horario de la semana",
@@ -340,7 +340,7 @@ function calMonthView(m) {
 function calAlertsPanel(alerts, days) {
   if (!alerts.length)
     return days
-      ? `<section class="panel cal-card cal-all-good"><div class="cal-card-body"><p><strong>Avisos del mes:</strong> ninguno. Las reglas no encuentran nada que revisar.</p></div></section>`
+      ? `<section class="panel cal-card cal-all-good"><div class="cal-card-body"><p><strong>Avisos del mes:</strong> ninguno.</p></div></section>`
       : "";
   const items = alerts
     .map(

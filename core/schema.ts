@@ -272,6 +272,12 @@ const saleValueSchema = z.object({
   cents: cents.refine((n) => n > 0),
   at,
 });
+const processStepSchema = z
+  .object({
+    product: idSchema.optional(),
+    text: z.string().trim().max(300).default(""),
+  })
+  .refine((x) => x.product || x.text, "Paso vacío.");
 const recipeSchema = z.object({
   id: idSchema,
   ...recipeFields,
@@ -284,6 +290,9 @@ const recipeSchema = z.object({
     .array(quantity.refine((n) => n > 0 && n <= 1000))
     .max(12)
     .optional(),
+  // Order of preparation shown step by step when producing («Preparar»): each step names one
+  // ingredient of the recipe, an instruction, or both. Outside recipeFields, like batches.
+  process: z.array(processStepSchema).max(40).optional(),
 });
 const productionSchema = z.object({
   id: idSchema,
@@ -784,6 +793,11 @@ export const actionSchema = z.intersection(
         .max(20)
         .default([]),
       note: z.string().max(500).default(""),
+    }),
+    z.object({
+      type: z.literal("setProcess"),
+      recipe: idSchema,
+      steps: z.array(processStepSchema).max(40),
     }),
     z.object({
       type: z.literal("setBatches"),

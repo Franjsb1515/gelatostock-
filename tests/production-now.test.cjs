@@ -161,3 +161,55 @@ test("tandas por receta: se guardan ordenadas y sin repetir, y editar la receta 
   });
   assert.deepEqual(s.recipes[0].batches, [1, 4, 8, 55]);
 });
+
+test("orden de preparación: se guarda por receta, editar la receta no lo borra y quita el ingrediente que ya no está", () => {
+  let s = apply(seed(), {
+    type: "setProcess",
+    recipe: "r1",
+    steps: [
+      { product: "p10", text: "Calentar a 45 °C" },
+      { text: "Pasteurizar a 85 °C" },
+      { product: "p2" },
+    ],
+  });
+  assert.deepEqual(
+    s.recipes[0].process.map((x) => x.product || x.text),
+    ["p10", "Pasteurizar a 85 °C", "p2"],
+  );
+  // Un ingrediente que no es de la receta, o repetido, se rechaza.
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "setProcess",
+        recipe: "r1",
+        steps: [{ product: "p1" }],
+      }),
+    /no está en la receta/,
+  );
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "setProcess",
+        recipe: "r1",
+        steps: [{ product: "p2" }, { product: "p2", text: "otra vez" }],
+      }),
+    /solo puede ir en un paso/,
+  );
+  // Editar la receta quitando la nata: su paso conserva la instrucción y pierde el ingrediente.
+  const { id, saleValues, batches, manualCost, process, ...fields } =
+    s.recipes[0];
+  s = apply(s, {
+    type: "recipe",
+    id,
+    ...fields,
+    ingredients: [{ product: "p2", quantity: 0.5 }],
+  });
+  assert.deepEqual(s.recipes[0].process, [
+    { text: "Calentar a 45 °C" },
+    { text: "Pasteurizar a 85 °C" },
+    { product: "p2", text: "" },
+  ]);
+  // No mueve stock ni cambia la receta; vacío = sin orden propio.
+  s = apply(s, { type: "setProcess", recipe: "r1", steps: [] });
+  assert.equal(s.recipes[0].process, undefined);
+});

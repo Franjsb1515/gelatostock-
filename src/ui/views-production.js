@@ -66,7 +66,7 @@ function recipeBook() {
       )
       .join(
         "",
-      )}</select></label></div>${noLock}${open ? `<div class="recipe-back">${btn("← Todas las recetas", "recipeBack", "secondary")}<span>Tandas para producir: <strong>${(open.batches?.length ? open.batches : defaultBatches).map((b) => num(b) + " kg").join(" · ")}</strong></span>${btn("Cambiar tandas", "setBatchesUi", "text-link", `data-id="${esc(open.id)}"`)}</div>` : recipeTiles(all)}<div class="recipe-book">${
+      )}</select></label></div>${noLock}${open ? `<div class="recipe-back">${btn("← Todas las recetas", "recipeBack", "secondary")}<span>Tandas para producir: <strong>${(open.batches?.length ? open.batches : defaultBatches).map((b) => num(b) + " kg").join(" · ")}</strong></span>${btn("Cambiar tandas", "setBatchesUi", "text-link", `data-id="${esc(open.id)}"`)}${open.ingredients.length ? btn("Orden de preparación", "processEdit", "text-link", `data-id="${esc(open.id)}"`) : ""}</div>` : recipeTiles(all)}<div class="recipe-book">${
       list
         .map((r) => {
           const shares = recipeShares(r);
@@ -77,7 +77,7 @@ function recipeBook() {
             )
             .join(
               "",
-            )}</tbody></table></div>${valueBlock(r)}${balanceBlock(r)}${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
+            )}</tbody></table></div>${valueBlock(r)}${balanceBlock(r)}${r.process?.length ? `<div class="recipe-block"><div class="message-label">PREPARACIÓN PASO A PASO</div><ol class="recipe-process">${r.process.map((x) => `<li>${x.product ? `<strong>${esc(product(x.product).name)}</strong>` : ""}${x.product && x.text ? " · " : ""}${esc(x.text)}</li>`).join("")}</ol></div>` : ""}${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
         })
         .join("") ||
       `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
@@ -97,11 +97,11 @@ function production() {
   return (
     header(
       "Producción",
-      "Toca un sabor, elige la tanda y «Hecho». Cada kilo descuenta sus ingredientes y suma el gelato.",
+      "",
       btn(icon("plus") + " Producción a mano", "produce", "secondary"),
     ) +
     quickPanel() +
-    `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta</strong><span>La app propone el consumo de ingredientes y los kilos de gelato hecho. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div>${planPanel()}<section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Al aprobar, los ingredientes salen del stock y el gelato hecho entra.</p></div></div>${
+    `${planPanel()}<section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Corrige las cantidades si hace falta. Al aprobar, los ingredientes salen del stock y entra el gelato hecho.</p></div></div>${
       proposed.length
         ? proposed
             .map(
@@ -116,8 +116,8 @@ function production() {
                   )}</tbody></table></div>${p.output ? `<p><strong>Gelato hecho:</strong> ${esc(product(p.output.product).name)} <input type="number" class="inline-input" data-prod-output value="${p.output.quantity}" min="0" max="1000000" step="0.001" aria-label="Kilos de gelato hecho"> kg</p>` : state.recipes.find((r) => r.id === p.recipe)?.family === "base" ? '<p class="muted">Es una base o pasta: solo se descuentan sus ingredientes.</p>' : `<div class="notice inline">${icon("alert")}<div><strong>Este gelato no está dado de alta para vender</strong><span>Si apruebas así, se descuentan los ingredientes pero los kilos hechos no entran en ningún stock, y no podrás apuntar sus ventas ni mermas. Actívalo antes y vuelve a registrar la producción. </span>${btn("Activar ventas y valor de este gelato", "createFinished", "secondary", `data-id="${esc(p.recipe)}"`)}</div></div>`}<label class="field">Nota (opcional)<input type="text" class="inline-input wide" data-prod-note maxlength="500" placeholder="Ejemplo: se usó más leche"></label><div class="row-actions">${btn(icon("check") + " Aprobar y descontar", "applyProduction", "primary", `data-id="${esc(p.id)}"`)}${btn("Descartar", "discardProduction", "secondary", `data-id="${esc(p.id)}"`)}</div></article>`,
             )
             .join("")
-        : '<div class="empty compact">No hay producciones pendientes. Registra una producción para ver el consumo estimado.</div>'
-    }</section><section class="panel"><div class="panel-heading"><div><h2>Hoja diaria de producción</h2><p>Kilos producidos por día y por gelato, con el consumo aprobado.</p></div></div>${
+        : '<div class="empty compact">No hay producciones pendientes.</div>'
+    }</section><section class="panel"><div class="panel-heading"><div><h2>Hoja diaria de producción</h2></div></div>${
       dates.length
         ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th><th>Coste</th><th></th></tr></thead><tbody>${dates
             .map((d) =>
@@ -186,7 +186,7 @@ function planPanel() {
   const na = "<small>No disponible</small>";
   const day = (d) => date(d + "T12:00:00Z");
   const missing = plan.rows.filter((r) => r.suggest);
-  return `<section class="panel" data-plan><div class="panel-heading"><div><h2>Qué producir hoy</h2><p>Lo que falta para llegar a los kilos que quieres tener de cada gelato: objetivo − lo que hay. Al lado, lo que se vendió de media; es un dato, no una previsión.</p></div></div><div class="sales-body"><div class="table-scroll"><table class="report-table"><thead><tr><th>Gelato</th><th>Hay</th><th>Quiero tener</th><th>Falta</th><th>Venta media al día</th><th>Lo que hay da para</th><th></th></tr></thead><tbody>${plan.rows
+  return `<section class="panel" data-plan><div class="panel-heading"><div><h2>Qué producir hoy</h2><p>Lo que falta para llegar a lo que quieres tener. La venta media es un dato, no una previsión.</p></div></div><div class="sales-body"><div class="table-scroll"><table class="report-table"><thead><tr><th>Gelato</th><th>Hay</th><th>Quiero tener</th><th>Falta</th><th>Venta media al día</th><th>Lo que hay da para</th><th></th></tr></thead><tbody>${plan.rows
     .map(
       (r) =>
         `<tr><td>${esc(r.name)}</td><td class="num">${num(r.stock)} kg</td><td class="num">${r.target ? num(r.target) + " kg" : "<small>Sin escribir</small>"} <button class="text-link" data-action="setGoal" data-id="${esc(r.product)}">${r.target ? "Cambiar" : "Escribir"}</button></td><td class="num">${r.suggest === null ? "—" : r.suggest ? "<strong>" + num(r.suggest) + " kg</strong>" : "Nada"}</td><td class="num">${r.avgSold === null ? na : num(r.avgSold) + " kg"}</td><td class="num">${r.coverDays === null ? "—" : num(r.coverDays) + " días"}</td><td class="row-tools">${r.suggest ? `<button class="text-link" data-action="produce" data-recipe="${esc(r.recipe)}" data-quantity="${r.suggest}">Producir ${num(r.suggest)} kg</button>` : ""}</td></tr>`,

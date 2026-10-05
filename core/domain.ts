@@ -1160,6 +1160,18 @@ export function apply(state: State, input: unknown): State {
         Object.assign(r, fields);
         // Sin esto, «Ninguno» guardaba la receta y seguía unida al gelato de antes.
         if (noProduct) delete r.product;
+        // Un paso de la preparación no puede nombrar un ingrediente que ya no está.
+        if (r.process) {
+          const kept = r.process
+            .map((x) =>
+              !x.product || r.ingredients.some((i) => i.product === x.product)
+                ? x
+                : { text: x.text },
+            )
+            .filter((x) => x.product || x.text);
+          if (kept.length) r.process = kept;
+          else delete r.process;
+        }
       } else s.recipes.push({ id: randomUUID(), ...fields, saleValues: [] });
       note =
         `Receta guardada: ${fields.name} (rinde ${fields.yield} kg).` + created;
@@ -1346,6 +1358,24 @@ export function apply(state: State, input: unknown): State {
         `Hecho: ${a.quantity} kg de ${r.name} (${a.date}). Consumo: ${done.consumed.join(", ") || "sin consumo"}.` +
         (made.length ? ` Base hecha ahora: ${made.join(", ")}.` : "") +
         negativeNote([...new Set(negative)]);
+      break;
+    }
+    case "setProcess": {
+      const r = item(s.recipes, a.recipe);
+      const used = a.steps.flatMap((x) => (x.product ? [x.product] : []));
+      ensure(
+        new Set(used).size === used.length,
+        "Un ingrediente solo puede ir en un paso.",
+      );
+      ensure(
+        used.every((id) => r.ingredients.some((i) => i.product === id)),
+        "Un paso nombra un ingrediente que no está en la receta.",
+      );
+      if (a.steps.length) r.process = a.steps;
+      else delete r.process;
+      note = a.steps.length
+        ? `Orden de preparación de ${r.name}: ${a.steps.length} ${a.steps.length === 1 ? "paso" : "pasos"}.`
+        : `${r.name} ya no tiene orden de preparación propio.`;
       break;
     }
     case "setBatches": {

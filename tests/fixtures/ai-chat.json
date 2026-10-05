@@ -304,5 +304,17 @@
     "question": "¿Puedo escribir los ingredientes de la receta en gramos?",
     "expect": ["gramos|g o kg"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "preparar_pasos",
+    "question": "¿Cómo hago para que la app me guíe ingrediente por ingrediente al hacer un gelato?",
+    "expect": ["Preparar"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "orden_preparacion",
+    "question": "¿Dónde pongo el orden en que se añaden los ingredientes de una receta?",
+    "expect": ["Orden de preparación"],
+    "forbid": ["no lo sé"]
   }
 ]

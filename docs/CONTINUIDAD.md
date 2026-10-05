@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.56.0
+Lee reports/2026-10-06T03-30-00-000Z-preparar-paso-a-paso.md y docs/CHECKLIST_MEJORAS.md (lista viva de textos, visual y tablets). recipe.process (pasos {product?, text}; fuera de recipeFields; acción setProcess, en lockedActions; editar la receta quita del paso el ingrediente que ya no está). UI en src/ui/production-quick.js: quickSteps (orden guardado + ingredientes sin paso al final; base «hacerla ahora» trae sus pasos), quickCard (casilla name="other" siempre con los kilos, botones data-kg de ±0,5, #quick-prep-go, #quick-prep con data-prep; «Hecho» oculto con .quick-off hasta el final), processEditor (acción processEdit). Limpieza de textos por agente: header() ya no pinta un <p> vacío. Revisión visual/tablet: solo informe (guiones work/shot-tablet*.cjs, capturas work/shots-tablet/). Pruebas 253, chat 52/52, work/check-preparar.cjs; la prueba de escritorio tiene paso de producción rápida.
+
 ## Punto de continuidad 0.55.1
 Corrección de uso: «Otra cantidad» en quickCard añade su columna y calcula gasto, faltas y bases con ella; draw() solo redibuja #quick-table y #quick-after (lo escrito no se pierde); aviso «Revisa esta receta» con la regla de masa ×3. Informe reports/2026-10-06T01-30-00-000Z-otra-cantidad.md; prueba work/check-otra-cantidad.cjs.
 

@@ -1,5 +1,16 @@
 # Registro de parches y sesiones
 
+## 0.56.0 — 2026-10-05 · «Preparar» paso a paso y limpieza de textos
+
+- Tarjeta de producir: «Kilos a hacer» con − y + de 500 g (y la cantidad a mano), menos texto y lo que se gasta en etiquetas.
+- «Preparar» guía un ingrediente por pantalla con su cantidad; «Hecho» solo al final. «Hecho» directo sigue.
+- Recetario: «Orden de preparación» por receta (qué va primero y qué hacer en cada paso), protegido por la contraseña del recetario.
+- Menos texto en 12 pantallas (6200 → 5301 palabras) sin quitar avisos, fórmulas ni fuentes.
+- Revisión visual y estudio de tablets (solo informe) y lista de mejoras en docs/CHECKLIST_MEJORAS.md.
+- La prueba de escritorio recorre la producción rápida.
+
+Informes reports/2026-10-06T03-30-00-000Z-preparar-paso-a-paso.md, …T03-00-…-limpieza-textos.md y …T03-10-…-revision-visual-tablet.md.
+
 ## 0.55.1 — 2026-10-05 · Otra cantidad al producir
 
 - Al escribir otra cantidad (por ejemplo 100 kg), la tarjeta añade esa columna y dice cuánto gastarás de cada ingrediente y cuánto falta.

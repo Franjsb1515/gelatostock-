@@ -1,4 +1,4 @@
-# TODO — estado real de 0.55.1
+# TODO — estado real de 0.56.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -29,7 +29,11 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] [app] Guardar también la foto del cuadrante en su primer día; tipos de turno con horas por defecto (Apertura = 10:00–17:00) si los quieres.
 - [x] [app] Producción rápida por sabor con tandas, bases y «Hecho» en un paso; Recetario en botones con contraseña (0.55.0).
 - [ ] [tú] Poner la contraseña del Recetario, crear la Base blanca (familia Base) y usarla en tus sabores; corregir «cocadado» (500 L → 500 ml).
-- [ ] [app] Que la prueba de escritorio recorra la producción rápida.
+- [x] [app] La prueba de escritorio recorre la producción rápida y «Preparar» (0.56.0).
+- [x] [app] «Preparar» paso a paso, − / + de 500 g y «Orden de preparación» por receta (0.56.0, pedido por ti el 2026-10-05).
+- [ ] [tú] Poner el orden de preparación de tus recetas (Recetario → la receta → «Orden de preparación»).
+- [ ] [app] Lista de mejoras de textos, visual y tablets: docs/CHECKLIST_MEJORAS.md. Siguiente paso propuesto: interfaz táctil y estrecha (botones de 44 px, barra lateral plegable, Compras e Inventario a 768 px).
+- [ ] [tú] Tablets: decir qué tablet (Windows o iPad/Android), si acompaña al ordenador, y si hay wifi separada de la de clientes (preguntas al final de docs/CHECKLIST_MEJORAS.md).
 - [ ] [tú] Antes de entregar la app: quitar «Envío simulado» y los mensajes y pedidos de demostración (siguen por tu decisión del 2026-09-20).
 - [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.

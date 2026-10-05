@@ -156,7 +156,7 @@ function cruiseContextBlock(day) {
   const w = c.weather;
   const weather = w
     ? `<strong class="kpi-text">${esc(tempText(w))}${w.label ? " · " + esc(w.label) : ""}</strong><small>${w.precipMm === null ? "Lluvia: no disponible" : "Lluvia prevista: " + cnum(w.precipMm) + " mm"} · ${esc(w.kind)}${w.approximate ? ", orientativa" : ""} · consultada el ${esc(cruiseStamp(w.fetchedAt))}</small>`
-    : `<strong class="kpi-text">${NA}</strong><small>La previsión cubre unos 9 días desde hoy. No hay observaciones de días pasados.</small>`;
+    : `<strong class="kpi-text">${NA}</strong><small>La previsión cubre unos 9 días desde hoy.</small>`;
   const holidays = c.holidays.length
     ? c.holidays
         .map(
@@ -172,7 +172,7 @@ function cruiseContextBlock(day) {
             `<strong class="kpi-text">${esc(e.name)}</strong><small>${e.from === e.to ? "" : esc(cruiseShort(e.from)) + " – " + esc(cruiseShort(e.to)) + " · "}${esc(e.note || "anotado por ti")} <button class="text-link" data-action="cruiseEventDelete" data-id="${esc(e.id)}">Quitar</button></small>`,
         )
         .join("")
-    : `<strong class="kpi-text"><span class="na">Ninguno anotado</span></strong><small>Los eventos los anotas tú: Palma no publica una agenda reutilizable.</small>`;
+    : `<strong class="kpi-text"><span class="na">Ninguno anotado</span></strong><small>Los eventos los anotas tú.</small>`;
   return `<h3 class="cruise-sub">Contexto del día</h3><div class="cruise-kpis"><div><span>Clima previsto</span>${weather}</div><div><span>Festivo</span>${holidays}</div><div><span>Eventos</span>${events}<span>${btn("Añadir evento", "cruiseEventAdd", "secondary", `data-day="${esc(day)}"`)}</span></div></div>`;
 }
 function cruiseSalesView() {
@@ -186,7 +186,7 @@ function cruiseSalesView() {
     veryHigh: "Muy alto",
     unknown: "No calculable",
   };
-  return `<p>Kilos vendidos en los días con ventas registradas, agrupados por el impacto potencial de ese día. Son hechos puestos lado a lado: la app no calcula correlaciones ni predice ventas.</p>${
+  return `<p>Kilos vendidos por día, agrupados por el impacto potencial de ese día. Son hechos: la app no predice ventas.</p>${
     s.daysWithSales
       ? `<div class="table-scroll"><table class="report-table cruise-table"><thead><tr><th>Impacto del día</th><th>Días con ventas</th><th>Media vendida</th><th>Mínimo – máximo</th><th>Lectura</th></tr></thead><tbody>${s.levels
           .map(
@@ -195,8 +195,8 @@ function cruiseSalesView() {
           )
           .join(
             "",
-          )}</tbody></table></div><p class="fineprint">${s.daysWithSales} días con ventas, del ${esc(cruiseDate(s.first, { day: "numeric", month: "long", year: "numeric" }))} al ${esc(cruiseDate(s.last, { day: "numeric", month: "long", year: "numeric" }))}. Solo cuentan los días con «Ventas y mermas del día» registradas: un día sin registro no distingue cerrado de no apuntado. Una media necesita al menos ${s.minDays} días de ese nivel.</p>`
-      : '<div class="empty compact">Todavía no hay ventas registradas. Apunta las ventas del día en Producción y aquí irán apareciendo junto al impacto de cada día.</div>'
+          )}</tbody></table></div><p class="fineprint">${s.daysWithSales} días con ventas, del ${esc(cruiseDate(s.first, { day: "numeric", month: "long", year: "numeric" }))} al ${esc(cruiseDate(s.last, { day: "numeric", month: "long", year: "numeric" }))}. Solo cuentan los días con ventas registradas. Una media necesita al menos ${s.minDays} días de ese nivel.</p>`
+      : '<div class="empty compact">Todavía no hay ventas registradas. Apúntalas en Producción.</div>'
   }`;
 }
 function cruiseStatusStrip(d) {
@@ -311,7 +311,7 @@ function cruiseDayDetail(detail, today) {
     cruiseDash.status.state === "never"
       ? "Información pendiente de sincronización."
       : "No hay escalas de cruceros registradas para este día.";
-  return `<section class="panel" id="cruise-detail"><div class="panel-heading"><div><h2>${esc(cruiseLong(s.day))}${s.day === today ? " · hoy" : ""}</h2><p>Detalle del día con horas del puerto de Palma.</p></div><div class="heading-actions">${btn("← Día anterior", "cruisePrev", "secondary")}${btn("Hoy", "cruiseToday", "secondary", s.day === today ? "disabled" : "")}${btn("Día siguiente →", "cruiseNext", "secondary")}</div></div><div class="cruise-body">${cruiseContextBlock(s.day)}<h3 class="cruise-sub">Cruceros</h3>${
+  return `<section class="panel" id="cruise-detail"><div class="panel-heading"><div><h2>${esc(cruiseLong(s.day))}${s.day === today ? " · hoy" : ""}</h2><p>Horas del puerto de Palma.</p></div><div class="heading-actions">${btn("← Día anterior", "cruisePrev", "secondary")}${btn("Hoy", "cruiseToday", "secondary", s.day === today ? "disabled" : "")}${btn("Día siguiente →", "cruiseNext", "secondary")}</div></div><div class="cruise-body">${cruiseContextBlock(s.day)}<h3 class="cruise-sub">Cruceros</h3>${
     s.ships
       ? `<div class="cruise-kpis">${fact("Cruceros", s.ships, `llegan ${s.arrivals} · parten ${s.departures}`)}${fact("Pasajeros declarados", paxText(s.passengers), s.undeclared ? s.undeclared + " barcos sin declarar" : "suma del día")}${fact("Primera llegada", s.firstArrival || "—")}${fact("Última salida", s.lastDeparture || "—")}${fact("Máxima coincidencia", `${s.peak.ships} ${s.peak.ships === 1 ? "crucero" : "cruceros"}`, `${s.peak.from} – ${s.peak.to}`)}${fact("Pasajeros a la vez", paxText(s.peakPassengers), s.peakPassengers === null ? "" : `${s.peakPassengersFrom} – ${s.peakPassengersTo}`)}${fact("Impacto potencial", impactPill(s), "no son clientes esperados")}</div><h3 class="cruise-sub">Cruceros en puerto por hora</h3>${cruiseTimelineSvg(detail)}<ol class="cruise-steps">${detail.timeline.map((t) => `<li><b>${esc(t.time)}</b> ${t.ships.length ? esc(t.ships.join(" + ")) : "puerto sin cruceros"}</li>`).join("")}</ol><h3 class="cruise-sub">Barcos</h3><div class="cruise-cards">${detail.calls.map(cruiseCard).join("")}</div>`
       : `<div class="empty compact">${empty}</div>`
@@ -344,7 +344,7 @@ function cruisePage() {
   const d = cruiseDash;
   const head = header(
     "El puerto, para planificar el día.",
-    "Cruceros en Palma con datos oficiales: cuántos hay, a qué hora coinciden y qué días vienen cargados. Es carga portuaria potencial, no clientes esperados.",
+    "Cruceros en Palma con datos oficiales del puerto. Es carga potencial, no clientes esperados.",
     btn(
       cruiseSyncing ? "Actualizando…" : icon("download") + " Actualizar ahora",
       "cruisesRefresh",
@@ -396,6 +396,6 @@ function cruisePage() {
                 : '<p class="muted">Ningún día de este periodo alcanza impacto alto.</p>'
     }</div></section>` +
     (cruiseDetail ? cruiseDayDetail(cruiseDetail, d.today) : "") +
-    `<section class="panel"><div class="panel-heading"><div><h2>Cómo leer estos datos</h2><p>Nada de esta pantalla está inventado ni estimado por la app.</p></div></div><div class="cruise-body cruise-notes"><p><strong>Impacto potencial.</strong> Es la mayor suma de pasajeros declarados que coinciden a la vez en puerto ese día. Menos de ${cnum(t.medium)}: Bajo. Menos de ${cnum(t.high)}: Medio. Menos de ${cnum(t.veryHigh)}: Alto. A partir de ahí: Muy alto. Si ningún barco declara pasajeros: No calculable. Los umbrales se cambian en Configuración.</p><p><strong>Pasajeros declarados.</strong> Es lo que cada barco declara al puerto para esa escala: en tránsito más el mayor entre los que desembarcan y los que embarcan (la fuente llama «trasbordo» al tránsito). No es la capacidad del barco ni el número de personas que bajará a la ciudad.</p><p><strong>Lo que la fuente no publica</strong> aparece como «No disponible»: naviera, capacidad y terminal. Naviera y capacidad puedes anotarlas tú en la ficha del barco, indicando de dónde sale el dato.</p><p><strong>Estados.</strong> Son los del puerto: atraque solicitado, concedido, iniciado y finalizado. El puerto no publica retrasos ni cancelaciones; si una escala anunciada desaparece, se marca «Retirada de la previsión».</p><p><strong>Clima, festivos y eventos.</strong> El clima es la previsión de MET Norway para Palma (unos 9 días); de un día pasado solo se conserva la previsión que había, nunca una observación. Los festivos salen del calendario laboral oficial del Govern de les Illes Balears. Los eventos los anotas tú.${cruiseContextStatus ? ` ${cruiseContextStatus.weather.error ? "Clima: " + esc(cruiseContextStatus.weather.error) : cruiseContextStatus.weather.updatedAt ? "Clima consultado el " + esc(cruiseStamp(cruiseContextStatus.weather.updatedAt)) + "." : "Clima todavía sin consultar."} ${cruiseContextStatus.holidays.loaded ? "Festivos de " + cruiseContextStatus.holidays.year + " cargados." : "Festivos de " + cruiseContextStatus.holidays.year + " sin cargar" + (cruiseContextStatus.holidays.note ? ": " + esc(cruiseContextStatus.holidays.note) : "") + "."}` : ""}</p><p class="fineprint">Origen de los datos: Autoridad Portuaria de Baleares (cruceros), MET Norway, CC BY 4.0 (clima) y Govern de les Illes Balears (festivos). Registro: ${cnum(d.status.totals.calls)} escalas de ${cnum(d.status.totals.ships)} barcos${d.status.totals.first ? ", desde " + esc(cruiseDate(d.status.totals.first.slice(0, 10), { month: "long", year: "numeric" })) : ""}. ${h.done ? "Histórico oficial importado." : h.running ? "Importando el histórico oficial desde 2014 (página " + h.page + ")…" : "El histórico oficial desde 2014 se importa en segundo plano."} Consulta automática cada ${d.status.intervalHours} h según la cercanía de barcos. ${d.status.integrity.length ? "Avisos de integridad: " + esc(d.status.integrity.join("; ")) + "." : ""} ${btn("Ver sincronizaciones", "cruiseSyncs", "secondary")}</p></div></section>`
+    `<section class="panel"><div class="panel-heading"><div><h2>Cómo leer estos datos</h2><p>Nada de esta pantalla está inventado ni estimado por la app.</p></div></div><div class="cruise-body cruise-notes"><p><strong>Impacto potencial.</strong> Es la mayor suma de pasajeros declarados que coinciden a la vez en puerto ese día. Menos de ${cnum(t.medium)}: Bajo. Menos de ${cnum(t.high)}: Medio. Menos de ${cnum(t.veryHigh)}: Alto. A partir de ahí: Muy alto. Si ningún barco declara pasajeros: No calculable. Los umbrales se cambian en Configuración.</p><p><strong>Pasajeros declarados.</strong> Lo que cada barco declara al puerto: en tránsito más el mayor entre los que desembarcan y los que embarcan. No es la capacidad del barco ni quienes bajarán a la ciudad.</p><p><strong>Lo que la fuente no publica</strong> aparece como «No disponible»: naviera, capacidad y terminal. Naviera y capacidad puedes anotarlas en la ficha del barco.</p><p><strong>Estados.</strong> Son los del puerto, que no publica retrasos ni cancelaciones: si una escala anunciada desaparece, se marca «Retirada de la previsión».</p><p><strong>Clima, festivos y eventos.</strong> El clima es la previsión de MET Norway para Palma; de un día pasado se conserva la previsión que había, nunca una observación. Los festivos salen del calendario oficial del Govern de les Illes Balears.${cruiseContextStatus ? ` ${cruiseContextStatus.weather.error ? "Clima: " + esc(cruiseContextStatus.weather.error) : cruiseContextStatus.weather.updatedAt ? "Clima consultado el " + esc(cruiseStamp(cruiseContextStatus.weather.updatedAt)) + "." : "Clima todavía sin consultar."} ${cruiseContextStatus.holidays.loaded ? "Festivos de " + cruiseContextStatus.holidays.year + " cargados." : "Festivos de " + cruiseContextStatus.holidays.year + " sin cargar" + (cruiseContextStatus.holidays.note ? ": " + esc(cruiseContextStatus.holidays.note) : "") + "."}` : ""}</p><p class="fineprint">Origen de los datos: Autoridad Portuaria de Baleares (cruceros), MET Norway, CC BY 4.0 (clima) y Govern de les Illes Balears (festivos). Registro: ${cnum(d.status.totals.calls)} escalas de ${cnum(d.status.totals.ships)} barcos${d.status.totals.first ? ", desde " + esc(cruiseDate(d.status.totals.first.slice(0, 10), { month: "long", year: "numeric" })) : ""}. ${h.done ? "Histórico oficial importado." : h.running ? "Importando el histórico oficial desde 2014 (página " + h.page + ")…" : "El histórico oficial desde 2014 se importa en segundo plano."} Consulta automática cada ${d.status.intervalHours} h.${d.status.integrity.length ? "Avisos de integridad: " + esc(d.status.integrity.join("; ")) + "." : ""} ${btn("Ver sincronizaciones", "cruiseSyncs", "secondary")}</p></div></section>`
   );
 }

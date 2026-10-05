@@ -887,6 +887,47 @@ const { appName } = require("./package-rules.cjs");
     console.log(
       "PASS: calendario: hoy sale con ventas y reabierto; un día con ventas no se marca «la tienda no abrió»; un día vacío se marca con motivo sin tocar el stock y la marca se quita.",
     );
+    // Producción rápida (0.55.0) y «Preparar» (0.56.0): −/+ de 500 g, un paso por ingrediente
+    // y «Hecho» solo al final; descuenta la receta y suma el gelato en un paso.
+    await window
+      .getByRole("button", { name: "Producción", exact: true })
+      .click();
+    await window.locator('.quick-tile[data-recipe="r1"]').click();
+    const quickKilos = window.locator('#modal [name="other"]');
+    assert.equal(await quickKilos.inputValue(), "1");
+    await window.locator('#modal [data-kg="0.5"]').click();
+    await window.locator('#modal [data-kg="0.5"]').click();
+    await window.locator('#modal [data-kg="-0.5"]').click();
+    assert.equal(await quickKilos.inputValue(), "1,5");
+    const quickStock = () =>
+      window.evaluate(() => ["p2", "p10", "p4"].map((id) => product(id).stock));
+    const quickBefore = await quickStock();
+    await window.locator("#quick-prep-go").click();
+    assert.match(
+      await window.locator("#quick-prep .quick-step").innerText(),
+      /Paso 1 de 2[\s\S]*Leche entera[\s\S]*750 ml/,
+    );
+    assert.equal(
+      await window.locator('#modal-form button[type="submit"]').isVisible(),
+      false,
+    );
+    await window.locator('#quick-prep [data-prep="1"]').click();
+    await window.locator('#quick-prep [data-prep="1"]').click();
+    assert.match(
+      await window.locator("#quick-prep .quick-step").innerText(),
+      /Todo añadido/,
+    );
+    assert.deepEqual(await quickStock(), quickBefore);
+    await window.locator('#modal-form button[type="submit"]').click();
+    await window.getByRole("dialog").waitFor({ state: "hidden" });
+    const quickAfter = await quickStock();
+    assert.deepEqual(
+      quickAfter.map((n, i) => Math.round((n - quickBefore[i]) * 1000) / 1000),
+      [-0.75, -0.3, 1.5],
+    );
+    console.log(
+      "PASS: producción rápida: −/+ de 500 g deja 1,5 kg; «Preparar» guía ingrediente por ingrediente sin tocar el stock y «Hecho» al final descuenta 750 ml de leche y 300 ml de nata y suma 1,5 kg.",
+    );
     // Cruceros: sin red la pantalla abre, dice que faltan datos (no inventa nada) y cita la fuente.
     await window.getByRole("button", { name: "Cruceros", exact: true }).click();
     await window.getByRole("heading", { name: /^Hoy · / }).waitFor();
