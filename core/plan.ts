@@ -5,7 +5,7 @@
 //   da para     = stock ÷ venta media
 // Sin objetivo escrito o sin cierres en el periodo, el dato es null («No disponible»).
 import type { State } from "./schema.js";
-import { closeLineOf, undoneMovements } from "./sales.js";
+import { closeLineOf, sellable, undoneMovements } from "./sales.js";
 import { computeDay, isDayClosed, notOpenedOn } from "./day.js";
 import { localDate } from "./messages.js";
 import { minimumAlerts, type MinimumAlerts } from "./sheet.js";
@@ -55,7 +55,7 @@ export function productionPlan(s: State, today: string): ProductionPlan {
   }
   const seen = new Set<string>();
   const rows: PlanRow[] = [];
-  for (const r of s.recipes) {
+  for (const r of sellable(s)) {
     if (!r.product || seen.has(r.product)) continue;
     seen.add(r.product);
     const p = s.products.find((x) => x.id === r.product);

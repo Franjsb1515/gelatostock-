@@ -53,6 +53,7 @@ import {
   closeMovements,
   closeLineOf,
   closeDetailOf,
+  sellableIds,
   undoneMovements,
 } from "./sales";
 export {
@@ -436,7 +437,8 @@ function move(
   const p = item(s.products, product),
     after = round(p.stock + delta);
   ensure(
-    after >= 0 && after <= 1_000_000,
+    (after >= 0 || (kind === "production" && delta < 0)) &&
+      Math.abs(after) <= 1_000_000,
     "El movimiento dejaría un stock negativo o fuera de rango.",
   );
   if (p.unit === "ud")
@@ -454,6 +456,97 @@ function move(
   });
   p.stock = after;
 }
+/** Propuesta de producción de una receta: el consumo por receta escalado a esos kilos. */
+function proposeProduction(
+  s: State,
+  r: State["recipes"][number],
+  quantity: number,
+  date: string,
+): State["productions"][number] {
+  const factor = quantity / r.yield;
+  const lines = r.ingredients.map((i) => {
+    const p = item(s.products, i.product);
+    const raw = i.quantity * factor;
+    return {
+      product: i.product,
+      quantity: p.unit === "ud" ? Math.ceil(raw - 1e-9) : round(raw),
+    };
+  });
+  const p = {
+    id: randomUUID(),
+    recipe: r.id,
+    name: r.name,
+    quantity,
+    date,
+    at: now(),
+    status: "proposed" as const,
+    lines,
+    ...(r.product ? { output: { product: r.product, quantity } } : {}),
+    note: "",
+  };
+  s.productions.unshift(p);
+  return s.productions[0]!;
+}
+/**
+ * Aprueba una propuesta: descuenta lo consumido y suma lo hecho. Devuelve el texto del consumo y
+ * los ingredientes que quedan en negativo (se avisan; se corrigen con un conteo).
+ */
+function approveProduction(
+  s: State,
+  p: State["productions"][number],
+  r: State["recipes"][number],
+  lines: { product: string; quantity: number }[],
+  output: number | undefined,
+  note: string,
+): { consumed: string[]; negative: string[] } {
+  ensure(p.status === "proposed", "Esta producción ya se resolvió.");
+  ensureDayOpen(s, p.date);
+  ensure(
+    new Set(lines.map((l) => l.product)).size === lines.length &&
+      lines.every((l) => r.ingredients.some((i) => i.product === l.product)),
+    "Solo se pueden ajustar ingredientes de la receta.",
+  );
+  p.lines = lines.map((l) => ({ product: l.product, quantity: l.quantity }));
+  if (p.output && output !== undefined) p.output.quantity = output;
+  p.note = note;
+  p.status = "applied";
+  // Snapshot with today's purchase prices and the approved consumption; later price changes
+  // never rewrite it.
+  const cost = productionCost(s, r, p);
+  if (cost) p.cost = cost;
+  else delete p.cost;
+  const consumed: string[] = [];
+  const negative: string[] = [];
+  for (const l of p.lines) {
+    if (!l.quantity) continue;
+    const prod = item(s.products, l.product);
+    move(
+      s,
+      l.product,
+      -l.quantity,
+      "production",
+      `Producción de ${p.quantity} kg de ${p.name} (${p.date}), aprobada`,
+      { production: p.id },
+    );
+    consumed.push(`${prod.name} ${l.quantity} ${prod.unit}`);
+    if (prod.stock < 0)
+      negative.push(`${prod.name} ${prod.stock} ${prod.unit}`);
+  }
+  if (p.output && p.output.quantity)
+    move(
+      s,
+      p.output.product,
+      p.output.quantity,
+      "output",
+      `Gelato hecho: ${p.name} (${p.date})`,
+      { production: p.id },
+    );
+  return { consumed, negative };
+}
+const negativeNote = (negative: string[]) =>
+  negative.length
+    ? ` Atención: la app no tenía suficiente y queda en negativo: ${negative.join(", ")}. Revísalo con un conteo en Inventario.`
+    : "";
 /** Alta del gelato (o sorbetto) de elaboración propia: un producto en kg que empieza en 0. */
 function ownGelato(s: State, name: string, family: string): string {
   if (!s.suppliers.some((x) => x.id === ownSupplierId))
@@ -537,8 +630,7 @@ export function apply(state: State, input: unknown): State {
       // pero es una merma del cierre de ese día de negocio: se guarda como línea de cierre
       // («Merma del día AAAA-MM-DD · Motivo · detalle») para que el resumen del día, el
       // historial, los informes, la Semana y el objetivo de merma la lean igual.
-      const gelato =
-        a.kind === "waste" && s.recipes.some((r) => r.product === p.id);
+      const gelato = a.kind === "waste" && sellableIds(s).has(p.id);
       let day: string | undefined;
       if (gelato) {
         ensure(!!a.wasteReason, "Elige el motivo de la merma del gelato.");
@@ -1184,87 +1276,83 @@ export function apply(state: State, input: unknown): State {
     }
     case "produce": {
       const r = item(s.recipes, a.recipe);
-      const factor = a.quantity / r.yield;
-      const lines = r.ingredients.map((i) => {
-        const p = item(s.products, i.product);
-        const raw = i.quantity * factor;
-        return {
-          product: i.product,
-          quantity: p.unit === "ud" ? Math.ceil(raw - 1e-9) : round(raw),
-        };
-      });
-      s.productions.unshift({
-        id: randomUUID(),
-        recipe: r.id,
-        name: r.name,
-        quantity: a.quantity,
-        date: a.date,
-        at: now(),
-        status: "proposed",
-        lines,
-        ...(r.product
-          ? { output: { product: r.product, quantity: a.quantity } }
-          : {}),
-        note: "",
-      });
+      proposeProduction(s, r, a.quantity, a.date);
       note = `Producción propuesta: ${a.quantity} kg de ${r.name} (${a.date}). Consumo estimado por receta; nada cambia hasta aprobarlo.`;
       break;
     }
     case "applyProduction": {
       const p = item(s.productions, a.id);
-      ensure(p.status === "proposed", "Esta producción ya se resolvió.");
       const r = item(s.recipes, p.recipe);
-      ensureDayOpen(s, p.date);
-      ensure(
-        new Set(a.lines.map((l) => l.product)).size === a.lines.length &&
-          a.lines.every((l) =>
-            r.ingredients.some((i) => i.product === l.product),
-          ),
-        "Solo se pueden ajustar ingredientes de la receta.",
+      const { consumed, negative } = approveProduction(
+        s,
+        p,
+        r,
+        a.lines,
+        a.output,
+        a.note,
       );
-      p.lines = a.lines.map((l) => ({
-        product: l.product,
-        quantity: l.quantity,
-      }));
-      if (p.output && a.output !== undefined) p.output.quantity = a.output;
-      p.note = a.note;
-      p.status = "applied";
-      // Snapshot with today's purchase prices and the approved consumption; later price changes
-      // never rewrite it.
-      const cost = productionCost(s, r, p);
-      if (cost) p.cost = cost;
-      else delete p.cost;
-      const consumed: string[] = [];
-      for (const l of p.lines) {
-        if (!l.quantity) continue;
-        const prod = item(s.products, l.product);
-        move(
-          s,
-          l.product,
-          -l.quantity,
-          "production",
-          `Producción de ${p.quantity} kg de ${p.name} (${p.date}), aprobada`,
-          { production: p.id },
-        );
-        consumed.push(`${prod.name} ${l.quantity} ${prod.unit}`);
-      }
-      if (p.output && p.output.quantity)
-        move(
-          s,
-          p.output.product,
-          p.output.quantity,
-          "output",
-          `Gelato hecho: ${p.name} (${p.date})`,
-          { production: p.id },
-        );
       const short = s.products.filter(
-        (x) => p.lines.some((l) => l.product === x.id) && x.stock < x.min,
+        (x) =>
+          p.lines.some((l) => l.product === x.id) &&
+          x.stock >= 0 &&
+          x.stock < x.min,
       );
       note =
         `Producción aprobada: ${p.quantity} kg de ${p.name} (${p.date}). Consumo: ${consumed.join(", ") || "sin consumo"}.` +
         (short.length
           ? ` Por debajo del mínimo tras producir: ${short.map((x) => x.name).join(", ")}. Revisa la reposición.`
-          : "");
+          : "") +
+        negativeNote(negative);
+      break;
+    }
+    case "produceNow": {
+      const r = item(s.recipes, a.recipe);
+      const made: string[] = [];
+      const negative: string[] = [];
+      // Bases hechas ahora: se produce primero la base que pide la tanda y se gasta en el momento.
+      const baseNow = new Set(
+        a.bases.filter((b) => b.mode === "now").map((b) => b.product),
+      );
+      const p = proposeProduction(s, r, a.quantity, a.date);
+      const lines = a.lines ?? p.lines;
+      for (const id of baseNow) {
+        const base = s.recipes.find((x) => x.product === id);
+        ensure(
+          base && base.family === "base",
+          `${item(s.products, id).name} no es una base con receta.`,
+        );
+        const need = lines.find((l) => l.product === id)?.quantity ?? 0;
+        ensure(
+          r.ingredients.some((i) => i.product === id),
+          `${base.name} no es un ingrediente de ${r.name}.`,
+        );
+        if (!need) continue;
+        const bp = proposeProduction(s, base, need, a.date);
+        const done = approveProduction(
+          s,
+          bp,
+          base,
+          bp.lines,
+          undefined,
+          `Hecha para ${r.name}`,
+        );
+        negative.push(...done.negative);
+        made.push(`${base.name} ${need} kg`);
+      }
+      // proposeProduction añadió la base delante: la del sabor sigue siendo p.
+      const done = approveProduction(s, p, r, lines, undefined, a.note);
+      negative.push(...done.negative);
+      note =
+        `Hecho: ${a.quantity} kg de ${r.name} (${a.date}). Consumo: ${done.consumed.join(", ") || "sin consumo"}.` +
+        (made.length ? ` Base hecha ahora: ${made.join(", ")}.` : "") +
+        negativeNote([...new Set(negative)]);
+      break;
+    }
+    case "setBatches": {
+      const r = item(s.recipes, a.recipe);
+      const list = [...new Set(a.batches.map(round))].sort((x, y) => x - y);
+      r.batches = list;
+      note = `Tandas de ${r.name}: ${list.join(", ")} kg.`;
       break;
     }
     case "dailySales": {
@@ -1533,9 +1621,7 @@ export function apply(state: State, input: unknown): State {
         a.date <= businessDay(new Date()),
         "Ese día todavía no ha llegado: no se puede pesar.",
       );
-      const gelatos = new Set(
-        s.recipes.map((r) => r.product).filter((x): x is string => !!x),
-      );
+      const gelatos = sellableIds(s);
       ensure(
         new Set(a.lines.map((l) => l.product)).size === a.lines.length,
         "Un sabor aparece dos veces.",
@@ -1667,9 +1753,7 @@ export function apply(state: State, input: unknown): State {
       break;
     }
     case "setFlavorMins": {
-      const gelatos = new Set(
-        s.recipes.map((r) => r.product).filter((x): x is string => !!x),
-      );
+      const gelatos = sellableIds(s);
       const changed: string[] = [];
       for (const l of a.lines) {
         const p = item(s.products, l.product);
@@ -1695,7 +1779,7 @@ export function apply(state: State, input: unknown): State {
     case "skipFlavor": {
       const p = item(s.products, a.product);
       ensure(
-        s.recipes.some((r) => r.product === p.id),
+        sellableIds(s).has(p.id),
         `${p.name} no es un gelato de una receta.`,
       );
       const had = s.flavorSkips.some(

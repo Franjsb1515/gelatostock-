@@ -110,6 +110,9 @@ export const wasteGoalSchema = z.object({
 export const productSchema = z.object({
   id: idSchema,
   ...productFields,
+  // A production may leave an ingredient below zero (the app's stock was wrong; decision of the
+  // user, 2026-10-05): it is warned and corrected with a count. Nothing else goes below zero.
+  stock: signedQuantity,
   icon: z.string().max(30).default("box"),
   wasteGoal: wasteGoalSchema.optional(),
   // Ficha de producción: kilos mínimos que debería tener la cubeta al pesarla por la mañana, y
@@ -275,6 +278,12 @@ const recipeSchema = z.object({
   saleValues: z.array(saleValueSchema).max(1000).default([]),
   // Cost per kilo written by hand; while it exists it rules over the calculated one.
   manualCost: z.object({ cents: cents.refine((n) => n > 0), at }).optional(),
+  // Batch sizes in kg shown when producing (1, 4, 8, 16, 30, 60 kg if not set). Outside
+  // recipeFields so that editing the recipe does not wipe them.
+  batches: z
+    .array(quantity.refine((n) => n > 0 && n <= 1000))
+    .max(12)
+    .optional(),
 });
 const productionSchema = z.object({
   id: idSchema,
@@ -358,8 +367,8 @@ export const movementSchema = z.object({
     "output",
   ]),
   delta: signedQuantity,
-  before: quantity,
-  after: quantity,
+  before: signedQuantity,
+  after: signedQuantity,
   reason: text(500),
   at,
   order: idSchema.optional(),
@@ -757,6 +766,32 @@ export const actionSchema = z.intersection(
       recipe: idSchema,
       quantity: quantity.refine((n) => n > 0),
       date: documentDate,
+    }),
+    // «Hecho»: one step, the batch is registered at once (consumption and gelato). lines: what was
+    // really used, if it differs from the recipe. bases: for each base ingredient, from the cold
+    // room (stock) or made now (its own production first).
+    z.object({
+      type: z.literal("produceNow"),
+      recipe: idSchema,
+      quantity: quantity.refine((n) => n > 0),
+      date: documentDate,
+      lines: z
+        .array(z.object({ product: idSchema, quantity }))
+        .max(100)
+        .optional(),
+      bases: z
+        .array(z.object({ product: idSchema, mode: z.enum(["stock", "now"]) }))
+        .max(20)
+        .default([]),
+      note: z.string().max(500).default(""),
+    }),
+    z.object({
+      type: z.literal("setBatches"),
+      recipe: idSchema,
+      batches: z
+        .array(quantity.refine((n) => n > 0 && n <= 1000))
+        .min(1)
+        .max(12),
     }),
     z.object({
       type: z.literal("applyProduction"),

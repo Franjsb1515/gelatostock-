@@ -196,7 +196,7 @@ test("confirmar el cierre congela el día; reabrir exige motivo y deja rastro", 
   validate(s);
 });
 
-test("el cierre confirmado persiste en SQLite (user_version 5) y la instantánea no deriva", () => {
+test("el cierre confirmado persiste en SQLite (user_version 6) y la instantánea no deriva", () => {
   const root = path.resolve(__dirname, "../work");
   fs.mkdirSync(root, { recursive: true });
   const dir = fs.mkdtempSync(path.join(root, "day-store-"));
@@ -225,7 +225,7 @@ test("el cierre confirmado persiste en SQLite (user_version 5) y la instantánea
     assert.equal(d.difference, 200);
     assert.equal(
       Number(store.db.prepare("PRAGMA user_version").get().user_version),
-      5,
+      6, // 0.55.0: productos admiten stock negativo (migración a la versión 6)
     );
   } finally {
     try {

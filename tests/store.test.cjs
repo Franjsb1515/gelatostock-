@@ -401,7 +401,7 @@ test("recetas y producciones persisten en SQLite y sobreviven al reinicio", () =
     assert.equal(again.movements.filter((m) => m.production).length, 2);
     assert.equal(
       Number(store.db.prepare("PRAGMA user_version").get().user_version),
-      5,
+      6, // 0.55.0: productos admiten stock negativo (migración a la versión 6)
     );
   }));
 
@@ -462,7 +462,7 @@ test("las frases aprendidas persisten y la base pasa a versión 3 sin perder dat
     assert.equal(again.learned[0].category, "closed");
     assert.equal(
       Number(store.db.prepare("PRAGMA user_version").get().user_version),
-      5,
+      6, // 0.55.0: productos admiten stock negativo (migración a la versión 6)
     );
   }));
 
@@ -508,7 +508,7 @@ test("un PDF se almacena por huella, se sirve con su tipo y se archiva por prove
     );
   }));
 
-test("historial de precios persiste en SQLite (user_version 5) y sobrevive a reabrir", () => {
+test("historial de precios persiste en SQLite (user_version 6) y sobrevive a reabrir", () => {
   const dir = fs.mkdtempSync(
     path.join(path.resolve(__dirname, "../work"), "store-prices-"),
   );
@@ -530,7 +530,7 @@ test("historial de precios persiste en SQLite (user_version 5) y sobrevive a rea
     const s = store.load();
     assert.equal(s.prices.length, 1);
     assert.equal(s.prices[0].to, 760);
-    assert.equal(store.db.prepare("PRAGMA user_version").get().user_version, 5);
+    assert.equal(store.db.prepare("PRAGMA user_version").get().user_version, 6);
     store.close();
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
@@ -563,4 +563,44 @@ test("después de guardar, lo que queda en memoria es idéntico a releer la base
     assert.ok(cached.photos.every((p) => p.file && !p.data));
     const fresh = open().load();
     assert.deepEqual(cached, fresh);
+  }));
+
+test("una base de la versión 5 se migra a la 6 con copia previa, sin perder nada, y admite stock negativo al producir", () =>
+  fixture((dir, open) => {
+    let store = open();
+    const before = store.load();
+    // Se rehace a mano una tabla de productos como la de la versión 5 (con su CHECK).
+    store.db.exec(`PRAGMA foreign_keys=OFF; BEGIN;
+      CREATE TABLE p5(id TEXT PRIMARY KEY,supplier TEXT NOT NULL REFERENCES suppliers(id),stock_milli INTEGER NOT NULL CHECK(stock_milli>=0),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+      INSERT INTO p5 SELECT id,supplier,stock_milli,data,position FROM products;
+      DROP TABLE products; ALTER TABLE p5 RENAME TO products; PRAGMA user_version=5; COMMIT; PRAGMA foreign_keys=ON;`);
+    store.close();
+    store = open();
+    assert.equal(store.db.prepare("PRAGMA user_version").get().user_version, 6);
+    assert.ok(
+      fs
+        .readdirSync(path.join(dir, "backups"))
+        .some((f) => /^antes-v6-.*\.sqlite$/.test(f)),
+    );
+    assert.deepEqual(
+      store.load().products.map((p) => [p.id, p.stock]),
+      before.products.map((p) => [p.id, p.stock]),
+    );
+    // Producir 20 kg pide 10 L de leche y la app tiene menos: queda en negativo, con aviso.
+    store.dispatch({
+      type: "produceNow",
+      recipe: "r1",
+      quantity: 20,
+      date: "2026-10-05",
+      revision: store.load().revision,
+    });
+    const milk = store.load().products.find((p) => p.id === "p2");
+    assert.ok(milk.stock < 0);
+    assert.match(store.load().activity[0].text, /queda en negativo/);
+    store.close();
+    store = open();
+    assert.equal(
+      store.load().products.find((p) => p.id === "p2").stock,
+      milk.stock,
+    );
   }));

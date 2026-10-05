@@ -7,7 +7,7 @@
 // siguiente − merma − invitación + entradas y salidas a mano. Un conteo no entra: corrige el
 // libro, no la cubeta. Si falta un dato, el resultado es null («No disponible») y se dice cuál.
 import type { State } from "./schema.js";
-import { closeLineOf, undoneMovements } from "./sales.js";
+import { closeLineOf, sellable, undoneMovements } from "./sales.js";
 import { movementDay, productionDays } from "./day.js";
 import { saleValueOn } from "./value.js";
 import { addDays, kg } from "./util.js";
@@ -149,7 +149,7 @@ export function minimumAlerts(
     checked: 0,
   };
   const seen = new Set<string>();
-  for (const r of s.recipes) {
+  for (const r of sellable(s)) {
     if (!r.product || seen.has(r.product)) continue;
     seen.add(r.product);
     const p = s.products.find((x) => x.id === r.product);
@@ -254,7 +254,7 @@ export function productionSheet(
   changeHour = 5,
 ): ProductionSheet {
   const flavours: { product: string; name: string; family: SheetFamily }[] = [];
-  for (const r of s.recipes) {
+  for (const r of sellable(s)) {
     if (!r.product || flavours.some((f) => f.product === r.product)) continue;
     const p = s.products.find((x) => x.id === r.product);
     if (p)

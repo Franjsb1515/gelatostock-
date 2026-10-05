@@ -55,7 +55,10 @@ const dayIsClosed = (day) =>
 const finishedProducts = () =>
   // Only what a recipe produces counts as finished product; ingredients never appear here.
   state.products.filter(
-    (p) => p.unit === "kg" && state.recipes.some((r) => r.product === p.id),
+    // Una base (familia «base») se hace y se gasta en el obrador: no se vende.
+    (p) =>
+      p.unit === "kg" &&
+      state.recipes.some((r) => r.product === p.id && r.family !== "base"),
   );
 // Reads the close form. Returns lines for the action plus totals and per-row problems.
 function readSalesForm(panel) {

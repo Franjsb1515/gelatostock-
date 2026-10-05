@@ -3,7 +3,12 @@
 // un día sin datos es un día sin datos. La marca «La tienda no abrió», el horario semanal y las
 // vacaciones los escribe la persona; los avisos del día salen de reglas visibles y solo avisan.
 import type { State } from "./schema.js";
-import { closeLineOf, undoneMovements, wasteLabelOf } from "./sales.js";
+import {
+  closeLineOf,
+  sellableIds,
+  undoneMovements,
+  wasteLabelOf,
+} from "./sales.js";
 import {
   daySummary,
   movementDay,
@@ -198,9 +203,7 @@ function collect(
     date < from || date > to
       ? undefined
       : (out.get(date) ?? out.set(date, blank(date, s)).get(date));
-  const finished = new Set(
-    s.recipes.map((r) => r.product).filter((id): id is string => !!id),
-  );
+  const finished = sellableIds(s);
   const undone = undoneMovements(s);
   const days = productionDays(s);
   for (const m of s.movements) {
@@ -351,7 +354,7 @@ function stockAt(
     if (movementDay(s, m, changeHour, days) > date)
       later.set(m.product, (later.get(m.product) ?? 0) + m.delta);
   }
-  const finished = new Set(s.recipes.map((r) => r.product).filter(Boolean));
+  const finished = sellableIds(s);
   return s.products
     .map((p) => ({
       name: p.name,

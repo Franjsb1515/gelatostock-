@@ -144,7 +144,11 @@ test("no vincula mensajes a otro proveedor", () => {
 });
 test("copias inválidas se rechazan", () => {
   const s = seed();
-  s.products[0].stock = -5;
+  // Desde 0.55.0 un stock negativo es posible (lo deja una producción, con aviso; decisión del
+  // usuario): lo inválido es un stock fuera de rango o que no es un número.
+  s.products[0].stock = -5_000_000;
+  assert.throws(() => validate(s));
+  s.products[0].stock = Number.NaN;
   assert.throws(() => validate(s));
   assert.throws(() => validate({ version: 99 }));
 });
@@ -531,22 +535,22 @@ test("producción: propuesta escalada, aprobación editable, terminado y descart
   });
   assert.equal(reversed.products.find((x) => x.id === "p2").stock, before[0]);
 });
-test("producción no deja stock negativo y avisa de mínimos", () => {
+test("producción de más: se registra, el ingrediente queda en negativo con aviso, y avisa de mínimos", () => {
+  // Antes de 0.55.0 se rechazaba. Decisión del usuario (2026-10-05): el stock de la app puede
+  // estar mal; la producción se registra y avisa para corregirlo con un conteo.
   let s = apply(seed(), {
     type: "produce",
     recipe: "r1",
     quantity: 100,
     date: "2026-09-08",
   });
-  assert.throws(
-    () =>
-      apply(s, {
-        type: "applyProduction",
-        id: s.productions[0].id,
-        lines: s.productions[0].lines,
-      }),
-    /negativo/,
-  );
+  const over = apply(s, {
+    type: "applyProduction",
+    id: s.productions[0].id,
+    lines: s.productions[0].lines,
+  });
+  assert.ok(over.products.find((p) => p.id === "p2").stock < 0);
+  assert.match(over.activity[0].text, /queda en negativo/);
   s = apply(seed(), {
     type: "produce",
     recipe: "r1",

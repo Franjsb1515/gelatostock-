@@ -9,6 +9,14 @@
 import type { State } from "./schema.js";
 import { kg as round } from "./util.js";
 
+/** Recetas de gelato de venta: con producto propio y que no son una base (la base blanca se
+ * produce y se gasta en el obrador, no se vende). */
+export const sellable = (s: State) =>
+  s.recipes.filter((r) => !!r.product && r.family !== "base");
+/** Productos que son gelato de venta. */
+export const sellableIds = (s: State): Set<string> =>
+  new Set(sellable(s).map((r) => r.product!));
+
 export const wasteReasons = [
   "expiry",
   "texture",

@@ -1226,7 +1226,7 @@ td small {
 }
 .ingredient-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px auto;
+  grid-template-columns: minmax(0, 1fr) 100px 72px auto;
   gap: var(--s-2);
   align-items: center;
   margin-bottom: var(--s-2);
@@ -5208,4 +5208,175 @@ dialog.wide {
 }
 .roster-table td input {
   width: 104px;
+}
+
+/* ---------- Producción rápida y Recetario en botones (0.55.0) ---------- */
+.quick-body {
+  padding: 0 var(--s-5) var(--s-5);
+  display: grid;
+  gap: var(--s-5);
+}
+.quick-group h3 {
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-12);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.quick-grid,
+.recipe-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: var(--s-3);
+}
+.recipe-tiles {
+  margin-bottom: var(--s-5);
+}
+.quick-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 92px;
+  padding: var(--s-4);
+  border: 1px solid var(--border-soft);
+  border-left: 5px solid var(--pistacho);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.1s;
+}
+.quick-tile.sorbete {
+  border-left-color: var(--azafran);
+}
+.quick-tile.base {
+  border-left-color: var(--lavanda-texto);
+}
+.quick-tile.postre,
+.quick-tile.otro {
+  border-left-color: var(--rosa);
+}
+.quick-tile strong {
+  font-size: var(--fs-15);
+  color: var(--ink);
+}
+.quick-tile span,
+.quick-tile small {
+  font-size: var(--fs-12);
+  color: var(--ink-muted);
+}
+.quick-tile em {
+  font-style: normal;
+  font-size: var(--fs-12);
+  font-weight: 700;
+  color: var(--rosa-texto);
+}
+.quick-tile:hover,
+.quick-tile:focus-visible {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+.quick-tile:active {
+  transform: scale(0.98);
+}
+.quick-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: var(--fs-14);
+}
+.quick-table th,
+.quick-table td {
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+.quick-table thead th {
+  border-bottom: 1px solid var(--border);
+}
+.quick-table tbody th {
+  text-align: left;
+  font-weight: 600;
+}
+.quick-table td.on {
+  background: var(--pistacho-suave);
+  font-weight: 700;
+  color: var(--pistacho);
+}
+.quick-table tr.quick-short td:last-child {
+  color: var(--rosa-texto);
+  font-weight: 600;
+}
+.quick-batch {
+  min-width: 64px;
+  min-height: 40px;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 700;
+  cursor: pointer;
+}
+.quick-batch.on {
+  background: var(--pistacho);
+  border-color: var(--pistacho);
+  color: #fff;
+}
+.quick-other,
+.quick-bases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3) var(--s-4);
+  margin-top: var(--s-4);
+}
+.quick-other .field,
+.quick-bases .field {
+  min-width: 200px;
+  margin: 0;
+}
+.quick-bases > strong {
+  width: 100%;
+  font-size: var(--fs-13);
+}
+.quick-fix {
+  margin-top: var(--s-4);
+}
+.quick-fix summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--pistacho);
+}
+.quick-fix .field {
+  margin-top: var(--s-2);
+  max-width: 320px;
+}
+.recipe-back {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-4);
+  font-size: var(--fs-13);
+  color: var(--ink-soft);
+}
+.recipe-back .btn.text-link {
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  background: none;
+}
+@media (pointer: coarse) {
+  .quick-tile {
+    min-height: 110px;
+  }
+  .quick-batch {
+    min-height: 48px;
+    min-width: 72px;
+  }
 }

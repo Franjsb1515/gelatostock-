@@ -280,5 +280,29 @@
     "question": "¿Cómo hago para que lea mejor el cuadrante?",
     "expect": ["zoom|grande|captura"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "producir_botones",
+    "question": "¿Cómo registro que hice 8 kilos de fior di panna?",
+    "expect": ["hecho|tanda"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "base_ahora",
+    "question": "¿Qué hago si no tengo base blanca hecha?",
+    "expect": ["hacerla ahora|base"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "clave_recetario",
+    "question": "¿Cómo hago para que solo yo pueda editar las recetas?",
+    "expect": ["contraseña"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "receta_gramos",
+    "question": "¿Puedo escribir los ingredientes de la receta en gramos?",
+    "expect": ["gramos|g o kg"],
+    "forbid": ["no lo sé"]
   }
 ]

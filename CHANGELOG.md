@@ -1,5 +1,17 @@
 # Registro de parches y sesiones
 
+## 0.55.0 — 2026-10-05 · sesión 053 (quinta parte) · Producción rápida y Recetario con clave
+
+Como en tu vídeo:
+
+- **Producción**: un botón por sabor; al tocarlo, su receta con las tandas (1, 4, 8, 16, 30, 60 kg o las tuyas) en gramos y ml, y «Hecho» lo registra en un paso.
+- **Bases**: de la cámara o «Hacerla ahora con esta tanda».
+- Si la app no tiene bastante de un ingrediente, te avisa y te deja hacerlo (queda en negativo para que lo cuentes).
+- **Recetario** en botones que abren cada receta, con **contraseña**: solo tú creas, editas y borras. Producir no la pide.
+- En las recetas, los ingredientes se escriben en g o kg (ml o L), y avisa si algo no cuadra (tu «cocadado» tenía 500 L).
+
+Informe reports/2026-10-06T00-30-00-000Z-produccion-rapida-recetario.md.
+
 ## 0.54.0 — 2026-10-05 · sesión 053 (cuarta parte) · Cuadrante de turnos en foto
 
 Tu foto del cuadrante no se leía. Ahora:

@@ -605,7 +605,8 @@ const { appName } = require("./package-rules.cjs");
       .getByRole("button", { name: "Producción", exact: true })
       .click();
     await window
-      .getByRole("button", { name: "Registrar producción", exact: true })
+      // 0.55.0: el registro en dos pasos sigue, como «Producción a mano».
+      .getByRole("button", { name: "Producción a mano", exact: true })
       .click();
     await window.locator('#modal-form [name="quantity"]').fill("4");
     await window
@@ -716,6 +717,8 @@ const { appName } = require("./package-rules.cjs");
     await window
       .getByRole("button", { name: "Recetario", exact: true })
       .click();
+    // 0.55.0: el Recetario son botones; la ficha se abre al tocar la receta.
+    await window.locator(".recipe-tiles .quick-tile").first().click();
     await window.locator("[data-scale]").first().fill("6");
     await window.waitForFunction(
       () =>

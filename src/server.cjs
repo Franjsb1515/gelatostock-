@@ -176,24 +176,24 @@ function createApp({
           })),
         }
       : {
+          // Con la contraseña puesta, producir sigue abierto: quien produce ve los ingredientes y
+          // las cantidades de la tanda. Lo que solo ve el dueño: costes, valor y notas.
           ...state,
           recipes: state.recipes.map((r) => ({
             ...r,
-            ingredients: [],
             note: "",
+            saleValues: [],
+            manualCost: undefined,
             locked: true,
           })),
-          productions: state.productions.map((p) => ({ ...p, lines: [] })),
         };
   const lockedActions = new Set([
     "recipe",
     "deleteRecipe",
-    "produce",
-    "applyProduction",
-    "discardProduction",
-    "voidProduction",
     "setSaleValue",
     "setManualCost",
+    "quickFlavors",
+    "setBatches",
   ]);
   // Business day: a shop that closes at 2:00 is still living «yesterday» until this hour.
   const dayChangeHour = () => {
@@ -1595,6 +1595,7 @@ function createApp({
       "/ui/views-calendar.js": "ui/views-calendar.js",
       "/ui/calendar-photo.js": "ui/calendar-photo.js",
       "/ui/calendar-sheet.js": "ui/calendar-sheet.js",
+      "/ui/production-quick.js": "ui/production-quick.js",
       "/ui/forms.js": "ui/forms.js",
       "/ui/actions.js": "ui/actions.js",
       "/ui/events.js": "ui/events.js",

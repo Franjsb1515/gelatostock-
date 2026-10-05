@@ -92,7 +92,14 @@ function homeDay() {
   const t = d.totals;
   const busy = t.produced || t.sold || t.waste || t.gift;
   const short = d.minimum?.below || [];
-  if (!busy && !d.toProduce.length && !d.yesterdayPending && !short.length)
+  const negative = state.products.filter((p) => p.stock < 0);
+  if (
+    !busy &&
+    !d.toProduce.length &&
+    !d.yesterdayPending &&
+    !short.length &&
+    !negative.length
+  )
     return "";
   const cents = (n) => (n === null ? "No disponible" : money(n));
   const dayName = (x) => date(x + "T12:00:00Z");
@@ -115,7 +122,15 @@ function homeDay() {
           .join(", "),
       )}${short.length > 4 ? "…" : ""}. </span><button class="text-button" data-action="calOpenDay" data-date="${esc(d.date)}">Ver la ficha ${icon("arrow")}</button>`
     : "";
-  return `${produce || pending || minimum ? `<div class="notice subtle home-notice">${icon("cake")}<div>${minimum}${pending}${produce}</div></div>` : ""}${
+  const below = negative.length
+    ? `<strong>Stock en negativo tras producir</strong><span>${esc(
+        negative
+          .slice(0, 4)
+          .map((p) => p.name + " " + num(p.stock) + " " + p.unit)
+          .join(", "),
+      )}${negative.length > 4 ? "…" : ""}: la app tenía menos de lo que se usó. Cuéntalo para corregirlo. </span><button class="text-button" data-nav="stock">Ir a Inventario ${icon("arrow")}</button>`
+    : "";
+  return `${produce || pending || minimum || below ? `<div class="notice subtle home-notice">${icon("cake")}<div>${below}${minimum}${pending}${produce}</div></div>` : ""}${
     busy
       ? `<section class="stats" data-home-day><article class="stat"><span class="stat-icon sage">${icon("cake")}</span><div><p>Producido hoy</p><strong>${num(t.produced)} kg</strong><small>${esc(dayName(d.date))}${d.closed ? " · día cerrado" : ""}</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Venta estimada de hoy</p><strong class="money-value">${cents(t.soldCents)}</strong><small>${t.soldCents === null ? "Falta escribir el valor de venta en el Recetario" : num(t.sold) + " kg × valor de venta"}</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Merma de hoy</p><strong>${num(t.waste)} kg</strong><small>${t.waste ? cents(t.wasteCents) + " de venta perdida" : "Sin merma apuntada"}</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("box")}</span><div><p>Gelato que queda</p><strong>${num(t.remaining)} kg</strong><small>Para mañana</small></div></article></section>`
       : ""
@@ -297,7 +312,7 @@ function settings() {
             `<figure><img src="${esc(ph.data || "/api/photos/" + ph.id)}" alt="${esc(ph.name)}"><figcaption><strong>${esc(ph.supplier ? supplier(ph.supplier).name : "Sin proveedor")}</strong><small>${esc(ph.documentDate || ph.at.slice(0, 10))}${ph.docType ? " · " + esc(aiTypes[ph.docType] || ph.docType).replace("Posible ", "") : ""}</small>${esc(ph.name)}<small>${esc(ph.note)}</small><div class="row-actions">${btn("Organizar", "organizePhoto", "secondary", `data-id="${ph.id}"`)}${ph.ocrText ? btn("Revisar texto con el Ayudante", "aiPhoto", "secondary", `data-id="${ph.id}"`) : ""}</div></figcaption></figure>`,
         )
         .join("") || '<p class="muted">Todavía no hay fotos guardadas.</p>'
-    }</div></section><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Recetario protegido</h2>${lockInfo?.enabled ? `<p>Las recetas piden contraseña. Estado: <strong>${lockInfo.unlocked ? "desbloqueado (30 min)" : "bloqueado"}</strong>.</p><div class="setting-actions">${btn("Bloquear ahora", "lockNow", "secondary")}${btn("Cambiar contraseña", "lockChange", "secondary")}${btn("Quitar contraseña", "lockRemove", "danger")}</div>` : `<p>Sin contraseña: cualquiera con la app abierta ve las recetas.</p>${btn("Poner contraseña", "lockSet", "primary")}`}<p class="fineprint">Protege la pantalla y bloquea crear, editar o producir con recetas. No cifra el disco.</p></section><section class="panel settings-card"><h2>Limpieza periódica</h2><p>Borra la actividad y las conversaciones de WhatsApp más antiguas que el plazo elegido (se conservan las 50 entradas más recientes). Los movimientos de stock y las copias no se tocan.</p><label class="field">Conservar<select id="retention-days">${[
+    }</div></section><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Recetario protegido</h2>${lockInfo?.enabled ? `<p>Las recetas piden contraseña. Estado: <strong>${lockInfo.unlocked ? "desbloqueado (30 min)" : "bloqueado"}</strong>.</p><div class="setting-actions">${btn("Bloquear ahora", "lockNow", "secondary")}${btn("Cambiar contraseña", "lockChange", "secondary")}${btn("Quitar contraseña", "lockRemove", "danger")}</div>` : `<p>Sin contraseña: cualquiera con la app abierta puede crear, editar o borrar recetas.</p>${btn("Poner contraseña", "lockSet", "primary")}`}<p class="fineprint">Protege el Recetario (crear, editar y borrar recetas, precios y costes). Producir sigue abierto para el equipo. No cifra el disco.</p></section><section class="panel settings-card"><h2>Limpieza periódica</h2><p>Borra la actividad y las conversaciones de WhatsApp más antiguas que el plazo elegido (se conservan las 50 entradas más recientes). Los movimientos de stock y las copias no se tocan.</p><label class="field">Conservar<select id="retention-days">${[
       [0, "Sin limpieza automática"],
       [7, "7 días (semanal)"],
       [14, "14 días"],

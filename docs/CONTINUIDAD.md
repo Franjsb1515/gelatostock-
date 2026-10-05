@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.55.0
+Lee reports/2026-10-06T00-30-00-000Z-produccion-rapida-recetario.md y docs/PLAN_PRODUCCION_RAPIDA.md. Reglas nuevas del usuario: stock negativo solo por producción (move kind production; user_version 6 sin CHECK, migración con VACUUM INTO previo) y contraseña que protege editar el recetario, no producir. proposeProduction/approveProduction compartidos; produceNow (bases stock|now), setBatches; sellable/sellableIds (las bases no son gelato de venta). UI: src/ui/production-quick.js (quickPanel, quickCard, quickAction), Recetario en botones (recipeOpen, recipeTiles), unidad por ingrediente en el editor. Pruebas 252, chat 50/50, escritorio 22 PASS.
+
 ## Punto de continuidad 0.54.0
 Lee reports/2026-10-05T23-00-00-000Z-cuadrante-en-foto.md. Lectura de cuadrantes: src/table-ocr.cjs (findGrid con líneas casi negras y finas, tinta por casilla, variantes con recorte e inversión, acuerdo entre lecturas, zonas de título), core/roster.ts (parseRoster, rosterRegions; nada seguro si las lecturas discrepan o hay tinta sin leer). Turnos con label y horas opcionales; isOff en util; setScheduleDays. El cuadrante real del usuario está en work/ (fuera de git: nombres reales, repositorio público) con su verdad en work/cuadrante-real.esperado.json; scripts/evaluate-roster.cjs --real. Sintéticos en tests/fixtures/fotos-calendario/13-14 y cuadrante.cjs (scripts/make-roster-photo.cjs). Pruebas 247, chat 46/46, escritorio 22 PASS.
 

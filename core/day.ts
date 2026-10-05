@@ -6,7 +6,7 @@
 // real la escribe la persona (CONFIRMADA) y es opcional. Un ajuste de inventario se enseña como
 // ajuste: nunca se convierte solo en merma ni en venta. Aquí no hay costes (informe aparte).
 import type { State, Movement, DayClose, DaySnapshot } from "./schema.js";
-import { closeLineOf, undoneMovements } from "./sales.js";
+import { closeLineOf, sellableIds, undoneMovements } from "./sales.js";
 import { saleValueOn } from "./value.js";
 import { localDate } from "./messages.js";
 import { kg } from "./util.js";
@@ -81,9 +81,7 @@ export function computeDay(
   date: string,
   changeHour = 5,
 ): DaySnapshot {
-  const finished = new Set(
-    s.recipes.map((r) => r.product).filter((id): id is string => !!id),
-  );
+  const finished = sellableIds(s);
   const undone = undoneMovements(s);
   type Acc = {
     produced: number;

@@ -407,8 +407,11 @@ test("recetario con contraseña: oculta recetas, bloquea acciones, desbloquea y 
     r = await post("/api/lock", { type: "lock" });
     d = await r.json();
     assert.equal(d.lock.unlocked, false);
-    assert.equal(d.state.recipes[0].ingredients.length, 0);
+    // Decisión del usuario (2026-10-05): la contraseña protege EDITAR el recetario; producir sigue
+    // abierto y quien produce ve los ingredientes de la tanda. Lo que no ve: valor y costes escritos.
+    assert.ok(d.state.recipes[0].ingredients.length > 0);
     assert.equal(d.state.recipes[0].locked, true);
+    assert.deepEqual(d.state.recipes[0].saleValues, []);
     r = await post("/api/action", {
       type: "produce",
       recipe: "r1",
@@ -416,6 +419,22 @@ test("recetario con contraseña: oculta recetas, bloquea acciones, desbloquea y 
       date: "2026-09-09",
       revision: d.state.revision,
       operationId: "lk1",
+    });
+    assert.equal(r.status, 200);
+    d = await r.json();
+    const {
+      id: _id,
+      saleValues: _sv,
+      locked: _l,
+      ...fields
+    } = d.state.recipes[0];
+    r = await post("/api/action", {
+      type: "recipe",
+      id: "r1",
+      ...fields,
+      name: "Otro nombre",
+      revision: d.state.revision,
+      operationId: "lk1b",
     });
     assert.equal(r.status, 400);
     assert.match((await r.json()).error, /protegidas/);

@@ -56,13 +56,47 @@ export class Store {
         this.db.prepare("PRAGMA user_version").get()?.user_version,
       );
       ensure(
-        version <= 5,
+        version <= 6,
         "La base de datos pertenece a una versión más nueva.",
       );
+      // → 6: la tabla de productos tenía CHECK(stock_milli>=0) y una producción puede dejar un
+      // ingrediente en negativo (con aviso). SQLite no cambia un CHECK: se rehace la tabla, con
+      // una copia completa de la base antes, en backups/.
+      const hasProducts = !!this.db
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='products'",
+        )
+        .get();
+      if (version >= 1 && version < 6 && hasProducts) {
+        const backups = path.join(dataDir, "backups");
+        fs.mkdirSync(backups, { recursive: true });
+        const copy = path.join(backups, `antes-v6-${Date.now()}.sqlite`);
+        this.db.prepare("VACUUM INTO ?").run(copy);
+        this.db.exec("PRAGMA foreign_keys=OFF");
+        this.db.exec("BEGIN IMMEDIATE");
+        try {
+          this.db
+            .exec(`CREATE TABLE products_v6(id TEXT PRIMARY KEY,supplier TEXT NOT NULL REFERENCES suppliers(id),stock_milli INTEGER NOT NULL,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+   INSERT INTO products_v6(id,supplier,stock_milli,data,position) SELECT id,supplier,stock_milli,data,position FROM products;
+   DROP TABLE products;
+   ALTER TABLE products_v6 RENAME TO products;
+   PRAGMA user_version=6;`);
+          ensure(
+            this.db.prepare("PRAGMA foreign_key_check").all().length === 0,
+            "La migración de la base encontró relaciones rotas.",
+          );
+          this.db.exec("COMMIT");
+        } catch (error) {
+          this.db.exec("ROLLBACK");
+          throw error;
+        } finally {
+          this.db.exec("PRAGMA foreign_keys=ON");
+        }
+      }
       this.db
         .exec(`CREATE TABLE IF NOT EXISTS meta (id INTEGER PRIMARY KEY CHECK(id=1),data TEXT NOT NULL CHECK(json_valid(data)));
    CREATE TABLE IF NOT EXISTS suppliers(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
-   CREATE TABLE IF NOT EXISTS products(id TEXT PRIMARY KEY,supplier TEXT NOT NULL REFERENCES suppliers(id),stock_milli INTEGER NOT NULL CHECK(stock_milli>=0),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
+   CREATE TABLE IF NOT EXISTS products(id TEXT PRIMARY KEY,supplier TEXT NOT NULL REFERENCES suppliers(id),stock_milli INTEGER NOT NULL,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS orders(id TEXT PRIMARY KEY,supplier TEXT NOT NULL REFERENCES suppliers(id),status TEXT NOT NULL CHECK(status IN ('pending','sent','partial','received','cancelled')),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE TABLE IF NOT EXISTS order_lines(id TEXT PRIMARY KEY,order_id TEXT NOT NULL REFERENCES orders(id),product TEXT NOT NULL REFERENCES products(id),ordered_milli INTEGER NOT NULL CHECK(ordered_milli>0),received_milli INTEGER NOT NULL CHECK(received_milli>=0 AND received_milli<=ordered_milli),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL,UNIQUE(order_id,product));
    CREATE TABLE IF NOT EXISTS cart(id TEXT PRIMARY KEY,product TEXT NOT NULL REFERENCES products(id),data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
@@ -79,7 +113,7 @@ export class Store {
    CREATE TABLE IF NOT EXISTS days(id TEXT PRIMARY KEY,data TEXT NOT NULL CHECK(json_valid(data)),position INTEGER NOT NULL);
    CREATE INDEX IF NOT EXISTS order_lines_product ON order_lines(product);
    CREATE INDEX IF NOT EXISTS movements_product ON movements(product);
-   PRAGMA user_version=5;`);
+   PRAGMA user_version=6;`);
       ensure(
         this.db.prepare("PRAGMA quick_check").get()?.quick_check === "ok",
         "La base no pasó la comprobación de integridad.",

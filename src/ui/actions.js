@@ -307,10 +307,45 @@ async function action(name, el) {
         `<label class="field">Nota<textarea name="note" maxlength="500">${esc(r.note || "")}</textarea></label>`,
       async (f) => {
         const products = f.getAll("ing-product"),
-          quantities = f.getAll("ing-qty");
-        const ingredients = products
-          .map((p, i) => ({ product: p, quantity: Number(quantities[i]) }))
-          .filter((i) => i.product);
+          quantities = f.getAll("ing-qty"),
+          units = f.getAll("ing-unit");
+        const ingredients = [];
+        for (const [i, id] of products.entries()) {
+          if (!id) continue;
+          const raw = String(quantities[i] ?? "")
+            .trim()
+            .replace(",", ".");
+          const n = Number(raw);
+          const p = product(id);
+          if (!raw || !Number.isFinite(n) || n <= 0)
+            throw Error(`${p.name}: escribe una cantidad mayor que cero.`);
+          // En g o ml se guarda en kg o L: 860 g → 0,86 kg.
+          const quantity =
+            units[i] === "small"
+              ? Math.round(n) / 1000
+              : Math.round(n * 1000) / 1000;
+          if (units[i] === "small" && !Number.isInteger(n))
+            throw Error(`${p.name}: en gramos o mililitros, sin decimales.`);
+          ingredients.push({ product: id, quantity });
+        }
+        // «500» en litros cuando eran mililitros: los ingredientes pesarían mucho más que lo que
+        // rinde la receta. Se avisa una vez; si se vuelve a guardar, se acepta.
+        const mass = ingredients.reduce((n, i) => {
+          const p = product(i.product);
+          return n + (["kg", "L"].includes(p.unit) ? i.quantity : 0);
+        }, 0);
+        const form = $("#modal-form");
+        const yieldKg = Number(f.get("yield"));
+        if (
+          yieldKg > 0 &&
+          mass > yieldKg * 3 &&
+          form.dataset.massOk !== String(mass)
+        ) {
+          form.dataset.massOk = String(mass);
+          throw Error(
+            `Los ingredientes suman ${num(mass)} kg o L para ${num(yieldKg)} kg de receta. ¿Seguro? Si eran gramos o mililitros, cambia la unidad. Si está bien, pulsa Guardar otra vez.`,
+          );
+        }
         return mutate(
           {
             type: "recipe",
@@ -900,6 +935,13 @@ async function action(name, el) {
     await whatsappAction(name, el);
     return;
   }
+  if (name === "recipeOpen" || name === "recipeBack") {
+    recipeOpen = name === "recipeOpen" ? el.dataset.id : "";
+    render();
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (quickAction(name, el)) return;
   if (await calendarAction(name, el)) return;
   if (await extendedAction(name, el)) return;
   if (name === "close") {

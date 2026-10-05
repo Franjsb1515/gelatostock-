@@ -6,7 +6,7 @@ function lockGate() {
   return (
     header(
       "Recetario protegido",
-      "Las recetas y la producción se abren con tu contraseña durante 30 minutos.",
+      "El recetario (crear, editar y borrar recetas) se abre con tu contraseña durante 30 minutos. Producir no la pide.",
     ) +
     `<section class="panel settings-card lock-panel"><span class="stat-icon sage">${icon("shield")}</span><h2>Introduce la contraseña</h2><label class="field">Contraseña del recetario<input type="password" id="lock-password" autocomplete="current-password" maxlength="100"></label><div class="setting-actions">${btn("Desbloquear", "unlockRecipes", "primary")}</div><p class="fineprint">Protege la pantalla dentro de la app. Los movimientos de stock siguen visibles en Actividad. Si la olvidas, quien te dé soporte técnico puede quitarla sin perder datos.</p></section>`
   );
@@ -41,11 +41,16 @@ function recipeBook() {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
-  const list = state.recipes.filter(
+  const all = state.recipes.filter(
     (r) =>
       (recipeFamily === "all" || (r.family || "crema") === recipeFamily) &&
       fold(r.name + " " + (r.allergens || "")).includes(fold(recipeQuery)),
   );
+  const open = state.recipes.find((r) => r.id === recipeOpen);
+  const list = open ? [open] : [];
+  const noLock = !lockInfo?.enabled
+    ? `<div class="notice subtle">${icon("shield")}<div><strong>Sin contraseña</strong><span>Cualquiera con la app abierta puede crear, editar o borrar recetas. </span>${btn("Poner contraseña", "lockSet", "text-link")}</div></div>`
+    : "";
   return (
     header(
       "El recetario de la casa.",
@@ -59,7 +64,9 @@ function recipeBook() {
         ([v, l]) =>
           `<option value="${v}" ${recipeFamily === v ? "selected" : ""}>${l}</option>`,
       )
-      .join("")}</select></label></div><div class="recipe-book">${
+      .join(
+        "",
+      )}</select></label></div>${noLock}${open ? `<div class="recipe-back">${btn("← Todas las recetas", "recipeBack", "secondary")}<span>Tandas para producir: <strong>${(open.batches?.length ? open.batches : defaultBatches).map((b) => num(b) + " kg").join(" · ")}</strong></span>${btn("Cambiar tandas", "setBatchesUi", "text-link", `data-id="${esc(open.id)}"`)}</div>` : recipeTiles(all)}<div class="recipe-book">${
       list
         .map((r) => {
           const shares = recipeShares(r);
@@ -78,8 +85,6 @@ function recipeBook() {
   );
 }
 function production() {
-  const gate = lockGate();
-  if (gate) return gate;
   const proposed = proposedProductions();
   const applied = state.productions.filter((p) => p.status === "applied");
   const byDate = {};
@@ -91,11 +96,11 @@ function production() {
   };
   return (
     header(
-      "Producción y recetas",
-      "Cada kilo de gelato descuenta sus ingredientes, solo cuando tú lo apruebas.",
-      btn(icon("plus") + " Nueva receta", "recipeEditor") +
-        btn(icon("plus") + " Registrar producción", "produce", "primary"),
+      "Producción",
+      "Toca un sabor, elige la tanda y «Hecho». Cada kilo descuenta sus ingredientes y suma el gelato.",
+      btn(icon("plus") + " Producción a mano", "produce", "secondary"),
     ) +
+    quickPanel() +
     `<div class="notice subtle">${icon("shield")}<div><strong>Cálculo por reglas con tu receta</strong><span>La app propone el consumo de ingredientes y los kilos de gelato hecho. Puedes corregir cada cantidad antes de aprobar. El stock resultante es una estimación hasta el próximo conteo.</span></div></div>${planPanel()}<section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Revisa el consumo estimado. Al aprobar, los ingredientes salen del stock y el gelato hecho entra.</p></div></div>${
       proposed.length
         ? proposed
@@ -130,20 +135,46 @@ function production() {
             )
             .join("")}</tbody></table></div>`
         : '<div class="empty compact">Todavía no hay producciones aprobadas.</div>'
-    }</section><section class="panel"><div class="panel-heading"><div><h2>Recetas</h2><p>${state.recipes.length} receta${state.recipes.length === 1 ? "" : "s"} en el recetario, con proporciones, elaboración y alérgenos.</p></div>${btn("Abrir recetario", "openRecipes", "secondary")}</div><div class="recipe-grid">${
-      state.recipes
-        .slice(0, 6)
-        .map(
-          (r) =>
-            `<article class="recipe-card"><h3>${esc(r.name)}</h3><small>${familyLabel[r.family || "crema"]} · rinde ${num(r.yield)} kg</small><div class="row-actions">${btn("Producir", "produce", "secondary", `data-recipe="${esc(r.id)}"`)}</div></article>`,
-        )
-        .join("") ||
-      '<div class="empty compact">Sin recetas. Crea la primera con «Nueva receta».</div>'
-    }</div></section>${salesSection()}`
+    }</section>${salesSection()}`
   );
 }
+/** Unidades para escribir un ingrediente: la pequeña (g, ml) y la del producto (kg, L). */
+const ingUnits = (unit) =>
+  unit === "kg"
+    ? [
+        ["small", "g"],
+        ["base", "kg"],
+      ]
+    : unit === "L"
+      ? [
+          ["small", "ml"],
+          ["base", "L"],
+        ]
+      : [["base", unit || "ud"]];
+/** Recetario en botones: nombre, familia, rinde e ingredientes; al tocar uno se abre su ficha. */
+let recipeOpen = "";
+function recipeTiles(list) {
+  if (!list.length)
+    return `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con «Nueva receta»."}</p></div>`;
+  return `<div class="recipe-tiles">${list
+    .map(
+      (r) =>
+        `<button class="quick-tile ${esc(r.family || "crema")}" data-action="recipeOpen" data-id="${esc(r.id)}"><strong>${esc(r.name)}</strong><span>${familyLabel[r.family || "crema"]} · rinde ${num(r.yield)} kg</span><small>${r.ingredients.length ? `${r.ingredients.length} ${r.ingredients.length === 1 ? "ingrediente" : "ingredientes"}` : "Sin ingredientes todavía"}</small></button>`,
+    )
+    .join("")}</div>`;
+}
 function ingredientRow(productId = "", qty = "") {
-  return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="number" min="0.001" max="1000000" step="0.001" value="${esc(qty)}" aria-label="Cantidad"><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
+  const p = product(productId);
+  // Por debajo de 1 kg (o 1 L) se enseña en gramos (o ml): 0,86 kg → 860 g.
+  const small =
+    !!p && ["kg", "L"].includes(p.unit) && qty !== "" && Number(qty) < 1;
+  const shown =
+    qty === ""
+      ? ""
+      : small
+        ? String(Math.round(Number(qty) * 1000 * 1000) / 1000)
+        : qty;
+  return `<div class="ingredient-row"><select name="ing-product" aria-label="Ingrediente">${options([["", "Elegir ingrediente"], ...state.products.map((p) => [p.id, `${p.name} (${p.unit})`])], productId)}</select><input name="ing-qty" type="text" inputmode="decimal" autocomplete="off" value="${esc(shown)}" aria-label="Cantidad"><select name="ing-unit" aria-label="Unidad">${options(ingUnits(p?.unit), small ? "small" : "base")}</select><button type="button" class="icon-button" data-action="removeIngredient" aria-label="Quitar ingrediente">${icon("close")}</button></div>`;
 }
 
 // «Qué producir hoy»: goal − stock per gelato, a rule the person can check by eye. The recent
@@ -214,3 +245,14 @@ function balanceBlock(r) {
       "",
     )}</div>${b.complete ? '<p class="fineprint">Calculado con las fichas de composición de los ingredientes (azúcares, grasa, sólidos por 100 g). Los rangos son orientativos para gelato artesanal.</p>' : `<p class="fineprint">Faltan fichas de composición: ${esc(b.missing.join(", "))} (cubierto el ${b.covered} % de la masa). Añádelas en Inventario → Editar producto.</p>`}</div>`;
 }
+
+document.addEventListener("change", (e) => {
+  const select = e.target;
+  if (!(select instanceof HTMLSelectElement) || select.name !== "ing-product")
+    return;
+  const unit = select
+    .closest(".ingredient-row")
+    ?.querySelector('[name="ing-unit"]');
+  if (unit)
+    unit.innerHTML = options(ingUnits(product(select.value)?.unit), "small");
+});
