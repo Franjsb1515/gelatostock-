@@ -1,5 +1,16 @@
 # Registro de parches y sesiones
 
+## 0.51.0 — 2026-10-05 · sesión 052 (tercera parte) · Calendario más cómodo
+
+Pediste un Calendario menos apretado. Ahora:
+
+- Cada apartado tiene aire y su título; ya nada toca los bordes.
+- El mes enseña arriba sus cifras en recuadros, y los días son casillas amplias con etiquetas de color (ventas, horario, vacaciones, notas, pedidos). Hoy va marcado con un círculo verde.
+- La ficha del día pone el gelato a todo el ancho y el resto en dos columnas ordenadas; lo que está vacío ocupa una línea.
+- El horario de la semana va día a día, con el botón de guardar siempre a mano.
+
+Cruceros no cambia. Informe reports/2026-10-05T03-30-00-000Z-calendario-visual.md.
+
 ## 0.50.1 — 2026-10-05 · sesión 052 (segunda parte) · Limpieza y velocidad
 
 Pediste limpiar y optimizar después del commit. Ahora, con un año de datos (medido con datos simulados; con los tuyos de hoy ya iba al instante):

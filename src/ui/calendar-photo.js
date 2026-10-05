@@ -23,10 +23,17 @@ function calNotesPanel(d) {
   const items = d.notes
     .map(
       (n) =>
-        `<li class="cal-note">${n.photo ? `<img src="/api/photos/${esc(n.photo)}" alt="Foto del día" loading="lazy">` : ""}<div><p>${n.text ? esc(n.text) : '<span class="muted">Foto sin texto: escribe lo que dice cuando quieras.</span>'}</p><small>Apuntada el ${esc(date(n.at))}</small> ${n.photo && !n.text ? btn("Escribir lo que dice", "calNoteText", "text-link", `data-date="${esc(d.date)}"`) : ""}${n.text ? btn(n.photo ? "Quitar el texto" : "Quitar", "calRemoveNote", "text-link", `data-id="${esc(n.id)}"`) : ""}</div></li>`,
+        `<li class="cal-note">${n.photo ? `<img src="/api/photos/${esc(n.photo)}" alt="Foto del día" loading="lazy">` : ""}<div class="cal-note-body"><p>${n.text ? esc(n.text) : '<span class="cal-none">Foto sin texto: escribe lo que dice cuando quieras.</span>'}</p><div class="cal-note-meta"><small>Apuntada el ${esc(date(n.at))}</small>${n.photo && !n.text ? btn("Escribir lo que dice", "calNoteText", "text-link", `data-date="${esc(d.date)}"`) : ""}${n.text ? btn(n.photo ? "Quitar el texto" : "Quitar", "calRemoveNote", "text-link", `data-id="${esc(n.id)}"`) : ""}</div></div></li>`,
     )
     .join("");
-  return `<section class="panel"><h2>Notas y fotos</h2>${items ? `<ul class="cal-notes">${items}</ul>` : '<p class="muted">Ninguna.</p>'}<div class="setting-actions">${btn("Escribir una nota", "calAddNote", "secondary", `data-date="${esc(d.date)}"`)}${btn("Subir foto de este día", "calPhoto", "secondary", `data-date="${esc(d.date)}"`)}</div></section>`;
+  return calCard(
+    "Notas y fotos",
+    "",
+    (items
+      ? `<ul class="cal-notes">${items}</ul>`
+      : calNone("Ninguna nota ni foto este día.")) +
+      `<div class="setting-actions">${btn("Escribir una nota", "calAddNote", "secondary", `data-date="${esc(d.date)}"`)}${btn("Subir foto de este día", "calPhoto", "secondary", `data-date="${esc(d.date)}"`)}</div>`,
+  );
 }
 
 /** Detalle de la propuesta según el apartado elegido. */

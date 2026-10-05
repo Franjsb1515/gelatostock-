@@ -749,8 +749,11 @@ const { appName } = require("./package-rules.cjs");
       .first()
       .waitFor();
     // Y se puede fechar hacia atrás: el valor de ayer no toca el de hoy.
-    const ayer = new Date(Date.now() - 86400000);
-    const ayerValor = `${ayer.getFullYear()}-${String(ayer.getMonth() + 1).padStart(2, "0")}-${String(ayer.getDate()).padStart(2, "0")}`;
+    // «Ayer» es el día antes del «hoy» del formulario (día de negocio): entre las 00:00 y la
+    // hora de cambio de día, el reloj ya va un día por delante.
+    const ayerValor = new Date(Date.parse(hoyValor + "T12:00:00Z") - 86400000)
+      .toISOString()
+      .slice(0, 10);
     await window.locator('[data-action="setSaleValue"]').first().click();
     await window.locator('#modal input[name="euros"]').fill("80");
     await window.locator('#modal input[name="from"]').fill(ayerValor);
@@ -858,7 +861,7 @@ const { appName } = require("./package-rules.cjs");
     await window
       .locator(`.cal-cell.has-sales[data-date="${calToday}"]`)
       .click();
-    await window.locator(".cal-day-grid", { hasText: "Reabierto" }).waitFor();
+    await window.locator(".cal-day-top", { hasText: "Reabierto" }).waitFor();
     await window.locator('[data-action="calNotOpened"]').click();
     await window.locator('#modal button[type="submit"]').click();
     await window

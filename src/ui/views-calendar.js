@@ -91,6 +91,48 @@ function calGo(view, value) {
 const kgText = (n) => num(n) + " kg";
 const calCount = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
+// Piezas de presentación del Calendario. Todo vive dentro de <div class="cal">, para que sus
+// estilos no toquen la pantalla de Cruceros, que reutiliza algunas clases cal-*.
+const calTag = (text, kind = "") =>
+  `<span class="cal-tag ${kind}">${text}</span>`;
+/** Tarjeta: cabecera (título, explicación y algo a la derecha) y cuerpo con margen. */
+const calCard = (title, sub, body, { cls = "", aside = "", attrs = "" } = {}) =>
+  `<section class="panel cal-card ${cls}" ${attrs}><header class="cal-card-head"><div><h2>${title}</h2>${sub ? `<p>${sub}</p>` : ""}</div>${aside}</header><div class="cal-card-body">${body}</div></section>`;
+const calNone = (text) => `<p class="cal-none">${text}</p>`;
+// Filas de «nombre … cifra».
+function calList(items, empty) {
+  return items.length
+    ? `<ul class="cal-rows">${items.join("")}</ul>`
+    : empty
+      ? calNone(empty)
+      : "";
+}
+const calRow = (left, right) =>
+  `<li><span>${left}</span><span class="cal-row-value">${right}</span></li>`;
+const calSection = (title, body) =>
+  `<div class="cal-section"><h3>${title}</h3>${body}</div>`;
+/** Barra de navegación: flecha, título (con algo debajo) y flecha. */
+const calNav = (prev, title, next, below = "") =>
+  `<div class="cal-bar">${prev}<div class="cal-bar-title"><h2>${title}</h2>${below}</div>${next}</div>`;
+const calArrow = (dir, label, action, attrs) =>
+  btn(
+    dir < 0 ? "←" : "→",
+    action,
+    "secondary cal-arrow",
+    `${attrs} aria-label="${esc(label)}" title="${esc(label)}"`,
+  );
+const calStat = (label, value, note = "") =>
+  `<div class="cal-stat"><span>${label}</span><strong>${value}</strong>${note ? `<small>${note}</small>` : ""}</div>`;
+const calOrderStatus = (o) =>
+  o.status === "sent" && o.sent
+    ? "Enviado por WhatsApp"
+    : statusLabel[o.status] || o.status;
+const calProductionLabel = {
+  applied: "aprobada",
+  proposed: "propuesta sin aprobar",
+  discarded: "descartada",
+};
+
 function calendarPage() {
   if (!calMonth) {
     calDay = businessToday();
@@ -100,7 +142,30 @@ function calendarPage() {
   // El horario de la semana se escribe con lo que ya tiene la pantalla: no pide nada al servidor.
   const ready = calView === "week" || (calData && calData.url === calUrl());
   if (!ready && !calBusy) loadCalendar();
-  const crumbs = `<div class="cal-crumbs" role="navigation" aria-label="Dónde estás">${btn(String(calYear), "calYear", "text-link", `data-year="${calYear}"`)}${calView !== "year" ? ` <span>/</span> ${btn(esc(calMonthName(calMonth)), "calMonth", "text-link", `data-month="${esc(calMonth)}"`)}` : ""}${calView === "day" ? ` <span>/</span> <strong>${Number(calDay.slice(8))}</strong>` : ""}${calView === "week" ? ` <span>/</span> <strong>Horario de la semana del ${Number(calWeek.slice(8))}</strong>` : ""}</div>`;
+  const step = (html) => `<li>${html}</li>`;
+  const crumbs = [
+    step(
+      btn(String(calYear), "calYear", "text-link", `data-year="${calYear}"`),
+    ),
+    calView !== "year"
+      ? step(
+          btn(
+            esc(calMonthName(calMonth).split(" ")[0]),
+            "calMonth",
+            "text-link",
+            `data-month="${esc(calMonth)}"`,
+          ),
+        )
+      : "",
+    calView === "day"
+      ? step(`<span aria-current="page">${Number(calDay.slice(8))}</span>`)
+      : "",
+    calView === "week"
+      ? step(
+          `<span aria-current="page">Horario de la semana del ${Number(calWeek.slice(8))}</span>`,
+        )
+      : "",
+  ].join("");
   const body =
     calView === "week"
       ? calWeekView()
@@ -116,42 +181,46 @@ function calendarPage() {
   return (
     header(
       "Cada día, en su sitio.",
-      "Elige un año, un mes y un día para ver lo que se apuntó ese día: gelato hecho, vendido y mermado, cierre, stock, horario y turnos, vacaciones, compras, mensajes, cruceros, clima y festivos. Lo que no está apuntado sale como «No disponible».",
+      "Elige un año, un mes y un día para ver lo que se apuntó: gelato, cierre, stock, horario, vacaciones, compras, notas, cruceros, clima y festivos. Lo que no está apuntado sale como «No disponible».",
       btn("Hoy", "calToday", "secondary") +
-        btn(
-          "Subir foto",
-          "calPhoto",
-          "secondary",
-          calView === "day" ? `data-date="${esc(calDay)}"` : "",
-        ) +
         btn(
           "Horario de la semana",
           "calWeek",
           "secondary",
           `data-week="${esc(calMonday(calDay || businessToday()))}"`,
+        ) +
+        btn(
+          "Subir foto",
+          "calPhoto",
+          "primary",
+          calView === "day" ? `data-date="${esc(calDay)}"` : "",
         ),
     ) +
-    crumbs +
-    body
+    `<div class="cal"><nav class="cal-crumbs" aria-label="Dónde estás"><ol>${crumbs}</ol></nav>${body}</div>`
   );
 }
 
 function calYearView(y) {
   const cards = y.months
-    .map(
-      (m) =>
-        `<button class="cal-month-card ${m.daysWithSales || m.produced ? "has-data" : ""}" data-action="calMonth" data-month="${esc(m.month)}"><strong>${esc(calMonthName(m.month).split(" ")[0])}</strong>${
-          m.daysWithSales || m.produced || m.notOpened
-            ? `<span>Vendido ${kgText(m.sold)} · ${m.daysWithSales} ${m.daysWithSales === 1 ? "día" : "días"} con ventas</span><span>Hecho ${kgText(m.produced)} · merma ${kgText(m.waste)}</span><span>${m.confirmed} ${m.confirmed === 1 ? "cierre confirmado" : "cierres confirmados"}${m.notOpened ? ` · ${m.notOpened} sin abrir` : ""}</span>`
-            : "<span>Sin gelato apuntado</span>"
-        }${
-          m.orders || m.receipts || m.messages
-            ? `<span>${calCount(m.orders, "pedido", "pedidos")} · ${calCount(m.receipts, "entrega", "entregas")} · ${calCount(m.messages, "mensaje", "mensajes")}</span>`
-            : ""
-        }</button>`,
-    )
+    .map((m) => {
+      const used = m.daysWithSales || m.produced || m.notOpened;
+      const buys = m.orders || m.receipts || m.messages;
+      const rows = [
+        used ? calRow("Vendido", kgText(m.sold)) : "",
+        used ? calRow("Días con ventas", m.daysWithSales) : "",
+        used ? calRow("Hecho", kgText(m.produced)) : "",
+        used ? calRow("Cierres confirmados", m.confirmed) : "",
+        m.notOpened ? calRow("Días sin abrir", m.notOpened) : "",
+        buys ? calRow("Pedidos", m.orders) : "",
+      ].join("");
+      return `<button class="cal-month-card ${used ? "has-data" : ""}" data-action="calMonth" data-month="${esc(m.month)}"><strong>${esc(calMonthName(m.month).split(" ")[0])}</strong>${rows ? `<ul class="cal-rows">${rows}</ul>` : '<span class="cal-none">Sin nada apuntado</span>'}</button>`;
+    })
     .join("");
-  return `<section class="panel"><div class="cal-nav">${btn("← " + (y.year - 1), "calYear", "secondary", `data-year="${y.year - 1}"`)}<h3>${y.year}</h3>${btn(y.year + 1 + " →", "calYear", "secondary", `data-year="${y.year + 1}"`)}</div><div class="cal-year-grid">${cards}</div></section>`;
+  return `<section class="panel cal-card">${calNav(
+    calArrow(-1, "Año " + (y.year - 1), "calYear", `data-year="${y.year - 1}"`),
+    String(y.year),
+    calArrow(1, "Año " + (y.year + 1), "calYear", `data-year="${y.year + 1}"`),
+  )}<div class="cal-card-body"><div class="cal-year-grid">${cards}</div></div></section>`;
 }
 
 function calMonthView(m) {
@@ -162,80 +231,109 @@ function calMonthView(m) {
   const cells = [
     ...Array.from(
       { length: lead },
-      () => '<div class="cal-cell cal-empty"></div>',
+      () => '<div class="cal-cell cal-empty" aria-hidden="true"></div>',
     ),
     ...m.days.map((d) => {
       const c = cruiseOf[d.date];
       const x = ctx[d.date];
-      const lines = [];
-      if (d.notOpened) lines.push("<span>No abrió</span>");
-      if (d.sold) lines.push(`<span>Vendido ${kgText(d.sold)}</span>`);
-      if (d.produced) lines.push(`<span>Hecho ${kgText(d.produced)}</span>`);
-      if (d.orders)
-        lines.push(`<span>${calCount(d.orders, "pedido", "pedidos")}</span>`);
-      if (d.receipts)
-        lines.push(
-          `<span>${calCount(d.receipts, "entrega", "entregas")}</span>`,
-        );
-      if (d.hours)
-        lines.push(
-          `<span>${d.hours.closed ? "Horario: cerrado" : d.hours.open ? `${esc(d.hours.open)}–${esc(d.hours.close)}` : "Turnos sin horario"}</span>`,
-        );
-      if (d.away.length)
-        lines.push(`<span>Vacaciones: ${d.away.map(esc).join(", ")}</span>`);
-      if (d.notes)
-        lines.push(
-          `<span>${calCount(d.notes, "nota o foto", "notas o fotos")}</span>`,
-        );
-      if (!lines.length) lines.push("<span>—</span>");
-      const marks = [
-        d.alerts
-          ? `<i class="cal-mark warn">${calCount(d.alerts, "aviso", "avisos")}</i>`
+      const weekday = (new Date(d.date + "T12:00:00").getDay() + 6) % 7;
+      const tags = [
+        d.notOpened ? calTag("No abrió", "closed") : "",
+        d.sold ? calTag(kgText(d.sold) + " vendidos", "sales") : "",
+        d.produced ? calTag("Hecho " + kgText(d.produced), "made") : "",
+        d.hours
+          ? calTag(
+              d.hours.closed
+                ? "Horario: cerrado"
+                : d.hours.open
+                  ? `${esc(d.hours.open)}–${esc(d.hours.close)}`
+                  : "Turnos sin horario",
+              "hours",
+            )
           : "",
-        d.confirmed ? '<i class="cal-mark">Cerrado</i>' : "",
-        x?.holidays?.length ? '<i class="cal-mark">Festivo</i>' : "",
+        d.away.length
+          ? calTag("Vacaciones: " + d.away.map(esc).join(", "), "away")
+          : "",
+        d.notes ? calTag(calCount(d.notes, "nota", "notas"), "note") : "",
+        d.orders ? calTag(calCount(d.orders, "pedido", "pedidos"), "buy") : "",
+        d.receipts
+          ? calTag(calCount(d.receipts, "entrega", "entregas"), "buy")
+          : "",
+        x?.holidays?.length ? calTag("Festivo", "holiday") : "",
         c?.ships
-          ? `<i class="cal-mark">${c.ships} ${c.ships === 1 ? "crucero" : "cruceros"}</i>`
+          ? calTag(calCount(c.ships, "crucero", "cruceros"), "cruise")
           : "",
       ].join("");
-      return `<button class="cal-cell ${d.notOpened ? "not-opened" : d.sold ? "has-sales" : ""} ${d.date === today ? "today" : ""}" data-action="calDay" data-date="${esc(d.date)}" aria-label="${esc(calLong(d.date))}${d.notOpened ? ", la tienda no abrió" : ""}"><b>${Number(d.date.slice(8))}</b>${lines.join("")}${marks}</button>`;
+      const badges = [
+        d.confirmed
+          ? '<span class="cal-badge ok" title="Cierre confirmado">✓</span>'
+          : "",
+        d.alerts
+          ? `<span class="cal-badge warn" title="${esc(calCount(d.alerts, "aviso", "avisos"))}">${d.alerts}</span>`
+          : "",
+      ].join("");
+      const kind = d.notOpened ? "not-opened" : d.sold ? "has-sales" : "";
+      return `<button class="cal-cell ${kind} ${d.date === today ? "today" : ""} ${weekday >= 5 ? "weekend" : ""}" data-action="calDay" data-date="${esc(d.date)}" aria-label="${esc(calLong(d.date))}${d.notOpened ? ", la tienda no abrió" : ""}${d.alerts ? ", " + calCount(d.alerts, "aviso", "avisos") : ""}"><span class="cal-cell-top"><span class="cal-num">${Number(d.date.slice(8))}</span>${badges}</span>${tags ? `<span class="cal-tags">${tags}</span>` : ""}</button>`;
     }),
   ].join("");
   const t = m.totals;
-  return `<section class="panel"><div class="cal-nav">${btn("← Mes anterior", "calMonth", "secondary", `data-month="${calShiftMonth(m.month, -1)}"`)}<h3>${esc(calMonthName(m.month))}</h3>${btn("Mes siguiente →", "calMonth", "secondary", `data-month="${calShiftMonth(m.month, 1)}"`)}</div><p class="cal-summary">Gelato vendido ${kgText(t.sold)} en ${t.daysWithSales} ${t.daysWithSales === 1 ? "día" : "días"} · hecho ${kgText(t.produced)} · merma ${kgText(t.waste)} · ${t.confirmed} ${t.confirmed === 1 ? "cierre confirmado" : "cierres confirmados"}${t.notOpened ? ` · ${t.notOpened} ${t.notOpened === 1 ? "día" : "días"} sin abrir` : ""} · ${calCount(t.orders, "pedido", "pedidos")} · ${calCount(t.receipts, "entrega recibida", "entregas recibidas")} · ${calCount(t.messages, "mensaje", "mensajes")} de proveedores</p><div class="cal-grid">${calWeekdays.map((w) => `<div class="cal-head">${w}</div>`).join("")}${cells}</div><p class="cal-legend"><span class="cal-key has-sales">Con ventas</span><span class="cal-key not-opened">La tienda no abrió</span><span class="cal-key">Sin ventas apuntadas</span></p>${m.cruises === null ? '<p class="muted">Cruceros, clima y festivos están desactivados en Configuración.</p>' : ""}</section>${calAlertsPanel(m.alerts, true)}`;
+  const stats = [
+    calStat(
+      "Vendido",
+      kgText(t.sold),
+      `en ${calCount(t.daysWithSales, "día", "días")}`,
+    ),
+    calStat("Hecho", kgText(t.produced)),
+    calStat("Merma", kgText(t.waste)),
+    calStat(
+      "Cierres confirmados",
+      t.confirmed,
+      t.notOpened
+        ? calCount(t.notOpened, "día sin abrir", "días sin abrir")
+        : "",
+    ),
+    calStat(
+      "Compras",
+      calCount(t.orders, "pedido", "pedidos"),
+      `${calCount(t.receipts, "entrega", "entregas")} · ${calCount(t.messages, "mensaje", "mensajes")}`,
+    ),
+  ].join("");
+  return `<section class="panel cal-card">${calNav(
+    calArrow(
+      -1,
+      "Mes anterior",
+      "calMonth",
+      `data-month="${calShiftMonth(m.month, -1)}"`,
+    ),
+    esc(calMonthName(m.month)),
+    calArrow(
+      1,
+      "Mes siguiente",
+      "calMonth",
+      `data-month="${calShiftMonth(m.month, 1)}"`,
+    ),
+  )}<div class="cal-card-body"><div class="cal-stats">${stats}</div><div class="cal-grid cal-month">${calWeekdays.map((w, i) => `<div class="cal-head ${i >= 5 ? "weekend" : ""}">${w}</div>`).join("")}${cells}</div><div class="cal-legend"><span class="cal-key has-sales">Con ventas</span><span class="cal-key not-opened">La tienda no abrió</span><span class="cal-key today">Hoy</span><span class="cal-key"><span class="cal-badge ok">✓</span> Cierre confirmado</span><span class="cal-key"><span class="cal-badge warn">1</span> Avisos</span></div>${m.cruises === null ? '<p class="cal-none">Cruceros, clima y festivos están desactivados en Configuración.</p>' : ""}</div></section>${calAlertsPanel(m.alerts, true)}`;
 }
 
 /** Avisos de las reglas: solo avisan; con days, cada aviso lleva a su día. */
 function calAlertsPanel(alerts, days) {
   if (!alerts.length)
     return days
-      ? '<section class="panel"><h2>Avisos del mes</h2><p class="muted">Ningún aviso: las reglas no encuentran nada que revisar.</p></section>'
+      ? `<section class="panel cal-card cal-all-good"><div class="cal-card-body"><p><strong>Avisos del mes:</strong> ninguno. Las reglas no encuentran nada que revisar.</p></div></section>`
       : "";
   const items = alerts
     .map(
       (a) =>
-        `<li>${days ? btn(esc(calShortDay(a.date)), "calDay", "text-link", `data-date="${esc(a.date)}"`) + " · " : ""}${esc(a.text)}</li>`,
+        `<li>${days ? btn(esc(calShortDay(a.date)), "calDay", "text-link", `data-date="${esc(a.date)}"`) : ""}<span>${esc(a.text)}</span></li>`,
     )
     .join("");
-  return `<section class="panel cal-alerts"><h2>${days ? "Avisos del mes" : "Avisos de este día"}</h2><p>Reglas fijas que miran lo apuntado: solo avisan, no cambian nada. Una venta real se avisa si se aparta más de un 10 % de la estimada.</p><ul>${items}</ul></section>`;
+  return calCard(
+    days ? "Avisos del mes" : "Avisos de este día",
+    "Reglas fijas que miran lo apuntado: solo avisan, no cambian nada. La venta real se avisa si se aparta más de un 10 % de la estimada.",
+    `<ul class="cal-alert-list">${items}</ul>`,
+    { cls: "cal-alerts" },
+  );
 }
-
-function calList(items, empty) {
-  return items.length
-    ? `<table class="report-table"><tbody>${items.join("")}</tbody></table>`
-    : `<p class="muted">${empty}</p>`;
-}
-const calRow = (left, right) =>
-  `<tr><td>${left}</td><td class="num">${right}</td></tr>`;
-const calOrderStatus = (o) =>
-  o.status === "sent" && o.sent
-    ? "Enviado por WhatsApp"
-    : statusLabel[o.status] || o.status;
-const calProductionLabel = {
-  applied: "aprobada",
-  proposed: "propuesta sin aprobar",
-  discarded: "descartada",
-};
 
 function calDayView(d) {
   const s = d.summary;
@@ -246,106 +344,223 @@ function calDayView(d) {
     : s.close
       ? pill("Reabierto", "sand")
       : pill("Sin cierre confirmado", "neutral");
+  const hours = d.schedule
+    ? pill(
+        d.schedule.closed
+          ? "Horario: cerrado"
+          : d.schedule.open
+            ? `Abre ${esc(d.schedule.open)}–${esc(d.schedule.close)}`
+            : "Turnos sin horario",
+        "neutral",
+      )
+    : "";
   const mark = d.notOpened
-    ? `<div class="cal-closed-note"><strong>La tienda no abrió este día.</strong>${d.notOpened.reason ? `<p>Motivo: ${esc(d.notOpened.reason)}</p>` : ""}${btn("Quitar la marca", "calOpenedAgain", "secondary", `data-date="${esc(d.date)}"`)}</div>`
+    ? `<div class="cal-closed-note"><div><strong>La tienda no abrió este día.</strong>${d.notOpened.reason ? `<p>Motivo: ${esc(d.notOpened.reason)}</p>` : ""}</div>${btn("Quitar la marca", "calOpenedAgain", "secondary", `data-date="${esc(d.date)}"`)}</div>`
     : `<div class="cal-closed-note quiet"><p>¿La tienda cerró este día? Márcalo y no contará como un día sin ventas.</p>${btn("Marcar: la tienda no abrió", "calNotOpened", "secondary", `data-date="${esc(d.date)}"`)}</div>`;
+  const top = `<section class="panel cal-card cal-day-top">${calNav(
+    calArrow(
+      -1,
+      "Día anterior",
+      "calDay",
+      `data-date="${shiftDay(d.date, -1)}"`,
+    ),
+    esc(calLong(d.date)),
+    calArrow(
+      1,
+      "Día siguiente",
+      "calDay",
+      `data-date="${shiftDay(d.date, 1)}"`,
+    ),
+    `<div class="cal-bar-pills">${status}${hours}${d.notOpened ? pill("No abrió", "sand") : ""}</div>`,
+  )}<div class="cal-card-body">${mark}</div></section>`;
   const gelato = shown.rows.length
-    ? `<div class="table-scroll"><table class="report-table"><thead><tr><th>Gelato</th><th class="num">Al empezar</th><th class="num">Hecho</th><th class="num">Vendido</th><th class="num">Merma</th><th class="num">Invitación</th><th class="num">Ajustes</th><th class="num">Queda</th></tr></thead><tbody>${shown.rows
+    ? `<div class="table-scroll"><table class="report-table cal-table"><thead><tr><th>Gelato</th><th class="num">Al empezar</th><th class="num">Hecho</th><th class="num">Vendido</th><th class="num">Merma</th><th class="num">Invitación</th><th class="num">Ajustes</th><th class="num">Queda</th></tr></thead><tbody>${shown.rows
         .map(
           (r) =>
             `<tr><td>${esc(r.name)}</td><td class="num">${num(r.opening)}</td><td class="num">${num(r.produced)}</td><td class="num">${num(r.sold)}</td><td class="num">${num(r.waste)}</td><td class="num">${num(r.gift)}</td><td class="num">${num(r.adjust)}</td><td class="num">${num(r.remaining)}</td></tr>`,
         )
         .join(
           "",
-        )}</tbody><tfoot><tr><th>Total (kg)</th><th class="num">${num(t.opening)}</th><th class="num">${num(t.produced)}</th><th class="num">${num(t.sold)}</th><th class="num">${num(t.waste)}</th><th class="num">${num(t.gift)}</th><th class="num">${num(t.adjust)}</th><th class="num">${num(t.remaining)}</th></tr></tfoot></table></div><p>Venta estimada: ${t.soldCents === null ? "No disponible (falta el valor de venta de algún gelato)" : money(t.soldCents)}${s.closed && s.close?.realSaleCents !== undefined ? ` · venta real ${money(s.close.realSaleCents)}` : ""}${s.difference !== null ? ` · diferencia ${s.difference < 0 ? "−" : "+"}${money(Math.abs(s.difference))}` : ""}</p>${s.drift ? '<p class="ai-warning">El día está cerrado pero lo apuntado ya no coincide con lo que se guardó al cerrarlo.</p>' : ""}`
-    : '<p class="muted">Sin gelato hecho, vendido ni mermado este día.</p>';
+        )}</tbody><tfoot><tr><th>Total (kg)</th><th class="num">${num(t.opening)}</th><th class="num">${num(t.produced)}</th><th class="num">${num(t.sold)}</th><th class="num">${num(t.waste)}</th><th class="num">${num(t.gift)}</th><th class="num">${num(t.adjust)}</th><th class="num">${num(t.remaining)}</th></tr></tfoot></table></div><div class="cal-money"><span>Venta estimada <strong>${t.soldCents === null ? "No disponible" : money(t.soldCents)}</strong></span>${s.closed && s.close?.realSaleCents !== undefined ? `<span>Venta real <strong>${money(s.close.realSaleCents)}</strong></span>` : ""}${s.difference !== null ? `<span>Diferencia <strong>${s.difference < 0 ? "−" : "+"}${money(Math.abs(s.difference))}</strong></span>` : ""}</div>${t.soldCents === null ? '<p class="cal-none">Falta el valor de venta de algún gelato.</p>' : ""}${s.drift ? '<p class="ai-warning">El día está cerrado pero lo apuntado ya no coincide con lo que se guardó al cerrarlo.</p>' : ""}`
+    : calNone("Sin gelato hecho, vendido ni mermado este día.");
+  const made = [
+    d.productions.length
+      ? calSection(
+          "Producciones",
+          calList(
+            d.productions.map((p) =>
+              calRow(
+                `${esc(p.name)} <small>${calProductionLabel[p.status]}</small>`,
+                kgText(p.quantity),
+              ),
+            ),
+          ),
+        )
+      : "",
+    d.waste.length
+      ? calSection(
+          "Mermas por motivo",
+          calList(
+            d.waste.map((w) =>
+              calRow(
+                `${esc(w.name)} <small>${esc(w.reason)}</small>`,
+                `${num(w.quantity)} ${esc(w.unit)}`,
+              ),
+            ),
+          ),
+        )
+      : "",
+  ].join("");
+  const buys = [
+    [
+      "Pedidos hechos",
+      d.orders,
+      (o) =>
+        calRow(
+          `${esc(o.number)} <small>${esc(o.supplier)}</small>`,
+          esc(calOrderStatus(o)),
+        ),
+    ],
+    [
+      "Entregas previstas",
+      d.expected,
+      (o) =>
+        calRow(
+          `${esc(o.number)} <small>${esc(o.supplier)}</small>`,
+          esc(calOrderStatus(o)),
+        ),
+    ],
+    [
+      "Entregas recibidas",
+      d.receipts,
+      (r) => calRow(esc(r.name), `${num(r.quantity)} ${esc(r.unit)}`),
+    ],
+    [
+      "Mensajes de proveedores",
+      d.messages,
+      (m) => calRow(esc(m.supplier), calCount(m.count, "mensaje", "mensajes")),
+    ],
+  ]
+    .filter(([, list]) => list.length)
+    .map(([title, list, row]) => calSection(title, calList(list.map(row))))
+    .join("");
   const x = d.context;
   const c = d.cruise;
   const outside =
     d.cruise === null && d.context === null
-      ? '<p class="muted">Cruceros, clima y festivos: desactivados en Configuración o no disponibles.</p>'
-      : `<table class="report-table"><tbody>${calRow("Festivo", x?.holidays?.length ? x.holidays.map((h) => esc(h.name)).join(", ") : "No")}${x?.events?.length ? calRow("Evento", x.events.map((e) => esc(e.name)).join(", ")) : ""}${calRow("Clima", x?.weather ? `${esc(x.weather.label || "—")} · ${num(x.weather.tMin)}–${num(x.weather.tMax)} °C · ${esc(x.weather.kind)}` : "No disponible")}${calRow("Cruceros", c ? (c.ships ? `${c.ships} · ${esc(c.names.join(", "))} · impacto ${esc(c.impactLabel.toLowerCase())}` : "Ninguno registrado") : "No disponible")}</tbody></table><small>Fuentes: festivos del Govern balear, clima de MET Norway, cruceros de la Autoridad Portuaria de Baleares.</small>`;
-  return `<section class="panel"><div class="cal-nav">${btn("← Día anterior", "calDay", "secondary", `data-date="${shiftDay(d.date, -1)}"`)}<h3>${esc(calLong(d.date))}</h3>${btn("Día siguiente →", "calDay", "secondary", `data-date="${shiftDay(d.date, 1)}"`)}</div>${mark}</section>${calAlertsPanel(d.alerts, false)}<div class="cal-day-grid"><section class="panel"><div class="panel-heading"><div><h2>Gelato del día</h2><p>Al empezar + hecho − vendido − merma − invitación + ajustes = queda. Los ajustes son conteos y entradas o salidas a mano.</p></div>${status}</div>${gelato}${btn("Ir al cierre del día", "calToClose", "secondary", `data-date="${esc(d.date)}"`)}</section><section class="panel"><h2>Mermas por motivo</h2>${calList(
-    d.waste.map((w) =>
-      calRow(
-        `${esc(w.name)} · ${esc(w.reason)}`,
-        `${num(w.quantity)} ${esc(w.unit)}`,
-      ),
+      ? calNone(
+          "Cruceros, clima y festivos: desactivados en Configuración o no disponibles.",
+        )
+      : `${calList(
+          [
+            calRow(
+              "Festivo",
+              x?.holidays?.length
+                ? x.holidays.map((h) => esc(h.name)).join(", ")
+                : "No",
+            ),
+            x?.events?.length
+              ? calRow("Evento", x.events.map((e) => esc(e.name)).join(", "))
+              : "",
+            calRow(
+              "Clima",
+              x?.weather
+                ? `${esc(x.weather.label || "—")} · ${num(x.weather.tMin)}–${num(x.weather.tMax)} °C · ${esc(x.weather.kind)}`
+                : "No disponible",
+            ),
+            calRow(
+              "Cruceros",
+              c
+                ? c.ships
+                  ? `${c.ships} · ${esc(c.names.join(", "))} · impacto ${esc(c.impactLabel.toLowerCase())}`
+                  : "Ninguno registrado"
+                : "No disponible",
+            ),
+          ].filter(Boolean),
+        )}<p class="cal-source">Fuentes: festivos del Govern balear, clima de MET Norway, cruceros de la Autoridad Portuaria de Baleares.</p>`;
+  const gelatoCard = calCard(
+    "Gelato del día",
+    "Al empezar + hecho − vendido − merma − invitación + ajustes = queda. Los ajustes son conteos y entradas o salidas a mano.",
+    gelato +
+      `<div class="setting-actions">${btn("Ir al cierre del día", "calToClose", "secondary", `data-date="${esc(d.date)}"`)}</div>`,
+  );
+  const left = [
+    calCard(
+      "Producción y mermas",
+      "",
+      made || calNone("Sin producciones ni mermas este día."),
     ),
-    "Sin mermas apuntadas.",
-  )}<h2>Producciones</h2>${calList(
-    d.productions.map((p) =>
-      calRow(
-        `${esc(p.name)} · ${calProductionLabel[p.status]}`,
-        kgText(p.quantity),
-      ),
+    calCard(
+      "Compras",
+      "",
+      buys ||
+        calNone("Sin pedidos, entregas ni mensajes de proveedores este día."),
     ),
-    "Sin producciones este día.",
-  )}</section><section class="panel"><h2>Compras</h2><h3>Pedidos hechos</h3>${calList(
-    d.orders.map((o) =>
-      calRow(`${esc(o.number)} · ${esc(o.supplier)}`, esc(calOrderStatus(o))),
-    ),
-    "Ninguno.",
-  )}<h3>Entregas previstas</h3>${calList(
-    d.expected.map((o) =>
-      calRow(`${esc(o.number)} · ${esc(o.supplier)}`, esc(calOrderStatus(o))),
-    ),
-    "Ninguna.",
-  )}<h3>Entregas recibidas</h3>${calList(
-    d.receipts.map((r) =>
-      calRow(esc(r.name), `${num(r.quantity)} ${esc(r.unit)}`),
-    ),
-    "Ninguna.",
-  )}<h3>Mensajes de proveedores</h3>${calList(
-    d.messages.map((m) =>
-      calRow(
-        esc(m.supplier),
-        `${m.count} ${m.count === 1 ? "mensaje" : "mensajes"}`,
-      ),
-    ),
-    "Ninguno.",
-  )}</section>${calNotesPanel(d)}${calSchedulePanel(d)}${calStockPanel(d)}<section class="panel"><h2>Fuera de la tienda</h2>${outside}</section></div>`;
+  ].join("");
+  const right = [
+    calSchedulePanel(d),
+    calNotesPanel(d),
+    calStockPanel(d),
+    calCard("Fuera de la tienda", "", outside),
+  ].join("");
+  return `${top}${calAlertsPanel(d.alerts, false)}${gelatoCard}<div class="cal-day-cols"><div class="cal-col">${left}</div><div class="cal-col">${right}</div></div>`;
 }
 
 function calSchedulePanel(d) {
   const h = d.schedule;
-  const shifts = h?.shifts.length
-    ? calList(
-        h.shifts.map((t) =>
-          calRow(esc(t.person), `${esc(t.from)}–${esc(t.to)}`),
-        ),
-        "",
-      )
-    : '<p class="muted">Sin turnos apuntados.</p>';
-  const away = d.vacations.length
-    ? calList(
-        d.vacations.map((v) =>
-          calRow(
-            `${esc(v.person)}${v.note ? " · " + esc(v.note) : ""}`,
-            `del ${esc(v.from)} al ${esc(v.to)}`,
+  const body = [
+    h
+      ? `<p class="cal-lead">${esc(calHoursText(h))}</p>`
+      : calNone("No disponible: el horario de esta semana no está apuntado."),
+    h?.shifts.length
+      ? calSection(
+          "Turnos",
+          calList(
+            h.shifts.map((t) =>
+              calRow(esc(t.person), `${esc(t.from)}–${esc(t.to)}`),
+            ),
           ),
-        ),
-        "",
-      )
-    : '<p class="muted">Nadie de vacaciones.</p>';
-  return `<section class="panel"><h2>Horario y turnos</h2><p>${h ? esc(calHoursText(h)) : "No disponible: el horario de esta semana no está apuntado."}</p>${shifts}<h3>Vacaciones</h3>${away}<div class="setting-actions">${btn("Horario de esta semana", "calWeek", "secondary", `data-week="${esc(calMonday(d.date))}"`)}${btn("Apuntar vacaciones", "calAddVacation", "secondary", `data-date="${esc(d.date)}"`)}</div></section>`;
+        )
+      : "",
+    d.vacations.length
+      ? calSection(
+          "De vacaciones",
+          calList(
+            d.vacations.map((v) =>
+              calRow(
+                `${esc(v.person)}${v.note ? ` <small>${esc(v.note)}</small>` : ""}`,
+                `del ${esc(calShortDay(v.from))} al ${esc(calShortDay(v.to))}`,
+              ),
+            ),
+          ),
+        )
+      : "",
+    `<div class="setting-actions">${btn("Horario de esta semana", "calWeek", "secondary", `data-week="${esc(calMonday(d.date))}"`)}${btn("Apuntar vacaciones", "calAddVacation", "secondary", `data-date="${esc(d.date)}"`)}</div>`,
+  ].join("");
+  return calCard("Horario y turnos", "", body);
 }
 
 function calStockPanel(d) {
   if (!d.stock)
-    return '<section class="panel"><h2>Stock al terminar el día</h2><p class="muted">No disponible: este día todavía no ha llegado.</p></section>';
-  const part = (rows, empty) =>
-    calList(
-      rows.map((p) => calRow(esc(p.name), `${num(p.quantity)} ${esc(p.unit)}`)),
-      empty,
+    return calCard(
+      "Stock al terminar el día",
+      "",
+      calNone("No disponible: este día todavía no ha llegado."),
     );
-  return `<section class="panel"><h2>Stock al terminar el día</h2><p>${d.date === businessToday() ? "Hoy todavía no ha terminado: es lo que hay ahora." : "El stock de ahora menos lo que se movió los días siguientes."}</p><h3>Gelato</h3>${part(
-    d.stock.filter((p) => p.gelato),
-    "Ningún gelato.",
-  )}<h3>Ingredientes y otros</h3>${part(
-    d.stock.filter((p) => !p.gelato),
-    "Ninguno.",
-  )}</section>`;
+  const rows = (list) =>
+    list.map((p) => calRow(esc(p.name), `${num(p.quantity)} ${esc(p.unit)}`));
+  const gelatos = d.stock.filter((p) => p.gelato);
+  const others = d.stock.filter((p) => !p.gelato);
+  return calCard(
+    "Stock al terminar el día",
+    d.date === businessToday()
+      ? "Hoy todavía no ha terminado: es lo que hay ahora."
+      : "El stock de ahora menos lo que se movió los días siguientes.",
+    calSection("Gelato", calList(rows(gelatos), "Ningún gelato.")) +
+      (others.length
+        ? `<details class="cal-more"><summary>Ingredientes y otros <span>${others.length}</span></summary>${calList(rows(others))}</details>`
+        : ""),
+  );
 }
 
 /** Formulario del horario de una semana: apertura por día (o cerrado) y turnos. */
@@ -367,36 +582,56 @@ function calWeekView() {
     .map((d, i) => {
       const date = dates[i];
       const day = calShortDay(date);
+      const [weekday, ...rest] = day.split(", ");
       const away = calAway(date).map((v) => v.person);
       const slots = Array.from(
         { length: Math.max(3, d.shifts.length + 1) },
         (_, j) => d.shifts[j] || { person: "", from: "", to: "" },
       );
-      return `<tr data-week-day="${esc(date)}"><th><span class="cal-week-day">${esc(day)}</span>${away.length ? `<small>De vacaciones: ${away.map(esc).join(", ")}</small>` : ""}</th><td><label class="check"><input type="checkbox" data-k="closed" ${d.closed ? "checked" : ""}> Cerrado</label></td><td>${time("open", d.open, "Abre el " + day)}</td><td>${time("close", d.close, "Cierra el " + day)}</td><td class="cal-shifts">${slots
+      return `<div class="cal-week-row ${d.closed ? "is-closed" : ""}" data-week-day="${esc(date)}"><div class="cal-week-date"><strong>${esc(weekday)}</strong><span>${esc(rest.join(", "))}</span>${away.length ? `<small>De vacaciones: ${away.map(esc).join(", ")}</small>` : ""}</div><div class="cal-week-hours"><label class="check"><input type="checkbox" data-k="closed" ${d.closed ? "checked" : ""}> Cerrado</label><div class="cal-time-range"><label>Abre${time("open", d.open, "Abre el " + day)}</label><label>Cierra${time("close", d.close, "Cierra el " + day)}</label></div></div><div class="cal-shifts"><span class="cal-shifts-label">Turnos</span>${slots
         .map(
           (t, j) =>
-            `<div class="cal-shift" data-shift><input type="text" data-k="person" maxlength="60" value="${esc(t.person)}" placeholder="Persona" aria-label="Turno ${j + 1} del ${esc(day)}: persona">${time("from", t.from, `Turno ${j + 1} del ${day}: desde`)}${time("to", t.to, `Turno ${j + 1} del ${day}: hasta`)}</div>`,
+            `<div class="cal-shift" data-shift><input type="text" data-k="person" maxlength="60" value="${esc(t.person)}" placeholder="Persona" aria-label="Turno ${j + 1} del ${esc(day)}: persona">${time("from", t.from, `Turno ${j + 1} del ${day}: desde`)}<span aria-hidden="true">–</span>${time("to", t.to, `Turno ${j + 1} del ${day}: hasta`)}</div>`,
         )
-        .join("")}</td></tr>`;
+        .join("")}</div></div>`;
     })
     .join("");
   const vacations = state.vacations.filter(
     (v) => v.from <= dates[6] && dates[0] <= v.to,
   );
-  return `<section class="panel" data-week="${esc(calWeek)}"><div class="cal-nav">${btn("← Semana anterior", "calWeek", "secondary", `data-week="${shiftDay(calWeek, -7)}"`)}<h3>Semana del ${esc(calShortDay(dates[0]))} al ${esc(calShortDay(dates[6]))}</h3>${btn("Semana siguiente →", "calWeek", "secondary", `data-week="${shiftDay(calWeek, 7)}"`)}</div><p>Escribe la hora de abrir y la de cerrar de cada día, o marca «Cerrado». En cada turno: la persona y de qué hora a qué hora; si un turno acaba después de medianoche, pon la hora tal cual. Un día sin nada escrito queda «sin horario apuntado». No cambia el stock ni las ventas.</p>${calWeekDraft ? '<p class="ai-warning">Copiado de la semana anterior: revísalo y pulsa «Guardar la semana». Aún no está guardado.</p>' : ""}<div class="table-scroll"><table class="report-table cal-week"><thead><tr><th>Día</th><th></th><th>Abre</th><th>Cierra</th><th>Turnos (persona, desde, hasta)</th></tr></thead><tbody>${rows}</tbody></table></div><div class="setting-actions">${btn("Guardar la semana", "calSaveWeek", "primary")}${btn("Copiar la semana anterior", "calCopyWeek", "secondary")}</div></section><section class="panel"><h2>Vacaciones de esta semana</h2><p>Van por persona: esos días no lleva turno. Si alguien de vacaciones tiene turno, el Calendario lo avisa.</p>${calList(
-    vacations.map((v) =>
-      calRow(
-        `${esc(v.person)} · del ${esc(v.from)} al ${esc(v.to)}${v.note ? " · " + esc(v.note) : ""}`,
-        btn(
-          "Quitar",
-          "calRemoveVacation",
-          "text-link",
-          `data-id="${esc(v.id)}"`,
+  return `<section class="panel cal-card" data-week="${esc(calWeek)}">${calNav(
+    calArrow(
+      -1,
+      "Semana anterior",
+      "calWeek",
+      `data-week="${shiftDay(calWeek, -7)}"`,
+    ),
+    `Semana del ${esc(calShortDay(dates[0]))} al ${esc(calShortDay(dates[6]))}`,
+    calArrow(
+      1,
+      "Semana siguiente",
+      "calWeek",
+      `data-week="${shiftDay(calWeek, 7)}"`,
+    ),
+  )}<div class="cal-card-body"><p class="cal-help">Escribe la hora de abrir y la de cerrar de cada día, o marca «Cerrado». En cada turno, la persona y de qué hora a qué hora; si acaba después de medianoche, pon la hora tal cual. Un día sin nada escrito queda «sin horario apuntado». No cambia el stock ni las ventas.</p>${calWeekDraft ? '<p class="ai-warning">Copiado de la semana anterior: revísalo y pulsa «Guardar la semana». Aún no está guardado.</p>' : ""}<div class="cal-week-list">${rows}</div><div class="setting-actions cal-week-actions">${btn("Guardar la semana", "calSaveWeek", "primary")}${btn("Copiar la semana anterior", "calCopyWeek", "secondary")}</div></div></section>${calCard(
+    "Vacaciones de esta semana",
+    "Van por persona: esos días no lleva turno. Si alguien de vacaciones tiene turno, el Calendario lo avisa.",
+    calList(
+      vacations.map((v) =>
+        calRow(
+          `${esc(v.person)} <small>del ${esc(calShortDay(v.from))} al ${esc(calShortDay(v.to))}${v.note ? " · " + esc(v.note) : ""}</small>`,
+          btn(
+            "Quitar",
+            "calRemoveVacation",
+            "text-link",
+            `data-id="${esc(v.id)}"`,
+          ),
         ),
       ),
-    ),
-    "Nadie de vacaciones esta semana.",
-  )}${btn("Apuntar vacaciones", "calAddVacation", "secondary", `data-date="${esc(calWeek)}"`)}</section>`;
+      "Nadie de vacaciones esta semana.",
+    ) +
+      `<div class="setting-actions">${btn("Apuntar vacaciones", "calAddVacation", "secondary", `data-date="${esc(calWeek)}"`)}</div>`,
+  )}`;
 }
 
 /** Lee el formulario de la semana; un turno a medias se dice, no se adivina. */
