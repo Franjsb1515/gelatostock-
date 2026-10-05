@@ -250,5 +250,23 @@
     "question": "¿Cómo calcula la app lo vendido con las pesadas?",
     "expect": ["producido|al empezar|al terminar"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "minimo_sabor",
+    "question": "¿Cómo pongo un mínimo de kilos para un sabor?",
+    "expect": ["mínimos por sabor|mínimo"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "hoy_no_se_hace",
+    "question": "Hoy no voy a hacer pistacho, ¿cómo quito el aviso del mínimo?",
+    "expect": ["hoy no se hace"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "sabor_temporada",
+    "question": "¿Qué hago con un sabor que no hago en invierno para que no avise?",
+    "expect": ["pausa"],
+    "forbid": ["no lo sé"]
   }
 ]

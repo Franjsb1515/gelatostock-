@@ -1,5 +1,17 @@
 # Registro de parches y sesiones
 
+## 0.53.0 — 2026-10-05 · sesión 053 (segunda parte) · Mínimos por sabor
+
+Pediste avisos de kilos mínimos. Ahora:
+
+- **Mínimos por sabor** (en la ficha de producción): los kilos que debería tener cada cubeta por la mañana.
+- Si lo pesado más lo producido no llega, avisa en la ficha y en el Resumen, con los kilos que faltan.
+- **Hoy no se hace**: quita el aviso de ese sabor solo ese día. **En pausa**: para sabores de temporada.
+- Ya puedes escribir decimales con coma (2,5) al pesar y en los mínimos.
+- El Ayudante explica todo esto.
+
+Informe reports/2026-10-05T21-00-00-000Z-minimos-por-sabor.md.
+
 ## 0.52.0 — 2026-10-05 · sesión 053 · Ficha de producción del día
 
 Pediste tu hoja de producción dentro del Calendario. Ahora, en cada día:

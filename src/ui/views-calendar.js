@@ -665,6 +665,12 @@ function calReadWeek(panel) {
 
 // Botones del Calendario. Devuelve true si la acción era suya.
 async function calendarAction(name, el) {
+  if (name === "calOpenDay") {
+    // Desde el Resumen: la ficha de ese día en el Calendario.
+    calGo("day", el.dataset.date);
+    nav("calendar");
+    return true;
+  }
   if (name === "calToday") {
     calGo("day", businessToday());
     return true;

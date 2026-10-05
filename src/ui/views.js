@@ -91,7 +91,9 @@ function homeDay() {
   if (!d) return "";
   const t = d.totals;
   const busy = t.produced || t.sold || t.waste || t.gift;
-  if (!busy && !d.toProduce.length && !d.yesterdayPending) return "";
+  const short = d.minimum?.below || [];
+  if (!busy && !d.toProduce.length && !d.yesterdayPending && !short.length)
+    return "";
   const cents = (n) => (n === null ? "No disponible" : money(n));
   const dayName = (x) => date(x + "T12:00:00Z");
   const produce = d.toProduce.length
@@ -105,7 +107,15 @@ function homeDay() {
   const pending = d.yesterdayPending
     ? `<strong>El ${esc(dayName(d.yesterdayPending))} quedó sin confirmar</strong><span>Tiene producción o ventas apuntadas, pero su cierre no está confirmado. </span><button class="text-button" data-action="openDay" data-date="${esc(d.yesterdayPending)}">Revisarlo ${icon("arrow")}</button>`
     : "";
-  return `${produce || pending ? `<div class="notice subtle home-notice">${icon("cake")}<div>${pending}${produce}</div></div>` : ""}${
+  const minimum = short.length
+    ? `<strong>Por debajo del mínimo en la pesada de hoy</strong><span>${esc(
+        short
+          .slice(0, 4)
+          .map((b) => b.name + " (faltan " + num(b.missing) + " kg)")
+          .join(", "),
+      )}${short.length > 4 ? "…" : ""}. </span><button class="text-button" data-action="calOpenDay" data-date="${esc(d.date)}">Ver la ficha ${icon("arrow")}</button>`
+    : "";
+  return `${produce || pending || minimum ? `<div class="notice subtle home-notice">${icon("cake")}<div>${minimum}${pending}${produce}</div></div>` : ""}${
     busy
       ? `<section class="stats" data-home-day><article class="stat"><span class="stat-icon sage">${icon("cake")}</span><div><p>Producido hoy</p><strong>${num(t.produced)} kg</strong><small>${esc(dayName(d.date))}${d.closed ? " · día cerrado" : ""}</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Venta estimada de hoy</p><strong class="money-value">${cents(t.soldCents)}</strong><small>${t.soldCents === null ? "Falta escribir el valor de venta en el Recetario" : num(t.sold) + " kg × valor de venta"}</small></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Merma de hoy</p><strong>${num(t.waste)} kg</strong><small>${t.waste ? cents(t.wasteCents) + " de venta perdida" : "Sin merma apuntada"}</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("box")}</span><div><p>Gelato que queda</p><strong>${num(t.remaining)} kg</strong><small>Para mañana</small></div></article></section>`
       : ""

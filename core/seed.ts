@@ -309,5 +309,6 @@ export function seed(): State {
     dayNotes: [],
     weighings: [],
     referencePrices: [],
+    flavorSkips: [],
   };
 }

@@ -5046,3 +5046,81 @@ button.text-link:focus-visible {
 .cal .sheet-legend .sheet-src:first-child {
   margin-left: 0;
 }
+
+/* ---------- Mínimos de la mañana (0.53.0) ---------- */
+.cal .sheet-min {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.cal .sheet-min.warn {
+  border-color: #efc9d3;
+  background: #fff8f9;
+}
+.cal .sheet-min.quiet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  border-style: dashed;
+  font-size: var(--fs-13);
+  color: var(--ink-soft);
+}
+.cal .sheet-min-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.cal .sheet-min .btn.text-link {
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  background: none;
+}
+.cal .sheet-min-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+.cal .sheet-min-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--rosa-claro);
+}
+.cal .sheet-min-list li div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cal .sheet-min-list small {
+  font-size: var(--fs-12);
+  color: var(--ink-soft);
+}
+.cal .sheet-min-miss {
+  font-weight: 700;
+  color: var(--rosa-texto);
+  white-space: nowrap;
+}
+.cal .sheet-min-ok {
+  font-size: var(--fs-13);
+  color: var(--pistacho);
+}
+.sheet-mins .sheet-weigh-row {
+  grid-template-columns: minmax(0, 1fr) 90px auto;
+}
+.sheet-mins .check {
+  margin: 0;
+  white-space: nowrap;
+}

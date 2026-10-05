@@ -47,6 +47,48 @@ function sheetTable(rows, totals, title) {
   return `<div class="table-scroll"><table class="report-table cal-table sheet-table"><caption>${title}</caption><thead><tr><th>Sabor</th><th class="num sheet-h medido">Al empezar</th><th class="num sheet-h confirmado">Producido</th><th class="num sheet-h medido">Al terminar</th><th class="num sheet-h confirmado">Merma</th><th class="num sheet-h confirmado">Invitación</th><th class="num sheet-h confirmado">Entr./sal.</th><th class="num sheet-h estimado">Vendido</th><th class="num sheet-h confirmado">Apuntado</th><th class="num sheet-h estimado">Factur.</th></tr></thead><tbody>${body}</tbody>${t.empty ? `<tfoot><tr><th>Total (kg)</th><th class="num" colspan="9">Sin datos este día</th></tr></tfoot>` : `<tfoot><tr><th>Total (kg)</th><th class="num">${sheetKg(t.start)}</th><th class="num">${num(t.produced)}</th><th class="num">${sheetKg(t.end)}</th><th class="num">${num(t.waste)}</th><th class="num">${num(t.gift)}</th><th class="num">${num(t.moved)}</th><th class="num">${t.sold === null ? "No disp." : num(t.sold)}</th><th class="num">${t.registered === null ? "—" : num(t.registered)}</th><th class="num">${sheetMoney(t.soldCents)}</th></tr></tfoot>`}</table></div>`;
 }
 
+/** Mínimos de la mañana: lo pesado (más lo producido ese día) frente al mínimo de cada sabor. */
+function sheetMinBlock(sh) {
+  const mi = sh.minimum;
+  const edit = btn("Mínimos por sabor", "sheetMins", "text-link");
+  if (!mi.configured)
+    return `<div class="sheet-min quiet"><p>Pon unos kilos mínimos por sabor y la pesada de la mañana avisará de los que se quedan cortos.</p>${edit}</div>`;
+  const skipBtn = (p, skip, label) =>
+    btn(
+      label,
+      "sheetSkip",
+      "text-link",
+      `data-date="${esc(mi.date)}" data-product="${esc(p)}" data-skip="${skip ? "1" : ""}"`,
+    );
+  const below = mi.below.length
+    ? `<ul class="sheet-min-list">${mi.below
+        .map(
+          (b) =>
+            `<li><div><strong>${esc(b.name)}</strong><small>${num(b.start)} kg pesados${b.produced ? ` + ${num(b.produced)} kg producidos` : ""} · mínimo ${num(b.min)} kg</small></div><span class="sheet-min-miss">Faltan ${num(b.missing)} kg</span>${skipBtn(b.product, true, "Hoy no se hace")}</li>`,
+        )
+        .join("")}</ul>`
+    : mi.checked
+      ? `<p class="sheet-min-ok">Los sabores pesados llegan a su mínimo.</p>`
+      : "";
+  const extra = [
+    mi.skipped.length
+      ? `<p class="cal-none">No se hacen este día: ${mi.skipped
+          .map(
+            (x) =>
+              `${esc(x.name)} ${skipBtn(x.product, false, "volver a avisar")}`,
+          )
+          .join(" · ")}</p>`
+      : "",
+    mi.unweighed.length
+      ? `<p class="cal-none">Con mínimo y sin pesar esta mañana (no se sabe): ${esc(mi.unweighed.join(", "))}.</p>`
+      : "",
+    mi.paused
+      ? `<p class="cal-none">${calCount(mi.paused, "sabor en pausa", "sabores en pausa")}: no avisan.</p>`
+      : "",
+  ].join("");
+  return `<div class="sheet-min ${mi.below.length ? "warn" : ""}"><div class="sheet-min-head"><strong>Mínimos de la mañana</strong>${edit}</div>${below}${extra}</div>`;
+}
+
 function calSheetPanel(d) {
   const sh = d.sheet;
   if (!sh) return "";
@@ -151,7 +193,7 @@ function calSheetPanel(d) {
               : ""
           }</ul>`
         : ""
-    }<p class="sheet-legend">${sheetSource("medido")} lo que pesas tú ${sheetSource("confirmado")} lo apuntado en la app ${sheetSource("estimado")} lo calculado</p>${sheetTable(gel, sh.totals.gelato, "Gelatos")}${sheetTable(sor, sh.totals.sorbetto, "Sorbettos")}<p class="cal-source">Medido: lo que pesas tú. Confirmado: producción aprobada, ventas, mermas, invitaciones y entradas o salidas apuntadas. Estimado: lo calculado. Un conteo de Inventario no entra en la cuenta: corrige el stock de la app, no la cubeta.</p><div class="setting-actions">${actions}</div>`,
+    }${sheetMinBlock(sh)}<p class="sheet-legend">${sheetSource("medido")} lo que pesas tú ${sheetSource("confirmado")} lo apuntado en la app ${sheetSource("estimado")} lo calculado</p>${sheetTable(gel, sh.totals.gelato, "Gelatos")}${sheetTable(sor, sh.totals.sorbetto, "Sorbettos")}<p class="cal-source">Medido: lo que pesas tú. Confirmado: producción aprobada, ventas, mermas, invitaciones y entradas o salidas apuntadas. Estimado: lo calculado. Un conteo de Inventario no entra en la cuenta: corrige el stock de la app, no la cubeta.</p><div class="setting-actions">${actions}</div>`,
     { cls: "sheet-card" },
   );
 }
@@ -175,7 +217,7 @@ function sheetWeighModal(date) {
       ? `<fieldset class="sheet-weigh"><legend>${title}</legend>${rows
           .map(
             (r) =>
-              `<label class="sheet-weigh-row"><span>${esc(r.name)}</span><input type="number" inputmode="decimal" min="0" step="${unit === "g" ? 1 : 0.001}" name="w:${esc(r.product)}" value="${esc(shown(r.start))}" data-kg="${r.start === null ? "" : r.start}"></label>`,
+              `<label class="sheet-weigh-row"><span>${esc(r.name)}</span><input type="text" inputmode="decimal" autocomplete="off" name="w:${esc(r.product)}" value="${esc(shown(r.start))}" data-kg="${r.start === null ? "" : r.start}"></label>`,
           )
           .join("")}</fieldset>`
       : "";
@@ -238,7 +280,6 @@ function sheetWeighModal(date) {
             ? String(Math.round(kgv * 1000))
             : String(Math.round(kgv * 1000) / 1000);
       }
-      input.step = to === "g" ? "1" : "0.001";
     }
     unit = to;
   });
@@ -336,6 +377,76 @@ async function calendarSheetAction(name, el) {
         return true;
       },
       "Apuntar",
+    );
+    return true;
+  }
+  if (name === "sheetSkip") {
+    const saved = await mutate(
+      {
+        type: "skipFlavor",
+        date: el.dataset.date,
+        product: el.dataset.product,
+        skip: el.dataset.skip === "1",
+      },
+      el.dataset.skip === "1"
+        ? "Ese día no se hace: no avisará."
+        : "Vuelve a avisar ese día.",
+    );
+    if (saved) {
+      calData = null;
+      render();
+    }
+    return true;
+  }
+  if (name === "sheetMins") {
+    const sh = calData?.sheet;
+    if (!sh) return true;
+    const rows = sh.rows.map((r) => ({
+      ...r,
+      p: state.products.find((x) => x.id === r.product),
+    }));
+    const group = (family, title) => {
+      const list = rows.filter((r) => r.family === family);
+      return list.length
+        ? `<fieldset class="sheet-weigh sheet-mins"><legend>${title}</legend>${list
+            .map(
+              (r) =>
+                `<div class="sheet-weigh-row"><span>${esc(r.name)}</span><input type="text" inputmode="decimal" autocomplete="off" name="m:${esc(r.product)}" value="${r.p?.minKg ?? ""}" aria-label="Mínimo de ${esc(r.name)} en kilos"><label class="check"><input type="checkbox" name="p:${esc(r.product)}" ${r.p?.paused ? "checked" : ""}> En pausa</label></div>`,
+            )
+            .join("")}</fieldset>`
+        : "";
+    };
+    modal(
+      "Mínimos por sabor",
+      "Kilos que debería tener cada cubeta al pesarla por la mañana. Si lo pesado más lo producido ese día no llega, la ficha y el Resumen avisan. En blanco: sin mínimo. «En pausa»: fuera de temporada, no avisa. Solo avisa: no produce ni cambia nada.",
+      group("gelato", "Gelatos (kg)") + group("sorbetto", "Sorbettos (kg)"),
+      async (f) => {
+        const lines = [];
+        for (const r of rows) {
+          const raw = String(f.get("m:" + r.product) ?? "")
+            .trim()
+            .replace(",", ".");
+          const minKg = raw === "" ? null : Number(raw);
+          if (minKg !== null && !(Number.isFinite(minKg) && minKg > 0))
+            throw Error(
+              `${r.name}: escribe un número mayor que 0 o déjalo en blanco.`,
+            );
+          const paused = f.get("p:" + r.product) === "on";
+          if ((r.p?.minKg ?? null) === minKg && !!r.p?.paused === paused)
+            continue;
+          lines.push({ product: r.product, minKg, paused });
+        }
+        if (!lines.length) return true;
+        const saved = await mutate(
+          { type: "setFlavorMins", lines },
+          "Mínimos guardados.",
+        );
+        if (!saved) return false;
+        calData = null;
+        render();
+        return true;
+      },
+      "Guardar mínimos",
     );
     return true;
   }

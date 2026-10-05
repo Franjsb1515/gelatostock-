@@ -1,4 +1,4 @@
-# TODO — estado real de 0.52.0
+# TODO — estado real de 0.53.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -16,6 +16,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] [app] Calendario, fase 2 (0.49.0): horario de la semana (apertura y turnos, copiar la anterior), vacaciones por persona, stock al terminar el día y avisos del día y del mes.
 - [x] [app] Calendario, fase 3 (0.50.0): «Subir foto» propone día y apartado (horario, ventas, documento o nota) y la persona confirma. Medido con 12 fotos sintéticas: 8 exactas, 0 inventos.
 - [x] [app] Ficha de producción del día (0.52.0): pesada de la mañana, vendido estimado por sabor, dos facturaciones, resúmenes de día, semana e histórico, alta rápida de sabores.
+- [x] [app] Mínimos por sabor con «Hoy no se hace» y «En pausa» (0.53.0).
+- [ ] [tú] Poner los mínimos de tus sabores (ficha de producción → «Mínimos por sabor»).
 - [ ] [tú] Dar de alta tus sabores (Calendario → Producción del día → «Dar de alta sabores»), el primer día «Igualar el stock de la app a la pesada», y poner el valor por kilo de cada sabor en el Recetario.
 - [ ] [app] La prueba de escritorio no recorre la ficha de producción (lo cubre work/check-ficha-produccion.cjs).
 - [ ] [tú] Manda 3–5 fotos reales (una escrita a mano) para medir la lectura de verdad. Dime también si el umbral del 10 % de la venta real te vale.

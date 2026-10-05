@@ -290,3 +290,123 @@ test("tras igualar el stock a la pesada, la app y la pesada coinciden y se puede
   assert.equal(r.book, 5);
   assert.equal(r.start, 5);
 });
+
+test("mínimos de la mañana: avisa por debajo, cuenta lo producido y respeta «hoy no se hace» y la pausa", () => {
+  const { minimumAlerts } = require("../build/sheet.js");
+  let s = apply(seed(), {
+    type: "quickFlavors",
+    family: "crema",
+    names: ["Pistacho", "Fior di panna", "Mango"],
+  });
+  const id = (n) => s.recipes.find((r) => r.name === n).product;
+  s = apply(s, {
+    type: "setFlavorMins",
+    lines: [
+      { product: id("Pistacho"), minKg: 3, paused: false },
+      { product: id("Fior di panna"), minKg: 2.5, paused: false },
+      { product: id("Mango"), minKg: 2, paused: true },
+      { product: "p4", minKg: 1.5, paused: false },
+    ],
+  });
+  s = weigh(s, D, [
+    { product: id("Pistacho"), value: 1.2 },
+    { product: id("Fior di panna"), value: 4 },
+    { product: id("Mango"), value: 0 },
+  ]);
+  let m = minimumAlerts(s, D);
+  assert.deepEqual(
+    m.below.map((b) => [b.name, b.start, b.produced, b.min, b.missing]),
+    [["Pistacho", 1.2, 0, 3, 1.8]],
+  );
+  // Sin pesar: no se sabe y se dice; en pausa: no avisa.
+  assert.deepEqual(m.unweighed, ["Chocolate 70 %"]);
+  assert.equal(m.paused, 1);
+  // Lo producido ese día cuenta: con 2 kg de pistacho ya llega.
+  const r = s.recipes.find((x) => x.name === "Pistacho");
+  let s2 = apply(s, { type: "produce", recipe: r.id, quantity: 2, date: D });
+  const p = s2.productions.find((x) => x.status === "proposed");
+  s2 = apply(s2, {
+    type: "applyProduction",
+    id: p.id,
+    lines: p.lines,
+    note: "",
+  });
+  assert.equal(minimumAlerts(s2, D).below.length, 0);
+  // «Hoy no se hace»: ese día no avisa; otro día sí.
+  s = apply(s, {
+    type: "skipFlavor",
+    date: D,
+    product: id("Pistacho"),
+    skip: true,
+  });
+  m = minimumAlerts(s, D);
+  assert.equal(m.below.length, 0);
+  assert.deepEqual(
+    m.skipped.map((x) => x.name),
+    ["Pistacho"],
+  );
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "skipFlavor",
+        date: D,
+        product: id("Pistacho"),
+        skip: true,
+      }),
+    /ya estaba marcado/,
+  );
+  s = weigh(s, NEXT, [{ product: id("Pistacho"), value: 1 }]);
+  assert.equal(minimumAlerts(s, NEXT).below.length, 1);
+  s = apply(s, {
+    type: "skipFlavor",
+    date: D,
+    product: id("Pistacho"),
+    skip: false,
+  });
+  assert.equal(minimumAlerts(s, D).below.length, 1);
+  // Va en la ficha y no cambia nada del stock.
+  assert.equal(productionSheet(s, D, TODAY).minimum.below[0].name, "Pistacho");
+  // Quitar un mínimo; los mínimos imposibles se rechazan.
+  s = apply(s, {
+    type: "setFlavorMins",
+    lines: [{ product: id("Pistacho"), minKg: null, paused: false }],
+  });
+  assert.equal(
+    s.products.find((x) => x.id === id("Pistacho")).minKg,
+    undefined,
+  );
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "setFlavorMins",
+        lines: [{ product: "p4", minKg: 1.2345, paused: false }],
+      }),
+    /tres decimales/,
+  );
+  assert.throws(
+    () =>
+      apply(s, {
+        type: "setFlavorMins",
+        lines: [{ product: "p2", minKg: 1, paused: false }],
+      }),
+    /no es un gelato/,
+  );
+});
+
+test("editar la ficha del producto no borra su mínimo ni la pausa", () => {
+  let s = apply(seed(), {
+    type: "setFlavorMins",
+    lines: [{ product: "p4", minKg: 2, paused: true }],
+  });
+  const p = s.products.find((x) => x.id === "p4");
+  const { id, icon, wasteGoal, minKg, paused, ...fields } = p;
+  s = apply(s, {
+    type: "editProduct",
+    product: "p4",
+    ...fields,
+    detail: p.detail + " (editado)",
+  });
+  const after = s.products.find((x) => x.id === "p4");
+  assert.equal(after.minKg, 2);
+  assert.equal(after.paused, true);
+});

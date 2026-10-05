@@ -101,6 +101,20 @@ export const productSchema = z.object({
   ...productFields,
   icon: z.string().max(30).default("box"),
   wasteGoal: wasteGoalSchema.optional(),
+  // Ficha de producción: kilos mínimos que debería tener la cubeta al pesarla por la mañana, y
+  // sabor en pausa (fuera de temporada: no avisa). Fuera de productFields para que editar la
+  // ficha del producto no los borre.
+  minKg: z
+    .number()
+    .finite()
+    .gt(0)
+    .max(500)
+    .refine(
+      (n) => Math.abs(n * 1000 - Math.round(n * 1000)) < 0.00001,
+      "Máximo tres decimales.",
+    )
+    .optional(),
+  paused: z.boolean().optional(),
 });
 const supplierFields = {
   name: text(100),
@@ -478,6 +492,11 @@ export const stateSchema = z.object({
     )
     .max(200000)
     .default([]),
+  // Days a flavour is not made on purpose: its minimum does not warn that day. Kept in meta.
+  flavorSkips: z
+    .array(z.object({ date: documentDate, product: idSchema, at }))
+    .max(100000)
+    .default([]),
   // Reference price per kilo written by the person (the dearest gelato), dated like sale values,
   // for a second, separate turnover estimate. Kept in meta.
   referencePrices: z
@@ -836,6 +855,27 @@ export const actionSchema = z.intersection(
     // Today's morning weighing becomes the stock of the app (a count) for the flavours that have
     // not moved yet today. A count corrects the book; it is never a sale.
     z.object({ type: z.literal("weighingCounts"), date: documentDate }),
+    // Minimum kilos per flavour at the morning weighing, and paused flavours. null removes it.
+    z.object({
+      type: z.literal("setFlavorMins"),
+      lines: z
+        .array(
+          z.object({
+            product: idSchema,
+            minKg: z.number().finite().gt(0).max(500).nullable(),
+            paused: z.boolean().default(false),
+          }),
+        )
+        .min(1)
+        .max(500),
+    }),
+    // «Hoy no se hace»: that flavour's minimum does not warn on that day (skip false undoes it).
+    z.object({
+      type: z.literal("skipFlavor"),
+      date: documentDate,
+      product: idSchema,
+      skip: z.boolean(),
+    }),
     // Annul an applied production; with redo, a new proposal with the same data is left to fix.
     z.object({
       type: z.literal("voidProduction"),

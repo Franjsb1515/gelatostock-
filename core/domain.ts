@@ -1631,6 +1631,53 @@ export function apply(state: State, input: unknown): State {
           : "");
       break;
     }
+    case "setFlavorMins": {
+      const gelatos = new Set(
+        s.recipes.map((r) => r.product).filter((x): x is string => !!x),
+      );
+      const changed: string[] = [];
+      for (const l of a.lines) {
+        const p = item(s.products, l.product);
+        ensure(gelatos.has(p.id), `${p.name} no es un gelato de una receta.`);
+        const min = l.minKg === null ? undefined : round(l.minKg);
+        ensure(
+          min === undefined || Math.abs(min - l.minKg!) < 1e-9,
+          `${p.name}: como mucho tres decimales en kilos.`,
+        );
+        if (p.minKg === min && !!p.paused === l.paused) continue;
+        if (min === undefined) delete p.minKg;
+        else p.minKg = min;
+        if (l.paused) p.paused = true;
+        else delete p.paused;
+        changed.push(
+          `${p.name}: ${min === undefined ? "sin mínimo" : "mínimo " + min + " kg"}${l.paused ? " (en pausa)" : ""}`,
+        );
+      }
+      ensure(changed.length, "No ha cambiado ningún mínimo.");
+      note = `Mínimos de la pesada: ${changed.join("; ")}. Solo avisan; no cambian stock ni producción.`;
+      break;
+    }
+    case "skipFlavor": {
+      const p = item(s.products, a.product);
+      ensure(
+        s.recipes.some((r) => r.product === p.id),
+        `${p.name} no es un gelato de una receta.`,
+      );
+      const had = s.flavorSkips.some(
+        (x) => x.date === a.date && x.product === p.id,
+      );
+      s.flavorSkips = s.flavorSkips.filter(
+        (x) => !(x.date === a.date && x.product === p.id),
+      );
+      if (a.skip) {
+        ensure(!had, `${p.name} ya estaba marcado como «no se hace» ese día.`);
+        s.flavorSkips.push({ date: a.date, product: p.id, at: now() });
+      } else ensure(had, `${p.name} no estaba marcado ese día.`);
+      note = a.skip
+        ? `${p.name}: el ${a.date} no se hace. Su mínimo no avisa ese día.`
+        : `${p.name}: el ${a.date} vuelve a avisar si baja del mínimo.`;
+      break;
+    }
     case "setReferencePrice": {
       s.referencePrices = [
         ...s.referencePrices.filter((x) => x.from !== a.from),

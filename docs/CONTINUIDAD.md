@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.53.0
+Lee reports/2026-10-05T21-00-00-000Z-minimos-por-sabor.md. Mínimos por sabor: product.minKg y product.paused (fuera de productFields), state.flavorSkips (meta), acciones setFlavorMins y skipFlavor, minimumAlerts en core/sheet.ts (pesada de la mañana + producido ese día < mínimo), en la ficha y en todayBrief.minimum (Resumen, acción calOpenDay). Casillas de pesada y mínimos como texto decimal (aceptan coma). Pruebas 243, chat 44/44, escritorio 22 PASS.
+
 ## Punto de continuidad 0.52.0
 Lee reports/2026-10-05T20-00-00-000Z-ficha-produccion.md y docs/PLAN_FICHA_PRODUCCION.md. Ficha de producción: core/sheet.ts productionSheet (pesada de la mañana = medido; la de la mañana siguiente = al terminar; vendido = inicio + producido − fin − merma − invitación + entradas/salidas; conteos fuera salvo «Pesada de la mañana»; book = stock de la app al empezar contando el conteo de igualar), state.weighings y state.referencePrices en meta, acciones setWeighings (g enteros o kg con 3 decimales), quickFlavors (recetas sin ingredientes; ownGelato compartido), setReferencePrice, weighingCounts (solo hoy, sabores sin movimientos hoy). UI src/ui/calendar-sheet.js (acciones sheet*, encadenadas tras calendarPhotoAction). La tarjeta antigua es «Cuenta del día según la app». Pruebas 241, chat 41/41, escritorio 22 PASS.
 

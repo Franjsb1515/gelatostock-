@@ -91,7 +91,97 @@ export type ProductionSheet = {
   week: PeriodSummary;
   /** Histórico desde el primer día con algún dato; null si no hay ninguno. */
   history: PeriodSummary | null;
+  /** Mínimos de la pesada de la mañana de este día. */
+  minimum: MinimumAlerts;
 };
+/** Un sabor por debajo de su mínimo: lo pesado por la mañana más lo producido ese día. */
+export type BelowMinimum = {
+  product: string;
+  name: string;
+  start: number;
+  produced: number;
+  min: number;
+  /** Kilos que faltan para llegar al mínimo (estimado). */
+  missing: number;
+};
+export type MinimumAlerts = {
+  date: string;
+  /** Algún sabor tiene mínimo escrito. */
+  configured: boolean;
+  below: BelowMinimum[];
+  /** «Hoy no se hace»: tienen mínimo, pero ese día no avisan. */
+  skipped: { product: string; name: string }[];
+  /** Con mínimo y sin pesar esa mañana: no se sabe. */
+  unweighed: string[];
+  /** Sabores en pausa (fuera de temporada). */
+  paused: number;
+  /** Sabores con mínimo que se pesaron esa mañana y se compararon. */
+  checked: number;
+};
+
+/**
+ * Mínimos de la mañana: avisa de los sabores cuya pesada de ese día, más lo producido ese día,
+ * no llega a su mínimo. Solo avisa: no produce ni cambia nada. Sin pesada no hay aviso (se dice).
+ */
+export function minimumAlerts(
+  s: State,
+  date: string,
+  changeHour = 5,
+): MinimumAlerts {
+  const undone = undoneMovements(s);
+  const days = productionDays(s);
+  const produced = new Map<string, number>();
+  for (const m of s.movements)
+    if (
+      m.kind === "output" &&
+      !undone.has(m.id) &&
+      !m.reverses &&
+      movementDay(s, m, changeHour, days) === date
+    )
+      produced.set(m.product, (produced.get(m.product) ?? 0) + m.delta);
+  const out: MinimumAlerts = {
+    date,
+    configured: false,
+    below: [],
+    skipped: [],
+    unweighed: [],
+    paused: 0,
+    checked: 0,
+  };
+  const seen = new Set<string>();
+  for (const r of s.recipes) {
+    if (!r.product || seen.has(r.product)) continue;
+    seen.add(r.product);
+    const p = s.products.find((x) => x.id === r.product);
+    if (!p || p.minKg === undefined) continue;
+    out.configured = true;
+    if (p.paused) {
+      out.paused++;
+      continue;
+    }
+    if (s.flavorSkips.some((x) => x.date === date && x.product === p.id)) {
+      out.skipped.push({ product: p.id, name: p.name });
+      continue;
+    }
+    const w = s.weighings.find((x) => x.date === date && x.product === p.id);
+    if (!w) {
+      out.unweighed.push(p.name);
+      continue;
+    }
+    out.checked++;
+    const made = kg(produced.get(p.id) ?? 0);
+    if (kg(w.kg + made) < p.minKg)
+      out.below.push({
+        product: p.id,
+        name: p.name,
+        start: w.kg,
+        produced: made,
+        min: p.minKg,
+        missing: kg(p.minKg - w.kg - made),
+      });
+  }
+  return out;
+}
 
 type Acc = {
   produced: number;
@@ -360,5 +450,6 @@ export function productionSheet(
       first && first <= date
         ? period(first, date < today ? date : today)
         : null,
+    minimum: minimumAlerts(s, date, changeHour),
   };
 }

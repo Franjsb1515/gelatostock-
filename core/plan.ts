@@ -8,6 +8,7 @@ import type { State } from "./schema.js";
 import { closeLineOf, undoneMovements } from "./sales.js";
 import { computeDay, isDayClosed, notOpenedOn } from "./day.js";
 import { localDate } from "./messages.js";
+import { minimumAlerts, type MinimumAlerts } from "./sheet.js";
 import { addDays as shift, kg } from "./util.js";
 
 export const PLAN_WINDOW_DAYS = 14;
@@ -90,6 +91,8 @@ export type TodayBrief = {
   /** Gelatos con objetivo escrito a los que les falta producto. */
   toProduce: { name: string; suggest: number }[];
   withoutGoal: number;
+  /** Sabores por debajo de su mínimo en la pesada de esta mañana (más lo producido hoy). */
+  minimum: MinimumAlerts;
 };
 /** Indicadores del día para el Resumen de inicio: hechos del libro de movimientos, sin previsión. */
 export function todayBrief(s: State, now: Date, changeHour = 5): TodayBrief {
@@ -115,5 +118,6 @@ export function todayBrief(s: State, now: Date, changeHour = 5): TodayBrief {
       .filter((r) => r.suggest)
       .map((r) => ({ name: r.name, suggest: r.suggest ?? 0 })),
     withoutGoal: plan.rows.filter((r) => r.suggest === null).length,
+    minimum: minimumAlerts(s, date, changeHour),
   };
 }
