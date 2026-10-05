@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.53.1
+Lee reports/2026-10-05T21-30-00-000Z-textos-para-entregar.md. La app se entregará a otra persona: textos sin referencias al dueño ni jerga (SQLite, OCR, nombres de tablas) y sin abreviaturas; un día sin datos no enseña 0 kg ni 0,00 €. Soporte técnico (contraseña olvidada) en docs/INSTALADOR.md. Pruebas 243, chat 44/44, escritorio 22 PASS.
+
 ## Punto de continuidad 0.53.0
 Lee reports/2026-10-05T21-00-00-000Z-minimos-por-sabor.md. Mínimos por sabor: product.minKg y product.paused (fuera de productFields), state.flavorSkips (meta), acciones setFlavorMins y skipFlavor, minimumAlerts en core/sheet.ts (pesada de la mañana + producido ese día < mínimo), en la ficha y en todayBrief.minimum (Resumen, acción calOpenDay). Casillas de pesada y mínimos como texto decimal (aceptan coma). Pruebas 243, chat 44/44, escritorio 22 PASS.
 

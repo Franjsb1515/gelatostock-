@@ -92,3 +92,7 @@ Se le envía el instalador de la versión nueva; se instala encima y conserva lo
 - Sin firma de código: aviso de SmartScreen en Windows y de Gatekeeper en Mac. Firmar, notarizar y las actualizaciones seguras siguen en TODO 6.
 - El ejecutable de Windows conserva el icono genérico de Electron (cambiarlo exige editar el ejecutable); el instalador, el desinstalador y la ventana llevan el cucurucho. En Mac el `.app` sí lleva el icono de la marca (se sustituye `electron.icns`), pendiente de ver en un Mac.
 - Enviar 750 MB: no cabe por WhatsApp ni por correo; Google Drive, un USB o similar.
+
+## Soporte: contraseña del recetario olvidada
+
+Con la app cerrada, borrar la clave `recipes_lock` de la tabla `settings` en `gelatostock.sqlite` (carpeta de datos: junto al ejecutable en la versión portátil; %LOCALAPPDATA%\GelatoStock\data con el instalador; ~/Library/Application Support/GelatoStock/data en Mac). No se pierde ningún dato; el recetario queda sin contraseña.

@@ -1,9 +1,10 @@
-# Entrada para Claude · entrega vigente 0.53.0
+# Entrada para Claude · entrega vigente 0.53.1
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
 ## Cómo trabajar aquí
 - Proyecto en D:/CARPETAPROYECTOS/APPGELATOSTOCK. App local de escritorio (Electron) para una gelatería de Palma. Desde 0.46.0 se llama ArtelloAPP (ventana «Artello Gelato Control System», logo de Artello en build-assets/marca, sacado del .ai del usuario; nombre en scripts/package-rules.cjs appName; acceso «ABRIR ARTELLOAPP.vbs»). Por dentro sigue gelatostock a propósito: carpeta de datos GelatoStock, gelatostock.sqlite, copias gelatostock-*, appId es.gelatostock.app y repositorio. No los renombres: se perderían los datos o la actualización encima. Sin APIs de IA de pago ni llamadas externas ocultas.
+- La app se entregará a otra persona (2026-10-05): textos que se entiendan sin conocer al dueño, sin «como en tu hoja», sin abreviaturas ni jerga técnica (SQLite, OCR, tablas); lo técnico va a docs/INSTALADOR.md. Sube la versión ANTES de evaluar el chat (si no, se sobrescribe el JSON de la anterior).
 - Nada de jerga en pantalla. Desde 0.47.0 la pantalla no nombra la IA; desde 0.48.0 el apartado es «Ayudante» («Guía» es el manual) y se habla de «lectura automática», nunca de «IA», «modelo» ni «Qwen» (por dentro, src/ai*.cjs y /api/ai siguen igual). El usuario no entendió «producto terminado» y por eso no le funcionaban valor, ventas ni mermas. En la interfaz se dice «gelato», «gelato hecho» o «gelato en stock»; en el código sigue siendo recipe.product. Tampoco textos de «demostración», «simulado» o «ficticio» donde el usuario tiene datos reales. Para leer la app como él: work/audit-fase6.cjs vuelca el texto de cada pantalla sobre una copia de data/. Antes de dar algo por hecho, recorre el camino con datos como los suyos (una receta creada por él), no solo con la demo.
 - El usuario no programa y pide respuestas MUY breves en el chat; el detalle técnico va a reports/. Antes de un encargo grande, dile qué no es viable y por qué; luego decide y construye.
 - Antes de cambiar archivos: `git status`. Ejecuta pruebas antes de proponer reescrituras. Implementa solo lo necesario para la tarea.

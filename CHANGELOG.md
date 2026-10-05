@@ -1,5 +1,15 @@
 # Registro de parches y sesiones
 
+## 0.53.1 — 2026-10-05 · sesión 053 (tercera parte) · Textos para entregar
+
+Pediste textos que se entiendan sin conocerte. Ahora:
+
+- Al pesar: «Gramos (g) · 1000 g = 1 kg» y la unidad al lado de cada casilla.
+- Sin referencias a tu hoja, sin abreviaturas y sin palabras técnicas en pantalla.
+- Un día sin pesadas ya no muestra «0 kg» ni «0,00 €»: dice que no hay datos.
+
+Informe reports/2026-10-05T21-30-00-000Z-textos-para-entregar.md.
+
 ## 0.53.0 — 2026-10-05 · sesión 053 (segunda parte) · Mínimos por sabor
 
 Pediste avisos de kilos mínimos. Ahora:

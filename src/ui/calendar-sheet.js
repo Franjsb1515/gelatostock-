@@ -1,4 +1,4 @@
-// Ficha de producción del día (core/sheet.ts), como la hoja «Producción gelato Artello»: pesada de
+// Ficha de producción del día (core/sheet.ts): pesada de
 // la mañana (medido), producción, ventas y mermas apuntadas (confirmado) y lo calculado
 // (estimado). Pesar no cambia stock ni ventas; apuntar la venta estimada pasa por el cierre del
 // día de siempre, una sola vez. Los módulos de src/ui comparten el ámbito global.
@@ -25,6 +25,8 @@ function sheetPeriodText(p) {
 }
 function sheetSoldText(p) {
   if (!p || (!p.daysEstimated && !p.daysMissing)) return "No disponible";
+  if (!p.daysEstimated)
+    return `No disponible (faltan pesadas de ${calCount(p.daysMissing, "día", "días")})`;
   return p.daysMissing
     ? `${kgText(p.sold)} (faltan pesadas de ${calCount(p.daysMissing, "día", "días")})`
     : kgText(p.sold);
@@ -40,11 +42,11 @@ function sheetTable(rows, totals, title) {
         r.registered === null
           ? "—"
           : `${num(r.registered)}${r.difference ? ` <small class="${Math.abs(r.difference) > 0 ? "sheet-diff" : ""}">(${r.difference > 0 ? "+" : "−"}${num(Math.abs(r.difference))})</small>` : ""}`;
-      return `<tr class="${r.noData ? "sheet-nodata" : ""} ${r.impossible ? "sheet-bad" : ""}"><td>${esc(r.name)}${r.noData ? ' <small class="cal-none">Sin datos</small>' : ""}${r.counted ? ' <small class="cal-none" title="Un conteo corrige el libro, no la cubeta: no entra en la cuenta">· conteo</small>' : ""}</td>${cell(r, sheetKg(r.start))}${cell(r, num(r.produced))}${cell(r, sheetKg(r.end))}${cell(r, num(r.waste))}${cell(r, num(r.gift))}${cell(r, num(r.moved))}${cell(r, r.sold === null ? '<span class="cal-none">No disp.</span>' : num(r.sold), "sheet-sold")}${cell(r, reg)}${cell(r, r.sold === null ? "" : sheetMoney(r.soldCents))}</tr>`;
+      return `<tr class="${r.noData ? "sheet-nodata" : ""} ${r.impossible ? "sheet-bad" : ""}"><td>${esc(r.name)}${r.noData ? ' <small class="cal-none">Sin datos</small>' : ""}${r.counted ? ' <small class="cal-none" title="Un conteo corrige el libro, no la cubeta: no entra en la cuenta">· conteo</small>' : ""}</td>${cell(r, sheetKg(r.start))}${cell(r, num(r.produced))}${cell(r, sheetKg(r.end))}${cell(r, num(r.waste))}${cell(r, num(r.gift))}${cell(r, num(r.moved))}${cell(r, r.sold === null ? '<span class="cal-none">No disponible</span>' : num(r.sold), "sheet-sold")}${cell(r, reg)}${cell(r, r.sold === null ? "" : sheetMoney(r.soldCents))}</tr>`;
     })
     .join("");
   const t = totals;
-  return `<div class="table-scroll"><table class="report-table cal-table sheet-table"><caption>${title}</caption><thead><tr><th>Sabor</th><th class="num sheet-h medido">Al empezar</th><th class="num sheet-h confirmado">Producido</th><th class="num sheet-h medido">Al terminar</th><th class="num sheet-h confirmado">Merma</th><th class="num sheet-h confirmado">Invitación</th><th class="num sheet-h confirmado">Entr./sal.</th><th class="num sheet-h estimado">Vendido</th><th class="num sheet-h confirmado">Apuntado</th><th class="num sheet-h estimado">Factur.</th></tr></thead><tbody>${body}</tbody>${t.empty ? `<tfoot><tr><th>Total (kg)</th><th class="num" colspan="9">Sin datos este día</th></tr></tfoot>` : `<tfoot><tr><th>Total (kg)</th><th class="num">${sheetKg(t.start)}</th><th class="num">${num(t.produced)}</th><th class="num">${sheetKg(t.end)}</th><th class="num">${num(t.waste)}</th><th class="num">${num(t.gift)}</th><th class="num">${num(t.moved)}</th><th class="num">${t.sold === null ? "No disp." : num(t.sold)}</th><th class="num">${t.registered === null ? "—" : num(t.registered)}</th><th class="num">${sheetMoney(t.soldCents)}</th></tr></tfoot>`}</table></div>`;
+  return `<div class="table-scroll"><table class="report-table cal-table sheet-table"><caption>${title}</caption><thead><tr><th>Sabor</th><th class="num sheet-h medido">Al empezar</th><th class="num sheet-h confirmado">Producido</th><th class="num sheet-h medido">Al terminar</th><th class="num sheet-h confirmado">Merma</th><th class="num sheet-h confirmado">Invitación</th><th class="num sheet-h confirmado">Entradas y salidas</th><th class="num sheet-h estimado">Vendido</th><th class="num sheet-h confirmado">Apuntado</th><th class="num sheet-h estimado">Facturación</th></tr></thead><tbody>${body}</tbody>${t.empty ? `<tfoot><tr><th>Total (kg)</th><th class="num" colspan="9">Sin datos este día</th></tr></tfoot>` : `<tfoot><tr><th>Total (kg)</th><th class="num">${sheetKg(t.start)}</th><th class="num">${num(t.produced)}</th><th class="num">${sheetKg(t.end)}</th><th class="num">${num(t.waste)}</th><th class="num">${num(t.gift)}</th><th class="num">${num(t.moved)}</th><th class="num">${t.sold === null ? "No disponible" : num(t.sold)}</th><th class="num">${t.registered === null ? "—" : num(t.registered)}</th><th class="num">${sheetMoney(t.soldCents)}</th></tr></tfoot>`}</table></div>`;
 }
 
 /** Mínimos de la mañana: lo pesado (más lo producido ese día) frente al mínimo de cada sabor. */
@@ -146,7 +148,10 @@ function calSheetPanel(d) {
       sh.history ? `vendido ${sheetSoldText(sh.history).toLowerCase()}` : "",
     ),
   ].join("");
-  const moneyBlock = `<div class="sheet-money"><div class="sheet-money-row"><span>Vendido ${sheetSource("estimado")}</span><strong>${t.sold === null ? "No disponible" : kgText(t.sold)}</strong></div><div class="sheet-money-row main"><span>Facturación con el precio de cada sabor ${sheetSource("estimado")}</span><strong>${sheetMoney(t.soldCents)}</strong></div><div class="sheet-money-row"><span>Facturación con tu precio de referencia${sh.referencePrice === null ? "" : ` (${money(sh.referencePrice)} el kilo)`} ${sheetSource("estimado")}</span><strong>${sh.referencePrice === null ? "Sin precio de referencia" : sheetMoney(t.referenceCents)}</strong>${btn(sh.referencePrice === null ? "Poner precio" : "Cambiar", "sheetRefPrice", "text-link", `data-date="${esc(date)}"`)}</div><div class="sheet-money-row"><span>Venta real de caja ${sheetSource("confirmado")}</span><strong>${sh.realSaleCents === null ? (sh.closed ? "No escrita" : "Se escribe al confirmar el cierre") : money(sh.realSaleCents)}</strong></div>${t.soldCents === null && t.sold !== null ? `<p class="cal-none">Falta el valor de venta por kilo de algún sabor (Recetario): el total no está disponible.</p>` : ""}</div>`;
+  // Sin ningún dato ese día no hay nada que estimar: no se enseña «0 kg» ni «0,00 €».
+  const moneyBlock = t.empty
+    ? `<div class="sheet-money"><p class="cal-none">Sin pesadas ni producción este día: no hay venta ni facturación que estimar.${sh.realSaleCents === null ? "" : ` Venta real de caja: ${money(sh.realSaleCents)}.`}</p></div>`
+    : `<div class="sheet-money"><div class="sheet-money-row"><span>Vendido ${sheetSource("estimado")}</span><strong>${t.sold === null ? "No disponible" : kgText(t.sold)}</strong></div><div class="sheet-money-row main"><span>Facturación con el precio de cada sabor ${sheetSource("estimado")}</span><strong>${sheetMoney(t.soldCents)}</strong></div><div class="sheet-money-row"><span>Facturación con tu precio de referencia${sh.referencePrice === null ? "" : ` (${money(sh.referencePrice)} el kilo)`} ${sheetSource("estimado")}</span><strong>${sh.referencePrice === null ? "Sin precio de referencia" : sheetMoney(t.referenceCents)}</strong>${btn(sh.referencePrice === null ? "Poner precio" : "Cambiar", "sheetRefPrice", "text-link", `data-date="${esc(date)}"`)}</div><div class="sheet-money-row"><span>Venta real de caja ${sheetSource("confirmado")}</span><strong>${sh.realSaleCents === null ? (sh.closed ? "No escrita" : "Se escribe al confirmar el cierre") : money(sh.realSaleCents)}</strong></div>${t.soldCents === null && t.sold !== null ? `<p class="cal-none">Falta el valor de venta por kilo de algún sabor (Recetario): el total no está disponible.</p>` : ""}</div>`;
   const actions = [
     btn(
       "Pesar esta mañana",
@@ -217,7 +222,7 @@ function sheetWeighModal(date) {
       ? `<fieldset class="sheet-weigh"><legend>${title}</legend>${rows
           .map(
             (r) =>
-              `<label class="sheet-weigh-row"><span>${esc(r.name)}</span><input type="text" inputmode="decimal" autocomplete="off" name="w:${esc(r.product)}" value="${esc(shown(r.start))}" data-kg="${r.start === null ? "" : r.start}"></label>`,
+              `<label class="sheet-weigh-row"><span>${esc(r.name)}</span><input type="text" inputmode="decimal" autocomplete="off" name="w:${esc(r.product)}" value="${esc(shown(r.start))}" placeholder="Sin pesar" aria-label="${esc(r.name)}"><span class="sheet-unit">${unit}</span></label>`,
           )
           .join("")}</fieldset>`
       : "";
@@ -227,8 +232,8 @@ function sheetWeighModal(date) {
     "Peso del gelato de cada cubeta (sin la cubeta). Deja en blanco lo que no pesas; un 0 es una cubeta vacía. Es una medición: no cambia el stock ni las ventas.",
     `<label class="field">Unidad<select name="unit" id="sheet-unit">${options(
       [
-        ["g", "Gramos (como en la hoja: 8000 = 8 kg)"],
-        ["kg", "Kilos (8 = 8 kg)"],
+        ["g", "Gramos (g) · 1000 g = 1 kg"],
+        ["kg", "Kilos (kg) · 1,5 kg = 1500 g"],
       ],
       unit,
     )}</select></label>${group("gelato", "Gelatos")}${group("sorbetto", "Sorbettos")}`,
@@ -281,6 +286,8 @@ function sheetWeighModal(date) {
             : String(Math.round(kgv * 1000) / 1000);
       }
     }
+    for (const u of document.querySelectorAll(".sheet-weigh-row .sheet-unit"))
+      u.textContent = to;
     unit = to;
   });
 }
@@ -327,7 +334,7 @@ async function calendarSheetAction(name, el) {
     const current = calData?.sheet?.referencePrice;
     modal(
       "Precio de referencia por kilo",
-      "Tu precio de kilo (el del gelato más caro). Sirve solo para la segunda estimación de facturación; no cambia el valor de cada sabor.",
+      "Un único precio por kilo para comparar (por ejemplo, el del gelato más caro). Solo se usa en la segunda estimación de facturación; no cambia el precio de cada sabor.",
       field(
         "Euros por kilo",
         "euros",
@@ -411,7 +418,7 @@ async function calendarSheetAction(name, el) {
         ? `<fieldset class="sheet-weigh sheet-mins"><legend>${title}</legend>${list
             .map(
               (r) =>
-                `<div class="sheet-weigh-row"><span>${esc(r.name)}</span><input type="text" inputmode="decimal" autocomplete="off" name="m:${esc(r.product)}" value="${r.p?.minKg ?? ""}" aria-label="Mínimo de ${esc(r.name)} en kilos"><label class="check"><input type="checkbox" name="p:${esc(r.product)}" ${r.p?.paused ? "checked" : ""}> En pausa</label></div>`,
+                `<div class="sheet-weigh-row"><span>${esc(r.name)}</span><input type="text" inputmode="decimal" autocomplete="off" name="m:${esc(r.product)}" value="${r.p?.minKg ?? ""}" aria-label="Mínimo de ${esc(r.name)} en kilos" placeholder="Sin mínimo"><span class="sheet-unit">kg</span><label class="check"><input type="checkbox" name="p:${esc(r.product)}" ${r.p?.paused ? "checked" : ""}> En pausa</label></div>`,
             )
             .join("")}</fieldset>`
         : "";
