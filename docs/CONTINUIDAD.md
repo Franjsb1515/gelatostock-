@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.55.1
+Corrección de uso: «Otra cantidad» en quickCard añade su columna y calcula gasto, faltas y bases con ella; draw() solo redibuja #quick-table y #quick-after (lo escrito no se pierde); aviso «Revisa esta receta» con la regla de masa ×3. Informe reports/2026-10-06T01-30-00-000Z-otra-cantidad.md; prueba work/check-otra-cantidad.cjs.
+
 ## Punto de continuidad 0.55.0
 Lee reports/2026-10-06T00-30-00-000Z-produccion-rapida-recetario.md y docs/PLAN_PRODUCCION_RAPIDA.md. Reglas nuevas del usuario: stock negativo solo por producción (move kind production; user_version 6 sin CHECK, migración con VACUUM INTO previo) y contraseña que protege editar el recetario, no producir. proposeProduction/approveProduction compartidos; produceNow (bases stock|now), setBatches; sellable/sellableIds (las bases no son gelato de venta). UI: src/ui/production-quick.js (quickPanel, quickCard, quickAction), Recetario en botones (recipeOpen, recipeTiles), unidad por ingrediente en el editor. Pruebas 252, chat 50/50, escritorio 22 PASS.
 

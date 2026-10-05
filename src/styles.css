@@ -5323,10 +5323,20 @@ dialog.wide {
   font-weight: 700;
   cursor: pointer;
 }
+span.quick-batch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
 .quick-batch.on {
   background: var(--pistacho);
   border-color: var(--pistacho);
   color: #fff;
+}
+.quick-spend {
+  margin: 4px 0 0;
+  line-height: 1.5;
 }
 .quick-other,
 .quick-bases {

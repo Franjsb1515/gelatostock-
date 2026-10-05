@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.55.1 — 2026-10-05 · Otra cantidad al producir
+
+- Al escribir otra cantidad (por ejemplo 100 kg), la tarjeta añade esa columna y dice cuánto gastarás de cada ingrediente y cuánto falta.
+- Cambiar la base ya no borra lo escrito.
+- Si una receta no cuadra (por ejemplo 500 L para 1 kg), la tarjeta avisa antes de producir.
+
+Informe reports/2026-10-06T01-30-00-000Z-otra-cantidad.md.
+
 ## 0.55.0 — 2026-10-05 · sesión 053 (quinta parte) · Producción rápida y Recetario con clave
 
 Como en tu vídeo:
