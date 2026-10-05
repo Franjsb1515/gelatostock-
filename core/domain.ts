@@ -79,6 +79,8 @@ import {
   isDayClosed,
   notOpenedOn,
   stockAtDayEnd,
+  movementDay,
+  productionDays,
 } from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
 import { businessDay } from "./plan";
@@ -452,6 +454,40 @@ function move(
   });
   p.stock = after;
 }
+/** Alta del gelato (o sorbetto) de elaboración propia: un producto en kg que empieza en 0. */
+function ownGelato(s: State, name: string, family: string): string {
+  if (!s.suppliers.some((x) => x.id === ownSupplierId))
+    s.suppliers.push({
+      id: ownSupplierId,
+      name: "Elaboración propia",
+      initials: "EP",
+      category: "Obrador",
+      delivery: "Se produce en el obrador; no se pide a nadie.",
+      color: "sage",
+    });
+  const id = randomUUID();
+  s.products.push({
+    id,
+    name,
+    detail:
+      family === "sorbete"
+        ? "Sorbetto de elaboración propia"
+        : "Gelato de elaboración propia",
+    zone: "vitrina",
+    category: "Gelatería",
+    unit: "kg",
+    stock: 0,
+    min: 0,
+    target: 0,
+    pack: 1,
+    price: 0,
+    supplier: ownSupplierId,
+    alternates: [],
+    icon: "ice",
+  });
+  return id;
+}
+
 export function apply(state: State, input: unknown): State {
   const a = parseAction(input);
   if (a.operationId && state.processed.includes(a.operationId)) return state;
@@ -1003,33 +1039,7 @@ export function apply(state: State, input: unknown): State {
         );
         if (same) fields.product = same.id;
         else {
-          if (!s.suppliers.some((x) => x.id === ownSupplierId))
-            s.suppliers.push({
-              id: ownSupplierId,
-              name: "Elaboración propia",
-              initials: "EP",
-              category: "Obrador",
-              delivery: "Se produce en el obrador; no se pide a nadie.",
-              color: "sage",
-            });
-          const productId = randomUUID();
-          s.products.push({
-            id: productId,
-            name: fields.name,
-            detail: "Gelato de elaboración propia",
-            zone: "vitrina",
-            category: "Gelatería",
-            unit: "kg",
-            stock: 0,
-            min: 0,
-            target: 0,
-            pack: 1,
-            price: 0,
-            supplier: ownSupplierId,
-            alternates: [],
-            icon: "ice",
-          });
-          fields.product = productId;
+          fields.product = ownGelato(s, fields.name, fields.family);
           created = ` «${fields.name}» queda dado de alta como gelato en stock (en kg, empieza en 0) para sus ventas, mermas y valor.`;
         }
       }
@@ -1481,6 +1491,152 @@ export function apply(state: State, input: unknown): State {
       ensure(v, "Esas vacaciones ya no están.");
       s.vacations = s.vacations.filter((x) => x.id !== a.id);
       note = `Quitadas las vacaciones de ${v.person} del ${v.from} al ${v.to}.`;
+      break;
+    }
+    case "setWeighings": {
+      ensure(
+        a.date <= businessDay(new Date()),
+        "Ese día todavía no ha llegado: no se puede pesar.",
+      );
+      const gelatos = new Set(
+        s.recipes.map((r) => r.product).filter((x): x is string => !!x),
+      );
+      ensure(
+        new Set(a.lines.map((l) => l.product)).size === a.lines.length,
+        "Un sabor aparece dos veces.",
+      );
+      let saved = 0,
+        removed = 0;
+      for (const l of a.lines) {
+        const p = item(s.products, l.product);
+        ensure(gelatos.has(p.id), `${p.name} no es un gelato de una receta.`);
+        const old = s.weighings.findIndex(
+          (w) => w.date === a.date && w.product === p.id,
+        );
+        if (l.value === null) {
+          if (old >= 0) {
+            s.weighings.splice(old, 1);
+            removed++;
+          }
+          continue;
+        }
+        // Gramos enteros (la báscula no da décimas de gramo); los kilos, con tres decimales.
+        if (a.unit === "g")
+          ensure(
+            Number.isInteger(l.value),
+            `${p.name}: los gramos van sin decimales.`,
+          );
+        else
+          ensure(
+            Math.abs(l.value * 1000 - Math.round(l.value * 1000)) < 1e-6,
+            `${p.name}: como mucho tres decimales en kilos (un gramo).`,
+          );
+        const kg = a.unit === "g" ? Math.round(l.value) / 1000 : round(l.value);
+        ensure(kg <= 500, `${p.name}: más de 500 kg en una cubeta.`);
+        const w = {
+          id: randomUUID(),
+          date: a.date,
+          product: p.id,
+          kg,
+          at: now(),
+        };
+        if (old >= 0) s.weighings[old] = { ...w, id: s.weighings[old]!.id };
+        else s.weighings.push(w);
+        saved++;
+      }
+      note = `Pesada de la mañana del ${a.date}: ${saved} ${saved === 1 ? "sabor apuntado" : "sabores apuntados"}${removed ? `, ${removed} quitado${removed === 1 ? "" : "s"}` : ""}. Es una medición: no cambia el stock ni las ventas.`;
+      break;
+    }
+    case "quickFlavors": {
+      const taken = new Set(
+        [...s.recipes.map((r) => r.name), ...s.products.map((p) => p.name)].map(
+          (n) => n.trim().toLocaleLowerCase("es"),
+        ),
+      );
+      const added: string[] = [];
+      const skipped: string[] = [];
+      for (const raw of a.names) {
+        const name = raw.trim();
+        const key = name.toLocaleLowerCase("es");
+        if (taken.has(key)) {
+          skipped.push(name);
+          continue;
+        }
+        taken.add(key);
+        s.recipes.push({
+          id: randomUUID(),
+          name,
+          family: a.family,
+          product: ownGelato(s, name, a.family),
+          yield: 1,
+          ingredients: [],
+          steps: "",
+          allergens: "",
+          note: "Dado de alta solo con el nombre: faltan los ingredientes.",
+          saleValues: [],
+        });
+        added.push(name);
+      }
+      ensure(added.length, "Esos sabores ya existían.");
+      note = `${a.family === "sorbete" ? "Sorbettos" : "Gelatos"} dados de alta: ${added.join(", ")}.${skipped.length ? ` Ya existían: ${skipped.join(", ")}.` : ""} Faltan sus ingredientes en el Recetario.`;
+      break;
+    }
+    case "weighingCounts": {
+      ensure(
+        a.date === businessDay(new Date()),
+        "Solo la pesada de hoy puede igualar el stock: un conteo cambia el stock de ahora.",
+      );
+      const today = s.weighings.filter((w) => w.date === a.date);
+      ensure(today.length, "Hoy no hay ninguna pesada apuntada.");
+      const undone = undoneMovements(s);
+      const days = productionDays(s);
+      const moved = new Set(
+        s.movements
+          .filter(
+            (m) =>
+              !undone.has(m.id) &&
+              !m.reverses &&
+              movementDay(s, m, 5, days) === a.date,
+          )
+          .map((m) => m.product),
+      );
+      const done: string[] = [];
+      const skipped: string[] = [];
+      for (const w of today) {
+        const p = item(s.products, w.product);
+        if (moved.has(p.id)) {
+          skipped.push(p.name);
+          continue;
+        }
+        if (round(w.kg - p.stock) === 0) continue;
+        move(
+          s,
+          p.id,
+          round(w.kg - p.stock),
+          "count",
+          `Pesada de la mañana del ${a.date}`,
+        );
+        done.push(`${p.name} ${w.kg} kg`);
+      }
+      ensure(
+        done.length || skipped.length,
+        "El stock de la app ya coincide con la pesada de hoy.",
+      );
+      note =
+        (done.length
+          ? `Stock igualado a la pesada de hoy (conteo): ${done.join(", ")}.`
+          : "Ningún stock igualado.") +
+        (skipped.length
+          ? ` No se tocan porque ya tuvieron movimientos hoy: ${skipped.join(", ")}.`
+          : "");
+      break;
+    }
+    case "setReferencePrice": {
+      s.referencePrices = [
+        ...s.referencePrices.filter((x) => x.from !== a.from),
+        { from: a.from, cents: a.cents, at: now() },
+      ].sort((x, y) => x.from.localeCompare(y.from));
+      note = `Precio de referencia: ${eur(a.cents)} por kilo desde el ${a.from}. Solo sirve para la segunda estimación de facturación.`;
       break;
     }
     case "calendarPhoto": {

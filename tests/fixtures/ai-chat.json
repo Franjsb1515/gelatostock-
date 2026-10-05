@@ -238,5 +238,17 @@
     "question": "¿Qué pasa si la foto no tiene fecha?",
     "expect": ["día|fecha"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "pesada_manana",
+    "question": "¿Dónde apunto el peso de las cubetas por la mañana?",
+    "expect": ["pesar|pesada"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "vendido_pesadas",
+    "question": "¿Cómo calcula la app lo vendido con las pesadas?",
+    "expect": ["producido|al empezar|al terminar"],
+    "forbid": ["no lo sé"]
   }
 ]

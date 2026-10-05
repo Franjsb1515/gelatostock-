@@ -230,7 +230,8 @@ export const recipeFields = {
   family: recipeFamilies.default("crema"),
   product: idSchema.optional(),
   yield: quantity.refine((n) => n > 0),
-  ingredients: z.array(ingredientSchema).min(1).max(100),
+  // Puede estar vacía: un sabor dado de alta solo con su nombre (producir solo suma gelato).
+  ingredients: z.array(ingredientSchema).max(100),
   // Free text for the book: method and allergens. Never used in calculations.
   steps: z.string().max(3000).default(""),
   allergens: z.string().max(300).default(""),
@@ -462,6 +463,26 @@ export const stateSchema = z.object({
       }),
     )
     .max(50000)
+    .default([]),
+  // Morning weighings of each gelato (production sheet): a MEASUREMENT in kg of what is in the
+  // tub when the business day starts. They never move stock. Kept in meta.
+  weighings: z
+    .array(
+      z.object({
+        id: idSchema,
+        date: documentDate,
+        product: idSchema,
+        kg: quantity.refine((n) => n <= 500, "Más de 500 kg en una cubeta."),
+        at,
+      }),
+    )
+    .max(200000)
+    .default([]),
+  // Reference price per kilo written by the person (the dearest gelato), dated like sale values,
+  // for a second, separate turnover estimate. Kept in meta.
+  referencePrices: z
+    .array(z.object({ from: documentDate, cents, at }))
+    .max(1000)
     .default([]),
   // Holidays per person (Calendar): no shift those days. Kept in meta.
   vacations: z
@@ -785,6 +806,36 @@ export const actionSchema = z.intersection(
       text: text(4000),
     }),
     z.object({ type: z.literal("removeDayNote"), id: idSchema }),
+    // Morning weighing of the gelatos of one business day, in grams or kilos. An empty value
+    // removes that measurement. Changes no stock and no sale.
+    z.object({
+      type: z.literal("setWeighings"),
+      date: documentDate,
+      unit: z.enum(["g", "kg"]),
+      lines: z
+        .array(
+          z.object({
+            product: idSchema,
+            value: z.number().finite().min(0).max(500000).nullable(),
+          }),
+        )
+        .min(1)
+        .max(500),
+    }),
+    // Flavours given only a name and a type; ingredients come later in the Recetario.
+    z.object({
+      type: z.literal("quickFlavors"),
+      family: z.enum(["crema", "sorbete"]),
+      names: z.array(text(100)).min(1).max(100),
+    }),
+    z.object({
+      type: z.literal("setReferencePrice"),
+      cents: cents.refine((n) => n > 0),
+      from: documentDate,
+    }),
+    // Today's morning weighing becomes the stock of the app (a count) for the flavours that have
+    // not moved yet today. A count corrects the book; it is never a sale.
+    z.object({ type: z.literal("weighingCounts"), date: documentDate }),
     // Annul an applied production; with redo, a new proposal with the same data is left to fix.
     z.object({
       type: z.literal("voidProduction"),

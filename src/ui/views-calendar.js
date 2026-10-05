@@ -479,8 +479,8 @@ function calDayView(d) {
           ].filter(Boolean),
         )}<p class="cal-source">Fuentes: festivos del Govern balear, clima de MET Norway, cruceros de la Autoridad Portuaria de Baleares.</p>`;
   const gelatoCard = calCard(
-    "Gelato del día",
-    "Al empezar + hecho − vendido − merma − invitación + ajustes = queda. Los ajustes son conteos y entradas o salidas a mano.",
+    "Cuenta del día según la app",
+    "Lo que dice el stock de la app, sin pesadas: al empezar + hecho − vendido − merma − invitación + ajustes = queda. Los ajustes son conteos y entradas o salidas a mano.",
     gelato +
       `<div class="setting-actions">${btn("Ir al cierre del día", "calToClose", "secondary", `data-date="${esc(d.date)}"`)}</div>`,
   );
@@ -503,7 +503,7 @@ function calDayView(d) {
     calStockPanel(d),
     calCard("Fuera de la tienda", "", outside),
   ].join("");
-  return `${top}${calAlertsPanel(d.alerts, false)}${gelatoCard}<div class="cal-day-cols"><div class="cal-col">${left}</div><div class="cal-col">${right}</div></div>`;
+  return `${top}${calAlertsPanel(d.alerts, false)}${calSheetPanel(d)}${gelatoCard}<div class="cal-day-cols"><div class="cal-col">${left}</div><div class="cal-col">${right}</div></div>`;
 }
 
 function calSchedulePanel(d) {

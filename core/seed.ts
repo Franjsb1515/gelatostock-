@@ -307,5 +307,7 @@ export function seed(): State {
     schedule: [],
     vacations: [],
     dayNotes: [],
+    weighings: [],
+    referencePrices: [],
   };
 }

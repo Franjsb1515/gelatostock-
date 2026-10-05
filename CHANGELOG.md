@@ -1,5 +1,17 @@
 # Registro de parches y sesiones
 
+## 0.52.0 — 2026-10-05 · sesión 053 · Ficha de producción del día
+
+Pediste tu hoja de producción dentro del Calendario. Ahora, en cada día:
+
+- **Pesar esta mañana**: el peso de cada sabor, en gramos (como tu hoja) o en kilos. Pesar no cambia el stock.
+- **Lo vendido** de cada sabor: lo de esa mañana + lo producido − lo de la mañana siguiente − merma − invitación. Si falta una pesada, lo dice.
+- **Facturación** con el precio de cada sabor y, aparte, con tu precio de referencia. La venta real de caja, también aparte.
+- Producido del día, del día anterior, de la semana y desde el principio.
+- **Dar de alta sabores** solo con el nombre (gelato o sorbetto); los ingredientes, después.
+
+Informe reports/2026-10-05T20-00-00-000Z-ficha-produccion.md.
+
 ## 0.51.0 — 2026-10-05 · sesión 052 (tercera parte) · Calendario más cómodo
 
 Pediste un Calendario menos apretado. Ahora:

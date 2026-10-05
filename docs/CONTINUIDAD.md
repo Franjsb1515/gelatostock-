@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.52.0
+Lee reports/2026-10-05T20-00-00-000Z-ficha-produccion.md y docs/PLAN_FICHA_PRODUCCION.md. Ficha de producción: core/sheet.ts productionSheet (pesada de la mañana = medido; la de la mañana siguiente = al terminar; vendido = inicio + producido − fin − merma − invitación + entradas/salidas; conteos fuera salvo «Pesada de la mañana»; book = stock de la app al empezar contando el conteo de igualar), state.weighings y state.referencePrices en meta, acciones setWeighings (g enteros o kg con 3 decimales), quickFlavors (recetas sin ingredientes; ownGelato compartido), setReferencePrice, weighingCounts (solo hoy, sabores sin movimientos hoy). UI src/ui/calendar-sheet.js (acciones sheet*, encadenadas tras calendarPhotoAction). La tarjeta antigua es «Cuenta del día según la app». Pruebas 241, chat 41/41, escritorio 22 PASS.
+
 ## Punto de continuidad 0.51.0
 Lee reports/2026-10-05T03-30-00-000Z-calendario-visual.md. Rediseño visual del Calendario: todo dentro de <div class="cal"> y estilos bajo .cal (Cruceros reutiliza cal-grid, cal-cell, cal-nav, cal-legend y cal-mark: no tocar esas reglas sin scope). Piezas en views-calendar.js: calCard, calList/calRow (ul.cal-rows), calSection, calNav/calArrow (flechas con aria-label), calStat, calTag. Día: cabecera .cal-day-top, «Gelato del día» a todo el ancho y .cal-day-cols. Semana: .cal-week-row por día (mantiene data-week-day, data-k, data-shift). work/shot-calendario.cjs hace capturas (CAL_W=1000 para el ancho mínimo). desktop-smoke: «ayer» del Vale desde sale del día de negocio (fallaba de 00:00 a 05:00). Pruebas 232, escritorio 22 PASS.
 

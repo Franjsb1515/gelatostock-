@@ -252,5 +252,5 @@ async function calendarPhotoAction(name, el) {
     }
     return true;
   }
-  return false;
+  return calendarSheetAction(name, el);
 }

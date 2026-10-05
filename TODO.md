@@ -1,4 +1,4 @@
-# TODO — estado real de 0.51.0
+# TODO — estado real de 0.52.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -15,6 +15,9 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] [decidir] Aplazado por ti el 2026-10-04 (también la clave del Calendario). Datos con clave (pedido por ti el 2026-10-04: «que no puedan abrir los datos sin la clave»). Dos caminos: (a) la app cifra con tu clave la base, las fotos y las copias; si olvidas la clave y no tienes el código de recuperación, se pierden todos los datos; las carpetas por proveedor dejarían de existir en claro; sesión propia con pruebas de corte de corriente. (b) Contraseña de Windows y cifrado del dispositivo en el ordenador de la tienda: protege todo el equipo y lo activas tú. Falta que elijas.
 - [x] [app] Calendario, fase 2 (0.49.0): horario de la semana (apertura y turnos, copiar la anterior), vacaciones por persona, stock al terminar el día y avisos del día y del mes.
 - [x] [app] Calendario, fase 3 (0.50.0): «Subir foto» propone día y apartado (horario, ventas, documento o nota) y la persona confirma. Medido con 12 fotos sintéticas: 8 exactas, 0 inventos.
+- [x] [app] Ficha de producción del día (0.52.0): pesada de la mañana, vendido estimado por sabor, dos facturaciones, resúmenes de día, semana e histórico, alta rápida de sabores.
+- [ ] [tú] Dar de alta tus sabores (Calendario → Producción del día → «Dar de alta sabores»), el primer día «Igualar el stock de la app a la pesada», y poner el valor por kilo de cada sabor en el Recetario.
+- [ ] [app] La prueba de escritorio no recorre la ficha de producción (lo cubre work/check-ficha-produccion.cjs).
 - [ ] [tú] Manda 3–5 fotos reales (una escrita a mano) para medir la lectura de verdad. Dime también si el umbral del 10 % de la venta real te vale.
 - [x] El Ayudante explica horario, vacaciones y fotos (0.50.0, chat 39/39).
 - [ ] [app] La prueba de escritorio no recorre todavía el horario de la semana ni la subida de fotos (lo cubren work/check-calendario-fase2.cjs y work/check-calendario-fotos.cjs).

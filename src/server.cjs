@@ -52,6 +52,7 @@ const {
   dayCard,
 } = require("../build/calendar.js");
 const { readDayPhoto } = require("../build/dayphoto.js");
+const { productionSheet } = require("../build/sheet.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
   port = 0,
@@ -757,6 +758,12 @@ function createApp({
           const card = dayCard(full, day, dayChangeHour());
           json(200, {
             ...card,
+            sheet: productionSheet(
+              full,
+              day,
+              businessDay(new Date(), dayChangeHour()),
+              dayChangeHour(),
+            ),
             cruise: outside(() => cruises.brief(day)),
             context: outside(() => context.range(day, day).days[day] || null),
           });
@@ -1560,6 +1567,7 @@ function createApp({
       "/ui/views-cruises.js": "ui/views-cruises.js",
       "/ui/views-calendar.js": "ui/views-calendar.js",
       "/ui/calendar-photo.js": "ui/calendar-photo.js",
+      "/ui/calendar-sheet.js": "ui/calendar-sheet.js",
       "/ui/forms.js": "ui/forms.js",
       "/ui/actions.js": "ui/actions.js",
       "/ui/events.js": "ui/events.js",
