@@ -376,5 +376,11 @@
     "question": "¿Cómo quito los productos y proveedores de ejemplo?",
     "expect": ["Quitar los datos de ejemplo"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "cuadrante_torcido",
+    "question": "La foto del cuadrante me ha salido un poco torcida, ¿la puede leer?",
+    "expect": ["endereza"],
+    "forbid": ["no lo sé"]
   }
 ]

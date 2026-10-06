@@ -30,7 +30,7 @@ async function measure(file, truth) {
     regions: (g, cells) => rosterRegions(cells),
   });
   const r = t
-    ? parseRoster(t.cells, "2026-10-05", [], t.regions, t.inks)
+    ? parseRoster(t.cells, "2026-10-05", [], t.regions, t.inks, t.photo)
     : null;
   const out = {
     file: path.basename(file),

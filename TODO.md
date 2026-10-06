@@ -1,4 +1,4 @@
-# TODO — estado real de 0.62.0
+# TODO — estado real de 0.63.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -44,7 +44,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] [app] Datos de ejemplo y simulación fuera; cinco textos decididos (0.62.0, decidido por ti el 2026-10-06). Tus datos: 14 → 8 productos, 28 → 25 proveedores, queda el pedido GS-012 (salió por WhatsApp).
 - [ ] [tú] Revisar el precio de Café de especialidad, Leche entera, Bebida de avena y Nata para montar (son los del ejemplo) y si su proveedor es de verdad Fresco Mercado; cerrar o cancelar GS-012 si era una prueba.
 - [x] [decidido 2026-10-06, hecho en 0.62.0] Lo que el pulido de textos no cambió por ser tuyo: (1) «Simular envío» y los pedidos de demostración siguen por tu decisión del 2026-09-20; (2) los productos y proveedores de ejemplo (Pistacho siciliano, Gelato Italia, «FRAN · PRUEBA…») se ven junto a los tuyos; (3) Cruceros dice «Información pendiente de sincronización» (propuesta: «Todavía no se ha consultado al puerto»); (4) «Producción a mano» y «Corregir relevancia» se llaman así porque la prueba de escritorio los busca (propuestas: «Calcular y aprobar después», «¿Tiene que ver con un pedido?»); (5) el aviso «función todavía en pruebas» de WhatsApp.
-- [ ] [app] Cuadrantes: 12 de 15 quedan «a revisar» (ninguna casilla mal dada por segura, pero muchas a confirmar); girado 5° y 700 px de ancho no se leen. Mejora posible: enderezar la foto antes de leer la cuadrícula y ampliar las pequeñas.
+- [x] [app] Cuadrante torcido, borroso o pequeño: se endereza y se amplía antes de leer (0.63.0). Leídos como tabla 12 de 15 (antes 8), 0 inventos. Siguen sin leerse, y se dice: girado 5° (pierde los bordes), 700 px y tabla sin líneas.
+- [ ] [tú] Una foto real del cuadrante algo torcida (de móvil, no captura) para medir el enderezado de verdad.
 - [ ] [tú] Fotos y documentos reales para el lector: todo lo medido (87 tipos, 0 inventos) es sintético; no se puede llamar «casi perfecto» sin medirlo con lo tuyo.
 - [ ] [tú] Revisar las 24 propuestas de «Posibles iguales» (Compras → Precios por proveedor, arriba) y decir en cada ingrediente de la lista y de la tabla a qué producto tuyo corresponde («¿Qué producto de tu inventario es?» y «Ya lo tengo con otro nombre…»). Así el carrito y «Sugerir reposición» encuentran el precio de la lista aunque el nombre no coincida.
 - [ ] [tú] Decir si los precios de tu lista son por kilo, litro o unidad (dijiste que se mira después): hasta entonces el precio de la lista se enseña pero no se compara con el paquete hasta que lo apuntas.

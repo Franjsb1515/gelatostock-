@@ -196,3 +196,36 @@ test("turnos con nombre y horas opcionales; un cuadrante se guarda por días sin
   });
   assert.deepEqual(dayCard(s, "2026-11-02", 5, "2026-11-30").alerts, []);
 });
+
+test("cuadrante de una foto enderezada, borrosa o ampliada: lo dudoso nunca sale seguro", () => {
+  const c = (text, conf = 90) => [{ text, conf }];
+  const grid = [
+    [[], [], c("LUNES"), c("MARTES"), c("MIERCOLES"), c("JUEVES")],
+    [c("ENERO 2027"), [], c("4"), c("5"), c("6"), c("7")],
+    [c("SALA"), c("ANA"), c("PRODUCCION"), c("LIBRE"), [], c("CIERRE")],
+  ];
+  const cells = (photo) =>
+    parseRoster(grid, "2026-10-05", [], [], [], photo).people[0].cells;
+  // Foto normal: la casilla sin tinta es «vacía y segura».
+  assert.deepEqual(
+    cells({}).map((x) => x.sure),
+    [true, true, true, true],
+  );
+  // Girada y enderezada: misma lectura, y se dice.
+  const turned = parseRoster(grid, "2026-10-05", [], [], [], { angle: 2.5 });
+  assert.deepEqual(
+    turned.people[0].cells.map((x) => x.sure),
+    [true, true, true, true],
+  );
+  assert.ok(turned.problems.some((p) => /girada 2,5°: se enderezó/.test(p)));
+  // Borrosa (líneas claras): la tinta engaña, así que la vacía queda para revisar.
+  assert.deepEqual(
+    cells({ blurry: true }).map((x) => x.sure),
+    [true, true, false, true],
+  );
+  // Pequeña y ampliada: ninguna casilla es segura.
+  assert.deepEqual(
+    cells({ enlarged: 2 }).map((x) => x.sure),
+    [false, false, false, false],
+  );
+});

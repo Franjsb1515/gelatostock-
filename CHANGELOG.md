@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.63.0 — 2026-10-06 · Cuadrante torcido o borroso: se endereza antes de leerlo
+
+- Si la foto del cuadrante no deja ver la cuadrícula a la primera, la app la endereza (hasta unos 8°), amplía las pequeñas y acepta líneas más claras; solo usa la cuadrícula si las columnas de los días miden lo mismo y llegan hasta el final. Lo dice en la revisión.
+- Borrosa: las casillas vacías quedan para revisar. Pequeña: todas quedan para revisar.
+- Medido con 87 imágenes: 0 inventos y 73 en su sitio ideal (antes 72); cuadrantes leídos como tabla 12 de 15 (antes 8); el girado 2° sale exacto. Girado 5° y 700 px siguen sin leerse, y lo dice.
+- Tu cuadrante real: 0 mal y seguras (46 seguras bien y 10 a revisar; el «56 seguras» de 0.61.0 era el total de casillas).
+- Pruebas 290, chat 63/63, escritorio 24 PASS. Detalle en reports/2026-10-06T12-00-00-000Z-cuadrante-enderezado.md.
+
 ## 0.62.0 — 2026-10-06 · Sin datos de ejemplo ni simulación, y cinco textos decididos
 
 - Configuración → «Datos de ejemplo»: enseña qué se quita y qué se queda (y por qué) y «Quitar los datos de ejemplo» lo hace, con copia completa antes. Lo que usas (en una receta, con movimientos tuyos, en un pedido enviado por WhatsApp…) se queda con su stock; la composición de ejemplo se quita.

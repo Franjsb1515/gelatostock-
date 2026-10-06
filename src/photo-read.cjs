@@ -49,7 +49,14 @@ async function readCalendarPhoto(state, data, today, known) {
     regions: (grid, cells) => rosterRegions(cells),
   }).catch(() => null);
   const roster = table
-    ? parseRoster(table.cells, today, known, table.regions, table.inks)
+    ? parseRoster(
+        table.cells,
+        today,
+        known,
+        table.regions,
+        table.inks,
+        table.photo,
+      )
     : null;
   if (roster)
     return { text: "", confidence: null, reading: rosterReading(roster) };

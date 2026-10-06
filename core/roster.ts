@@ -282,6 +282,13 @@ export function rosterRegions(
   ];
 }
 
+/** Cómo se preparó la foto: grados enderezados, líneas claras (borrosa) y veces que se amplió. */
+export type RosterPhoto = {
+  angle?: number;
+  blurry?: boolean;
+  enlarged?: number;
+};
+
 export function parseRoster(
   grid: CellReading[][][],
   today: string,
@@ -289,6 +296,8 @@ export function parseRoster(
   title: CellReading[][] = [],
   /** «Tinta» de cada casilla (src/table-ocr.cjs): con 6 o más hay algo escrito. */
   ink: number[][] = [],
+  /** Cómo hubo que preparar la foto para ver la cuadrícula (src/table-ocr.cjs). */
+  photo: RosterPhoto = {},
 ): Roster | null {
   const labels = [...new Set([...baseLabels, ...known])];
   // 1. La fila de los días de la semana y sus columnas.
@@ -453,6 +462,25 @@ export function parseRoster(
     });
   }
   if (!people.length) return null;
+  // Foto rescatada (0.63.0): con líneas claras (borrosa o comprimida) la «tinta» engaña y una
+  // casilla con texto puede parecer vacía, así que ninguna vacía es segura; una foto pequeña
+  // ampliada se lee peor, así que ninguna casilla es segura. Medido con la batería de imágenes.
+  if (photo.angle && Math.abs(photo.angle) >= 0.5)
+    problems.push(
+      `La foto estaba girada ${String(Math.abs(photo.angle)).replace(".", ",")}°: se enderezó antes de leerla.`,
+    );
+  if (photo.enlarged && photo.enlarged > 1) {
+    for (const p of people) for (const c of p.cells) c.sure = false;
+    problems.push(
+      "La foto es pequeña: se amplió para leerla y todas las casillas quedan para revisar. Mejor una captura con más zoom.",
+    );
+  } else if (photo.blurry) {
+    for (const p of people)
+      for (const c of p.cells) if (!c.value) c.sure = false;
+    problems.push(
+      "Las líneas de la foto salen borrosas: también las casillas vacías quedan para revisar.",
+    );
+  }
   // Una hora dudosa cuyas lecturas incluyen una hora que en este mismo cuadrante salió segura se
   // propone con esa hora (sigue marcada para revisar): «11:00-15:00 / 11:00-16:00» → 11:00-16:00.
   const sureTimes = new Set(

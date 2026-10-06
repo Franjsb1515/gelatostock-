@@ -2,6 +2,9 @@
 
 Archivo histórico. CLAUDE.md solo lleva las reglas vigentes y el mapa del proyecto; aquí queda el detalle de cada sesión, del más reciente al más antiguo. Se añade una entrada al cerrar cada versión.
 
+## Punto de continuidad 0.63.0
+Lee reports/2026-10-06T12-00-00-000Z-cuadrante-enderezado.md. src/table-ocr.cjs: prepareGrid (primero umbral 80 como siempre; rescate: skewAngle → rotatePixels, ampliar ×2 si < 1000 px, umbrales 80–200 con filas al 85 %, evenDays y wholeWidth), readTable devuelve photo {angle, blurry, enlarged}; core/roster.ts parseRoster(…, photo): borrosa → vacías no seguras, ampliada → ninguna segura, girada → aviso. Batería 87: 0 inventos, 73 ideal (reports/bateria-imagenes-v0630.json); cuadrante real 46/9/1/0 (corregido el 56 de 0.61.0); pruebas 290; escritorio 24 PASS; chat 63/63 (caso cuadrante_torcido). Tres intentos descartados por inventos (tabla en el informe).
+
 ## Punto de continuidad 0.62.0
 Lee reports/2026-10-06T10-00-00-000Z-datos-de-ejemplo-y-textos.md. core/examples.ts (examplesPlan/removeExamples, acción removeExamples, una vez con state.demo); state.demo es boolean; emptyState() en core/seed.ts; Store(dir, { start }) y createApp elige emptyState salvo node:test o GELATO_EXAMPLE=1 (la prueba de escritorio lo pone). Servidor: copia antes de removeExamples y sobre.examples. UI: examplesCard (views.js), homeStart, «Ya lo pedí por otro medio» (acción send sin dispatch), «Simular mensaje» solo con state.demo. Datos reales: aplicado el 2026-10-06 con work/quitar-ejemplos-reales.cjs (copia en work/copias/antes-quitar-ejemplos-1791259522900). Pruebas 289, escritorio 24 PASS, chat 62/62 (casos pedido_por_telefono y quitar_datos_ejemplo), pantallas vacías con work/audit-vacio.cjs.
 

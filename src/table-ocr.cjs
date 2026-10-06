@@ -24,13 +24,157 @@ async function greyPixels(bytes) {
     for (let i = 0; i < data.length; i++) data[i] = 255 - data[i];
   return { data, info };
 }
-/** Líneas de la cuadrícula: filas y columnas donde más de la mitad son píxeles oscuros. */
+/**
+ * Inclinación de la foto en grados (entre −8 y 8): con cada ángulo se proyectan los píxeles
+ * oscuros sobre filas inclinadas; las líneas de la tabla se juntan en pocas filas con el ángulo
+ * bueno, así que gana el perfil más concentrado (suma de cuadrados). Se mira una muestra de
+ * como mucho 800 píxeles de ancho.
+ */
+async function skewAngle(raw) {
+  // Reducida (no muestreada): una línea fina se queda gris en vez de desaparecer.
+  const { data, info } = await sharp(raw.data, {
+    raw: { width: raw.info.width, height: raw.info.height, channels: 1 },
+  })
+    .resize({ width: 800, withoutEnlargement: true })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const W = info.width,
+    H = info.height,
+    C = info.channels;
+  const pts = [];
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++) if (data[(y * W + x) * C] < 110) pts.push(x, y);
+  let best = { angle: 0, score: -1 };
+  for (let a = -8; a <= 8.001; a += 0.25) {
+    const t = Math.tan((a * Math.PI) / 180);
+    const shift = Math.ceil(W * 0.15) + 1;
+    const bins = new Float64Array(H + 2 * shift);
+    for (let i = 0; i < pts.length; i += 2) {
+      const row = Math.round(pts[i + 1] - pts[i] * t) + shift;
+      if (row >= 0 && row < bins.length) bins[row]++;
+    }
+    let score = 0;
+    for (const b of bins) score += b * b;
+    if (score > best.score) best = { angle: a, score };
+  }
+  return Math.round(best.angle * 100) / 100;
+}
+/** Gira la imagen en gris (fondo claro) para dejarla recta; lo que entra por los bordes es blanco. */
+async function rotatePixels({ data, info }, angle) {
+  return sharp(data, {
+    raw: { width: info.width, height: info.height, channels: 1 },
+  })
+    .rotate(-angle, { background: "#ffffff" })
+    .greyscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+    .then(({ data, info }) => ({
+      data: info.channels === 1 ? data : firstChannel(data, info.channels),
+      info: { width: info.width, height: info.height },
+    }));
+}
+/** Amplía la imagen en gris (una foto pequeña: líneas de un píxel y letras de pocos píxeles). */
+async function enlargePixels({ data, info }, factor) {
+  const { data: out, info: o } = await sharp(data, {
+    raw: { width: info.width, height: info.height, channels: 1 },
+  })
+    .resize({ width: info.width * factor, kernel: "lanczos3" })
+    .greyscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  return {
+    data: o.channels === 1 ? out : firstChannel(out, o.channels),
+    info: { width: o.width, height: o.height },
+  };
+}
+function firstChannel(data, channels) {
+  const out = Buffer.alloc(data.length / channels);
+  for (let i = 0; i < out.length; i++) out[i] = data[i * channels];
+  return out;
+}
+/**
+ * La cuadrícula y los píxeles de los que sale. Primero, como siempre (líneas casi negras). Si no
+ * sale: se endereza la foto (si está girada medio grado o más) y se aceptan líneas menos oscuras
+ * (una foto desenfocada o comprimida las aclara); una foto pequeña se amplía al doble. Lo que se lee
+ * después sale de esa misma imagen enderezada y ampliada.
+ */
+async function prepareGrid(bytes) {
+  const raw = await greyPixels(bytes);
+  const first = gridIn(raw, 80);
+  if (first) return { grid: first, raw, angle: 0, dark: 80, enlarged: 1 };
+  const angle = await skewAngle(raw);
+  let straight = Math.abs(angle) >= 0.5 ? await rotatePixels(raw, angle) : raw;
+  const enlarged = straight.info.width < 1000 ? 2 : 1;
+  if (enlarged > 1) straight = await enlargePixels(straight, enlarged);
+  // Rescate: una línea de fila tiene que cruzar casi toda la tabla (85 %); así el borde de una
+  // fila de etiquetas de color, que con líneas más claras también cuenta, no parte una fila en dos.
+  for (const dark of [80, 120, 160, 200]) {
+    const grid = gridIn(straight, dark, 0.85);
+    if (grid && evenDays(grid) && wholeWidth(straight, grid, dark))
+      return { grid, raw: straight, angle, dark, enlarged };
+  }
+  return null;
+}
+/**
+ * Las columnas de los días de un cuadrante miden casi lo mismo; la más ancha (los nombres) no
+ * cuenta. Si una sale el doble, falta una línea y los días quedarían corridos: esa cuadrícula no
+ * vale (medido: foto reducida al 50 % y JPG fuerte, con líneas claras).
+ */
+function evenDays(grid) {
+  const widths = grid.cols.slice(1).map((v, i) => v - grid.cols[i]);
+  widths.splice(widths.indexOf(Math.max(...widths)), 1);
+  const sorted = [...widths].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  return widths.every((w) => w >= median * 0.6 && w <= median * 1.5);
+}
+/**
+ * Las columnas llegan hasta donde llegan las líneas de las filas: si las últimas líneas de columna
+ * salen demasiado claras y se pierden, faltarían días al final (medido: foto reducida al 50 % y
+ * JPG fuerte). Se mira el tramo oscuro más largo de cada línea de fila (con huecos de hasta 3
+ * píxeles) y la mediana de sus extremos.
+ */
+function wholeWidth({ data, info }, grid, limit) {
+  const W = info.width;
+  const ends = grid.rows.map((y) => {
+    let best = [0, 0],
+      start = -1,
+      gap = 0;
+    for (let x = 0; x <= W; x++) {
+      if (x < W && data[y * W + x] < limit) {
+        if (start < 0) start = x;
+        gap = 0;
+      } else if (start >= 0 && (++gap > 3 || x === W)) {
+        const end = x - gap;
+        if (end - start > best[1] - best[0]) best = [start, end];
+        start = -1;
+        gap = 0;
+      }
+    }
+    return best;
+  });
+  const mid = (list) => [...list].sort((a, b) => a - b)[list.length >> 1];
+  const left = mid(ends.map((e) => e[0])),
+    right = mid(ends.map((e) => e[1]));
+  const widths = grid.cols.slice(1).map((v, i) => v - grid.cols[i]);
+  const step = mid(widths);
+  return (
+    Math.abs(grid.cols[0] - left) <= step * 0.5 &&
+    Math.abs(grid.cols.at(-1) - right) <= step * 0.5
+  );
+}
+/** Líneas de la cuadrícula en la imagen tal como se lee hoy (sin enderezar). */
 async function findGrid(bytes) {
-  const { data, info } = await greyPixels(bytes);
+  return gridIn(await greyPixels(bytes), 80);
+}
+/**
+ * Líneas de la cuadrícula: filas donde más de rowCover del ancho y columnas donde más de la mitad
+ * del alto de la tabla son píxeles más oscuros que `limit`.
+ */
+function gridIn({ data, info }, limit, rowCover = 0.5) {
   const W = info.width,
     H = info.height;
   // Las líneas de una tabla son casi negras; una etiqueta azul o verde oscura no debe contar.
-  const dark = (x, y) => data[y * W + x] < 80;
+  const dark = (x, y) => data[y * W + x] < limit;
   const merge = (list) => {
     const out = [];
     for (const v of list) {
@@ -47,7 +191,7 @@ async function findGrid(bytes) {
   for (let y = 0; y < H; y++) {
     let n = 0;
     for (let x = 0; x < W; x++) if (dark(x, y)) n++;
-    if (n > W * 0.5) ys.push(y);
+    if (n > W * rowCover) ys.push(y);
   }
   const rows = merge(ys);
   if (rows.length < 4) return null;
@@ -110,8 +254,9 @@ const agreed = (found) => {
  * cuadrícula parte). null si no hay cuadrícula.
  */
 async function readTable(bytes, { good = agreed, regions } = {}) {
-  const grid = await findGrid(bytes);
-  if (!grid) return null;
+  const prepared = await prepareGrid(bytes);
+  if (!prepared) return null;
+  const { grid } = prepared;
   const langPath = path.join(
     path.dirname(require.resolve("@tesseract.js-data/spa/package.json")),
     "4.0.0",
@@ -128,8 +273,8 @@ async function readTable(bytes, { good = agreed, regions } = {}) {
     errorHandler: () => {},
   });
   const started = Date.now();
-  // La imagen se decodifica una vez; cada casilla se recorta de esos píxeles.
-  const raw = await greyPixels(bytes);
+  // Las casillas se recortan de la imagen ya enderezada (y ampliada si era pequeña).
+  const raw = prepared.raw;
   const pixels = () =>
     sharp(raw.data, {
       raw: { width: raw.info.width, height: raw.info.height, channels: 1 },
@@ -275,6 +420,13 @@ async function readTable(bytes, { good = agreed, regions } = {}) {
       cells,
       inks,
       regions: regionTexts,
+      // Cómo se preparó la foto (core/roster.ts, RosterPhoto): grados enderezados, líneas claras
+      // (foto borrosa o comprimida) y veces que se amplió.
+      photo: {
+        angle: prepared.angle,
+        blurry: prepared.dark > 80,
+        enlarged: prepared.enlarged,
+      },
       ms: Date.now() - started,
     };
   } finally {
@@ -282,4 +434,13 @@ async function readTable(bytes, { good = agreed, regions } = {}) {
   }
 }
 
-module.exports = { findGrid, readTable };
+module.exports = {
+  findGrid,
+  prepareGrid,
+  skewAngle,
+  gridIn,
+  greyPixels,
+  rotatePixels,
+  enlargePixels,
+  readTable,
+};
