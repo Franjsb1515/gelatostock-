@@ -522,6 +522,41 @@ export function productOfName(
   );
 }
 
+export type ListSupplier = {
+  /** Nombre tal como lo escribe la lista (la primera vez que aparece). */
+  name: string;
+  key: string;
+  /** Proveedor de la app con ese mismo nombre, si ya existe. */
+  existing: string | null;
+  /** Lo que vende según la lista: cada fila, con su precio si lo trae. */
+  items: { id: string; name: string; cents: number | null }[];
+};
+/**
+ * Los proveedores que nombra la lista de precios (sin lo hecho en casa), con lo que vende cada uno
+ * según esa lista y si ya están entre los proveedores de la app. Solo lee: no crea nada.
+ */
+export function listSuppliers(s: State): ListSupplier[] {
+  const map = new Map<string, ListSupplier>();
+  for (const r of s.priceList) {
+    if (!r.supplier || isHouse(r.supplier)) continue;
+    const key = priceKey(r.supplier);
+    let sup = map.get(key);
+    if (!sup) {
+      sup = {
+        name: r.supplier,
+        key,
+        existing: s.suppliers.find((x) => priceKey(x.name) === key)?.id ?? null,
+        items: [],
+      };
+      map.set(key, sup);
+    }
+    sup.items.push({ id: r.id, name: r.name, cents: r.cents ?? null });
+  }
+  for (const sup of map.values())
+    sup.items.sort((a, b) => a.name.localeCompare(b.name, "es"));
+  return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, "es"));
+}
+
 /** De dónde sale un precio tomado de la lista: archivo, página y fila. */
 export const priceRowSource = (r: {
   source: string;

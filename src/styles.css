@@ -5743,6 +5743,50 @@ span.quick-batch {
     display: none;
   }
 }
+/* Proveedores que nombra la lista (0.60.0): elegir cuáles crear y qué vende cada uno. */
+.price-suppliers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+.price-suppliers li {
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.price-suppliers small {
+  display: block;
+  color: var(--ink-muted);
+  padding-left: 30px;
+}
+.supplier-list {
+  margin-top: var(--s-4);
+}
+.supplier-list summary {
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.supplier-list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 2 220px;
+}
+.supplier-list-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: 2px 0;
+  break-inside: avoid;
+}
+.supplier-list-items span {
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
 .price-best td {
   background: var(--pistacho-suave);
 }

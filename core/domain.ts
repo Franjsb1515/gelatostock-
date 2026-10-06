@@ -1674,6 +1674,40 @@ export function apply(state: State, input: unknown): State {
       note = `«${name}» ya no corresponde a ningún producto del inventario.`;
       break;
     }
+    case "addListSuppliers": {
+      // Suppliers named in the price list, created with the name the list writes. The list says
+      // nothing else about them: category, delivery, phone and the rest stay to be filled in.
+      const made: string[] = [];
+      const had: string[] = [];
+      for (const name of [...new Set(a.names.map(priceKey))]) {
+        const row = s.priceList.find(
+          (r) => r.supplier && priceKey(r.supplier) === name,
+        );
+        ensure(row?.supplier, `La lista no nombra al proveedor «${name}».`);
+        ensure(
+          !isHouse(row.supplier),
+          "Lo hecho en casa no es un proveedor al que comprar.",
+        );
+        if (s.suppliers.some((x) => priceKey(x.name) === name)) {
+          had.push(row.supplier);
+          continue;
+        }
+        s.suppliers.push({
+          id: randomUUID(),
+          name: row.supplier,
+          initials: supplierInitials(row.supplier),
+          category: "Sin clasificar",
+          delivery: "Sin datos de entrega",
+          color: "sand",
+        });
+        made.push(row.supplier);
+      }
+      ensure(made.length, "Esos proveedores ya están en la app.");
+      note =
+        `Proveedores creados desde la lista de precios: ${made.length} (${made.slice(0, 6).join(", ")}${made.length > 6 ? "…" : ""}). La lista solo da el nombre: el teléfono, la categoría y la entrega los completas tú en Proveedores. No cambia productos, precios ni stock.` +
+        (had.length ? ` Ya estaban: ${had.join(", ")}.` : "");
+      break;
+    }
     case "starPriceRow": {
       const row = item(s.priceList, a.row);
       const keys = linkedKeys(s, priceKey(row.name));

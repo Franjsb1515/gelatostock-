@@ -194,3 +194,56 @@ test("la tabla de ingredientes recuerda el producto al usar su composición, al 
   s = apply(s, { type: "clearIngredientTable" });
   assert.deepEqual(s.nameProducts, []);
 });
+
+test("los proveedores de la lista se enseñan con lo que venden y solo se crean los que la persona elige", () => {
+  const { listSuppliers } = require("../build/pricelist.js");
+  const s0 = seed();
+  const known = s0.suppliers[0].name;
+  let s = imported([
+    row("LECHE ENTERA", known.toUpperCase(), 99),
+    row("YEMA DE HUEVO", "Proveedor de prueba B", 1008),
+    row("NUECES", "Proveedor de prueba B", null),
+    row("BASE BLANCA", "PRODUCCION PROPIA", 163),
+    row("SAL", "Proveedor de prueba C", 48),
+  ]);
+  const list = listSuppliers(s);
+  assert.deepEqual(
+    list.map((x) => [x.name, !!x.existing, x.items.map((i) => i.name)]),
+    [
+      [known.toUpperCase(), true, ["LECHE ENTERA"]],
+      ["Proveedor de prueba B", false, ["NUECES", "YEMA DE HUEVO"]],
+      ["Proveedor de prueba C", false, ["SAL"]],
+    ],
+  );
+  // Lo hecho en casa no es un proveedor; un precio ausente sigue siendo null.
+  assert.ok(!list.some((x) => /propia/i.test(x.name)));
+  assert.equal(list[1].items[0].cents, null);
+  const before = JSON.stringify([s.products, s.prices, s.priceList]);
+  s = apply(s, { type: "addListSuppliers", names: ["Proveedor de prueba B"] });
+  assert.equal(s.suppliers.length, s0.suppliers.length + 1);
+  const made = s.suppliers.at(-1);
+  assert.equal(made.name, "Proveedor de prueba B");
+  assert.equal(made.category, "Sin clasificar");
+  assert.match(s.activity[0].text, /creados desde la lista de precios: 1/);
+  assert.equal(JSON.stringify([s.products, s.prices, s.priceList]), before);
+  assert.equal(listSuppliers(s)[1].existing, made.id);
+  // El que ya existe no se duplica; lo de casa se rechaza; un nombre que la lista no trae, también.
+  assert.throws(
+    () => apply(s, { type: "addListSuppliers", names: [known] }),
+    /ya están en la app/,
+  );
+  assert.throws(
+    () => apply(s, { type: "addListSuppliers", names: ["PRODUCCION PROPIA"] }),
+    /hecho en casa/,
+  );
+  assert.throws(
+    () => apply(s, { type: "addListSuppliers", names: ["NADIE"] }),
+    /no nombra/,
+  );
+  s = apply(s, {
+    type: "addListSuppliers",
+    names: ["Proveedor de prueba C", known],
+  });
+  assert.equal(s.suppliers.length, s0.suppliers.length + 2);
+  assert.match(s.activity[0].text, /Ya estaban/);
+});

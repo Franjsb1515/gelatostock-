@@ -1109,6 +1109,11 @@ export const actionSchema = z.intersection(
       kind: z.enum(["list", "table"]),
       row: idSchema,
     }),
+    // Create, as suppliers of the app, the ones the price list names (the person picks which).
+    z.object({
+      type: z.literal("addListSuppliers"),
+      names: z.array(text(100)).min(1).max(200),
+    }),
     z.object({
       type: z.literal("starPriceRow"),
       row: idSchema,

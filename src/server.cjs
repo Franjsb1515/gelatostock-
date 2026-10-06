@@ -38,6 +38,7 @@ const {
   priceReadingSummary,
   priceGroups,
   priceSuggestions,
+  listSuppliers,
   cartAdvice,
 } = require("../build/pricelist.js");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
@@ -419,9 +420,12 @@ function createApp({
     // Qué le compra a cada proveedor, a qué precio y desde cuándo (core/inventory.ts).
     catalog: supplierCatalogs(state),
     // Lista de precios por proveedor ya comparada (core/pricelist.ts): solo ordena lo guardado.
-    pricelist: ((c) => ({ ...c, suggestions: priceSuggestions(state, c) }))(
-      priceGroups(state),
-    ),
+    pricelist: ((c) => ({
+      ...c,
+      suggestions: priceSuggestions(state, c),
+      // Proveedores que nombra la lista, con lo que vende cada uno y si ya existen en la app.
+      suppliers: listSuppliers(state),
+    }))(priceGroups(state)),
     // Carrito: qué líneas salen más baratas con otro proveedor ya apuntado (solo informa).
     cartAdvice: cartAdvice(state),
     alerts: {

@@ -104,6 +104,13 @@ function priceListView() {
     "Precios por proveedor",
     "Lo que cuesta cada ingrediente con cada proveedor, tal como viene en tu lista.",
     btn("← Compras", "priceBack", "secondary") +
+      (has && (c.suppliers || []).some((x) => !x.existing)
+        ? btn(
+            `Añadir proveedores de la lista (${(c.suppliers || []).filter((x) => !x.existing).length} nuevos)`,
+            "priceSuppliers",
+            "secondary",
+          )
+        : "") +
       btn(
         icon("plus") + (has ? " Subir otra lista" : " Subir lista de precios"),
         "priceUpload",
@@ -346,6 +353,44 @@ function priceProductModal(id) {
   );
 }
 
+/** Crear como proveedores de la app los que nombra la lista: la persona marca cuáles. */
+function priceSuppliersModal() {
+  const all = (priceCompare && priceCompare.suppliers) || [];
+  const fresh = all.filter((x) => !x.existing);
+  if (!fresh.length) {
+    toast("Todos los proveedores de la lista ya están en la app.");
+    return;
+  }
+  const line = (x) =>
+    `<li><label class="check-label"><input type="checkbox" name="sup" value="${esc(x.name)}" checked> <strong>${esc(x.name)}</strong> · ${x.items.length} ${x.items.length === 1 ? "ingrediente" : "ingredientes"}</label><small>${x.items
+      .slice(0, 6)
+      .map((i) => esc(i.name))
+      .join(
+        ", ",
+      )}${x.items.length > 6 ? ` y ${x.items.length - 6} más` : ""}</small></li>`;
+  modal(
+    "Añadir proveedores de la lista",
+    `Tu lista nombra ${all.length} proveedores; ${fresh.length} no están en la app. Se crean solo con el nombre: la lista no dice teléfono, categoría ni entrega, así que eso lo completas tú en Proveedores. No cambia productos, precios ni stock.`,
+    `<ul class="price-suppliers">${fresh.map(line).join("")}</ul>${
+      all.length > fresh.length
+        ? `<p class="fineprint">Ya están en la app: ${all
+            .filter((x) => x.existing)
+            .map((x) => esc(x.name))
+            .join(", ")}.</p>`
+        : ""
+    }`,
+    async (f) => {
+      const names = f.getAll("sup");
+      if (!names.length) throw Error("Marca al menos un proveedor.");
+      return priceMutate(
+        { type: "addListSuppliers", names },
+        "Proveedores creados con el nombre de la lista.",
+      );
+    },
+    "Crear los marcados",
+  );
+}
+
 // Botones de «Precios por proveedor». Devuelve true si la acción era suya.
 async function priceListAction(name, el) {
   if (name === "priceShow" || name === "priceBack") {
@@ -425,6 +470,10 @@ async function priceListAction(name, el) {
   }
   if (name === "priceProduct") {
     priceProductModal(el.dataset.row);
+    return true;
+  }
+  if (name === "priceSuppliers") {
+    priceSuppliersModal();
     return true;
   }
   if (name === "priceProductOff") {

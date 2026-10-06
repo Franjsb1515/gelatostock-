@@ -58,6 +58,12 @@ function altSuppliersModal(id) {
 }
 // Qué le compra a un proveedor, a qué precio y desde cuándo. Lo calcula el núcleo
 // (core/inventory.ts) y viaja en el sobre de estado; aquí solo se enseña.
+/** Lo que vende este proveedor según la lista de precios de la persona (solo lectura). */
+function supplierListSection(s) {
+  const mine = (priceCompare?.suppliers || []).find((x) => x.existing === s.id);
+  if (!mine) return "";
+  return `<details class="supplier-list"><summary>Según tu lista de precios vende ${mine.items.length} ${mine.items.length === 1 ? "ingrediente" : "ingredientes"}</summary><p class="fineprint">Tal como viene en «${esc([...new Set(state.priceList.filter((r) => r.id === mine.items[0]?.id).map((r) => r.source))].join("")) || "tu lista"}»: nombre y precio por litro, kilo o unidad. No son productos de tu inventario hasta que los añadas.</p><ul class="supplier-list-items">${mine.items.map((i) => `<li>${esc(i.name)} <span>${i.cents === null ? "No disponible" : money(i.cents)}</span></li>`).join("")}</ul></details>`;
+}
 function supplierCatalogModal(id) {
   const s = supplier(id);
   const lines = (catalog && catalog[id]) || [];
@@ -70,9 +76,10 @@ function supplierCatalogModal(id) {
   modal(
     "Qué le compras a " + s.name,
     "Precio por paquete de cada producto, desde cuándo está apuntado y de dónde salió. Lo que no consta se queda en «No disponible»: no se rellena solo.",
-    lines.length
+    (lines.length
       ? `<div class="table-wrap"><table><thead><tr><th>Producto</th><th>Paquete</th><th>Precio</th><th>Desde</th><th>De dónde sale</th></tr></thead><tbody>${rows}</tbody></table></div><p class="fineprint">«Desde» es el día en que se apuntó ese precio. Los productos con el precio de siempre, sin ningún cambio registrado, salen como «No disponible».</p>`
-      : `<p>Todavía no hay ningún producto con ${esc(s.name)} como proveedor.</p>`,
+      : `<p>Todavía no hay ningún producto con ${esc(s.name)} como proveedor.</p>`) +
+      supplierListSection(s),
     async () => true,
     "Cerrar",
   );

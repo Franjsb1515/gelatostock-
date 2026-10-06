@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.60.0 — 2026-10-06 · Los proveedores de tu lista, con lo que venden
+
+- Los 21 proveedores que nombra tu lista de precios están creados en tus datos (7 → 28), a petición tuya, por la acción de la app y con copia previa de la base en work/copias/. Solo con el nombre, tal como lo escribe la lista: teléfono, categoría y entrega los completas tú en Proveedores. Productos, stock, movimientos, precios, lista, tabla y recetas quedaron idénticos.
+- Compras → Precios por proveedor → «Añadir proveedores de la lista (N nuevos)»: enseña los que faltan, con lo que vende cada uno según la lista, y crea los que marques. Proveedores → «Qué le compras» enseña además «Según tu lista de precios vende…» con sus ingredientes y precios (no son productos del inventario hasta que los añadas).
+- Lector de imágenes: sin cambios; su estado medido sigue siendo el de 0.58.0 (44 de 50 tipos sintéticos en su ideal, 0 inventos) y todo lo medido es sintético: faltan fotos reales tuyas.
+
+Informe reports/2026-10-06T04-00-00-000Z-proveedores-de-la-lista.md.
+
 ## 0.59.0 — 2026-10-05 · Tus dos PDF cargados, «posibles iguales» y qué producto es cada nombre
 
 - Tus dos PDF reales están cargados en tus datos por el mismo camino que la app (tabla de composición: 153 filas; lista de precios: 195 filas de 21 proveedores, 14 hechas en casa, 31 sin precio, 19 sin proveedor), con copia previa de la base en work/copias/. Productos, stock, movimientos, proveedores, recetas, precios, pedidos y producciones quedaron idénticos antes y después.

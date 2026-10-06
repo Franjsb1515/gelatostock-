@@ -1,4 +1,4 @@
-# TODO — estado real de 0.59.0
+# TODO — estado real de 0.60.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -36,6 +36,9 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] [tú] Decidir: (1) qué fila de rangos de tu tabla vale para cada familia (gelato, gelato de fruta, sorbete de fruta, sorbete de cremas, base) para usarlos en el balance en lugar de los de la app; (2) si los precios de tu lista son todos por kilo o litro; (3) qué nombres parecidos de la lista son el mismo ingrediente y cuáles son tus ingredientes estrella (se marcan en pantalla).
 - [x] [app] Precios en el carrito y en «Sugerir reposición» (0.58.0).
 - [x] [app] «Posibles iguales» en Precios por proveedor (parejas propuestas con motivo; tú dices sí o no; nunca junta sola) y memoria de a qué producto corresponde cada nombre de la lista y de la tabla (0.59.0). Con tu lista salen 24 propuestas.
+- [x] [app] Los 21 proveedores de tu lista creados en tus datos (0.60.0, pedido por ti el 2026-10-06) y «Añadir proveedores de la lista» en Precios por proveedor; la ficha de cada proveedor enseña «Según tu lista de precios vende…».
+- [ ] [tú] Completar en Proveedores el teléfono (para WhatsApp), la categoría y la entrega de los 21 nuevos: la lista solo trae el nombre. Si alguno es el mismo que uno de tus 7 de antes con otro nombre, dímelo y lo juntamos.
+- [ ] [tú] Fotos y documentos reales para el lector: todo lo medido (44 de 50, 0 inventos) es sintético; no se puede llamar «casi perfecto» sin medirlo con lo tuyo.
 - [ ] [tú] Revisar las 24 propuestas de «Posibles iguales» (Compras → Precios por proveedor, arriba) y decir en cada ingrediente de la lista y de la tabla a qué producto tuyo corresponde («¿Qué producto de tu inventario es?» y «Ya lo tengo con otro nombre…»). Así el carrito y «Sugerir reposición» encuentran el precio de la lista aunque el nombre no coincida.
 - [ ] [tú] Decir si los precios de tu lista son por kilo, litro o unidad (dijiste que se mira después): hasta entonces el precio de la lista se enseña pero no se compara con el paquete hasta que lo apuntas.
 - [x] [app] Lector de imágenes medido con 50 tipos (0.58.0): 44 de 50 en su ideal, 0 inventos. Lo que no se lee: cuadrante ladeado o sin líneas, PDF escaneado, foto girada 5° pierde la fecha. Detalle en reports/2026-10-06T08-00-00-000Z-lector-de-imagenes.md.
