@@ -95,7 +95,7 @@ function production() {
     header(
       "Producción",
       "",
-      btn(icon("plus") + " Producción a mano", "produce", "secondary"),
+      btn(icon("plus") + " Calcular y aprobar después", "produce", "secondary"),
     ) +
     quickPanel() +
     `${planPanel()}<section class="panel"><div class="panel-heading"><div><h2>Producciones por aprobar</h2><p>Corrige las cantidades si hace falta. Al aprobar, los ingredientes salen del stock y entra el gelato hecho.</p></div></div>${

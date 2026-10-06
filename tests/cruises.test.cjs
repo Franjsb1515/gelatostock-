@@ -510,7 +510,7 @@ test("cruceros: cambios y retiradas actualizan la escala, sin duplicados ni pér
     });
     status = await service.sync("auto");
     assert.equal(status.error, "Sin conexión con el puerto.");
-    assert.equal(status.label, "Error de sincronización");
+    assert.equal(status.label, "No se pudo consultar al puerto");
     assert.equal(service.day("2026-09-18").summary.ships, 1);
     assert.equal(
       service.due(),
@@ -691,7 +691,7 @@ test("cruceros: rutas del servidor, permisos, umbrales e interruptor, sin red en
     let view = await get("/api/cruises");
     assert.equal(view.enabled, true);
     assert.equal(view.status.state, "never");
-    assert.equal(view.status.label, "Información pendiente de sincronización");
+    assert.equal(view.status.label, "Todavía no se ha consultado al puerto");
     assert.equal(provider.hits, 0, "nada sale a la red sin pedirlo");
     assert.equal(
       (

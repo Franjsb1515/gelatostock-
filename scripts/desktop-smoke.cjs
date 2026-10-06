@@ -26,6 +26,8 @@ const { appName } = require("./package-rules.cjs");
   const env = {
     ...process.env,
     GELATO_DATA_DIR: dir,
+    // Desde 0.62.0 una carpeta nueva empieza vacía: la prueba recorre el espacio de ejemplo.
+    GELATO_EXAMPLE: "1",
     // La prueba no sale a internet: la consulta automática de cruceros queda apagada.
     GELATO_CRUISES_AUTO: "0",
     TEMP: path.join(root, "work"),
@@ -394,7 +396,10 @@ const { appName } = require("./package-rules.cjs");
       .waitFor();
     await window.locator(".more-actions summary").click();
     await window
-      .getByRole("button", { name: "Corregir relevancia", exact: true })
+      .getByRole("button", {
+        name: "¿Tiene que ver con un pedido?",
+        exact: true,
+      })
       .click();
     await window
       .getByRole("combobox", { name: "Relevancia", exact: true })
@@ -480,7 +485,7 @@ const { appName } = require("./package-rules.cjs");
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     let card = window.locator(".delivery-card").first();
     await card
-      .getByRole("button", { name: "Simular envío", exact: true })
+      .getByRole("button", { name: "Ya lo pedí por otro medio", exact: true })
       .click();
     await card
       .getByRole("button", { name: "Registrar lo que llegó", exact: true })
@@ -606,7 +611,7 @@ const { appName } = require("./package-rules.cjs");
       .click();
     await window
       // 0.55.0: el registro en dos pasos sigue, como «Producción a mano».
-      .getByRole("button", { name: "Producción a mano", exact: true })
+      .getByRole("button", { name: "Calcular y aprobar después", exact: true })
       .click();
     await window.locator('#modal-form [name="quantity"]').fill("4");
     await window
@@ -934,11 +939,11 @@ const { appName } = require("./package-rules.cjs");
     assert.equal(await window.locator(".cruise-day").count(), 7);
     assert.match(
       await window.locator(".cruise-sync").innerText(),
-      /Información pendiente de sincronización/,
+      /Todavía no se ha consultado al puerto/,
     );
     assert.match(
       await window.locator("#cruise-detail .empty").innerText(),
-      /pendiente de sincronización/,
+      /Todavía no se ha consultado al puerto/,
     );
     await window.locator('[data-tab="calendar"]').click();
     await window.locator(".cal-grid .cal-cell").first().waitFor();
@@ -1188,6 +1193,30 @@ const { appName } = require("./package-rules.cjs");
     await w2.locator(".message-detail").first().waitFor();
     assert.equal(await w2.evaluate(() => page), "messages");
     assert.equal(await w2.locator("#incoming").isVisible(), false);
+    // 0.62.0: «Quitar los datos de ejemplo» desde Configuración. Lo que se usa se queda con su
+    // stock; desaparecen la tarjeta y «Simular mensaje».
+    const cafe = savedStock("p1");
+    await w2.locator('button[data-nav="settings"]').click();
+    await w2
+      .getByRole("button", { name: "Quitar los datos de ejemplo", exact: true })
+      .click();
+    await w2.getByRole("button", { name: "Quitar", exact: true }).click();
+    await w2.getByRole("dialog").waitFor({ state: "hidden" });
+    await w2
+      .getByRole("heading", { name: "Datos de ejemplo", exact: true })
+      .waitFor({ state: "detached" });
+    assert.equal(await w2.evaluate(() => state.demo), false);
+    assert.equal(savedStock("p1"), cafe);
+    await w2.locator('button.nav-item[data-nav="messages"]').click();
+    assert.equal(
+      await w2
+        .getByRole("button", { name: "Simular mensaje", exact: true })
+        .count(),
+      0,
+    );
+    console.log(
+      "PASS: quitar los datos de ejemplo desde Configuración (copia antes, stock de lo que se queda igual, sin simulación).",
+    );
     console.log(
       "PASS: OCR local automático de proveedor y propuesta en mensaje; búsqueda sin tildes, filtros y corrección de relevancia persistente; ejecutable Windows, recarga con recursos externos bloqueados, conteo persistente, foto manual, salida y corrección trazable, reinicio y perfiles en D.",
     );

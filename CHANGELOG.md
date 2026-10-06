@@ -1,5 +1,15 @@
 # Registro de parches y sesiones
 
+## 0.62.0 — 2026-10-06 · Sin datos de ejemplo ni simulación, y cinco textos decididos
+
+- Configuración → «Datos de ejemplo»: enseña qué se quita y qué se queda (y por qué) y «Quitar los datos de ejemplo» lo hace, con copia completa antes. Lo que usas (en una receta, con movimientos tuyos, en un pedido enviado por WhatsApp…) se queda con su stock; la composición de ejemplo se quita.
+- En tus datos, a petición tuya: 14 → 8 productos, 28 → 25 proveedores, 14 → 1 pedidos (queda GS-012, que salió por WhatsApp) y 0 mensajes de demostración. Café, Leche entera, Bebida de avena y Nata se quedan porque están en tus recetas. Stock, recetas, producciones, lista y tabla, iguales.
+- Una instalación nueva empieza vacía, y el Resumen dice «Para empezar»: proveedores, productos y recetas.
+- «Simular envío» pasa a «Ya lo pedí por otro medio» (teléfono, correo, en persona): marca el pedido como enviado sin mandar nada, para poder registrar lo que llega. «Simular mensaje» ya no sale.
+- Textos que decidiste: «Todavía no se ha consultado al puerto» (y «No se pudo consultar al puerto»), «Calcular y aprobar después», «¿Tiene que ver con un pedido?» y fuera «función todavía en pruebas» de WhatsApp.
+- «Nuevo producto» sin ningún proveedor te lleva a Proveedores con un aviso, en vez de abrir un formulario que no se podía guardar.
+- Pruebas 289, chat 62/62, escritorio 24 PASS. Detalle en reports/2026-10-06T10-00-00-000Z-datos-de-ejemplo-y-textos.md.
+
 ## 0.61.0 — 2026-10-06 · Lector a prueba con 87 imágenes, horario sin límite de personas y textos pulidos
 
 - Lector de imágenes medido con 87 tipos (antes 50): 26 documentos, 16 fotos del Calendario, 15 cuadrantes, 15 adjuntos de WhatsApp y 15 archivos no admitidos o dañados. 72 acaban en su sitio ideal y **0 inventos** (antes de los arreglos de esta versión eran 2: dos cuadrantes con ruido o JPEG fuerte daban por segura una hora con un 9 leído como 3 o 5). Todo sigue siendo sintético.

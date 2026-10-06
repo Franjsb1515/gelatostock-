@@ -42,7 +42,12 @@ export class Store {
   readonly db: DatabaseSync;
   readonly file: string;
   readonly attachments: string;
-  constructor(readonly dataDir: string) {
+  // start: con qué empieza una carpeta sin base. Por defecto, los datos de ejemplo (las pruebas
+  // los usan); la app instalada pasa emptyState (src/server.cjs).
+  constructor(
+    readonly dataDir: string,
+    { start = seed }: { start?: () => State } = {},
+  ) {
     fs.mkdirSync(dataDir, { recursive: true });
     this.file = path.join(dataDir, "gelatostock.sqlite");
     this.attachments = path.join(dataDir, "attachments");
@@ -122,7 +127,7 @@ export class Store {
         const legacy = path.join(dataDir, "stock.json");
         const initial = fs.existsSync(legacy)
           ? validate(JSON.parse(fs.readFileSync(legacy, "utf8")))
-          : seed();
+          : start();
         if (fs.existsSync(legacy)) {
           const backupDir = path.join(dataDir, "backups");
           fs.mkdirSync(backupDir, { recursive: true });

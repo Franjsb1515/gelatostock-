@@ -13,7 +13,9 @@ import {
   type Movement,
   type Message,
 } from "./schema";
-export { seed } from "./seed";
+export { seed, emptyState } from "./seed";
+export { examplesPlan, exampleIds } from "./examples";
+import { removeExamples } from "./examples";
 export { suggestDocument, guessDocType, documentTotalCents } from "./documents";
 import { suggestDocument } from "./documents";
 export {
@@ -946,7 +948,7 @@ export function apply(state: State, input: unknown): State {
         o.dispatch = a.dispatch;
         note = `Pedido ${o.number} ENVIADO por WhatsApp a ${a.dispatch.to}. El proveedor aún no ha confirmado; el stock no cambia hasta la recepción.`;
       } else
-        note = `Envío SIMULADO de ${o.number}. Ningún mensaje real enviado.`;
+        note = `Pedido ${o.number} hecho por otro medio (teléfono, correo…). La app no ha enviado ningún mensaje.`;
       break;
     }
     case "setExpected": {
@@ -1021,7 +1023,7 @@ export function apply(state: State, input: unknown): State {
       const o = item(s.orders, a.order);
       ensure(
         ["sent", "partial"].includes(o.status),
-        "Primero envía el pedido (por WhatsApp o con «Simular envío»).",
+        "Primero envía el pedido (por WhatsApp o con «Ya lo pedí por otro medio»).",
       );
       ensure(
         new Set(a.lines.map((l) => l.product)).size === a.lines.length,
@@ -1341,6 +1343,12 @@ export function apply(state: State, input: unknown): State {
         r.manualCost = { cents: a.cents, at: now() };
         note = `Coste de ${r.name} escrito a mano: ${eur(a.cents)} por kilo. Las producciones ya aprobadas conservan el coste que tenían.`;
       }
+      break;
+    }
+    case "removeExamples": {
+      ensure(s.demo, "Los datos de ejemplo ya se quitaron.");
+      const plan = removeExamples(s);
+      note = `Datos de ejemplo quitados: ${plan.products.length} productos, ${plan.suppliers.length} proveedores, ${plan.orders.length} pedidos de práctica y ${plan.messages} mensajes de demostración.${plan.kept.length ? " Se quedan, porque los usas: " + plan.kept.map((k) => k.name).join(", ") + "." : ""}`;
       break;
     }
     case "deleteRecipe": {

@@ -139,7 +139,10 @@ function messages() {
         icon("message") + " Escribir a un proveedor",
         "writeSupplier",
         "primary",
-      ) + btn(icon("plus") + " Simular mensaje", "message", "secondary"),
+      ) +
+        (state.demo
+          ? btn(icon("plus") + " Simular mensaje", "message", "secondary")
+          : ""),
     ) +
     (chats.unlinked
       ? `<div class="notice subtle">${icon("alert")}<div><strong>${chats.unlinked} mensaje${chats.unlinked === 1 ? "" : "s"} de un chat sin proveedor</strong><span>No entran aquí hasta vincular el chat a un proveedor. </span><button class="text-button" data-nav="whatsapp">Ver WhatsApp ${icon("arrow")}</button></div></div>`
@@ -177,7 +180,7 @@ function messages() {
                     "",
                   )}</div><div class="reply-composer"><textarea id="reply-text" rows="3" maxlength="4000" placeholder="Escribe tu respuesta a ${esc(supplier(m.supplier).name)}…">${esc(replyDrafts[m.id] || "")}</textarea><div class="composer-row"><small>Se envía a ${esc(m.sender || "")} desde tu cuenta, una sola vez, al pulsar Enviar.</small>${btn(icon("message") + " Enviar por WhatsApp", "sendReply", "primary", `data-id="${esc(m.id)}"`)}</div></div>`
               : `<p class="muted">${m.channel === "whatsapp" ? "Conecta WhatsApp para responder desde aquí." : "Los mensajes de demostración no se responden; decide y cierra."}</p>`
-          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con el Ayudante", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en el Ayudante", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("Corregir relevancia", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">Lo que decides queda anotado aquí y no cambia pedidos ni stock.</p></div>`
+          }<div class="message-actions">${btn(m.reviewed ? "Cambiar decisión" : icon("check") + " Decidir y cerrar", "decideMessage", "primary", `data-id="${esc(m.id)}"`)}${btn(m.reviewed ? "Mensaje revisado" : "Marcar revisado", "review", "secondary", `data-id="${m.id}" ${m.reviewed ? "disabled" : ""}`)}${btn("Vincular pedido", "link", "secondary", `data-id="${m.id}"`)}</div></div><details class="more-actions"><summary>Más opciones</summary><div class="message-actions">${btn(aiReplyBusy === m.id ? "Leyendo la respuesta…" : "Segunda lectura con el Ayudante", "aiReadReply", "secondary", `data-id="${esc(m.id)}" ${aiReplyBusy ? "disabled" : ""}`)}${btn("Abrir en el Ayudante", "aiMessage", "secondary", `data-id="${esc(m.id)}"`)}${btn("Corregir lectura", "correctReading", "secondary", `data-id="${esc(m.id)}"`)}${btn("Cambiar prioridad", "priority", "secondary", `data-id="${m.id}"`)}${btn("¿Tiene que ver con un pedido?", "relevance", "secondary", `data-id="${m.id}"`)}</div></details><p class="fineprint">Lo que decides queda anotado aquí y no cambia pedidos ni stock.</p></div>`
         : '<div class="empty"><h3>Elige una conversación.</h3></div>'
     }</div></section>`
   );

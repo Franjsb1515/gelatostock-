@@ -162,7 +162,7 @@ const pill = (label, color = "neutral") =>
   `<span class="pill ${color}">${esc(label)}</span>`;
 const statusLabel = {
   pending: "Pendiente de envío",
-  sent: "Envío simulado",
+  sent: "Pedido por otro medio",
   partial: "Recepción parcial",
   received: "Recibido",
   cancelled: "Cancelado",
@@ -281,6 +281,7 @@ function applyEnvelope(data) {
   if (data.catalog) catalog = data.catalog;
   if (data.pricelist) priceCompare = data.pricelist;
   if (data.cartAdvice) cartHints = data.cartAdvice;
+  if ("examples" in data) examplePlan = data.examples;
   if (data.cruises) cruiseInfo = data.cruises;
   if (data.dataDir) dataDir = data.dataDir;
   archiveWarning = data.archiveWarning;

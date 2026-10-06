@@ -318,3 +318,23 @@ export function seed(): State {
     nameProducts: [],
   };
 }
+// Espacio nuevo sin nada de ejemplo: lo que recibe quien instala la app. La persona añade sus
+// proveedores, productos y recetas; la Guía dice por dónde empezar.
+export function emptyState(): State {
+  const s = seed();
+  return {
+    ...s,
+    demo: false,
+    products: [],
+    suppliers: [],
+    messages: [],
+    recipes: [],
+    activity: [
+      {
+        id: randomUUID(),
+        at: new Date().toISOString(),
+        text: "Espacio nuevo creado, sin datos de ejemplo.",
+      },
+    ],
+  };
+}

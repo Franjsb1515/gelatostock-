@@ -246,8 +246,8 @@ class CruiseService {
       state,
       label: {
         syncing: "Actualizando…",
-        never: "Información pendiente de sincronización",
-        error: "Error de sincronización",
+        never: "Todavía no se ha consultado al puerto",
+        error: "No se pudo consultar al puerto",
         stale: "Datos posiblemente desactualizados",
         fresh: "Datos actualizados",
       }[state],
@@ -419,7 +419,7 @@ class CruiseService {
   /** Sustituye el registro por la copia. El registro actual queda guardado al lado, nunca se pierde. */
   restoreCopy(backupDir) {
     if (this.busy || this.backfilling)
-      throw Error("Hay una sincronización en curso. Espera a que termine.");
+      throw Error("Ya se está consultando al puerto. Espera a que termine.");
     const info = this.copyInfo(backupDir);
     if (!info)
       throw Error("No hay una copia legible del registro de cruceros.");

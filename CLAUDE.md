@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.61.0
+# Entrada para Claude · entrega vigente 0.62.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -19,6 +19,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
 - Tabla de ingredientes y precios por proveedor (0.57.0): se leen de PDF del usuario por posiciones y solo se guardan con su confirmación (el servidor relee el archivo); dato ausente = sin valor, nunca 0; nada se corrige ni se agrupa «por parecido»; añadir al inventario no preelige proveedor, unidad, categoría ni zona. Esos PDF y sus volcados de work/ son datos reales: nunca a tests/, fixtures ni informes.
+- Datos de ejemplo (0.62.0): una instalación nueva empieza vacía (emptyState); seed() solo bajo node:test o GELATO_EXAMPLE=1. removeExamples (core/examples.ts) reconoce lo de ejemplo por id fijo, nunca por nombre, y no quita nada que se use; un movimiento de lo que se queda nunca se borra. No hay simulación de envío: «Ya lo pedí por otro medio» es la acción send sin dispatch. Ya aplicado a data/ el 2026-10-06.
 - Lista viva de mejoras (textos, visual, tablets): docs/CHECKLIST_MEJORAS.md (0.56.0). Orden de preparación: recipe.process solo guía («Preparar»); nunca mueve stock.
 - Plan vigente (2026-10-05): docs/PLAN_PRODUCCION_RAPIDA.md, hecho en 0.55.0 (producción por botones, tandas, bases de la cámara o hechas ahora, «Hecho» en un paso; contraseña del recetario = editar, no producir). Antes: docs/PLAN_FICHA_PRODUCCION.md (0.52.0). Antes: docs/PLAN_CALENDARIO.md. Fase 1 hecha en 0.48.0 («La tienda no abrió») y fase 2 en 0.49.0 (horario semanal, vacaciones, stock del día y avisos) y fase 3 en 0.50.0 (fotos: propuesta por reglas que la persona confirma); la clave está aplazada y falta medir con fotos reales del usuario. Plan anterior: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1, la 2, la 3 y la 5; queda la 4, parada hasta que el usuario mande tarifas reales; respuestas del usuario del 2026-09-20 dentro). Sin tarifas, se trabaja lo siguiente de TODO.md: así salió la 0.38.0. docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
 
@@ -56,4 +57,4 @@ Envío real desde 0.9.1 con vista previa, confirmación explícita en pantalla, 
 ## Pruebas y cierre de sesión
 - `npm test` · `npm run format:check` · `npm run typecheck` · `npm run package:win` · `npm run test:desktop` (usa el modelo real; tarda varios minutos; si falla en `page.screenshot: Timeout`, la pantalla del equipo está suspendida: repite con el equipo activo).
 - Cierre: informe nuevo en reports/ + CHANGELOG + TODO + entrada en docs/CONTINUIDAD.md + pruebas reales + ejecutable reconstruido si cambió src/ + commit + ZIP (work/make-zip.cjs) sin datos, credenciales, node_modules ni binarios. Conserva los informes anteriores. No marques nada como probado en Mac desde Windows.
-- Pendiente y prioridades: TODO.md. Siguiente: fase 3 del Calendario cuando lleguen fotos reales; sus correcciones de uso van siempre primero.
+- Pendiente y prioridades: TODO.md. Siguiente: enderezar y ampliar la foto antes de leer un cuadrante; medir con fotos reales en cuanto lleguen. Las correcciones de uso del usuario van siempre primero.

@@ -1062,6 +1062,11 @@ async function action(name, el) {
     return;
   }
   if (name === "product") {
+    if (!state.suppliers.length) {
+      toast("Primero añade un proveedor: cada producto lleva el suyo.");
+      nav("suppliers");
+      return;
+    }
     modal(
       "Nuevo producto",
       "Di en qué se mide y cómo lo compras.",
@@ -1121,7 +1126,7 @@ async function action(name, el) {
   if (name === "send") {
     await mutate(
       { type: "send", order: el.dataset.order },
-      "Envío simulado. No se contactó al proveedor.",
+      "Pedido marcado como hecho por otro medio. La app no ha enviado ningún mensaje.",
     );
     return;
   }
@@ -1480,7 +1485,7 @@ async function action(name, el) {
   if (name === "relevance") {
     const m = state.messages.find((m) => m.id === el.dataset.id);
     modal(
-      "Corregir relevancia",
+      "¿Tiene que ver con un pedido?",
       "Di si este mensaje tiene que ver con algún pedido. La prioridad y el texto original se conservan.",
       select(
         "Relevancia",
@@ -1615,6 +1620,17 @@ async function action(name, el) {
         render();
         return true;
       },
+      "Quitar",
+    );
+    return;
+  }
+  if (name === "removeExamples") {
+    modal(
+      "Quitar los datos de ejemplo",
+      "Se quita lo que aparece en la tarjeta. Lo que usas se queda y su stock no cambia. Antes se guarda una copia completa.",
+      "<p>No se puede deshacer desde aquí; la copia se restaura en Configuración → Restaurar copia.</p>",
+      async () =>
+        mutate({ type: "removeExamples" }, "Datos de ejemplo quitados."),
       "Quitar",
     );
     return;

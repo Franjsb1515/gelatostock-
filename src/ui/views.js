@@ -18,8 +18,8 @@ function home() {
       btn(icon("photo") + " Cargar foto", "photo") +
         btn(icon("plus") + " Registrar stock", "count", "primary"),
     ) +
-    `<section class="hero"><div class="hero-copy"><span class="hero-label">ARTELLO GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${low().length ? `Hay ${low().length} productos por debajo del mínimo.` : "Tu inventario está por encima de los mínimos."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest")}</div><div class="hero-seal" aria-hidden="true">${artelloSeal()}</div></section>
- ${homeNotices()}${homeDay()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Lo que hay × el precio de compra de cada ficha</small></div></article></section>
+    `<section class="hero"><div class="hero-copy"><span class="hero-label">ARTELLO GELATO · HOY</span><h2>Más tiempo para crear.<br>Menos para contar.</h2><p>${!state.products.length ? "Todavía no hay productos en el inventario." : low().length ? `Hay ${low().length} productos por debajo del mínimo.` : "Tu inventario está por encima de los mínimos."}</p>${btn("Preparar reposición " + icon("arrow"), "suggest")}</div><div class="hero-seal" aria-hidden="true">${artelloSeal()}</div></section>
+ ${homeStart()}${homeNotices()}${homeDay()}<section class="stats"><article class="stat"><span class="stat-icon sage">${icon("box")}</span><div><p>Productos en catálogo</p><strong>${state.products.length}</strong></div></article><article class="stat"><span class="stat-icon peach">${icon("alert")}</span><div><p>Necesitan reposición</p><strong>${low().length}</strong><small>Por debajo del mínimo</small></div></article><article class="stat"><span class="stat-icon lavender">${icon("cart")}</span><div><p>Pedidos en curso</p><strong>${open.length}</strong><small>${state.cart.length} productos en el carrito</small></div></article><article class="stat"><span class="stat-icon sand">${icon("store")}</span><div><p>Valor estimado del stock</p><strong class="money-value">${money(value)}</strong><small>Lo que hay × el precio de compra de cada ficha</small></div></article></section>
  <div class="dashboard-grid"><section class="panel"><div class="panel-heading"><div><h2>Un vistazo al inventario</h2><p>Por debajo del mínimo.</p></div><button class="text-button" data-nav="stock">Ver inventario ${icon("arrow")}</button></div>${productTable(low().slice(0, 5), true)}</section><div class="right-stack"><section class="panel inbox-preview"><div class="panel-heading"><h2>Tu bandeja de entrada</h2><span class="count-bubble">${important.length}</span></div>${
    important.length
      ? important
@@ -242,7 +242,7 @@ function suppliers() {
                   })
                   .join("")}</div>`
               : "";
-          })()}<div class="supplier-card-footer">${btn("Qué le compras", "supplierCatalog", "secondary", `data-supplier="${s.id}"`)}${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`)}</div></article>`,
+          })()}<div class="supplier-card-footer">${btn("Qué le compras", "supplierCatalog", "secondary", `data-supplier="${s.id}"`)}${btn("Editar", "supplierEditor", "secondary", `data-supplier="${s.id}"`)}${state.demo ? btn("Simular mensaje", "message", "secondary", `data-supplier="${s.id}"`) : ""}</div></article>`,
       )
       .join(
         "",
@@ -295,13 +295,40 @@ function moreHistory(kind, loaded) {
   if (visible >= total) return "";
   return `<div class="panel-bottom">${btn(`Mostrar más (${total - visible} anteriores)`, "moreHistory", "secondary", `data-kind="${kind}"`)}</div>`;
 }
+// Qué quitaría «Quitar los datos de ejemplo» (core/examples.ts); null si ya no hay ejemplo.
+let examplePlan = null;
+const exampleNames = (list) =>
+  list.map((x) => esc(x.name || x.number)).join(", ");
+function examplesCard() {
+  const p = examplePlan;
+  if (!p) return "";
+  const gone = [
+    p.products.length &&
+      `${p.products.length} producto${p.products.length === 1 ? "" : "s"}: ${exampleNames(p.products)}`,
+    p.suppliers.length &&
+      `${p.suppliers.length} proveedor${p.suppliers.length === 1 ? "" : "es"}: ${exampleNames(p.suppliers)}`,
+    p.recipes.length && `la receta ${exampleNames(p.recipes)}`,
+    p.orders.length &&
+      `${p.orders.length} pedido${p.orders.length === 1 ? "" : "s"} de práctica (nunca salieron por WhatsApp): ${exampleNames(p.orders)}`,
+    p.messages &&
+      `${p.messages} mensaje${p.messages === 1 ? "" : "s"} de demostración`,
+  ].filter(Boolean);
+  return `<section class="panel settings-card"><span class="stat-icon peach">${icon("alert")}</span><h2>Datos de ejemplo</h2><p>Este espacio empezó con productos, proveedores, pedidos y mensajes de ejemplo para practicar. Quítalos cuando vayas a trabajar solo con los tuyos.</p>${gone.length ? `<p><strong>Se quitan</strong></p><ul class="fineprint">${gone.map((g) => `<li>${g}</li>`).join("")}</ul>` : "<p>No queda nada de ejemplo sin usar.</p>"}${p.kept.length ? `<p><strong>Se quedan, porque los usas</strong></p><ul class="fineprint">${p.kept.map((k) => `<li>${esc(k.name)}: ${esc(k.why)}</li>`).join("")}</ul><p class="fineprint">Revisa su precio y su proveedor: son los del ejemplo. La composición de ejemplo se quita.</p>` : ""}<div class="setting-actions">${btn("Quitar los datos de ejemplo", "removeExamples", "danger")}</div><p class="fineprint">Antes se guarda una copia completa. El stock de lo que se queda no cambia.</p></section>`;
+}
+// Espacio sin productos (instalación nueva o datos de ejemplo quitados): por dónde empezar.
+function homeStart() {
+  if (state.products.length) return "";
+  const step = (n, done, text, to) =>
+    `<li>${done ? "✓ " : n + ". "}${text} <button class="text-button" data-nav="${to}">Ir ${icon("arrow")}</button></li>`;
+  return `<div class="notice home-notice">${icon("store")}<div><strong>Para empezar</strong><ol class="start-steps">${step(1, state.suppliers.length > 0, "Añade tus proveedores (Proveedores → Nuevo proveedor).", "suppliers")}${step(2, false, "Añade tus ingredientes y envases (Inventario → Nuevo producto). Cada producto lleva su proveedor.", "stock")}${step(3, state.recipes.length > 0, "Crea tus sabores en el Recetario.", "recipes")}</ol><span>La Guía lo explica paso a paso.</span></div></div>`;
+}
 function settings() {
   return (
     header(
       "Un espacio que funciona a tu manera.",
       "Datos, copias de seguridad y ajustes.",
     ) +
-    `<div class="settings-grid"><section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>Todo se guarda en este equipo. Las copias incluyen fotos y documentos.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Exportar a hoja de cálculo (CSV)", "exportCsv", "secondary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales; antes se guarda una copia.</p><p class="fineprint">Copia automática cada día (se guardan las 30 últimas). ${backupInfo?.last ? "Última: " + date(backupInfo.last) + " " + time(backupInfo.last) + "." : "Todavía no se ha creado."}${backupInfo?.warning ? " " + esc(backupInfo.warning) : ""}</p><h3 class="setting-subtitle">Copia secundaria</h3>${backupInfo?.secondary?.dir ? `<code class="path">${esc(backupInfo.secondary.dir)}</code><p class="fineprint">${backupInfo.secondary.error ? esc(backupInfo.secondary.error) : backupInfo.secondary.last ? "Última copia allí: " + date(backupInfo.secondary.last) + " " + time(backupInfo.secondary.last) + "." : "Todavía no se ha copiado nada."}</p>` : '<p class="fineprint">Sin copia secundaria: si este disco falla se pierde todo. Elige una carpeta en otro disco o un USB.</p>'}<div class="setting-actions">${btn(backupInfo?.secondary?.dir ? "Cambiar carpeta" : "Elegir carpeta secundaria", "backupDirEditor", backupInfo?.secondary?.dir ? "secondary" : "primary")}${backupInfo?.secondary?.dir ? btn("Quitar", "backupDirClear", "secondary") : ""}</div></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Ayudante</h2>${pill("Incluido en el equipo", "sage")}<p>Lee textos de proveedores y propone qué son, sin salir de este equipo. Solo propone: no ejecuta acciones.</p>${btn("Abrir el Ayudante", "aiOpen", "primary")}</section><section class="panel settings-card"><h2>Archivo de fotos y documentos</h2><p>Fotos y PDF por proveedor y fecha. Se vinculan a pedidos en Documentos.</p>${btn("Abrir Documentos", "openDocuments", "secondary")}${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
+    `<div class="settings-grid">${examplesCard()}<section class="panel settings-card"><span class="stat-icon sage">${icon("shield")}</span><h2>Datos bajo tu control</h2><p>Todo se guarda en este equipo. Las copias incluyen fotos y documentos.</p><label class="path-label">CARPETA DE DATOS</label><code class="path">${esc(dataDir)}</code><div class="setting-actions">${btn(icon("download") + " Crear copia", "backup", "primary")}${btn("Exportar a hoja de cálculo (CSV)", "exportCsv", "secondary")}${btn("Restaurar copia", "restore")}</div><p class="fineprint">Restaurar reemplaza los datos actuales; antes se guarda una copia.</p><p class="fineprint">Copia automática cada día (se guardan las 30 últimas). ${backupInfo?.last ? "Última: " + date(backupInfo.last) + " " + time(backupInfo.last) + "." : "Todavía no se ha creado."}${backupInfo?.warning ? " " + esc(backupInfo.warning) : ""}</p><h3 class="setting-subtitle">Copia secundaria</h3>${backupInfo?.secondary?.dir ? `<code class="path">${esc(backupInfo.secondary.dir)}</code><p class="fineprint">${backupInfo.secondary.error ? esc(backupInfo.secondary.error) : backupInfo.secondary.last ? "Última copia allí: " + date(backupInfo.secondary.last) + " " + time(backupInfo.secondary.last) + "." : "Todavía no se ha copiado nada."}</p>` : '<p class="fineprint">Sin copia secundaria: si este disco falla se pierde todo. Elige una carpeta en otro disco o un USB.</p>'}<div class="setting-actions">${btn(backupInfo?.secondary?.dir ? "Cambiar carpeta" : "Elegir carpeta secundaria", "backupDirEditor", backupInfo?.secondary?.dir ? "secondary" : "primary")}${backupInfo?.secondary?.dir ? btn("Quitar", "backupDirClear", "secondary") : ""}</div></section><section class="panel settings-card"><span class="stat-icon lavender">${icon("leaf")}</span><h2>Ayudante</h2>${pill("Incluido en el equipo", "sage")}<p>Lee textos de proveedores y propone qué son, sin salir de este equipo. Solo propone: no ejecuta acciones.</p>${btn("Abrir el Ayudante", "aiOpen", "primary")}</section><section class="panel settings-card"><h2>Archivo de fotos y documentos</h2><p>Fotos y PDF por proveedor y fecha. Se vinculan a pedidos en Documentos.</p>${btn("Abrir Documentos", "openDocuments", "secondary")}${archiveWarning ? `<p role="alert">${esc(archiveWarning)}</p>` : ""}<code class="path">${esc(dataDir)} / proveedores</code>${btn(icon("photo") + " Cargar foto", "photo")}<div class="photo-grid">${
       state.photos
         .filter((ph) => !ph.calendarDate)
         .sort(

@@ -309,7 +309,7 @@ function cruiseDayDetail(detail, today) {
     `<div><span>${label}</span><strong class="kpi-text">${value}</strong>${note ? `<small>${note}</small>` : ""}</div>`;
   const empty =
     cruiseDash.status.state === "never"
-      ? "Información pendiente de sincronización."
+      ? "Todavía no se ha consultado al puerto."
       : "No hay escalas de cruceros registradas para este día.";
   return `<section class="panel" id="cruise-detail"><div class="panel-heading"><div><h2>${esc(cruiseLong(s.day))}${s.day === today ? " · hoy" : ""}</h2><p>Horas del puerto de Palma.</p></div><div class="heading-actions">${btn("← Día anterior", "cruisePrev", "secondary")}${btn("Hoy", "cruiseToday", "secondary", s.day === today ? "disabled" : "")}${btn("Día siguiente →", "cruiseNext", "secondary")}</div></div><div class="cruise-body">${cruiseContextBlock(s.day)}<h3 class="cruise-sub">Cruceros</h3>${
     s.ships

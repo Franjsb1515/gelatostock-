@@ -1,4 +1,4 @@
-# TODO — estado real de 0.61.0
+# TODO — estado real de 0.62.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -41,7 +41,9 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] [app] Lector medido con 87 tipos de imagen, 15 por área (0.61.0): 72 en su ideal, 0 inventos; cuadrantes con ruido ya no dan por segura una hora confundible; adjuntos de WhatsApp con el lector de Documentos y aviso cuando no se leen; aviso de lectura a medias.
 - [x] [app] Horario: «+ Otra persona» y «×» en cada día (0.61.0, pedido por ti el 2026-10-06).
 - [x] [app] Textos pulidos en toda la app (0.61.0, pedido por ti el 2026-10-06): reports/2026-10-06T06-00-00-000Z-pulido-de-textos.md.
-- [ ] [decidir] Lo que el pulido de textos no cambió por ser tuyo: (1) «Simular envío» y los pedidos de demostración siguen por tu decisión del 2026-09-20; (2) los productos y proveedores de ejemplo (Pistacho siciliano, Gelato Italia, «FRAN · PRUEBA…») se ven junto a los tuyos; (3) Cruceros dice «Información pendiente de sincronización» (propuesta: «Todavía no se ha consultado al puerto»); (4) «Producción a mano» y «Corregir relevancia» se llaman así porque la prueba de escritorio los busca (propuestas: «Calcular y aprobar después», «¿Tiene que ver con un pedido?»); (5) el aviso «función todavía en pruebas» de WhatsApp.
+- [x] [app] Datos de ejemplo y simulación fuera; cinco textos decididos (0.62.0, decidido por ti el 2026-10-06). Tus datos: 14 → 8 productos, 28 → 25 proveedores, queda el pedido GS-012 (salió por WhatsApp).
+- [ ] [tú] Revisar el precio de Café de especialidad, Leche entera, Bebida de avena y Nata para montar (son los del ejemplo) y si su proveedor es de verdad Fresco Mercado; cerrar o cancelar GS-012 si era una prueba.
+- [x] [decidido 2026-10-06, hecho en 0.62.0] Lo que el pulido de textos no cambió por ser tuyo: (1) «Simular envío» y los pedidos de demostración siguen por tu decisión del 2026-09-20; (2) los productos y proveedores de ejemplo (Pistacho siciliano, Gelato Italia, «FRAN · PRUEBA…») se ven junto a los tuyos; (3) Cruceros dice «Información pendiente de sincronización» (propuesta: «Todavía no se ha consultado al puerto»); (4) «Producción a mano» y «Corregir relevancia» se llaman así porque la prueba de escritorio los busca (propuestas: «Calcular y aprobar después», «¿Tiene que ver con un pedido?»); (5) el aviso «función todavía en pruebas» de WhatsApp.
 - [ ] [app] Cuadrantes: 12 de 15 quedan «a revisar» (ninguna casilla mal dada por segura, pero muchas a confirmar); girado 5° y 700 px de ancho no se leen. Mejora posible: enderezar la foto antes de leer la cuadrícula y ampliar las pequeñas.
 - [ ] [tú] Fotos y documentos reales para el lector: todo lo medido (87 tipos, 0 inventos) es sintético; no se puede llamar «casi perfecto» sin medirlo con lo tuyo.
 - [ ] [tú] Revisar las 24 propuestas de «Posibles iguales» (Compras → Precios por proveedor, arriba) y decir en cada ingrediente de la lista y de la tabla a qué producto tuyo corresponde («¿Qué producto de tu inventario es?» y «Ya lo tengo con otro nombre…»). Así el carrito y «Sugerir reposición» encuentran el precio de la lista aunque el nombre no coincida.
@@ -52,8 +54,8 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] [tú] Poner el orden de preparación de tus recetas (Recetario → la receta → «Orden de preparación»).
 - [ ] [app] Lista de mejoras de textos, visual y tablets: docs/CHECKLIST_MEJORAS.md. Siguiente paso propuesto: interfaz táctil y estrecha (botones de 44 px, barra lateral plegable, Compras e Inventario a 768 px).
 - [ ] [tú] Tablets: decir qué tablet (Windows o iPad/Android), si acompaña al ordenador, y si hay wifi separada de la de clientes (preguntas al final de docs/CHECKLIST_MEJORAS.md).
-- [ ] [tú] Antes de entregar la app: quitar «Envío simulado» y los mensajes y pedidos de demostración (siguen por tu decisión del 2026-09-20).
-- [ ] [tú] Aplazado por ti el 2026-09-20: los pedidos siguen naciendo como «simulación» y queda el botón «Simular envío» porque los usas para probar. Recuérdalo cuando quieras quitarlos (fase diferida del plan).
+- [x] Antes de entregar la app: quitar «Envío simulado» y los mensajes y pedidos de demostración (hecho en 0.62.0).
+- [x] Los pedidos ya no nacen como «simulación»: «Simular envío» pasa a «Ya lo pedí por otro medio» (0.62.0).
 - [x] [app] Formularios de Inventario: ya no dicen «unidad base», sino la unidad de cada producto («Cantidad que hay ahora en kilos»), en 0.34.0.
 - [x] [tú] Preguntas del plan respondidas el 2026-09-18 (sin caja; formatos y precios los pone él; el día cambia de madrugada; una sola categoría de invitación o consumo). Queda opcional decir si hay TPV.
 - [x] Mermas de ingredientes con los mismos motivos que el cierre del día (0.39.0, pedido por ti el 2026-09-21). La Semana trae «Mermas por motivo» con las dos juntas.

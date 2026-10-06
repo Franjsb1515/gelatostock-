@@ -364,5 +364,17 @@
     "question": "¿Cómo añado a la app los proveedores que vienen en mi lista de precios?",
     "expect": ["Añadir proveedores de la lista"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "pedido_por_telefono",
+    "question": "He hecho el pedido por teléfono, ¿cómo lo marco como enviado?",
+    "expect": ["otro medio"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "quitar_datos_ejemplo",
+    "question": "¿Cómo quito los productos y proveedores de ejemplo?",
+    "expect": ["Quitar los datos de ejemplo"],
+    "forbid": ["no lo sé"]
   }
 ]

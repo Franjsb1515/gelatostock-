@@ -464,7 +464,8 @@ export const stateSchema = z.object({
   revision: z.number().int().min(0),
   business: text(80),
   place: z.string().max(80).default(""),
-  demo: z.literal(true),
+  // true: el espacio empezó con los datos de ejemplo y todavía no se han quitado (core/examples.ts).
+  demo: z.boolean(),
   products: z.array(productSchema).max(100000),
   suppliers: z.array(supplierSchema).max(100000),
   cart: z
@@ -830,6 +831,8 @@ export const actionSchema = z.intersection(
       ...recipeFields,
     }),
     z.object({ type: z.literal("deleteRecipe"), id: idSchema }),
+    // Quita los datos de ejemplo que no se usan (core/examples.ts). Una sola vez.
+    z.object({ type: z.literal("removeExamples") }),
     // Kilos of a house-made gelato the person wants to have; drives «qué producir hoy».
     z.object({
       type: z.literal("setGoal"),

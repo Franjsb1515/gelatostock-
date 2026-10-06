@@ -28,6 +28,9 @@ const {
   wasteGoals,
   replyLabels,
   localDate,
+  seed,
+  emptyState,
+  examplesPlan,
 } = require("../build/domain.js");
 const { recognizeLocal } = require("./ocr.cjs");
 const { readDocumentPhoto, readCalendarPhoto } = require("./photo-read.cjs");
@@ -75,8 +78,12 @@ function createApp({
   contextProviders,
   cruiseAuto = !process.env.NODE_TEST_CONTEXT &&
     process.env.GELATO_CRUISES_AUTO !== "0",
+  // Una carpeta de datos nueva empieza vacía; con los datos de ejemplo solo bajo node:test o con
+  // GELATO_EXAMPLE=1 (la prueba de escritorio). Una base que ya existe no cambia.
+  example = !!process.env.NODE_TEST_CONTEXT ||
+    process.env.GELATO_EXAMPLE === "1",
 } = {}) {
-  const store = new Store(dataDir);
+  const store = new Store(dataDir, { start: example ? seed : emptyState });
   // Daily automatic copy (data + photos) with a bounded history of automatic files only.
   const backupDir = path.join(dataDir, "backups");
   const isBackupFile = (f) => /^gelatostock-\d+-[0-9a-f-]{36}\.json$/.test(f);
@@ -426,6 +433,8 @@ function createApp({
       // Proveedores que nombra la lista, con lo que vende cada uno y si ya existen en la app.
       suppliers: listSuppliers(state),
     }))(priceGroups(state)),
+    // Qué quitaría «Quitar los datos de ejemplo» (Configuración); solo mientras haya ejemplo.
+    examples: state.demo ? examplesPlan(state) : null,
     // Carrito: qué líneas salen más baratas con otro proveedor ya apuntado (solo informa).
     cartAdvice: cartAdvice(state),
     alerts: {
@@ -1613,6 +1622,11 @@ function createApp({
             );
           // The frozen summary must use the same business-day hour as GET /api/day.
           if (data.type === "confirmDay") data.changeHour = dayChangeHour();
+          // Antes de quitar los datos de ejemplo, una copia completa (datos y fotos).
+          if (data.type === "removeExamples") {
+            copyToSecondary(store.backup());
+            backupInfo.last = new Date().toISOString();
+          }
           store.dispatch(data);
         }
         json(200, envelope(store.load()));
