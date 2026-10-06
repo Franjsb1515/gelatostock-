@@ -5503,3 +5503,237 @@ span.quick-batch {
   padding-left: 22px;
   line-height: 1.7;
 }
+
+/* Tabla de ingredientes (Inventario) */
+.ing-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+.ing-bar #ing-count {
+  font-weight: 700;
+  margin-right: auto;
+}
+.ing-bar .btn {
+  min-height: 44px;
+}
+.ing-table th.num,
+.ing-table td.num {
+  text-align: right;
+  white-space: nowrap;
+}
+.ing-table tbody th {
+  text-align: left;
+  font-weight: 600;
+}
+.ing-issue {
+  display: block;
+  color: var(--rosa-texto);
+  line-height: 1.4;
+  max-width: 420px;
+}
+.ing-pick {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ing-pick input {
+  width: 22px;
+  height: 22px;
+}
+.ing-diff td,
+.ing-diff th {
+  background: var(--pistacho-suave);
+  font-weight: 700;
+}
+.ing-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--s-2) var(--s-4);
+  margin: 0 0 var(--s-4);
+}
+.ing-detail div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-2);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 0;
+}
+.ing-detail dt {
+  color: var(--ink-soft);
+}
+.ing-detail dd {
+  margin: 0;
+  font-weight: 700;
+}
+.ing-names {
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+.comp-fields {
+  margin-top: var(--s-4);
+}
+.comp-fields summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--pistacho);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+/* Precios por proveedor (Compras): comparación de la lista de precios. */
+.price .btn,
+.price .tab,
+.price-confirm {
+  min-height: 44px;
+}
+.price-panel {
+  margin-bottom: var(--s-4);
+}
+.price-panel > .fineprint {
+  padding: 0 var(--s-5) var(--s-4);
+  margin: 0;
+}
+.price-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: center;
+  padding: var(--s-3) var(--s-5);
+}
+.price-bar #price-count {
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.price-bar small {
+  flex: 1 1 220px;
+  color: var(--ink-muted);
+}
+.price-groups {
+  display: grid;
+  gap: var(--s-4);
+}
+.price-group {
+  padding: var(--s-4) var(--s-5);
+}
+.price-group[hidden],
+#price-none[hidden] {
+  display: none;
+}
+.price-group > header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-2);
+}
+.price-group > header > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+}
+.price-group h3 {
+  margin: 0;
+}
+.price-rec {
+  margin: 0 0 var(--s-1);
+}
+.price-group .fineprint {
+  margin: 0 0 var(--s-3);
+}
+.price-table {
+  width: 100%;
+}
+.price-table th.num,
+.price-table td.num {
+  text-align: right;
+  white-space: nowrap;
+}
+.price-table td small {
+  display: block;
+  color: var(--ink-muted);
+}
+.price-table td.num .pill {
+  margin-left: var(--s-2);
+}
+.price-table .row-tools {
+  text-align: right;
+  white-space: nowrap;
+}
+.price-table .row-tools .btn + .btn {
+  margin-left: var(--s-2);
+}
+.price-pick {
+  width: 44px;
+}
+.price-pick input {
+  width: 22px;
+  height: 22px;
+}
+.price-best td {
+  background: var(--pistacho-suave);
+}
+.price-issue {
+  color: var(--azafran-texto);
+  white-space: normal;
+}
+.price-house {
+  margin-top: var(--s-4);
+  padding: var(--s-3) var(--s-5);
+}
+.price-house summary {
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.price-facts {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+.price-join {
+  margin: 0 0 var(--s-3);
+  padding-left: var(--s-5);
+  line-height: 1.7;
+  font-weight: 600;
+}
+.price-confirm {
+  align-items: center;
+  margin-top: var(--s-3);
+}
+.price-confirm input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.ing-panel .table-wrap {
+  overflow-x: auto;
+}
+.ing-table td,
+.ing-table th {
+  padding: 6px 10px;
+}
+.ing-table .ing-status {
+  white-space: nowrap;
+}
+.ing-issue {
+  white-space: normal;
+}
+.ing-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+.ing-panel .toolbar,
+.ing-panel .tabs {
+  flex-wrap: wrap;
+}
+/* El texto oculto de la última cabecera es absoluto: sin esto ensancha la página entera. */
+.ing-panel .table-wrap {
+  position: relative;
+}

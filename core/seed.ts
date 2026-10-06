@@ -310,5 +310,9 @@ export function seed(): State {
     weighings: [],
     referencePrices: [],
     flavorSkips: [],
+    ingredientTable: [],
+    priceList: [],
+    priceLinks: [],
+    priceStars: [],
   };
 }

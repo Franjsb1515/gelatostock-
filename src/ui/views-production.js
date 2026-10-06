@@ -241,9 +241,14 @@ function balanceBlock(r) {
       (f) =>
         `<div class="balance-item ${f.status}"><span>${esc(f.label)}</span><strong>${f.status === "unknown" ? "No disponible" : `${num(f.value)} %`}</strong><small>${f.range ? `${f.range[0]}–${f.range[1]} % · ` : ""}${statusLabel[f.status]}</small></div>`,
     )
+    .join("")}${(b.more || [])
+    .map(
+      (m) =>
+        `<div class="balance-item info"><span>${esc(m.label)}</span><strong>${m.value === null ? "No disponible" : num(m.value) + (m.key === "pac" || m.key === "pod" ? "" : " %")}</strong><small>${m.value === null ? "algún ingrediente no trae este dato" : "informativo"}</small></div>`,
+    )
     .join(
       "",
-    )}</div>${b.complete ? '<p class="fineprint">Calculado con las fichas de composición de los ingredientes (azúcares, grasa, sólidos por 100 g). Los rangos son orientativos para gelato artesanal.</p>' : `<p class="fineprint">Faltan fichas de composición: ${esc(b.missing.join(", "))} (cubierto el ${b.covered} % de la masa). Añádelas en Inventario → Editar producto.</p>`}</div>`;
+    )}</div>${b.mixedSugars ? '<p class="ai-warning">El azúcar de esta receta mezcla dos formas de contar: unas fichas traen la lactosa aparte (las de la tabla de ingredientes) y otras no la separan. El porcentaje de azúcar puede salir más alto de lo que es.</p>' : ""}${b.complete ? '<p class="fineprint">Calculado con las fichas de composición de los ingredientes (azúcares, grasa, sólidos por 100 g). Los rangos son los orientativos de la app, no los de tu tabla.</p>' : `<p class="fineprint">Faltan fichas de composición: ${esc(b.missing.join(", "))} (cubierto el ${b.covered} % de la masa). Añádelas en Inventario → Editar producto.</p>`}</div>`;
 }
 
 document.addEventListener("change", (e) => {

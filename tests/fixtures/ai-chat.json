@@ -316,5 +316,29 @@
     "question": "¿Dónde pongo el orden en que se añaden los ingredientes de una receta?",
     "expect": ["Orden de preparación"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "tabla_composicion",
+    "question": "¿Cómo subo la tabla con la composición de mis ingredientes?",
+    "expect": ["Tabla de ingredientes"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "tabla_anadir",
+    "question": "¿Cómo añado al inventario los ingredientes de la tabla?",
+    "expect": ["Añadir los marcados"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "precio_mas_barato",
+    "question": "¿Dónde veo qué proveedor es más barato para un ingrediente?",
+    "expect": ["Precios por proveedor"],
+    "forbid": ["no lo sé"]
+  },
+  {
+    "id": "ingrediente_estrella",
+    "question": "¿Cómo marco mis ingredientes más importantes?",
+    "expect": ["estrella"],
+    "forbid": ["no lo sé"]
   }
 ]

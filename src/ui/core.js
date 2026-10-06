@@ -279,6 +279,7 @@ function applyEnvelope(data) {
   if (data.chats) chats = data.chats;
   if (data.alerts) alerts = data.alerts;
   if (data.catalog) catalog = data.catalog;
+  if (data.pricelist) priceCompare = data.pricelist;
   if (data.cruises) cruiseInfo = data.cruises;
   if (data.dataDir) dataDir = data.dataDir;
   archiveWarning = data.archiveWarning;
@@ -467,6 +468,7 @@ const priceSourceLabel = {
   edit: "escrito a mano",
   document: "de un documento",
   message: "de un mensaje",
+  list: "de la lista de precios",
 };
 
 const zoneLabel = {

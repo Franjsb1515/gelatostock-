@@ -942,6 +942,8 @@ async function action(name, el) {
     return;
   }
   if (quickAction(name, el)) return;
+  if (ingredientsAction(name, el)) return;
+  if (await priceListAction(name, el)) return;
   if (await calendarAction(name, el)) return;
   if (await extendedAction(name, el)) return;
   if (name === "close") {

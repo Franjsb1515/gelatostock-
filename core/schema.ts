@@ -60,8 +60,25 @@ export const scheduleDaySchema = z.object({
 const cents = z.number().int().min(0).max(100_000_000);
 // Composition per 100 g or 100 mL, in percent. Optional: only what the ingredient sheet says.
 const pct = z.number().min(0).max(100);
+// The last three are indexes (PAC, POD), not percentages: fructose has a PAC of 190.
+const index = z.number().min(0).max(1000);
 export const compositionSchema = z
-  .object({ sugars: pct, fat: pct, solids: pct, msnf: pct })
+  .object({
+    sugars: pct,
+    fat: pct,
+    solids: pct,
+    msnf: pct,
+    otherSolids: pct,
+    water: pct,
+    lactose: pct,
+    milkProtein: pct,
+    minerals: pct,
+    protein: pct,
+    fiber: pct,
+    pacSugars: index,
+    pac: index,
+    pod: index,
+  })
   .partial();
 export const zones = z.enum([
   "vitrina",
@@ -129,6 +146,9 @@ export const productSchema = z.object({
     )
     .optional(),
   paused: z.boolean().optional(),
+  // Where the composition comes from when it was taken from the ingredient table («file · row»).
+  // Absent: written by hand in the product sheet.
+  compositionSource: z.string().max(300).optional(),
 });
 const supplierFields = {
   name: text(100),
@@ -521,6 +541,50 @@ export const stateSchema = z.object({
     )
     .max(200000)
     .default([]),
+  // Ingredient composition table read from a PDF of the person and confirmed by her: a library
+  // to fill product sheets from. Each row keeps what the table says and what did not add up.
+  // Kept in meta. It never touches stock.
+  ingredientTable: z
+    .array(
+      z.object({
+        id: idSchema,
+        name: text(100),
+        composition: compositionSchema,
+        source: text(200),
+        page: z.number().int().min(1).max(1000),
+        issues: z.array(z.string().max(300)).max(20).default([]),
+        at,
+      }),
+    )
+    .max(2000)
+    .default([]),
+  // Price list by supplier read from a PDF of the person and confirmed by her: a library to
+  // compare suppliers, never products. `cents` is per litre, kilo or unit, as the list says
+  // (it does not say which); absent = the list gives no price. Kept in meta; never touches stock.
+  priceList: z
+    .array(
+      z.object({
+        id: idSchema,
+        name: text(100),
+        supplier: text(100).optional(),
+        cents: cents.optional(),
+        source: text(200),
+        page: z.number().int().min(1).max(1000),
+        line: z.number().int().min(1).max(100000),
+        issues: z.array(z.string().max(300)).max(20).default([]),
+        at,
+      }),
+    )
+    .max(5000)
+    .default([]),
+  // Names of the price list the person joined by hand («es el mismo ingrediente»): each entry is
+  // a set of folded names. Nothing is joined automatically beyond an identical folded name.
+  priceLinks: z
+    .array(z.array(text(120)).min(2).max(50))
+    .max(2000)
+    .default([]),
+  // Star ingredients, marked by the person (folded names). The app never decides them.
+  priceStars: z.array(text(120)).max(5000).default([]),
   // Days a flavour is not made on purpose: its minimum does not warn that day. Kept in meta.
   flavorSkips: z
     .array(z.object({ date: documentDate, product: idSchema, at }))
@@ -556,9 +620,12 @@ export const stateSchema = z.object({
         at,
         from: cents,
         to: cents,
-        source: z.enum(["edit", "document", "message"]).default("edit"),
+        source: z.enum(["edit", "document", "message", "list"]).default("edit"),
         // The document or the message that justifies the price, when there is one.
         ref: idSchema.optional(),
+        // For a price taken from the price list: «file · page · row», kept as text because the
+        // list can be replaced or emptied later.
+        refLabel: z.string().max(300).optional(),
       }),
     )
     .max(100000)
@@ -942,6 +1009,78 @@ export const actionSchema = z.intersection(
         )
         .min(1)
         .max(500),
+    }),
+    // Ingredient table: rows read from the person's PDF (the server parses the file again when
+    // she confirms; nothing typed by the screen), products created from rows, a row applied to
+    // an existing product, and emptying the table (products keep what they have).
+    z.object({
+      type: z.literal("importIngredientTable"),
+      source: text(200),
+      rows: z
+        .array(
+          z.object({
+            name: text(100),
+            page: z.number().int().min(1).max(1000),
+            composition: compositionSchema,
+            issues: z.array(z.string().max(300)).max(20).default([]),
+          }),
+        )
+        .min(1)
+        .max(2000),
+    }),
+    z.object({
+      type: z.literal("addTableProducts"),
+      entries: z.array(idSchema).min(1).max(2000),
+      supplier: idSchema,
+      category: productFields.category,
+      unit: z.enum(["kg", "L"]),
+      zone: zones.default("almacen"),
+    }),
+    z.object({
+      type: z.literal("applyTableComposition"),
+      entry: idSchema,
+      product: idSchema,
+    }),
+    z.object({ type: z.literal("clearIngredientTable") }),
+    // Price list by supplier: rows read from the person's PDF (the server parses the file again
+    // when she confirms), names joined by hand, star ingredients, and one price of the list
+    // written on a product, always confirmed by her and citing file, page and row.
+    z.object({
+      type: z.literal("importPriceList"),
+      source: text(200),
+      // Quita también las filas de otros archivos (la lista nueva sustituye a las anteriores).
+      replace: z.boolean().default(false),
+      rows: z
+        .array(
+          z.object({
+            name: text(100),
+            supplier: text(100).nullable().default(null),
+            cents: cents.nullable().default(null),
+            page: z.number().int().min(1).max(1000),
+            line: z.number().int().min(1).max(100000),
+            issues: z.array(z.string().max(300)).max(20).default([]),
+          }),
+        )
+        .min(1)
+        .max(5000),
+    }),
+    z.object({ type: z.literal("clearPriceList") }),
+    z.object({
+      type: z.literal("linkPriceRows"),
+      rows: z.array(idSchema).min(2).max(20),
+    }),
+    z.object({ type: z.literal("unlinkPriceRow"), row: idSchema }),
+    z.object({
+      type: z.literal("starPriceRow"),
+      row: idSchema,
+      star: z.boolean(),
+    }),
+    z.object({
+      type: z.literal("usePriceRow"),
+      row: idSchema,
+      product: idSchema,
+      // Create the supplier of the row when it is not among the person's suppliers.
+      addSupplier: z.boolean().default(false),
     }),
     // «Hoy no se hace»: that flavour's minimum does not warn on that day (skip false undoes it).
     z.object({

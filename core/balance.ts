@@ -27,7 +27,29 @@ export type BalanceFlag = {
   range: [number, number] | null;
   status: "ok" | "low" | "high" | "info" | "unknown";
 };
+/** Otros valores de la ficha (agua, proteínas, PAC, POD…): se informan, sin rango. */
+export const balanceMoreKeys = [
+  "water",
+  "otherSolids",
+  "lactose",
+  "protein",
+  "fiber",
+  "pac",
+  "pod",
+] as const;
+export type BalanceMore = {
+  key: (typeof balanceMoreKeys)[number];
+  label: string;
+  /** null: algún ingrediente no trae ese dato (No disponible). */
+  value: number | null;
+};
 export type RecipeBalance = {
+  /**
+   * Fichas que cuentan el azúcar de dos formas en la misma receta: las de la tabla de ingredientes
+   * traen la lactosa aparte; una ficha sin lactosa puede llevarla dentro del azúcar.
+   */
+  mixedSugars: boolean;
+  more: BalanceMore[];
   mass: number;
   covered: number;
   missing: string[];
@@ -45,6 +67,11 @@ export function recipeBalance(s: State, r: Recipe): RecipeBalance {
     solids: 0,
     msnf: 0,
   };
+  const moreTotals = new Map<string, number | null>(
+    balanceMoreKeys.map((k) => [k, 0]),
+  );
+  let withLactose = 0,
+    withoutLactose = 0;
   const missing: string[] = [];
   // Un dato que la ficha no trae no es 0: ese valor queda «sin datos» (No disponible).
   const lacking = new Set<BalanceKey>();
@@ -53,11 +80,24 @@ export function recipeBalance(s: State, r: Recipe): RecipeBalance {
     if (!p || p.unit === "ud") continue;
     mass += i.quantity;
     const c = p.composition;
+    for (const k of balanceMoreKeys) {
+      const sum = moreTotals.get(k);
+      const v = c?.[k];
+      moreTotals.set(
+        k,
+        sum === null || sum === undefined || v === undefined
+          ? null
+          : sum + (i.quantity * v) / 100,
+      );
+    }
     if (!c || keys.every((k) => c[k] === undefined)) {
       missing.push(p.name);
       continue;
     }
     covered += i.quantity;
+    if (c.sugars !== undefined)
+      if (c.lactose !== undefined) withLactose++;
+      else withoutLactose++;
     for (const k of keys) {
       if (c[k] === undefined) lacking.add(k);
       totals[k] += (i.quantity * (c[k] ?? 0)) / 100;
@@ -87,7 +127,25 @@ export function recipeBalance(s: State, r: Recipe): RecipeBalance {
               : "ok";
     return { key, label: balanceLabels[key], value, range, status };
   });
+  const moreLabels: Record<string, string> = {
+    water: "Agua",
+    otherSolids: "Otros sólidos",
+    lactose: "Lactosa",
+    protein: "Proteínas totales",
+    fiber: "Fibras",
+    pac: "PAC total",
+    pod: "POD",
+  };
   return {
+    mixedSugars: withLactose > 0 && withoutLactose > 0,
+    more: balanceMoreKeys.map((key) => {
+      const sum = moreTotals.get(key);
+      return {
+        key,
+        label: moreLabels[key] ?? key,
+        value: mass && sum !== null && sum !== undefined ? pct(sum) : null,
+      };
+    }),
     mass: Math.round(mass * 1000) / 1000,
     covered: mass ? Math.round((covered / mass) * 100) : 0,
     missing,

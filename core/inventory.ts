@@ -28,6 +28,12 @@ export function priceAlerts(s: State, days = 30): PriceAlert[] {
   const out: PriceAlert[] = [];
   for (const e of [...s.prices].reverse()) {
     if (Date.parse(e.at) < since || seen.has(e.product)) continue;
+    // Una entrada de la lista de precios para otro proveedor no es el precio del producto.
+    if (
+      e.source === "list" &&
+      e.supplier !== s.products.find((x) => x.id === e.product)?.supplier
+    )
+      continue;
     seen.add(e.product);
     if (e.to <= e.from || e.from === 0) continue;
     const p = s.products.find((x) => x.id === e.product);
@@ -50,6 +56,7 @@ export const priceSourceLabels: Record<string, string> = {
   edit: "escrito a mano",
   document: "de un documento",
   message: "de un mensaje",
+  list: "de la lista de precios",
 };
 export type CatalogLine = {
   product: string;
@@ -62,7 +69,7 @@ export type CatalogLine = {
   // When that price was written down. Null when nothing records it: then it is "No disponible",
   // never guessed from the day the product was created.
   since: string | null;
-  source: "edit" | "document" | "message" | null;
+  source: "edit" | "document" | "message" | "list" | null;
   ref: string | null;
   refLabel: string | null;
 };
@@ -77,6 +84,7 @@ export function supplierCatalog(s: State, supplier: string): CatalogLine[] {
       return { since: null, source: null, ref: null, refLabel: null };
     const ref = last.ref ?? null;
     let refLabel: string | null = null;
+    if (last.source === "list") refLabel = last.refLabel ?? null;
     if (ref && last.source === "document")
       refLabel = s.photos.find((p) => p.id === ref)?.name ?? null;
     if (ref && last.source === "message") {
@@ -98,7 +106,10 @@ export function supplierCatalog(s: State, supplier: string): CatalogLine[] {
         ...origin(p.id, p.price),
       });
     const alt = p.alternates.find((x) => x.supplier === supplier);
-    if (alt)
+    if (alt) {
+      // Written by hand unless the last note for this supplier is this very price (taken from
+      // the price list, which cites file, page and row).
+      const from = origin(p.id, alt.price);
       out.push({
         product: p.id,
         name: p.name,
@@ -106,11 +117,16 @@ export function supplierCatalog(s: State, supplier: string): CatalogLine[] {
         pack: alt.pack,
         price: alt.price,
         usual: false,
-        since: null,
-        source: "edit",
-        ref: null,
-        refLabel: null,
+        ...(from.source === "list"
+          ? from
+          : {
+              since: null,
+              source: "edit" as const,
+              ref: null,
+              refLabel: null,
+            }),
       });
+    }
   }
   return out.sort(
     (a, b) =>

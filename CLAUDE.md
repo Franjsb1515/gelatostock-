@@ -1,4 +1,4 @@
-# Entrada para Claude · entrega vigente 0.56.0
+# Entrada para Claude · entrega vigente 0.57.0
 
 Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes y el mapa. El detalle de cada versión está en docs/CONTINUIDAD.md (léelo solo para el módulo que vayas a tocar) y en reports/.
 
@@ -18,6 +18,7 @@ Este archivo se carga entero en cada sesión: aquí van solo las reglas vigentes
 - Una fase por sesión, una versión por fase y un solo cierre (paquete, prueba de escritorio, evaluación del chat, ZIP). Los cambios pequeños se agrupan en la versión de la fase.
 - Lee solo lo que vayas a tocar: TODO.md, el plan vigente y la entrada del módulo en docs/CONTINUIDAD.md. No leas reports/ antiguos ni docs/origen/ salvo duda concreta.
 - Si la conversación ya es muy larga al acabar una fase, recomienda al usuario abrir una sesión nueva: todo lo necesario está en estos documentos.
+- Tabla de ingredientes y precios por proveedor (0.57.0): se leen de PDF del usuario por posiciones y solo se guardan con su confirmación (el servidor relee el archivo); dato ausente = sin valor, nunca 0; nada se corrige ni se agrupa «por parecido»; añadir al inventario no preelige proveedor, unidad, categoría ni zona. Esos PDF y sus volcados de work/ son datos reales: nunca a tests/, fixtures ni informes.
 - Lista viva de mejoras (textos, visual, tablets): docs/CHECKLIST_MEJORAS.md (0.56.0). Orden de preparación: recipe.process solo guía («Preparar»); nunca mueve stock.
 - Plan vigente (2026-10-05): docs/PLAN_PRODUCCION_RAPIDA.md, hecho en 0.55.0 (producción por botones, tandas, bases de la cámara o hechas ahora, «Hecho» en un paso; contraseña del recetario = editar, no producir). Antes: docs/PLAN_FICHA_PRODUCCION.md (0.52.0). Antes: docs/PLAN_CALENDARIO.md. Fase 1 hecha en 0.48.0 («La tienda no abrió») y fase 2 en 0.49.0 (horario semanal, vacaciones, stock del día y avisos) y fase 3 en 0.50.0 (fotos: propuesta por reglas que la persona confirma); la clave está aplazada y falta medir con fotos reales del usuario. Plan anterior: docs/PLAN_COMPRAS_MENSAJES_II.md (cinco fases; hechas la 1, la 2, la 3 y la 5; queda la 4, parada hasta que el usuario mande tarifas reales; respuestas del usuario del 2026-09-20 dentro). Sin tarifas, se trabaja lo siguiente de TODO.md: así salió la 0.38.0. docs/PLAN_PRODUCCION_VENTAS_CAJA.md está terminado (seis fases): ábrelo solo por una duda concreta.
 

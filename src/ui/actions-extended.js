@@ -300,12 +300,12 @@ async function extendedAction(name, el) {
     modal(
       "Editar producto",
       "La unidad de medida y el stock se conservan. Los pedidos existentes mantienen su presentación y precio.",
-      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Cuánto trae cada paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${select("Zona de conteo", "zone", Object.entries(zoneLabel), p.zone || "almacen")}${["sugars", "fat", "solids", "msnf"].map((k) => field({ sugars: "Azúcares % (ficha)", fat: "Grasa % (ficha)", solids: "Sólidos totales % (ficha)", msnf: "Sólidos lácteos no grasos % (ficha)" }[k], "comp_" + k, p.composition?.[k] ?? "", "number", 'min="0" max="100" step="0.1" placeholder="opcional"')).join("")}${select(
+      `<div class="form-grid">${field("Nombre", "name", p.name, "text", 'required maxlength="100"')}${field("Presentación / detalle", "detail", p.detail, "text", 'maxlength="200"')}${field("Stock mínimo", "min", p.min, "number", 'min="0" max="1000000" step="0.001" required')}${field("Stock objetivo", "target", p.target, "number", 'min="0" max="1000000" step="0.001" required')}${field("Cuánto trae cada paquete", "pack", p.pack, "number", 'min="0.001" max="1000000" step="0.001" required')}${field("Precio por paquete (€)", "price", p.price / 100, "number", 'min="0" max="1000000" step="0.01" required')}${select("Zona de conteo", "zone", Object.entries(zoneLabel), p.zone || "almacen")}${select(
         "Proveedor",
         "supplier",
         state.suppliers.map((s) => [s.id, s.name]),
         p.supplier,
-      )}</div>`,
+      )}</div><details class="comp-fields" ${p.composition ? "open" : ""}><summary>Composición por 100 g</summary>${p.compositionSource ? `<p class="fineprint">Tomada de ${esc(p.compositionSource)}. Si cambias un valor, deja de constar como «de la tabla».</p>` : ""}<div class="form-grid">${compKeys.map(([k, l]) => field(l + (compIndex.includes(k) ? "" : " %"), "comp_" + k, p.composition?.[k] ?? "", "number", `min="0" max="${compIndex.includes(k) ? 1000 : 100}" step="0.1" placeholder="sin dato"`)).join("")}</div></details>`,
       async (f) => {
         const a = Object.fromEntries(f);
         for (const k of ["min", "target", "pack"]) a[k] = Number(a[k]);
@@ -316,7 +316,8 @@ async function extendedAction(name, el) {
             product: p.id,
             ...a,
             composition: Object.fromEntries(
-              ["sugars", "fat", "solids", "msnf"]
+              compKeys
+                .map(([k]) => k)
                 .filter(
                   (k) =>
                     f.get("comp_" + k) !== "" && f.get("comp_" + k) !== null,

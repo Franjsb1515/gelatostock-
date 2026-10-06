@@ -108,12 +108,14 @@ function cartTotalText(lines) {
   return money(lines.reduce((n, l) => n + l.packs * cartSupply(l).price, 0));
 }
 function orders() {
+  if (priceListOpen) return priceListView();
   const total = cartTotalText(state.cart);
   return (
     header(
       "Compras con todo bajo control.",
       "Prepara el carrito, revisa el pedido y registra lo que llega.",
-      btn("Sugerir reposición", "suggest", "primary"),
+      btn("Precios por proveedor", "priceShow", "secondary") +
+        btn("Sugerir reposición", "suggest", "primary"),
     ) +
     `<div class="notice">${icon("shield")}<div><strong>Pedidos reales solo por WhatsApp</strong><span>Solo se envían cuando tú lo confirmas. La app nunca paga.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${
       state.cart.length

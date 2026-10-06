@@ -41,6 +41,7 @@ function productTable(items, compact = false) {
         "<h3>Todo en orden</h3><p>No hay productos en esta selección.</p></div>";
 }
 function stock() {
+  if (ingredientsOpen) return ingredientsView();
   const items = state.products.filter(
     (p) =>
       (filter === "Todos" ||
@@ -54,6 +55,7 @@ function stock() {
       btn(icon("plus") + " Entrada / salida", "movement", "primary") +
         btn(icon("check") + " Hoja de conteo", "countSheet") +
         btn(icon("photo") + " Cargar foto", "photo") +
+        btn("Tabla de ingredientes", "ingredientsShow") +
         btn(icon("plus") + " Nuevo producto", "product", "primary"),
     ) +
     `<section class="panel"><div class="toolbar"><div class="tabs">${["Todos", "Stock bajo", "Gelatería", "Cafetería", "Postres", "Envases"].map((f) => `<button data-filter="${f}" class="tab ${filter === f ? "selected" : ""}">${f}${f === "Stock bajo" ? ` <span>${low().length}</span>` : ""}</button>`).join("")}</div><label class="search">${icon("search")}<input id="search" placeholder="Buscar producto…" value="${esc(query)}" aria-label="Buscar producto"></label></div>${productTable(items)}<div class="table-footer">${items.length} productos</div></section>`

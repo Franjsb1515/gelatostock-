@@ -30,7 +30,13 @@ const {
   localDate,
 } = require("../build/domain.js");
 const { recognizeLocal, imageBytes } = require("./ocr.cjs");
-const { readPdfText } = require("./pdftext.cjs");
+const { readPdfText, readPdfItems } = require("./pdftext.cjs");
+const { parseCompositionTable } = require("../build/comptable.js");
+const {
+  parsePriceList,
+  priceReadingSummary,
+  priceGroups,
+} = require("../build/pricelist.js");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { normalize: normalizePhone } = require("./whatsapp-store.cjs");
 const { LocalAI } = require("./ai.cjs");
@@ -412,6 +418,8 @@ function createApp({
     cruises: cruiseInfo(),
     // Qué le compra a cada proveedor, a qué precio y desde cuándo (core/inventory.ts).
     catalog: supplierCatalogs(state),
+    // Lista de precios por proveedor ya comparada (core/pricelist.ts): solo ordena lo guardado.
+    pricelist: priceGroups(state),
     alerts: {
       prices: priceAlerts(state, 30),
       counts: countStatus(state, countDays()),
@@ -857,6 +865,8 @@ function createApp({
         "/api/ocr",
         "/api/calendar/photo",
         "/api/pdf",
+        "/api/ingredients/table",
+        "/api/pricelist",
       ].includes(u.pathname)
     ) {
       if (
@@ -878,7 +888,9 @@ function createApp({
               : u.pathname === "/api/ocr" ||
                   u.pathname === "/api/calendar/photo"
                 ? 8_100_000
-                : u.pathname === "/api/pdf"
+                : u.pathname === "/api/pdf" ||
+                    u.pathname === "/api/pricelist" ||
+                    u.pathname === "/api/ingredients/table"
                   ? 14_000_000
                   : u.pathname === "/api/identify"
                     ? 100_000
@@ -1170,6 +1182,67 @@ function createApp({
         }
         if (u.pathname === "/api/identify") {
           json(200, identifySupplier(store.load(), data));
+          return;
+        }
+        if (u.pathname === "/api/ingredients/table") {
+          // Tabla de composición de ingredientes en PDF: se lee por columnas y se propone. Solo se
+          // guarda con confirm, y entonces el archivo se vuelve a leer aquí: lo que entra en la
+          // tabla es lo que dice el PDF, no lo que mande la pantalla.
+          const read = await readPdfItems(data.data);
+          const table = read.reason
+            ? { rows: [], skipped: [], columns: [], reason: read.reason }
+            : parseCompositionTable(read.pages);
+          const source = String(data.name || "Tabla de ingredientes")
+            .replace(/[\u0000-\u001f]/g, "")
+            .trim()
+            .slice(0, 200);
+          if (!data.confirm || !table.rows.length) {
+            json(200, { table, pages: read.total, truncated: read.truncated });
+            return;
+          }
+          if (!Number.isInteger(data.revision))
+            throw Error("Falta la versión de los datos: recarga la pantalla.");
+          const state = store.dispatch({
+            type: "importIngredientTable",
+            source: source || "Tabla de ingredientes",
+            rows: table.rows,
+            revision: data.revision,
+          });
+          json(200, envelope(state, { table }));
+          return;
+        }
+        if (u.pathname === "/api/pricelist") {
+          // Lista de precios por proveedor en PDF: se lee por columnas y se propone. Solo se guarda
+          // con confirm, y entonces el archivo se vuelve a leer aquí: lo que entra en la lista es
+          // lo que dice el PDF, no lo que mande la pantalla. No toca productos, precios ni stock.
+          const read = await readPdfItems(data.data);
+          const reading = read.reason
+            ? { rows: [], skipped: [], reason: read.reason }
+            : parsePriceList(read.pages);
+          const source = String(data.name || "Lista de precios")
+            .replace(/[\u0000-\u001f]/g, "")
+            .trim()
+            .slice(0, 200);
+          const proposal = {
+            reading,
+            summary: priceReadingSummary(reading),
+            pages: read.total,
+            truncated: read.truncated,
+          };
+          if (!data.confirm || !reading.rows.length) {
+            json(200, proposal);
+            return;
+          }
+          if (!Number.isInteger(data.revision))
+            throw Error("Falta la versión de los datos: recarga la pantalla.");
+          const state = store.dispatch({
+            type: "importPriceList",
+            replace: data.replace === true,
+            source: source || "Lista de precios",
+            rows: reading.rows,
+            revision: data.revision,
+          });
+          json(200, envelope(state, proposal));
           return;
         }
         if (u.pathname === "/api/pdf") {
@@ -1586,6 +1659,7 @@ function createApp({
       "/ui/whatsapp.js": "ui/whatsapp.js",
       "/ui/views.js": "ui/views.js",
       "/ui/views-orders.js": "ui/views-orders.js",
+      "/ui/views-pricelist.js": "ui/views-pricelist.js",
       "/ui/views-production.js": "ui/views-production.js",
       "/ui/views-messages.js": "ui/views-messages.js",
       "/ui/views-documents.js": "ui/views-documents.js",
@@ -1594,6 +1668,7 @@ function createApp({
       "/ui/views-weekly.js": "ui/views-weekly.js",
       "/ui/views-cruises.js": "ui/views-cruises.js",
       "/ui/views-calendar.js": "ui/views-calendar.js",
+      "/ui/views-ingredients.js": "ui/views-ingredients.js",
       "/ui/calendar-photo.js": "ui/calendar-photo.js",
       "/ui/calendar-sheet.js": "ui/calendar-sheet.js",
       "/ui/production-quick.js": "ui/production-quick.js",

@@ -1,4 +1,4 @@
-# TODO — estado real de 0.56.0
+# TODO — estado real de 0.57.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -31,6 +31,11 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [ ] [tú] Poner la contraseña del Recetario, crear la Base blanca (familia Base) y usarla en tus sabores; corregir «cocadado» (500 L → 500 ml).
 - [x] [app] La prueba de escritorio recorre la producción rápida y «Preparar» (0.56.0).
 - [x] [app] «Preparar» paso a paso, − / + de 500 g y «Orden de preparación» por receta (0.56.0, pedido por ti el 2026-10-05).
+- [x] [app] Tabla de ingredientes con la composición (0.57.0) y precios por proveedor en Compras (0.57.0), pedidos por ti el 2026-10-05 con tus dos PDF.
+- [ ] [tú] Subir tus dos PDF en la app: Inventario → «Tabla de ingredientes» → «Subir tabla», y Compras → «Precios por proveedor». No se han cargado en tus datos reales: lo confirmas tú en pantalla.
+- [ ] [tú] Decidir: (1) qué fila de rangos de tu tabla vale para cada familia (gelato, gelato de fruta, sorbete de fruta, sorbete de cremas, base) para usarlos en el balance en lugar de los de la app; (2) si los precios de tu lista son todos por kilo o litro; (3) qué nombres parecidos de la lista son el mismo ingrediente y cuáles son tus ingredientes estrella (se marcan en pantalla).
+- [ ] [app] Que la comparación de precios llegue al carrito y a «Sugerir reposición»; proponer «posibles iguales» para que los confirmes; recordar a qué producto corresponde cada nombre de la lista.
+- [ ] [app] La prueba de escritorio no recorre la tabla de ingredientes ni los precios por proveedor (los cubren work/check-tabla-ingredientes.cjs y work/check-pricelist-ui.cjs).
 - [ ] [tú] Poner el orden de preparación de tus recetas (Recetario → la receta → «Orden de preparación»).
 - [ ] [app] Lista de mejoras de textos, visual y tablets: docs/CHECKLIST_MEJORAS.md. Siguiente paso propuesto: interfaz táctil y estrecha (botones de 44 px, barra lateral plegable, Compras e Inventario a 768 px).
 - [ ] [tú] Tablets: decir qué tablet (Windows o iPad/Android), si acompaña al ordenador, y si hay wifi separada de la de clientes (preguntas al final de docs/CHECKLIST_MEJORAS.md).

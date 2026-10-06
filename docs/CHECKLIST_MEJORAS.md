@@ -9,6 +9,18 @@ Sale de dos revisiones con medidas: reports/2026-10-06T03-00-00-000Z-limpieza-te
 - [x] Menos texto en 12 pantallas: 6200 → 5301 palabras, sin quitar avisos ni fórmulas.
 - [x] «Escanea» en lugar de «Escaneá» en la pantalla de WhatsApp.
 
+## Tabla de ingredientes y precios (de los dos jueces, 0.57.0)
+- [x] Añadir al inventario sin nada preelegido; filas imposibles apartadas sin romper la tabla; página sin cabecera dicha; aviso de azúcar contado de dos formas; desbordamiento de la tabla.
+- [x] Una lista de precios nueva puede sustituir a la anterior; un precio de «otro proveedor» no tapa la subida del habitual.
+- [ ] Usar en el balance los rangos de tu tabla (y rangos de PAC y POD): falta tu decisión de qué fila vale para cada familia.
+- [ ] Una sola forma de contar el azúcar: pasar las fichas antiguas a la de la tabla.
+- [ ] Emparejar la tabla y la lista de precios con tus productos (hoy solo por nombre igual: 1 de 153 y 1 de 131).
+- [ ] Que los precios lleguen al carrito y a «Sugerir reposición»; proponer «posibles iguales» (la leche de tres proveedores) para confirmar.
+- [ ] «Usar este precio…»: comprobar la unidad, enseñar cuánto cambia el precio antes de aceptar.
+- [ ] Lector de listas con otra forma: nombre en dos líneas, cabecera solo en la primera página, fila «TOTAL».
+- [ ] Reimportar la tabla no retira las filas que ya no vienen; «Ver todo» no compara antes de sustituir; la contraseña del recetario no protege la tabla.
+- [ ] Agrupar la tabla por tipo (lácteos, azúcares, frutas…): la tabla no lo dice; habría que marcarlo a mano.
+
 ## Textos
 - [ ] Recetario y tarjeta «Recetario protegido» de Configuración: no se limpiaron en 0.56.0.
 - [ ] Guía y Ayudante explican cosas que la pantalla ya no dice (aviso de mensajes, sesión de WhatsApp, «Otro contacto»): repasar que sigan cuadrando; repetir la evaluación del chat.

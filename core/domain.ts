@@ -85,8 +85,27 @@ import {
 } from "./day";
 export { computeDay, daySummary, isDayClosed } from "./day";
 import { businessDay } from "./plan";
-import { addDays, isOff } from "./util";
+import { addDays, fold, isOff } from "./util";
+export {
+  parseCompositionTable,
+  compositionKeys,
+  compositionLabels,
+  compositionIndex,
+} from "./comptable";
 export { productionPlan, todayBrief, businessDay } from "./plan";
+import {
+  priceKey,
+  isHouse,
+  linkedKeys,
+  priceRowSource,
+  supplierInitials,
+} from "./pricelist";
+export {
+  parsePriceList,
+  priceReadingSummary,
+  priceGroups,
+  priceKey,
+} from "./pricelist";
 const eur = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",") + " €";
 export const round = (n: number) => Math.round(n * 1000) / 1000;
@@ -543,6 +562,9 @@ function approveProduction(
     );
   return { consumed, negative };
 }
+/** De dónde sale una composición tomada de la tabla: archivo, página y fila. */
+const tableSource = (e: { source: string; page: number; name: string }) =>
+  `${e.source} · página ${e.page} · «${e.name}»`.slice(0, 300);
 const negativeNote = (negative: string[]) =>
   negative.length
     ? ` Atención: la app no tenía suficiente y queda en negativo: ${negative.join(", ")}. Revísalo con un conteo en Inventario.`
@@ -710,12 +732,15 @@ export function apply(state: State, input: unknown): State {
       });
       // The usual supplier never stays duplicated in the list of other suppliers.
       p.alternates = p.alternates.filter((x) => x.supplier !== a.supplier);
-      if (a.composition !== undefined)
-        p.composition = Object.values(a.composition).some(
-          (v) => v !== undefined,
-        )
+      if (a.composition !== undefined) {
+        const next = Object.values(a.composition).some((v) => v !== undefined)
           ? a.composition
           : undefined;
+        // Cambiada a mano, la composición deja de ser «la de la tabla».
+        if (JSON.stringify(next ?? {}) !== JSON.stringify(p.composition ?? {}))
+          delete p.compositionSource;
+        p.composition = next;
+      }
       note = `Ficha actualizada: ${p.name}. La unidad de medida y el stock no se modificaron.`;
       break;
     }
@@ -1376,6 +1401,269 @@ export function apply(state: State, input: unknown): State {
       note = a.steps.length
         ? `Orden de preparación de ${r.name}: ${a.steps.length} ${a.steps.length === 1 ? "paso" : "pasos"}.`
         : `${r.name} ya no tiene orden de preparación propio.`;
+      break;
+    }
+    case "importIngredientTable": {
+      let added = 0,
+        updated = 0;
+      for (const row of a.rows) {
+        const old = s.ingredientTable.find(
+          (x) => fold(x.name) === fold(row.name),
+        );
+        const entry = {
+          name: row.name,
+          composition: row.composition,
+          source: a.source,
+          page: row.page,
+          issues: row.issues,
+          at: now(),
+        };
+        if (old) {
+          Object.assign(old, entry);
+          updated++;
+        } else {
+          s.ingredientTable.push({ id: randomUUID(), ...entry });
+          added++;
+        }
+      }
+      note = `Tabla de ingredientes «${a.source}»: ${added} ${added === 1 ? "fila nueva" : "filas nuevas"}${updated ? ` y ${updated} actualizadas` : ""}. No cambia el inventario ni el stock.`;
+      break;
+    }
+    case "addTableProducts": {
+      item(s.suppliers, a.supplier);
+      const made: string[] = [];
+      const had: string[] = [];
+      for (const id of [...new Set(a.entries)]) {
+        const e = item(s.ingredientTable, id);
+        if (s.products.some((p) => fold(p.name) === fold(e.name))) {
+          had.push(e.name);
+          continue;
+        }
+        s.products.push({
+          id: randomUUID(),
+          name: e.name,
+          composition: e.composition,
+          compositionSource: tableSource(e),
+          zone: a.zone,
+          detail: "",
+          category: a.category,
+          unit: a.unit,
+          stock: 0,
+          min: 0,
+          target: 0,
+          pack: 1,
+          price: 0,
+          supplier: a.supplier,
+          alternates: [],
+          icon: "box",
+        });
+        made.push(e.name);
+      }
+      ensure(
+        made.length,
+        "Esos ingredientes ya están en el inventario con el mismo nombre.",
+      );
+      note =
+        `Añadidos al inventario desde la tabla de ingredientes: ${made.length} (${made.slice(0, 5).join(", ")}${made.length > 5 ? "…" : ""}), con stock 0 y sin precio.` +
+        (had.length
+          ? ` Ya estaban y no se tocan: ${had.slice(0, 5).join(", ")}${had.length > 5 ? "…" : ""}.`
+          : "");
+      break;
+    }
+    case "applyTableComposition": {
+      const e = item(s.ingredientTable, a.entry);
+      const p = item(s.products, a.product);
+      ensure(
+        p.unit !== "ud",
+        "La composición es por 100 g: no vale para un producto que se cuenta por unidades.",
+      );
+      p.composition = e.composition;
+      p.compositionSource = tableSource(e);
+      note = `Composición de ${p.name} tomada de la tabla de ingredientes (fila «${e.name}»). El stock no cambia.`;
+      break;
+    }
+    case "clearIngredientTable": {
+      const n = s.ingredientTable.length;
+      s.ingredientTable = [];
+      note = `Tabla de ingredientes vaciada (${n} filas). Los productos conservan su composición.`;
+      break;
+    }
+    case "importPriceList": {
+      // Same name and same supplier = the same row: it keeps its id. Rows of this file that the
+      // new reading no longer brings go away; rows of other files stay.
+      const rowKey = (r: { name: string; supplier?: string | null }) =>
+        priceKey(r.name) + "|" + priceKey(r.supplier ?? "");
+      const old = new Map(s.priceList.map((r) => [rowKey(r), r]));
+      const fresh = new Map<string, State["priceList"][number]>();
+      let added = 0,
+        updated = 0;
+      for (const row of a.rows) {
+        const key = rowKey(row);
+        if (fresh.has(key)) continue;
+        const before = old.get(key);
+        if (before) updated++;
+        else added++;
+        fresh.set(key, {
+          id: before?.id ?? randomUUID(),
+          name: row.name,
+          ...(row.supplier ? { supplier: row.supplier } : {}),
+          ...(row.cents !== null ? { cents: row.cents } : {}),
+          source: a.source,
+          page: row.page,
+          line: row.line,
+          issues: row.issues,
+          at: now(),
+        });
+      }
+      const kept = a.replace
+        ? []
+        : s.priceList.filter(
+            (r) => r.source !== a.source && !fresh.has(rowKey(r)),
+          );
+      const gone = s.priceList.length - kept.length - updated;
+      s.priceList = [...kept, ...fresh.values()];
+      ensure(
+        s.priceList.length <= 5000,
+        "La lista de precios no admite más de 5.000 filas.",
+      );
+      note =
+        `Lista de precios «${a.source}»: ${added} ${added === 1 ? "fila nueva" : "filas nuevas"}` +
+        (updated ? `, ${updated} actualizadas` : "") +
+        (gone > 0 ? `, ${gone} que ya no vienen` : "") +
+        ". No cambia productos, precios ni stock.";
+      break;
+    }
+    case "clearPriceList": {
+      const n = s.priceList.length;
+      ensure(n, "No hay ninguna lista de precios guardada.");
+      s.priceList = [];
+      s.priceLinks = [];
+      s.priceStars = [];
+      note = `Lista de precios vaciada (${n} filas). Los precios apuntados en los productos no cambian.`;
+      break;
+    }
+    case "linkPriceRows": {
+      const rows = [...new Set(a.rows)].map((id) => item(s.priceList, id));
+      ensure(
+        !rows.some((r) => isHouse(r.supplier)),
+        "Lo hecho en casa no se compara con lo que se compra.",
+      );
+      const keys = new Set(
+        rows.flatMap((r) => linkedKeys(s, priceKey(r.name))),
+      );
+      ensure(
+        new Set(rows.map((r) => linkedKeys(s, priceKey(r.name))[0])).size > 1,
+        "Esas filas ya cuentan como el mismo ingrediente.",
+      );
+      ensure(keys.size <= 50, "Demasiados nombres juntos en un ingrediente.");
+      s.priceLinks = [
+        ...s.priceLinks.filter((set) => !set.some((k) => keys.has(k))),
+        [...keys],
+      ];
+      note = `Juntados como el mismo ingrediente: ${[...new Set(rows.map((r) => r.name))].join(", ")}. Lo has decidido tú: la lista no dice que sean iguales.`;
+      break;
+    }
+    case "unlinkPriceRow": {
+      const row = item(s.priceList, a.row);
+      const key = priceKey(row.name);
+      ensure(
+        s.priceLinks.some((set) => set.includes(key)),
+        "Esa fila no estaba juntada con ninguna otra.",
+      );
+      s.priceLinks = s.priceLinks
+        .map((set) => set.filter((k) => k !== key))
+        .filter((set) => set.length > 1);
+      note = `${row.name} vuelve a compararse por separado.`;
+      break;
+    }
+    case "starPriceRow": {
+      const row = item(s.priceList, a.row);
+      const keys = linkedKeys(s, priceKey(row.name));
+      s.priceStars = s.priceStars.filter((k) => !keys.includes(k));
+      if (a.star) s.priceStars.push(...keys);
+      note = a.star
+        ? `${row.name} marcado como ingrediente estrella.`
+        : `${row.name} ya no está marcado como ingrediente estrella.`;
+      break;
+    }
+    case "usePriceRow": {
+      const row = item(s.priceList, a.row);
+      const p = item(s.products, a.product);
+      ensure(
+        !isHouse(row.supplier),
+        "Eso es una elaboración de la casa: no es un precio de compra.",
+      );
+      ensure(
+        row.supplier,
+        "La lista no dice a qué proveedor se compra: no se puede apuntar.",
+      );
+      ensure(
+        row.cents !== undefined && row.cents > 0,
+        "La lista no trae un precio que apuntar en esa fila.",
+      );
+      ensure(
+        !s.recipes.some((r) => r.product === p.id),
+        `${p.name} se hace en casa: no tiene precio de compra.`,
+      );
+      const wanted = priceKey(row.supplier);
+      let sup = s.suppliers.find((x) => priceKey(x.name) === wanted);
+      let created = false;
+      if (!sup) {
+        ensure(
+          a.addSupplier,
+          `${row.supplier} no está entre tus proveedores. Confirma que quieres crearlo.`,
+        );
+        sup = {
+          id: randomUUID(),
+          name: row.supplier,
+          initials: supplierInitials(row.supplier),
+          category: "Sin clasificar",
+          delivery: "Sin datos de entrega",
+          color: "sand",
+        };
+        s.suppliers.push(sup);
+        created = true;
+      }
+      const usual = sup.id === p.supplier;
+      const alt = p.alternates.find((x) => x.supplier === sup.id);
+      const pack = usual ? p.pack : (alt?.pack ?? p.pack);
+      // Derived, with its formula: price of the list (per kg, L or unit) × what a pack brings.
+      const price = Math.round(row.cents * pack);
+      ensure(
+        price > 0 && price <= 100_000_000,
+        "El precio por paquete que sale no es válido.",
+      );
+      const from = usual ? p.price : (alt?.price ?? 0);
+      ensure(
+        price !== from,
+        `${p.name} ya está a ${eur(price)} el paquete con ${sup.name}.`,
+      );
+      if (!usual && !alt)
+        ensure(
+          p.alternates.length < 5,
+          "Como mucho cinco proveedores más por producto. Quita uno antes.",
+        );
+      s.prices.push({
+        id: randomUUID(),
+        product: p.id,
+        supplier: sup.id,
+        at: now(),
+        from,
+        to: price,
+        source: "list",
+        ref: row.id,
+        refLabel: priceRowSource(row),
+      });
+      if (usual) p.price = price;
+      else if (alt) alt.price = price;
+      else p.alternates.push({ supplier: sup.id, pack, price });
+      note =
+        `Precio de ${p.name} con ${sup.name}: ${eur(row.cents)} por ${p.unit} × ${String(pack).replace(".", ",")} ${p.unit} por paquete = ${eur(price)} el paquete, según la lista de precios (${priceRowSource(row)}).` +
+        (usual
+          ? ""
+          : ` ${sup.name} queda apuntado como otro proveedor de ${p.name}; su proveedor habitual no cambia.`) +
+        (created ? ` Proveedor nuevo creado: ${sup.name}.` : "") +
+        " El stock no cambia.";
       break;
     }
     case "setBatches": {

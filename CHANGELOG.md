@@ -1,5 +1,14 @@
 # Registro de parches y sesiones
 
+## 0.57.0 — 2026-10-05 · Tabla de ingredientes y precios por proveedor
+
+- Inventario → «Tabla de ingredientes»: se sube el PDF con la composición de los ingredientes (14 valores por 100 g, con PAC y POD), se revisa y se guarda. Desde ella se añaden ingredientes al inventario o se pone su composición en un producto que ya existe. Lo que la tabla no trae queda «No disponible»; nada se corrige.
+- Editor de producto con «Composición por 100 g» completa. El balance del Recetario enseña también agua, proteínas, fibras, PAC y POD, y avisa si una receta mezcla dos formas de contar el azúcar.
+- Compras → «Precios por proveedor»: se sube el PDF de la lista, se compara cada ingrediente entre proveedores (más barato primero), estrellas puestas por la persona, lo hecho en casa aparte y «Usar este precio…» con confirmación y cita de la lista.
+- Dos jueces independientes: lectura exacta en las dos (153 de 153 y 195 de 195 filas, 0 inventadas). Corregido lo grave que señalaron; lo demás, en docs/CHECKLIST_MEJORAS.md.
+
+Informe reports/2026-10-06T06-30-00-000Z-tabla-ingredientes-y-precios.md (y los de los dos jueces y el de precios).
+
 ## 0.56.0 — 2026-10-05 · «Preparar» paso a paso y limpieza de textos
 
 - Tarjeta de producir: «Kilos a hacer» con − y + de 500 g (y la cantidad a mano), menos texto y lo que se gasta en etiquetas.
