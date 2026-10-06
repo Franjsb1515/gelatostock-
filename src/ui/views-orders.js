@@ -81,6 +81,32 @@ function cartSupply(l) {
     price: alt ? alt.price : p.price,
   };
 }
+// Lo que el servidor dice de cada línea del carrito (core/pricelist.ts, cartAdvice): si sale más
+// barata con otro proveedor ya apuntado y qué dice la lista de precios. Solo informa.
+let cartHints = [];
+const cartHint = (id) => cartHints.find((h) => h.product === id);
+function cartHintText(l, p) {
+  const h = cartHint(p.id);
+  if (!h) return "";
+  const buy = cartSupply(l);
+  const perUnit = buy.price
+    ? `<small class="cart-unit">${money(Math.round(buy.price / buy.pack))} por ${esc(p.unit)}</small>`
+    : "";
+  if (h.cheaper)
+    return `${perUnit}<div class="cart-hint"><span><strong>Más barato con ${esc(supplier(h.cheaper.supplier).name)}:</strong> ${h.cheaper.packs} ${h.cheaper.packs === 1 ? "paquete" : "paquetes"} de ${num(h.cheaper.pack)} ${esc(p.unit)} = ${money(h.cheaper.cents)} (baja ${money(h.cheaper.saving)})</span>${btn("Cambiar", "cartCheapest", "secondary", `data-product="${esc(p.id)}"`)}</div>`;
+  if (h.list && !h.list.noted)
+    return `${perUnit}<div class="cart-hint list"><span><strong>En tu lista de precios:</strong> ${esc(h.list.supplier)} a ${money(h.list.cents)}${h.list.suppliers > 1 ? `, el más barato de ${h.list.suppliers} proveedores` : ""}. La lista no dice si es por kilo, litro o unidad.</span>${btn("Apuntar este precio…", "priceUse", "secondary", `data-row="${esc(h.list.row)}"`)}</div>`;
+  return perUnit;
+}
+/** Aviso encima del carrito: cuántas líneas bajan y cuánto, con un botón para cambiarlas todas. */
+function cartCheaperBanner() {
+  const lines = cartHints.filter(
+    (h) => h.cheaper && state.cart.some((l) => l.product === h.product),
+  );
+  if (!lines.length) return "";
+  const saving = lines.reduce((n, h) => n + h.cheaper.saving, 0);
+  return `<div class="notice cart-cheaper">${icon("alert")}<div><strong>${lines.length === 1 ? "Una línea sale" : lines.length + " líneas salen"} más barata${lines.length === 1 ? "" : "s"} con otro proveedor que ya tienes apuntado</strong><span>La compra bajaría ${money(saving)}. Compara precios, no marcas ni formatos: compruébalo antes.</span>${btn("Usar el más barato en todo", "cartCheapest", "primary")}</div></div>`;
+}
 function cartSupplierPicker(l, p) {
   if (!(p.alternates || []).length) return "";
   const here = cartSupply(l).supplier;
@@ -117,13 +143,13 @@ function orders() {
       btn("Precios por proveedor", "priceShow", "secondary") +
         btn("Sugerir reposición", "suggest", "primary"),
     ) +
-    `<div class="notice">${icon("shield")}<div><strong>Pedidos reales solo por WhatsApp</strong><span>Solo se envían cuando tú lo confirmas. La app nunca paga.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${
+    `<div class="notice">${icon("shield")}<div><strong>Pedidos reales solo por WhatsApp</strong><span>Solo se envían cuando tú lo confirmas. La app nunca paga.</span></div></div><div class="purchase-grid"><section class="panel"><div class="panel-heading"><h2>Tu carrito</h2>${pill(state.cart.length + " productos")}</div>${cartCheaperBanner()}${
       state.cart.length
         ? `<div class="cart-lines">${state.cart
             .map((l) => {
               const p = product(l.product);
               const buy = cartSupply(l);
-              return `<div class="cart-line"><span class="product-icon sage">${icon(p.icon)}</span><div class="cart-desc"><strong>${esc(p.name)}</strong><small>${esc(supplier(buy.supplier).name)} · ${num(buy.pack)} ${p.unit} / paquete${l.supplier ? " · otro proveedor, elegido por ti" : ""}</small>${cartSupplierPicker(l, p)}</div><div class="stepper"><button type="button" class="step" data-step="-1" aria-label="Un paquete menos de ${esc(p.name)}">−</button><input aria-label="Paquetes de ${esc(p.name)}" class="quantity" type="number" min="0" max="10000" step="1" value="${l.packs}" data-cart="${p.id}"><button type="button" class="step" data-step="1" aria-label="Un paquete más de ${esc(p.name)}">+</button></div><strong>${buy.price ? money(l.packs * buy.price) : "No disponible"}</strong><button class="icon-button" aria-label="Quitar ${esc(p.name)}" data-remove="${p.id}">${icon("close")}</button></div>`;
+              return `<div class="cart-line"><span class="product-icon sage">${icon(p.icon)}</span><div class="cart-desc"><strong>${esc(p.name)}</strong><small>${esc(supplier(buy.supplier).name)} · ${num(buy.pack)} ${p.unit} / paquete${l.supplier ? " · otro proveedor, elegido por ti" : ""}</small>${cartSupplierPicker(l, p)}${cartHintText(l, p)}</div><div class="stepper"><button type="button" class="step" data-step="-1" aria-label="Un paquete menos de ${esc(p.name)}">−</button><input aria-label="Paquetes de ${esc(p.name)}" class="quantity" type="number" min="0" max="10000" step="1" value="${l.packs}" data-cart="${p.id}"><button type="button" class="step" data-step="1" aria-label="Un paquete más de ${esc(p.name)}">+</button></div><strong>${buy.price ? money(l.packs * buy.price) : "No disponible"}</strong><button class="icon-button" aria-label="Quitar ${esc(p.name)}" data-remove="${p.id}">${icon("close")}</button></div>`;
             })
             .join("")}</div>`
         : '<div class="empty">' +

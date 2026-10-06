@@ -297,7 +297,8 @@ function calPhotoModal(preset) {
         form.querySelector(".upload-zone")?.classList.add("compact");
         status.textContent = result.reading.kind
           ? "Propuesta: revisa el apartado, el día y lo leído antes de guardar."
-          : "No se pudo leer: la foto se guarda en su día y puedes escribir lo que dice.";
+          : "No se pudo leer: la foto se guarda en su día y puedes escribir lo que dice." +
+            (result.advice ? " " + result.advice : "");
         draw(result.reading.kind || "note");
       } catch (err) {
         if (current === serial && $("#modal-form") === form)

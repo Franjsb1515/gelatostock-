@@ -379,7 +379,7 @@ class WhatsAppConnection {
           ocrText = String(read?.text || "").slice(0, 20000) || undefined;
         } catch (e) {
           this.log(
-            "OCR del adjunto no disponible: " +
+            "Lectura del adjunto no disponible: " +
               String(e?.message || e).slice(0, 80),
           );
         }

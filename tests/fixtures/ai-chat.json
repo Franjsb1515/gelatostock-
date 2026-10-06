@@ -340,5 +340,11 @@
     "question": "¿Cómo marco mis ingredientes más importantes?",
     "expect": ["estrella"],
     "forbid": ["no lo sé"]
+  },
+  {
+    "id": "carrito_mas_barato",
+    "question": "¿El carrito me avisa si otro proveedor sale más barato?",
+    "expect": ["Más barato con|más barata"],
+    "forbid": ["no lo sé"]
   }
 ]

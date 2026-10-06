@@ -29,13 +29,15 @@ const {
   replyLabels,
   localDate,
 } = require("../build/domain.js");
-const { recognizeLocal, imageBytes } = require("./ocr.cjs");
+const { recognizeLocal } = require("./ocr.cjs");
+const { readDocumentPhoto, readCalendarPhoto } = require("./photo-read.cjs");
 const { readPdfText, readPdfItems } = require("./pdftext.cjs");
 const { parseCompositionTable } = require("../build/comptable.js");
 const {
   parsePriceList,
   priceReadingSummary,
   priceGroups,
+  cartAdvice,
 } = require("../build/pricelist.js");
 const { WhatsAppConnection } = require("./whatsapp.cjs");
 const { normalize: normalizePhone } = require("./whatsapp-store.cjs");
@@ -57,9 +59,6 @@ const {
   calendarYear,
   dayCard,
 } = require("../build/calendar.js");
-const { readDayPhoto, rosterReading } = require("../build/dayphoto.js");
-const { parseRoster, rosterRegions } = require("../build/roster.js");
-const { readTable } = require("./table-ocr.cjs");
 const { productionSheet } = require("../build/sheet.js");
 function createApp({
   dataDir = process.env.GELATO_DATA_DIR || path.join(__dirname, "..", "data"),
@@ -420,6 +419,8 @@ function createApp({
     catalog: supplierCatalogs(state),
     // Lista de precios por proveedor ya comparada (core/pricelist.ts): solo ordena lo guardado.
     pricelist: priceGroups(state),
+    // Carrito: qué líneas salen más baratas con otro proveedor ya apuntado (solo informa).
+    cartAdvice: cartAdvice(state),
     alerts: {
       prices: priceAlerts(state, 30),
       counts: countStatus(state, countDays()),
@@ -1257,11 +1258,9 @@ function createApp({
           return;
         }
         if (u.pathname === "/api/calendar/photo") {
-          // Foto del Calendario: lectura local y propuesta por reglas. No guarda nada. Un cuadrante
-          // (foto con cuadrícula) se lee casilla por casilla; lo demás, como texto.
-          const bytes = imageBytes(data.data);
+          // Foto del Calendario: lectura local y propuesta por reglas (src/photo-read.cjs, lo
+          // mismo que mide scripts/evaluate-image-battery.cjs). No guarda nada.
           const full = store.load();
-          const today = businessDay(new Date(), dayChangeHour());
           const known = [
             ...new Set(
               full.schedule.flatMap((d) =>
@@ -1269,39 +1268,19 @@ function createApp({
               ),
             ),
           ];
-          const table = await readTable(bytes, {
-            regions: (grid, cells) => rosterRegions(cells),
-          }).catch(() => null);
-          const roster = table
-            ? parseRoster(table.cells, today, known, table.regions, table.inks)
-            : null;
-          if (roster) {
-            json(200, {
-              text: "",
-              confidence: null,
-              reading: rosterReading(roster),
-            });
-            return;
-          }
-          const result = await recognizeLocal(data.data);
-          json(200, {
-            text: result.text,
-            confidence: result.confidence,
-            reading: readDayPhoto(
-              store.load(),
-              result.text,
-              result.confidence,
+          json(
+            200,
+            await readCalendarPhoto(
+              full,
+              data.data,
               businessDay(new Date(), dayChangeHour()),
+              known,
             ),
-          });
+          );
           return;
         }
         if (u.pathname === "/api/ocr") {
-          const result = await recognizeLocal(data.data);
-          json(200, {
-            ...result,
-            detection: identifySupplier(store.load(), { text: result.text }),
-          });
+          json(200, await readDocumentPhoto(store.load(), data.data));
           return;
         }
         if (u.pathname === "/api/lock") {

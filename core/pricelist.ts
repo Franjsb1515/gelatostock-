@@ -373,3 +373,97 @@ export const supplierInitials = (name: string): string =>
       .map((w) => (w[0] ?? "").toUpperCase())
       .join("") || "P"
   ).slice(0, 5);
+
+/** Una forma de comprar un producto: el proveedor habitual o uno de los apuntados. */
+export type BuyOption = { supplier: string; pack: number; price: number };
+export type CartAdvice = {
+  product: string;
+  /** Lo elegido en el carrito y lo que cuesta la línea (null: sin precio). */
+  chosen: BuyOption & { packs: number; cents: number | null };
+  /**
+   * Otro proveedor ya apuntado en el producto con el que la misma cantidad sale más barata.
+   * packs = paquetes de ese proveedor que cubren lo pedido; saving = lo que baja la línea.
+   */
+  cheaper:
+    (BuyOption & { packs: number; cents: number; saving: number }) | null;
+  /**
+   * Lo más barato de la lista de precios para un ingrediente que se llama igual que el producto
+   * (o que la persona juntó con ese nombre). Es un dato de la lista, por su unidad: no se compara
+   * con el paquete hasta que la persona lo apunta en el producto.
+   */
+  list: {
+    row: string;
+    supplier: string;
+    cents: number;
+    suppliers: number;
+    noted: boolean;
+  } | null;
+};
+const buyOptions = (p: State["products"][number]): BuyOption[] => [
+  { supplier: p.supplier, pack: p.pack, price: p.price },
+  ...p.alternates.map((x) => ({
+    supplier: x.supplier,
+    pack: x.pack,
+    price: x.price,
+  })),
+];
+/**
+ * Para cada línea del carrito: lo que cuesta y si, con lo apuntado en el producto, la misma
+ * cantidad sale más barata con otro proveedor. Solo compara precios que la persona ya confirmó
+ * (proveedor habitual y otros proveedores). No cambia nada: informa.
+ */
+export function cartAdvice(s: State): CartAdvice[] {
+  const comparison = s.priceList.length ? priceGroups(s) : null;
+  const out: CartAdvice[] = [];
+  for (const l of s.cart) {
+    const p = s.products.find((x) => x.id === l.product);
+    if (!p) continue;
+    const options = buyOptions(p);
+    const chosen =
+      options.find((o) => o.supplier === (l.supplier ?? p.supplier)) ??
+      options[0]!;
+    const units = l.packs * chosen.pack;
+    const cents = chosen.price > 0 ? l.packs * chosen.price : null;
+    let cheaper: CartAdvice["cheaper"] = null;
+    if (cents !== null)
+      for (const o of options) {
+        if (o.supplier === chosen.supplier || !(o.price > 0) || !(o.pack > 0))
+          continue;
+        const packs = Math.ceil(units / o.pack - 1e-9);
+        const total = packs * o.price;
+        if (total < cents && (!cheaper || total < cheaper.cents))
+          cheaper = { ...o, packs, cents: total, saving: cents - total };
+      }
+    let list: CartAdvice["list"] = null;
+    if (comparison) {
+      const keys = linkedKeys(s, priceKey(p.name));
+      const g = comparison.groups.find(
+        (x) =>
+          keys.includes(x.key) ||
+          x.rows.some((r) => keys.includes(priceKey(r.name))),
+      );
+      // Con un solo proveedor no hay «más barato», pero el precio de la lista se enseña igual.
+      const best = g?.cheapest ?? g?.rows.find((r) => r.compared);
+      if (g && best && best.supplier && best.cents !== null) {
+        const sup = s.suppliers.find(
+          (x) => priceKey(x.name) === priceKey(best.supplier ?? ""),
+        );
+        list = {
+          row: best.id,
+          supplier: best.supplier,
+          cents: best.cents,
+          suppliers: g.suppliers,
+          // Ya apuntado: ese proveedor es una de las formas de comprar el producto.
+          noted: !!sup && options.some((o) => o.supplier === sup.id),
+        };
+      }
+    }
+    out.push({
+      product: p.id,
+      chosen: { ...chosen, packs: l.packs, cents },
+      cheaper,
+      list,
+    });
+  }
+  return out;
+}

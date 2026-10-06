@@ -223,10 +223,13 @@ function photo() {
         if (current !== serial || $("#modal-form") !== form) return;
         form.querySelector("textarea[name=ocrText]").value = result.text;
         showDetection(form, result.detection, manual);
+        // Foto que no se ha podido leer: se dice, en vez de dejar «sin proveedor» sin explicar.
+        if (result.advice)
+          form.querySelector(".detection-status").textContent = result.advice;
       } catch (e) {
         if (current === serial && $("#modal-form") === form)
           form.querySelector(".detection-status").textContent =
-            e.message + " Puedes elegir el proveedor manualmente.";
+            e.message + " Puedes elegir el proveedor a mano.";
       } finally {
         if (current === serial && $("#modal-form") === form)
           button.disabled = false;

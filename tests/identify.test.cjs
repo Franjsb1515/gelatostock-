@@ -104,3 +104,40 @@ test("OCR real con idioma incluido y fetch bloqueado reconoce proveedor", async 
     /imagen válida/,
   );
 });
+test("una letra confundida por la lectura (l por I) sigue proponiendo el proveedor, y vale menos que el nombre exacto", () => {
+  const s = seed();
+  const r = identifySupplier(s, { text: "FACTURA\nGelato ltalia S.L." });
+  assert.equal(r.supplier, "s3");
+  assert.match(r.reason, /confunde/);
+  // Por WhatsApp no se usa: allí solo identifica el número del remitente.
+  assert.equal(
+    identifySupplier(s, { text: "Gelato ltalia", channel: "whatsapp" })
+      .supplier,
+    undefined,
+  );
+  // Dos lecturas, una exacta y otra confundida: gana la exacta.
+  const both = identifySupplier(s, {
+    text: "Fresco Mercado y Gelato ltalia",
+  });
+  assert.equal(both.supplier, "s2");
+});
+test("dos lecturas a la vez se leen las dos, en cola, sin rechazar ninguna", async () => {
+  const bytes = fs.readFileSync(
+    path.join(__dirname, "fixtures", "factura-ocr.png"),
+  );
+  const data = "data:image/png;base64," + bytes.toString("base64");
+  const [a, b] = await Promise.all([
+    recognizeLocal(data),
+    recognizeLocal(data),
+  ]);
+  assert.match(a.text, /ORIGEN COFFEE/);
+  assert.match(b.text, /ORIGEN COFFEE/);
+  // Un archivo roto se rechaza con un mensaje claro, sin colgarse.
+  await assert.rejects(
+    () =>
+      recognizeLocal(
+        "data:image/png;base64," + bytes.subarray(0, 600).toString("base64"),
+      ),
+    /dañada o incompleta/,
+  );
+});

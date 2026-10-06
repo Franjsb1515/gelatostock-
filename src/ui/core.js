@@ -280,6 +280,7 @@ function applyEnvelope(data) {
   if (data.alerts) alerts = data.alerts;
   if (data.catalog) catalog = data.catalog;
   if (data.pricelist) priceCompare = data.pricelist;
+  if (data.cartAdvice) cartHints = data.cartAdvice;
   if (data.cruises) cruiseInfo = data.cruises;
   if (data.dataDir) dataDir = data.dataDir;
   archiveWarning = data.archiveWarning;

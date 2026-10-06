@@ -200,3 +200,33 @@ test("la foto del Calendario se guarda como archivo y vuelve al abrir la base", 
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+test("segunda lectura: las líneas cuyas cifras no coinciden no se usan y se enseñan", () => {
+  const { doubtfulLines } = require("../build/dayphoto.js");
+  const a =
+    "Turnos semana del 12 al 18 de octubre\nMartes 11-23 Ana 10-17\nMiércoles 14-23 Ana 10-17\nLunes cerrado";
+  const b =
+    "Turnos semana del 12 al 18 de octubre\nMartes 11-23 Ana 10-17\nMiércoles 11-23 Ana 10-17\nLunes cerrado";
+  assert.deepEqual(doubtfulLines(a, b), ["Miércoles 14-23 Ana 10-17"]);
+  // Las mismas cifras en otra línea sin palabras en común no valen de confirmación.
+  assert.deepEqual(doubtfulLines("Pistacho 2 kg", "Mango 2 kg"), [
+    "Pistacho 2 kg",
+  ]);
+  assert.deepEqual(doubtfulLines("Pistacho 2 kg", "Pistacho 2 kg"), []);
+  const r = readDayPhoto(photoState(domain), a, 90, today, b);
+  assert.equal(r.kind, "schedule");
+  assert.equal(r.date, "2026-10-12");
+  assert.ok(!r.schedule.some((d) => d.weekday === 2 && d.open));
+  assert.ok(r.skipped.some((x) => x.includes("Miércoles 14-23")));
+  assert.ok(r.reasons.some((x) => /números dudosos/.test(x)));
+  // Sin segunda lectura, nada cambia.
+  assert.equal(
+    readDayPhoto(photoState(domain), a, 90, today).skipped.length,
+    0,
+  );
+  // Una lectura con confianza muy baja no es una nota, por larga que sea.
+  assert.equal(
+    readDayPhoto(photoState(domain), "a".repeat(80) + " b c d e f", 20, today)
+      .kind,
+    null,
+  );
+});

@@ -12,6 +12,7 @@ const fold = (v: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+const alike = (v: string) => v.replace(/[il1]/g, "l");
 const phone = (v: string) => v.replace(/[ ()-]/g, "");
 export function identifySupplier(s: State, input: unknown) {
   const { text, sender, channel } = identityInput.parse(input);
@@ -31,6 +32,15 @@ export function identifySupplier(s: State, input: unknown) {
     if (names.some((n) => normalized.includes(" " + n + " "))) {
       score = 1;
       reason = "Nombre o alias encontrado en el texto.";
+    } else if (
+      channel === "document" &&
+      names.some((n) => alike(normalized).includes(" " + alike(n) + " "))
+    ) {
+      // La lectura de una foto confunde la «I», la «l» y el «1» («Gelato ltalia»). Vale menos que
+      // el nombre exacto, y la persona lo confirma igual.
+      score = 0.5;
+      reason =
+        "Nombre o alias encontrado en el texto (con una letra que la lectura confunde, como «l» e «I»).";
     }
     const tax = fold(p.taxId || "");
     if (tax.length >= 8 && normalized.includes(" " + tax + " ")) {

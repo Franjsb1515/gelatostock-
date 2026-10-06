@@ -1,5 +1,12 @@
 # Registro de parches y sesiones
 
+## 0.58.0 — 2026-10-05 · Precios en el carrito y lector de imágenes a prueba
+
+- Carrito: cada línea dice lo que cuesta por kilo, litro o unidad y, si con otro proveedor ya apuntado en el producto la misma cantidad sale más barata, lo avisa con la cuenta y «Cambiar»; «Usar el más barato en todo» cambia todas las líneas. «Sugerir reposición» propone con el habitual y avisa de las que bajan. Si el producto se llama igual que un ingrediente de la lista de precios, la línea enseña el precio de la lista y «Apuntar este precio…» (la lista no dice si es por kilo o litro: se compara solo al apuntarlo).
+- Lector de imágenes medido con 50 tipos de foto (tipografías, texto, calidad y formatos): 37 → 44 en su ideal, inventos 1 → 0 (un horario a mano leído mal se proponía como apertura: ahora el Calendario lee dos veces y solo usa las cifras que coinciden). Lectura con varias pasadas (tablas con líneas, fotos giradas, sombras), orientación de la foto, dos fotos seguidas en cola, archivos rotos o no admitidos rechazados con un mensaje claro. Garantías intactas: fotos del Calendario 8/12 y 0 inventos; cuadrantes 0 «mal y seguras».
+
+Informes reports/2026-10-06T08-00-00-000Z-lector-de-imagenes.md y reports/2026-10-06T08-30-00-000Z-precios-en-el-carrito.md.
+
 ## 0.57.0 — 2026-10-05 · Tabla de ingredientes y precios por proveedor
 
 - Inventario → «Tabla de ingredientes»: se sube el PDF con la composición de los ingredientes (14 valores por 100 g, con PAC y POD), se revisa y se guarda. Desde ella se añaden ingredientes al inventario o se pone su composición en un producto que ya existe. Lo que la tabla no trae queda «No disponible»; nada se corrige.

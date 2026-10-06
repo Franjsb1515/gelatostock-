@@ -567,3 +567,94 @@ test("lista de precios (juez): una lista nueva puede sustituir a la anterior, y 
   assert.equal(s.products.find((x) => x.id === "p2").supplier, p.supplier);
   assert.equal(priceAlerts(s).filter((x) => x.product === "p2").length, 1);
 });
+
+test("carrito: avisa del proveedor apuntado con el que la línea sale más barata y solo cambia si la persona lo pide", () => {
+  const { cartAdvice } = require("../build/pricelist.js");
+  // Leche (p2): habitual s2, 6 L por 6,90 €. Otro proveedor s1: 10 L por 9,00 €.
+  let s = apply(seed(), {
+    type: "setAlternate",
+    product: "p2",
+    supplier: "s1",
+    pack: 10,
+    price: 900,
+  });
+  s = apply(s, { type: "suggest" });
+  const line = s.cart.find((l) => l.product === "p2");
+  // La propuesta va con el habitual; no se cambia sola.
+  assert.equal(line.supplier, undefined);
+  assert.match(s.activity[0].text, /más barata.* con otro proveedor/);
+  const a = cartAdvice(s).find((x) => x.product === "p2");
+  const units = line.packs * 6;
+  const packs = Math.ceil(units / 10);
+  assert.equal(a.chosen.cents, line.packs * 690);
+  if (packs * 900 < line.packs * 690) {
+    assert.deepEqual(
+      [a.cheaper.supplier, a.cheaper.packs, a.cheaper.cents, a.cheaper.saving],
+      ["s1", packs, packs * 900, line.packs * 690 - packs * 900],
+    );
+  } else assert.equal(a.cheaper, null);
+  // Un producto sin otro proveedor apuntado no recibe consejo, y uno sin precio tampoco.
+  assert.equal(cartAdvice(s).find((x) => x.product === "p1").cheaper, null);
+  const s2 = apply(s, { type: "cartCheapest" });
+  const moved = s2.cart.find((l) => l.product === "p2");
+  assert.equal(moved.supplier, "s1");
+  assert.equal(moved.packs, packs);
+  assert.equal(s2.products.find((p) => p.id === "p2").supplier, "s2");
+  assert.equal(cartAdvice(s2).find((x) => x.product === "p2").cheaper, null);
+  // Ya no hay nada que bajar: se dice, no se hace nada.
+  assert.throws(
+    () => apply(s2, { type: "cartCheapest" }),
+    /no hay ninguna línea/,
+  );
+  // Un alternativo sin precio no se propone nunca.
+  let s3 = apply(seed(), {
+    type: "setAlternate",
+    product: "p2",
+    supplier: "s1",
+    pack: 10,
+    price: 0,
+  });
+  s3 = apply(s3, { type: "suggest" });
+  assert.equal(cartAdvice(s3).find((x) => x.product === "p2").cheaper, null);
+});
+
+test("carrito: lo más barato de la lista de precios se enseña para el producto que se llama igual, sin compararlo con el paquete", () => {
+  const { cartAdvice } = require("../build/pricelist.js");
+  const row = (name, supplier, cents) => ({
+    name,
+    supplier,
+    cents,
+    page: 1,
+    line: 1,
+    issues: [],
+  });
+  let s = apply(seed(), {
+    type: "importPriceList",
+    source: "lista.pdf",
+    rows: [
+      row("LECHE ENTERA", "Proveedor de prueba A", 110),
+      row("Leche entera", "Proveedor de prueba B", 95),
+      row("Otra cosa", "Proveedor de prueba B", 5),
+    ],
+  });
+  s = apply(s, { type: "cart", product: "p2", packs: 2 });
+  s = apply(s, { type: "cart", product: "p1", packs: 1 });
+  const milk = cartAdvice(s).find((x) => x.product === "p2");
+  assert.equal(milk.list.supplier, "Proveedor de prueba B");
+  assert.equal(milk.list.cents, 95);
+  assert.equal(milk.list.suppliers, 2);
+  assert.equal(milk.list.noted, false);
+  // La lista no cambia la línea ni propone cambiar de proveedor por sí sola.
+  assert.equal(milk.cheaper, null);
+  assert.equal(cartAdvice(s).find((x) => x.product === "p1").list, null);
+  // Al apuntarlo la persona en el producto, deja de ser «de la lista» y pasa a compararse.
+  s = apply(s, {
+    type: "usePriceRow",
+    row: milk.list.row,
+    product: "p2",
+    addSupplier: true,
+  });
+  const after = cartAdvice(s).find((x) => x.product === "p2");
+  assert.equal(after.list.noted, true);
+  assert.equal(after.cheaper.cents, 2 * 6 * 95);
+});

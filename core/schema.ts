@@ -722,6 +722,8 @@ export const actionSchema = z.intersection(
       ref: idSchema,
     }),
     z.object({ type: z.literal("suggest") }),
+    // Pasa una línea del carrito (o todas) al proveedor ya apuntado con el que sale más barata.
+    z.object({ type: z.literal("cartCheapest"), product: idSchema.optional() }),
     z.object({ type: z.literal("authorize") }),
     z.object({
       type: z.literal("send"),

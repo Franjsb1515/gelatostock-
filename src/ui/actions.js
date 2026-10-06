@@ -958,9 +958,19 @@ async function action(name, el) {
     photo();
     return;
   }
+  if (name === "cartCheapest") {
+    const saved = await mutate(
+      { type: "cartCheapest", product: el.dataset.product || undefined },
+      "",
+    );
+    if (saved) toast(state.activity[0]?.text || "Carrito actualizado.");
+    return;
+  }
   if (name === "suggest") {
-    if (await mutate({ type: "suggest" }, "Reposición añadida al carrito."))
+    if (await mutate({ type: "suggest" }, "")) {
       nav("orders");
+      toast(state.activity[0]?.text || "Reposición añadida al carrito.");
+    }
     return;
   }
   if (name === "buyElsewhere") {

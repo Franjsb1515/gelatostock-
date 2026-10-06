@@ -1,12 +1,13 @@
-// Mide la lectura de fotos del Calendario con las fotos de prueba: lectura local real (tesseract)
-// y propuesta por reglas (core/dayphoto.ts). Cuenta aciertos y, aparte, si alguna propuesta
-// inventa algo (fecha, cantidad, turno o proveedor distinto de lo que dice la foto).
+// Mide la lectura de fotos del Calendario con las fotos de prueba, por el mismo camino que la
+// app (src/photo-read.cjs: primero mira si es un cuadrante; si no, lectura local real y propuesta
+// por reglas de core/dayphoto.ts, con la segunda lectura que contrasta las cifras). Cuenta
+// aciertos y, aparte, si alguna propuesta inventa algo (fecha, cantidad, turno o proveedor
+// distinto de lo que dice la foto).
 // Uso: npm run build && node scripts/evaluate-calendar-photos.cjs
 const fs = require("node:fs");
 const path = require("node:path");
 const domain = require("../build/domain.js");
-const { readDayPhoto } = require("../build/dayphoto.js");
-const { recognizeLocal } = require("../src/ocr.cjs");
+const { readCalendarPhoto } = require("../src/photo-read.cjs");
 const {
   today,
   cases,
@@ -22,10 +23,13 @@ const dir = path.join(__dirname, "..", "tests", "fixtures", "fotos-calendario");
   for (const c of cases) {
     const bytes = fs.readFileSync(path.join(dir, c.file));
     const started = Date.now();
-    const ocr = await recognizeLocal(
+    const ocr = await readCalendarPhoto(
+      s,
       "data:image/jpeg;base64," + bytes.toString("base64"),
+      today,
+      [],
     );
-    const reading = readDayPhoto(s, ocr.text, ocr.confidence, today);
+    const reading = ocr.reading;
     const result = score(c, reading);
     rows.push({
       file: c.file,

@@ -8,12 +8,25 @@ const sharp = require("sharp");
 const { createWorker, PSM } = require("tesseract.js");
 
 const MAX_MS = 120000;
-/** Líneas de la cuadrícula: filas y columnas donde más de la mitad son píxeles oscuros. */
-async function findGrid(bytes) {
+/**
+ * La imagen en gris, de una vez. Una captura en modo oscuro (fondo negro, líneas y letras claras)
+ * se invierte aquí para que el resto la vea como una tabla normal: medido con la batería de
+ * imágenes (R04), sin cambio en los cuadrantes claros.
+ */
+async function greyPixels(bytes) {
   const { data, info } = await sharp(bytes)
     .greyscale()
     .raw()
     .toBuffer({ resolveWithObject: true });
+  let sum = 0;
+  for (let i = 0; i < data.length; i += 7) sum += data[i];
+  if (sum / Math.ceil(data.length / 7) < 100)
+    for (let i = 0; i < data.length; i++) data[i] = 255 - data[i];
+  return { data, info };
+}
+/** Líneas de la cuadrícula: filas y columnas donde más de la mitad son píxeles oscuros. */
+async function findGrid(bytes) {
+  const { data, info } = await greyPixels(bytes);
   const W = info.width,
     H = info.height;
   // Las líneas de una tabla son casi negras; una etiqueta azul o verde oscura no debe contar.
@@ -116,10 +129,7 @@ async function readTable(bytes, { good = agreed, regions } = {}) {
   });
   const started = Date.now();
   // La imagen se decodifica una vez; cada casilla se recorta de esos píxeles.
-  const raw = await sharp(bytes)
-    .greyscale()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
+  const raw = await greyPixels(bytes);
   const pixels = () =>
     sharp(raw.data, {
       raw: { width: raw.info.width, height: raw.info.height, channels: 1 },

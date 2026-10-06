@@ -1,4 +1,4 @@
-# TODO — estado real de 0.57.0
+# TODO — estado real de 0.58.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -34,7 +34,10 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] [app] Tabla de ingredientes con la composición (0.57.0) y precios por proveedor en Compras (0.57.0), pedidos por ti el 2026-10-05 con tus dos PDF.
 - [ ] [tú] Subir tus dos PDF en la app: Inventario → «Tabla de ingredientes» → «Subir tabla», y Compras → «Precios por proveedor». No se han cargado en tus datos reales: lo confirmas tú en pantalla.
 - [ ] [tú] Decidir: (1) qué fila de rangos de tu tabla vale para cada familia (gelato, gelato de fruta, sorbete de fruta, sorbete de cremas, base) para usarlos en el balance en lugar de los de la app; (2) si los precios de tu lista son todos por kilo o litro; (3) qué nombres parecidos de la lista son el mismo ingrediente y cuáles son tus ingredientes estrella (se marcan en pantalla).
-- [ ] [app] Que la comparación de precios llegue al carrito y a «Sugerir reposición»; proponer «posibles iguales» para que los confirmes; recordar a qué producto corresponde cada nombre de la lista.
+- [x] [app] Precios en el carrito y en «Sugerir reposición» (0.58.0). Queda: proponer «posibles iguales» para que los confirmes y recordar a qué producto corresponde cada nombre de la lista.
+- [ ] [tú] Decir si los precios de tu lista son por kilo, litro o unidad (dijiste que se mira después): hasta entonces el precio de la lista se enseña pero no se compara con el paquete hasta que lo apuntas.
+- [x] [app] Lector de imágenes medido con 50 tipos (0.58.0): 44 de 50 en su ideal, 0 inventos. Lo que no se lee: cuadrante ladeado o sin líneas, PDF escaneado, foto girada 5° pierde la fecha. Detalle en reports/2026-10-06T08-00-00-000Z-lector-de-imagenes.md.
+- [ ] [tú] Fotos reales (facturas, horarios a mano, cuadrantes) para medir el lector de verdad: todo lo medido es sintético.
 - [ ] [app] La prueba de escritorio no recorre la tabla de ingredientes ni los precios por proveedor (los cubren work/check-tabla-ingredientes.cjs y work/check-pricelist-ui.cjs).
 - [ ] [tú] Poner el orden de preparación de tus recetas (Recetario → la receta → «Orden de preparación»).
 - [ ] [app] Lista de mejoras de textos, visual y tablets: docs/CHECKLIST_MEJORAS.md. Siguiente paso propuesto: interfaz táctil y estrecha (botones de 44 px, barra lateral plegable, Compras e Inventario a 768 px).

@@ -15,7 +15,8 @@ Sale de dos revisiones con medidas: reports/2026-10-06T03-00-00-000Z-limpieza-te
 - [ ] Usar en el balance los rangos de tu tabla (y rangos de PAC y POD): falta tu decisión de qué fila vale para cada familia.
 - [ ] Una sola forma de contar el azúcar: pasar las fichas antiguas a la de la tabla.
 - [ ] Emparejar la tabla y la lista de precios con tus productos (hoy solo por nombre igual: 1 de 153 y 1 de 131).
-- [ ] Que los precios lleguen al carrito y a «Sugerir reposición»; proponer «posibles iguales» (la leche de tres proveedores) para confirmar.
+- [x] Que los precios lleguen al carrito y a «Sugerir reposición» (0.58.0).
+- [ ] Proponer «posibles iguales» (la leche de tres proveedores) para confirmar.
 - [ ] «Usar este precio…»: comprobar la unidad, enseñar cuánto cambia el precio antes de aceptar.
 - [ ] Lector de listas con otra forma: nombre en dos líneas, cabecera solo en la primera página, fila «TOTAL».
 - [ ] Reimportar la tabla no retira las filas que ya no vienen; «Ver todo» no compara antes de sustituir; la contraseña del recetario no protege la tabla.

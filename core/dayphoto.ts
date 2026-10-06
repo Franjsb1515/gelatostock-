@@ -415,14 +415,64 @@ export function readSales(
 
 const letters = (t: string): number => (t.match(/\p{L}/gu) || []).length;
 
-/** Lectura completa de una foto del Calendario. confidence es la de la lectura local (0–100). */
+const numbersOf = (line: string): string =>
+  (line.match(/\d+(?:[.,:]\d+)*/g) || []).join(" ");
+const wordsOf = (line: string): string[] =>
+  fold(line).match(/[a-z]{3,}/g) || [];
+
+/**
+ * Líneas de text cuyas cifras no salen iguales en second, una segunda lectura independiente de la
+ * misma foto. Una cifra mal leída (un 11 que sale 14) no se distingue de una buena por sí sola;
+ * que dos lecturas distintas coincidan, sí. Una línea vale si en la otra lectura hay una línea
+ * con las mismas cifras en el mismo orden y alguna palabra en común.
+ */
+export function doubtfulLines(text: string, second: string): string[] {
+  const pool = second
+    .split(/\r?\n/)
+    .map((l) => ({ nums: numbersOf(l), words: wordsOf(l) }))
+    .filter((l) => l.nums);
+  const out: string[] = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    const nums = numbersOf(line);
+    if (!nums) continue;
+    const words = wordsOf(line);
+    const i = pool.findIndex(
+      (l) =>
+        l.nums === nums &&
+        (words.length === 0 || l.words.some((w) => words.includes(w))),
+    );
+    if (i >= 0) pool.splice(i, 1);
+    else out.push(line);
+  }
+  return out;
+}
+
+/**
+ * Lectura completa de una foto del Calendario. confidence es la de la lectura local (0–100).
+ * second, si se da, es una segunda lectura de la misma foto: las líneas cuyas cifras no coinciden
+ * en las dos no se usan para proponer nada y se enseñan para que la persona las escriba.
+ */
 export function readDayPhoto(
   s: State,
   text: string,
   confidence: number,
   today: string,
+  second?: string,
 ): DayPhotoReading {
-  const clean = text.replace(/\r/g, "").trim();
+  const full = text.replace(/\r/g, "").trim();
+  const doubtful = second === undefined ? [] : doubtfulLines(full, second);
+  const clean = doubtful.length
+    ? full
+        .split("\n")
+        .filter((l) => !doubtful.includes(l.trim()))
+        .join("\n")
+        .trim()
+    : full;
+  const doubts = doubtful.map(
+    (l) =>
+      `«${l}»: los números no se leen igual dos veces seguidas. Escríbelos tú.`,
+  );
   const base: DayPhotoReading = {
     kind: null,
     date: null,
@@ -433,9 +483,9 @@ export function readDayPhoto(
     unknown: [],
     skipped: [],
     document: null,
-    note: clean,
+    note: full,
   };
-  if (letters(clean) < 12 || (confidence < 35 && letters(clean) < 60))
+  if (letters(full) < 12 || confidence < 35)
     return {
       ...base,
       note: "",
@@ -526,6 +576,12 @@ export function readDayPhoto(
         ? "La foto tiene varias fechas: elige tú el día."
         : "La foto no dice la fecha: elige tú el día.",
     );
+  if (doubts.length)
+    reasons.push(
+      doubts.length === 1
+        ? "Hay una línea con números dudosos: no se usa. Mírala en la foto y escríbela tú."
+        : `Hay ${doubts.length} líneas con números dudosos: no se usan. Míralas en la foto y escríbelas tú.`,
+    );
   return {
     ...base,
     kind,
@@ -535,12 +591,14 @@ export function readDayPhoto(
     schedule: kind === "schedule" ? schedule : [],
     sales: kind === "sales" ? sales : [],
     unknown: kind === "sales" ? unknown : [],
-    skipped:
-      kind === "schedule"
+    skipped: [
+      ...(kind === "schedule"
         ? scheduleSkipped
         : kind === "sales"
           ? salesSkipped
-          : [],
+          : []),
+      ...doubts,
+    ],
     document:
       kind === "document"
         ? {

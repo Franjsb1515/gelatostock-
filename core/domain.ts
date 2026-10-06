@@ -94,6 +94,7 @@ export {
 } from "./comptable";
 export { productionPlan, todayBrief, businessDay } from "./plan";
 import {
+  cartAdvice,
   priceKey,
   isHouse,
   linkedKeys,
@@ -101,6 +102,7 @@ import {
   supplierInitials,
 } from "./pricelist";
 export {
+  cartAdvice,
   parsePriceList,
   priceReadingSummary,
   priceGroups,
@@ -842,13 +844,43 @@ export function apply(state: State, input: unknown): State {
       p.price = a.price;
       break;
     }
+    case "cartCheapest": {
+      const moved: string[] = [];
+      let saving = 0;
+      for (const advice of cartAdvice(s)) {
+        if (a.product && advice.product !== a.product) continue;
+        const c = advice.cheaper;
+        if (!c) continue;
+        const p = item(s.products, advice.product);
+        const line = s.cart.find((l) => l.product === p.id);
+        if (!line) continue;
+        line.packs = c.packs;
+        if (c.supplier === p.supplier) delete line.supplier;
+        else line.supplier = c.supplier;
+        saving += c.saving;
+        moved.push(`${p.name} → ${item(s.suppliers, c.supplier).name}`);
+      }
+      ensure(
+        moved.length,
+        "Con los precios apuntados no hay ninguna línea que salga más barata con otro proveedor.",
+      );
+      note = `Carrito: ${moved.join(", ")}. La compra baja ${eur(saving)}. El proveedor habitual de cada producto no cambia.`;
+      break;
+    }
     case "suggest": {
       for (const p of s.products.filter((p) => p.stock < p.min)) {
         const packs = needed(s, p);
         if (packs && !s.cart.some((l) => l.product === p.id))
           s.cart.push({ product: p.id, packs });
       }
-      note = "Reposición propuesta descontando pedidos pendientes.";
+      // La propuesta va con el proveedor habitual; si con lo apuntado sale más barato con otro,
+      // se dice y la persona decide en el carrito.
+      const cheaper = cartAdvice(s).filter((x) => x.cheaper).length;
+      note =
+        "Reposición propuesta descontando pedidos pendientes." +
+        (cheaper
+          ? ` ${cheaper === 1 ? "Una línea sale" : cheaper + " líneas salen"} más barata${cheaper === 1 ? "" : "s"} con otro proveedor que ya tienes apuntado: míralo en el carrito.`
+          : "");
       break;
     }
     case "authorize": {
