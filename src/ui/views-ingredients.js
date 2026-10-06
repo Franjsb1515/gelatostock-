@@ -30,8 +30,17 @@ const ingFold = (s) =>
   String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 const compValue = (c, k) =>
   c?.[k] === undefined ? "—" : num(c[k]) + (compIndex.includes(k) ? "" : " %");
-/** El producto del inventario que se llama igual que la fila, si lo hay. */
+/** El producto que la persona dijo que es esta fila (se recuerda por nombre), si lo dijo. */
+const ingRemembered = (e) => {
+  const key = priceFold(e.name);
+  const n = (state.nameProducts || []).find(
+    (x) => x.kind === "table" && x.key === key,
+  );
+  return (n && product(n.product)) || null;
+};
+/** El producto del inventario de esta fila: el recordado o, si no, el que se llama igual. */
 const ingProduct = (e) =>
+  ingRemembered(e) ||
   state.products.find((p) => ingFold(p.name) === ingFold(e.name));
 const ingSame = (e, p) =>
   compKeys.every(([k]) => p.composition?.[k] === e.composition[k]);
@@ -65,11 +74,23 @@ function ingredientsView() {
     .map((e) => {
       const p = ingProduct(e);
       const same = p && ingSame(e, p);
+      // Si el producto se llama distinto, se dice cómo se llama y se puede cambiar.
+      const as =
+        p && ingFold(p.name) !== ingFold(e.name) ? ` como «${p.name}»` : "";
+      const change = as
+        ? " " +
+          btn(
+            "Cambiar",
+            "ingredientsProduct",
+            "text-link",
+            `data-entry="${esc(e.id)}"`,
+          )
+        : "";
       const status = !p
-        ? `<label class="check-label ing-pick"><input type="checkbox" data-ing-pick="${esc(e.id)}" ${ingredientsPicked.has(e.id) ? "checked" : ""} aria-label="Marcar ${esc(e.name)} para añadirlo al inventario"> Añadir</label>`
+        ? `<label class="check-label ing-pick"><input type="checkbox" data-ing-pick="${esc(e.id)}" ${ingredientsPicked.has(e.id) ? "checked" : ""} aria-label="Marcar ${esc(e.name)} para añadirlo al inventario"> Añadir</label> ${btn("Ya lo tengo con otro nombre…", "ingredientsProduct", "text-link", `data-entry="${esc(e.id)}"`)}`
         : same
-          ? pill("En el inventario", "sage")
-          : `${pill("En el inventario, con otra composición", "sand")} ${btn("Usar la de la tabla", "ingredientsApply", "text-link", `data-entry="${esc(e.id)}" data-product="${esc(p.id)}"`)}`;
+          ? pill("En el inventario" + as, "sage") + change
+          : `${pill("En el inventario" + as + ", con otra composición", "sand")} ${btn("Usar la de la tabla", "ingredientsApply", "text-link", `data-entry="${esc(e.id)}" data-product="${esc(p.id)}"`)}${change}`;
       return `<tr data-ing-row data-name="${esc(ingFold(e.name))}" data-in="${p ? "1" : "0"}" data-flag="${e.issues.length ? "1" : "0"}"><td><strong>${esc(e.name)}</strong>${e.issues.length ? `<small class="ing-issue">${e.issues.map(esc).join(" ")}</small>` : ""}</td><td class="ing-status">${status}</td>${compShown.map((k) => `<td class="num">${compValue(e.composition, k)}</td>`).join("")}<td class="row-tools"><button class="text-link" data-action="ingredientsDetail" data-entry="${esc(e.id)}">Ver todo</button></td></tr>`;
     })
     .join("");
@@ -313,6 +334,43 @@ function ingredientsAction(name, el) {
         return true;
       },
       "Añadir al inventario",
+    );
+    return true;
+  }
+  if (name === "ingredientsProduct") {
+    // Decir a qué producto corresponde la fila (se recuerda por nombre; no cambia nada más).
+    const e = state.ingredientTable.find((x) => x.id === el.dataset.entry);
+    const current = ingRemembered(e);
+    const choices = [...state.products].sort((a, b) =>
+      a.name.localeCompare(b.name, "es"),
+    );
+    modal(
+      "¿Qué producto de tu inventario es?",
+      `«${e.name}» en tu tabla de ingredientes. Se recuerda por el nombre, así que vale aunque vuelvas a subir la tabla. No cambia la composición, el stock ni el precio de nada.`,
+      select(
+        "Producto del inventario",
+        "product",
+        [["", "Ninguno"], ...choices.map((p) => [p.id, p.name])],
+        current ? current.id : "",
+      ),
+      async (f) => {
+        const chosen = f.get("product");
+        if (!chosen && !current) return true;
+        return mutate(
+          chosen
+            ? {
+                type: "linkNameProduct",
+                kind: "table",
+                row: e.id,
+                product: chosen,
+              }
+            : { type: "unlinkNameProduct", kind: "table", row: e.id },
+          chosen
+            ? "Producto recordado."
+            : "Ya no corresponde a ningún producto.",
+        );
+      },
+      "Guardar",
     );
     return true;
   }

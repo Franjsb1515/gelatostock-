@@ -314,5 +314,7 @@ export function seed(): State {
     priceList: [],
     priceLinks: [],
     priceStars: [],
+    priceNotSame: [],
+    nameProducts: [],
   };
 }

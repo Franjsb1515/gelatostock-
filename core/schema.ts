@@ -585,6 +585,26 @@ export const stateSchema = z.object({
     .default([]),
   // Star ingredients, marked by the person (folded names). The app never decides them.
   priceStars: z.array(text(120)).max(5000).default([]),
+  // Pairs of names of the price list the person said are NOT the same ingredient (folded names,
+  // sorted): the app stops proposing them as «posibles iguales». Joining them by hand undoes it.
+  priceNotSame: z
+    .array(z.array(text(120)).length(2))
+    .max(5000)
+    .default([]),
+  // Which product of the inventory a name of the price list («list») or of the ingredient table
+  // («table») stands for, as the person confirmed it (using a price, a composition or choosing
+  // it by hand). Folded names, so it survives uploading the same file again. Kept in meta.
+  nameProducts: z
+    .array(
+      z.object({
+        kind: z.enum(["list", "table"]),
+        key: text(120),
+        product: idSchema,
+        at,
+      }),
+    )
+    .max(10000)
+    .default([]),
   // Days a flavour is not made on purpose: its minimum does not warn that day. Kept in meta.
   flavorSkips: z
     .array(z.object({ date: documentDate, product: idSchema, at }))
@@ -1072,6 +1092,23 @@ export const actionSchema = z.intersection(
       rows: z.array(idSchema).min(2).max(20),
     }),
     z.object({ type: z.literal("unlinkPriceRow"), row: idSchema }),
+    // «No, son distintos»: two rows the app proposed as possibly the same ingredient.
+    z.object({
+      type: z.literal("rejectPriceMatch"),
+      rows: z.array(idSchema).length(2),
+    }),
+    // Which product of the inventory a name of the list or of the table stands for.
+    z.object({
+      type: z.literal("linkNameProduct"),
+      kind: z.enum(["list", "table"]),
+      row: idSchema,
+      product: idSchema,
+    }),
+    z.object({
+      type: z.literal("unlinkNameProduct"),
+      kind: z.enum(["list", "table"]),
+      row: idSchema,
+    }),
     z.object({
       type: z.literal("starPriceRow"),
       row: idSchema,

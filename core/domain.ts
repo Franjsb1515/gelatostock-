@@ -565,6 +565,19 @@ function approveProduction(
   return { consumed, negative };
 }
 /** De dónde sale una composición tomada de la tabla: archivo, página y fila. */
+/** Recuerda a qué producto corresponde un nombre de la lista o de la tabla (uno por nombre). */
+const remember = (
+  s: State,
+  kind: "list" | "table",
+  name: string,
+  product: string,
+) => {
+  const key = priceKey(name);
+  s.nameProducts = [
+    ...s.nameProducts.filter((n) => !(n.kind === kind && n.key === key)),
+    { kind, key, product, at: now() },
+  ];
+};
 const tableSource = (e: { source: string; page: number; name: string }) =>
   `${e.source} · página ${e.page} · «${e.name}»`.slice(0, 300);
 const negativeNote = (negative: string[]) =>
@@ -1471,8 +1484,10 @@ export function apply(state: State, input: unknown): State {
           had.push(e.name);
           continue;
         }
+        const pid = randomUUID();
+        remember(s, "table", e.name, pid);
         s.products.push({
-          id: randomUUID(),
+          id: pid,
           name: e.name,
           composition: e.composition,
           compositionSource: tableSource(e),
@@ -1511,13 +1526,15 @@ export function apply(state: State, input: unknown): State {
       );
       p.composition = e.composition;
       p.compositionSource = tableSource(e);
+      remember(s, "table", e.name, p.id);
       note = `Composición de ${p.name} tomada de la tabla de ingredientes (fila «${e.name}»). El stock no cambia.`;
       break;
     }
     case "clearIngredientTable": {
       const n = s.ingredientTable.length;
       s.ingredientTable = [];
-      note = `Tabla de ingredientes vaciada (${n} filas). Los productos conservan su composición.`;
+      s.nameProducts = s.nameProducts.filter((x) => x.kind !== "table");
+      note = `Tabla de ingredientes vaciada (${n} filas). Los productos conservan su composición; se olvida a qué producto correspondía cada fila.`;
       break;
     }
     case "importPriceList": {
@@ -1571,7 +1588,9 @@ export function apply(state: State, input: unknown): State {
       s.priceList = [];
       s.priceLinks = [];
       s.priceStars = [];
-      note = `Lista de precios vaciada (${n} filas). Los precios apuntados en los productos no cambian.`;
+      s.priceNotSame = [];
+      s.nameProducts = s.nameProducts.filter((x) => x.kind !== "list");
+      note = `Lista de precios vaciada (${n} filas). Los precios apuntados en los productos no cambian; se olvida lo juntado, las estrellas y a qué producto correspondía cada nombre.`;
       break;
     }
     case "linkPriceRows": {
@@ -1592,6 +1611,10 @@ export function apply(state: State, input: unknown): State {
         ...s.priceLinks.filter((set) => !set.some((k) => keys.has(k))),
         [...keys],
       ];
+      // Si antes dijo que eran distintos, juntarlos a mano manda.
+      s.priceNotSame = s.priceNotSame.filter(
+        ([x, y]) => !(keys.has(x!) && keys.has(y!)),
+      );
       note = `Juntados como el mismo ingrediente: ${[...new Set(rows.map((r) => r.name))].join(", ")}. Lo has decidido tú: la lista no dice que sean iguales.`;
       break;
     }
@@ -1606,6 +1629,49 @@ export function apply(state: State, input: unknown): State {
         .map((set) => set.filter((k) => k !== key))
         .filter((set) => set.length > 1);
       note = `${row.name} vuelve a compararse por separado.`;
+      break;
+    }
+    case "rejectPriceMatch": {
+      const [x, y] = a.rows.map((id) => item(s.priceList, id));
+      const kx = priceKey(x!.name),
+        ky = priceKey(y!.name);
+      ensure(
+        linkedKeys(s, kx)[0] !== linkedKeys(s, ky)[0],
+        "Esas filas ya cuentan como el mismo ingrediente: sepáralas antes.",
+      );
+      const pair = [kx, ky].sort() as [string, string];
+      ensure(
+        !s.priceNotSame.some((p) => p[0] === pair[0] && p[1] === pair[1]),
+        "Ya habías dicho que son distintos.",
+      );
+      s.priceNotSame = [...s.priceNotSame, pair];
+      note = `${x!.name} y ${y!.name} son ingredientes distintos: no se volverán a proponer como iguales.`;
+      break;
+    }
+    case "linkNameProduct": {
+      const p = item(s.products, a.product);
+      const name =
+        a.kind === "list"
+          ? item(s.priceList, a.row).name
+          : item(s.ingredientTable, a.row).name;
+      remember(s, a.kind, name, p.id);
+      note = `«${name}» de ${a.kind === "list" ? "la lista de precios" : "la tabla de ingredientes"} es ${p.name} en tu inventario. Lo has decidido tú; no cambia precios ni stock.`;
+      break;
+    }
+    case "unlinkNameProduct": {
+      const name =
+        a.kind === "list"
+          ? item(s.priceList, a.row).name
+          : item(s.ingredientTable, a.row).name;
+      const key = priceKey(name);
+      ensure(
+        s.nameProducts.some((n) => n.kind === a.kind && n.key === key),
+        "Ese nombre no tenía producto asignado.",
+      );
+      s.nameProducts = s.nameProducts.filter(
+        (n) => !(n.kind === a.kind && n.key === key),
+      );
+      note = `«${name}» ya no corresponde a ningún producto del inventario.`;
       break;
     }
     case "starPriceRow": {
@@ -1689,6 +1755,7 @@ export function apply(state: State, input: unknown): State {
       if (usual) p.price = price;
       else if (alt) alt.price = price;
       else p.alternates.push({ supplier: sup.id, pack, price });
+      remember(s, "list", row.name, p.id);
       note =
         `Precio de ${p.name} con ${sup.name}: ${eur(row.cents)} por ${p.unit} × ${String(pack).replace(".", ",")} ${p.unit} por paquete = ${eur(price)} el paquete, según la lista de precios (${priceRowSource(row)}).` +
         (usual

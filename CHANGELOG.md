@@ -1,5 +1,13 @@
 # Registro de parches y sesiones
 
+## 0.59.0 — 2026-10-05 · Tus dos PDF cargados, «posibles iguales» y qué producto es cada nombre
+
+- Tus dos PDF reales están cargados en tus datos por el mismo camino que la app (tabla de composición: 153 filas; lista de precios: 195 filas de 21 proveedores, 14 hechas en casa, 31 sin precio, 19 sin proveedor), con copia previa de la base en work/copias/. Productos, stock, movimientos, proveedores, recetas, precios, pedidos y producciones quedaron idénticos antes y después.
+- Precios por proveedor → «Posibles iguales»: la app enseña parejas de nombres parecidos que podrían ser el mismo ingrediente, con el motivo en palabras («LECHE ENTERA» y «LECHE ENTERA PASCUAL»: las mismas palabras con «PASCUAL» de más), y tú decides con «Sí, es el mismo» (los junta; se puede separar) o «No, son distintos» (deja de proponerlos; juntarlos a mano después manda). Nunca junta nada sola. Lo que cambia de porcentaje o de tamaño (55 % y 73 %, T08 y T12, 12 oz y 14 oz) no se propone. Con tu lista: 24 propuestas, 0 de formato o porcentaje distinto.
+- Qué producto es cada nombre: en cada ingrediente de la lista, «¿Qué producto de tu inventario es?» recuerda a qué producto corresponde ese nombre; en la tabla de ingredientes, «Ya lo tengo con otro nombre…» hace lo mismo y la fila pasa a decir «En el inventario como «…»». Usar un precio, usar una composición o añadir desde la tabla también lo recuerdan. Se guarda por el nombre (vale aunque vuelvas a subir el archivo) y lo usan el carrito, «Sugerir reposición» y «Usar este precio…». No cambia precios ni stock; «Vaciar» lo olvida.
+
+Informe reports/2026-10-06T02-30-00-000Z-posibles-iguales-y-pdf-reales.md.
+
 ## 0.58.0 — 2026-10-05 · Precios en el carrito y lector de imágenes a prueba
 
 - Carrito: cada línea dice lo que cuesta por kilo, litro o unidad y, si con otro proveedor ya apuntado en el producto la misma cantidad sale más barata, lo avisa con la cuenta y «Cambiar»; «Usar el más barato en todo» cambia todas las líneas. «Sugerir reposición» propone con el habitual y avisa de las que bajan. Si el producto se llama igual que un ingrediente de la lista de precios, la línea enseña el precio de la lista y «Apuntar este precio…» (la lista no dice si es por kilo o litro: se compara solo al apuntarlo).

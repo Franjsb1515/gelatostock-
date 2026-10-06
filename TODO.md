@@ -1,4 +1,4 @@
-# TODO — estado real de 0.58.0
+# TODO — estado real de 0.59.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -32,9 +32,11 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] [app] La prueba de escritorio recorre la producción rápida y «Preparar» (0.56.0).
 - [x] [app] «Preparar» paso a paso, − / + de 500 g y «Orden de preparación» por receta (0.56.0, pedido por ti el 2026-10-05).
 - [x] [app] Tabla de ingredientes con la composición (0.57.0) y precios por proveedor en Compras (0.57.0), pedidos por ti el 2026-10-05 con tus dos PDF.
-- [ ] [tú] Subir tus dos PDF en la app: Inventario → «Tabla de ingredientes» → «Subir tabla», y Compras → «Precios por proveedor». No se han cargado en tus datos reales: lo confirmas tú en pantalla.
+- [x] [tú] Tus dos PDF cargados en tus datos reales el 2026-10-05, a petición tuya, por el mismo camino que la app (153 filas de tabla, 195 de lista); productos, stock y movimientos iguales antes y después. Copia previa de la base en work/copias/. Si vuelves a subirlos desde la app, lo juntado, las estrellas y los productos recordados se conservan (van por nombre).
 - [ ] [tú] Decidir: (1) qué fila de rangos de tu tabla vale para cada familia (gelato, gelato de fruta, sorbete de fruta, sorbete de cremas, base) para usarlos en el balance en lugar de los de la app; (2) si los precios de tu lista son todos por kilo o litro; (3) qué nombres parecidos de la lista son el mismo ingrediente y cuáles son tus ingredientes estrella (se marcan en pantalla).
-- [x] [app] Precios en el carrito y en «Sugerir reposición» (0.58.0). Queda: proponer «posibles iguales» para que los confirmes y recordar a qué producto corresponde cada nombre de la lista.
+- [x] [app] Precios en el carrito y en «Sugerir reposición» (0.58.0).
+- [x] [app] «Posibles iguales» en Precios por proveedor (parejas propuestas con motivo; tú dices sí o no; nunca junta sola) y memoria de a qué producto corresponde cada nombre de la lista y de la tabla (0.59.0). Con tu lista salen 24 propuestas.
+- [ ] [tú] Revisar las 24 propuestas de «Posibles iguales» (Compras → Precios por proveedor, arriba) y decir en cada ingrediente de la lista y de la tabla a qué producto tuyo corresponde («¿Qué producto de tu inventario es?» y «Ya lo tengo con otro nombre…»). Así el carrito y «Sugerir reposición» encuentran el precio de la lista aunque el nombre no coincida.
 - [ ] [tú] Decir si los precios de tu lista son por kilo, litro o unidad (dijiste que se mira después): hasta entonces el precio de la lista se enseña pero no se compara con el paquete hasta que lo apuntas.
 - [x] [app] Lector de imágenes medido con 50 tipos (0.58.0): 44 de 50 en su ideal, 0 inventos. Lo que no se lee: cuadrante ladeado o sin líneas, PDF escaneado, foto girada 5° pierde la fecha. Detalle en reports/2026-10-06T08-00-00-000Z-lector-de-imagenes.md.
 - [ ] [tú] Fotos reales (facturas, horarios a mano, cuadrantes) para medir el lector de verdad: todo lo medido es sintético.

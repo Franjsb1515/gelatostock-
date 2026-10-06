@@ -206,6 +206,8 @@ export type PriceGroup = {
   /** Nombres distintos que la persona juntó a mano (vacío si el grupo es de un solo nombre). */
   joined: string[];
   star: boolean;
+  /** Producto del inventario al que corresponde este nombre, si la persona lo dijo (nameProducts). */
+  product: string | null;
   rows: PriceGroupRow[];
   /** Proveedores distintos con precio. */
   suppliers: number;
@@ -323,6 +325,9 @@ export function priceGroups(s: State): PriceComparison {
         "",
       joined: keys.size > 1 ? names : [],
       star: [...keys].some((k) => stars.has(k)),
+      product:
+        s.nameProducts.find((n) => n.kind === "list" && keys.has(n.key))
+          ?.product ?? null,
       rows,
       suppliers: suppliers.size,
       cheapest,
@@ -352,6 +357,169 @@ export function priceGroups(s: State): PriceComparison {
       sources: [...new Set(s.priceList.map((r) => r.source))],
     },
   };
+}
+
+/** Palabras que no distinguen un ingrediente de otro. */
+const STOP = new Set([
+  "de",
+  "del",
+  "la",
+  "el",
+  "los",
+  "las",
+  "en",
+  "y",
+  "e",
+  "o",
+  "con",
+  "sin",
+  "x",
+  "por",
+  "para",
+  "al",
+  "a",
+  // Unidades escritas en el nombre: son formato, no ingrediente.
+  "kg",
+  "kgs",
+  "g",
+  "gr",
+  "l",
+  "lt",
+  "lts",
+  "ml",
+  "ud",
+  "und",
+  "uds",
+]);
+const uniq = (list: string[]) => [...new Set(list)];
+export type NameParts = { words: string[]; numbers: string[]; codes: string[] };
+/**
+ * Trocea un nombre para compararlo: palabras (en singular), números sueltos («26», «38») y
+ * códigos de formato con cifras («t08», «pet50», «7k»). Solo sirve para proponer: nunca junta.
+ */
+export function nameParts(name: string): NameParts {
+  const words: string[] = [],
+    numbers: string[] = [],
+    codes: string[] = [];
+  for (const t of priceKey(name).split(" ")) {
+    if (!t || STOP.has(t)) continue;
+    if (/^\d+$/.test(t)) numbers.push(t);
+    else if (/\d/.test(t)) codes.push(t);
+    else words.push(t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t);
+  }
+  return { words: uniq(words), numbers: uniq(numbers), codes: uniq(codes) };
+}
+const subset = (a: string[], b: string[]) => a.every((x) => b.includes(x));
+const eitherWay = (a: string[], b: string[]) => subset(a, b) || subset(b, a);
+/** La palabra tal como la escribe el nombre («PASCUAL»), a partir de su forma troceada. */
+const original = (name: string, word: string): string =>
+  name.split(/[^\p{L}\p{N}]+/u).find((t) => nameParts(t).words[0] === word) ??
+  word;
+/**
+ * Por qué dos nombres distintos de la lista podrían ser el mismo ingrediente, en palabras; null
+ * si no hay motivo. Regla estrecha a propósito: las palabras de uno están todas en el otro, con
+ * una palabra de más como mucho, y los números y códigos de uno están en el otro (así «CHOCOLATE
+ * NEGRO 55%» y «CHOCOLATE NEGRO 73%» no se proponen, ni «COPETAS T08» y «COPETAS T12»). La persona
+ * decide: la lista no dice que sean lo mismo.
+ */
+export function likelySame(a: string, b: string): string | null {
+  if (priceKey(a) === priceKey(b)) return null;
+  const pa = nameParts(a),
+    pb = nameParts(b);
+  if (!pa.words.length || !pb.words.length) return null;
+  const [small, big, bigName] =
+    pa.words.length <= pb.words.length ? [pa, pb, b] : [pb, pa, a];
+  if (!subset(small.words, big.words)) return null;
+  const extra = big.words.filter((w) => !small.words.includes(w));
+  if (extra.length > 1) return null;
+  if (!eitherWay(pa.numbers, pb.numbers) || !eitherWay(pa.codes, pb.codes))
+    return null;
+  const why: string[] = [];
+  if (extra[0]) why.push(`«${original(bigName, extra[0])}» de más en uno`);
+  const only = (x: string[], y: string[]) => x.filter((n) => !y.includes(n));
+  const nums = [
+    ...only(pa.numbers, pb.numbers),
+    ...only(pb.numbers, pa.numbers),
+    ...only(pa.codes, pb.codes),
+    ...only(pb.codes, pa.codes),
+  ];
+  if (nums.length)
+    why.push(`${nums.map((n) => `«${n}»`).join(" y ")} solo en uno de los dos`);
+  return why.length
+    ? `Las mismas palabras, con ${why.join(" y ")}.`
+    : "Las mismas palabras, en otro orden o con otros signos.";
+}
+export type PriceSuggestion = {
+  a: { key: string; name: string; row: string };
+  b: { key: string; name: string; row: string };
+  reason: string;
+};
+const pairKey = (x: string, y: string) => [x, y].sort().join("|");
+/**
+ * «Posibles iguales»: parejas de ingredientes de la lista que, por su nombre, podrían ser el
+ * mismo, para que la persona los junte o diga que no. Nunca se juntan solos. No se proponen los
+ * que ya cuentan como uno, los que ella dijo que son distintos (priceNotSame) ni lo hecho en casa.
+ */
+export function priceSuggestions(
+  s: State,
+  comparison: PriceComparison = priceGroups(s),
+): PriceSuggestion[] {
+  const rejected = new Set(s.priceNotSame.map(([x, y]) => pairKey(x!, y!)));
+  const sides = comparison.groups.map((g) => {
+    const names = new Map<string, string>();
+    for (const r of g.rows) if (!names.has(r.name)) names.set(r.name, r.id);
+    return { key: g.key, names: [...names] };
+  });
+  const out: PriceSuggestion[] = [];
+  for (let i = 0; i < sides.length; i++)
+    for (let j = i + 1; j < sides.length; j++) {
+      const A = sides[i]!,
+        B = sides[j]!;
+      let found: PriceSuggestion | null = null,
+        no = false;
+      for (const [na, ra] of A.names) {
+        for (const [nb, rb] of B.names) {
+          if (rejected.has(pairKey(priceKey(na), priceKey(nb)))) {
+            no = true;
+            break;
+          }
+          const reason: string | null = found ? null : likelySame(na, nb);
+          if (reason)
+            found = {
+              a: { key: A.key, name: na, row: ra },
+              b: { key: B.key, name: nb, row: rb },
+              reason,
+            };
+        }
+        if (no) break;
+      }
+      if (found && !no) out.push(found);
+    }
+  return out.sort(
+    (x, y) =>
+      x.a.name.localeCompare(y.a.name, "es") ||
+      x.b.name.localeCompare(y.b.name, "es"),
+  );
+}
+
+/**
+ * El producto del inventario al que corresponde un nombre de la lista («list») o de la tabla
+ * («table»), si la persona lo dijo alguna vez. En la lista valen también los nombres juntados.
+ */
+export function productOfName(
+  s: State,
+  kind: "list" | "table",
+  name: string,
+): string | null {
+  const key = priceKey(name);
+  const own = s.nameProducts.find((n) => n.kind === kind && n.key === key);
+  if (own) return own.product;
+  if (kind !== "list") return null;
+  const keys = linkedKeys(s, key);
+  return (
+    s.nameProducts.find((n) => n.kind === "list" && keys.includes(n.key))
+      ?.product ?? null
+  );
 }
 
 /** De dónde sale un precio tomado de la lista: archivo, página y fila. */
@@ -436,12 +604,20 @@ export function cartAdvice(s: State): CartAdvice[] {
       }
     let list: CartAdvice["list"] = null;
     if (comparison) {
-      const keys = linkedKeys(s, priceKey(p.name));
-      const g = comparison.groups.find(
-        (x) =>
-          keys.includes(x.key) ||
-          x.rows.some((r) => keys.includes(priceKey(r.name))),
-      );
+      // Primero el nombre de la lista que la persona dijo que es este producto; si no, el
+      // nombre igual al del producto (o juntado con él).
+      const remembered = s.nameProducts
+        .filter((n) => n.kind === "list" && n.product === p.id)
+        .flatMap((n) => linkedKeys(s, n.key));
+      const byKeys = (keys: string[]) =>
+        comparison.groups.find(
+          (x) =>
+            keys.includes(x.key) ||
+            x.rows.some((r) => keys.includes(priceKey(r.name))),
+        );
+      const g =
+        (remembered.length ? byKeys(remembered) : undefined) ??
+        byKeys(linkedKeys(s, priceKey(p.name)));
       // Con un solo proveedor no hay «más barato», pero el precio de la lista se enseña igual.
       const best = g?.cheapest ?? g?.rows.find((r) => r.compared);
       if (g && best && best.supplier && best.cents !== null) {

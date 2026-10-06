@@ -9,6 +9,15 @@ let priceListOpen = false,
   priceQuery = "",
   pricePicked = new Set();
 const PRICE_UNIT = "por litro, kilo o unidad";
+// El recuadro «Posibles iguales» recuerda si estaba abierto entre redibujados.
+let priceSuggestOpen = true;
+document.addEventListener(
+  "toggle",
+  (e) => {
+    if (e.target?.id === "price-suggest") priceSuggestOpen = e.target.open;
+  },
+  true,
+);
 const priceFold = (s) =>
   String(s)
     .normalize("NFD")
@@ -38,6 +47,33 @@ function priceRecommendation(g) {
   }
   return `<p class="price-rec"><strong>Más barato: ${esc(g.cheapest.supplier)} a ${money(g.cheapest.cents)}</strong> ${PRICE_UNIT}${g.next ? `; el siguiente (${esc(g.next.supplier)}, ${money(g.next.cents)}) cuesta un ${pricePct(g.next.pct)} más` : ""}.</p><p class="fineprint">Diferencia entre el más caro y el más barato: ${money(g.saving.dearest)} − ${money(g.cheapest.cents)} = ${money(g.saving.cents)}, un ${pricePct(g.saving.pct)} del más caro.</p>`;
 }
+/** A qué producto del inventario corresponde este nombre, si la persona lo dijo (se recuerda por nombre). */
+function priceProductLine(g) {
+  const first = g.rows[0];
+  const p = g.product ? product(g.product) : null;
+  const tool = (label, action) =>
+    btn(label, action, "text-link", `data-row="${esc(first.id)}"`);
+  return `<p class="price-product">${
+    p
+      ? `En tu inventario es <strong>${esc(p.name)}</strong>. ${tool("Cambiar", "priceProduct")} ${tool("Quitar", "priceProductOff")}`
+      : tool("¿Qué producto de tu inventario es?", "priceProduct")
+  }</p>`;
+}
+/** «Posibles iguales»: parejas de nombres parecidos que propone el núcleo; la persona decide. */
+function priceSuggestionItem(x) {
+  const side = (k) => {
+    const g = priceCompare.groups.find((y) => y.key === k.key);
+    const rows = g ? g.rows.filter((r) => r.name === k.name) : [];
+    return `<div class="price-side"><strong>${esc(k.name)}</strong><small>${rows.map((r) => `${esc(r.supplier || "Proveedor: No disponible")} · ${priceText(r)}`).join(" · ") || "—"}</small></div>`;
+  };
+  const ids = `data-a="${esc(x.a.row)}" data-b="${esc(x.b.row)}"`;
+  return `<li class="price-suggest-item">${side(x.a)}<span class="price-vs">y</span>${side(x.b)}<small class="price-why">${esc(x.reason)}</small><div class="row-tools">${btn("Sí, es el mismo", "priceSame", "primary", ids)}${btn("No, son distintos", "priceNotSame", "secondary", ids)}</div></li>`;
+}
+function priceSuggestionsBox(c) {
+  const list = c.suggestions || [];
+  if (!list.length) return "";
+  return `<details class="panel price-suggest" id="price-suggest" ${priceSuggestOpen ? "open" : ""}><summary>Posibles iguales · ${list.length}</summary><p class="fineprint">Nombres parecidos que podrían ser el mismo ingrediente. La lista no dice que lo sean: lo decides tú. «Sí» los junta para compararlos (se puede separar después); «No» deja de proponerlos.</p><ul class="price-suggest-list">${list.map(priceSuggestionItem).join("")}</ul></details>`;
+}
 function priceGroupCard(g) {
   const first = g.rows[0];
   const rows = g.rows
@@ -46,7 +82,7 @@ function priceGroupCard(g) {
         `<tr class="${r.cheapest ? "price-best" : ""}"><td class="price-pick"><input type="checkbox" data-price-pick="${esc(r.id)}" ${pricePicked.has(r.id) ? "checked" : ""} aria-label="Marcar ${esc(r.name)}${r.supplier ? " de " + esc(r.supplier) : ""} para juntar"></td><td><strong>${esc(r.supplier || "Proveedor: No disponible")}</strong><small>${esc(r.name)} · página ${r.page}</small></td><td class="num"><strong>${priceText(r)}</strong>${r.cheapest ? pill("Más barato", "sage") : ""}${r.issues.length ? `<small class="price-issue">${r.issues.map(esc).join(" ")}</small>` : ""}</td><td class="row-tools">${r.compared ? btn("Usar este precio…", "priceUse", "secondary", `data-row="${esc(r.id)}"`) : ""}${g.joined.length ? btn("Separar", "priceUnlink", "secondary", `data-row="${esc(r.id)}"`) : ""}</td></tr>`,
     )
     .join("");
-  return `<article class="panel price-group" data-price-group="${esc(g.key)}" ${priceGroupMatches(g) ? "" : "hidden"}><header><div><h3>${esc(g.name)}</h3>${g.suppliers > 1 ? pill(g.suppliers + " proveedores con precio", "lavender") : ""}</div><button type="button" class="btn ${g.star ? "primary" : "secondary"} price-star" data-action="priceStar" data-row="${esc(first.id)}" data-star="${g.star ? "0" : "1"}" aria-pressed="${g.star}">${g.star ? "★ Ingrediente estrella" : "☆ Marcar como estrella"}</button></header>${g.joined.length ? `<p class="ai-warning">Juntados por ti: ${g.joined.map(esc).join(" · ")}. La lista no dice que sean lo mismo: comprueba que la marca y el formato te valen.</p>` : ""}${priceRecommendation(g)}<div class="table-wrap"><table class="price-table"><thead><tr><th><span class="sr-only">Juntar</span></th><th>Proveedor</th><th class="num">Precio ${PRICE_UNIT}</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${rows}</tbody></table></div></article>`;
+  return `<article class="panel price-group" data-price-group="${esc(g.key)}" ${priceGroupMatches(g) ? "" : "hidden"}><header><div><h3>${esc(g.name)}</h3>${g.suppliers > 1 ? pill(g.suppliers + " proveedores con precio", "lavender") : ""}</div><button type="button" class="btn ${g.star ? "primary" : "secondary"} price-star" data-action="priceStar" data-row="${esc(first.id)}" data-star="${g.star ? "0" : "1"}" aria-pressed="${g.star}">${g.star ? "★ Ingrediente estrella" : "☆ Marcar como estrella"}</button></header>${priceProductLine(g)}${g.joined.length ? `<p class="ai-warning">Juntados por ti: ${g.joined.map(esc).join(" · ")}. La lista no dice que sean lo mismo: comprueba que la marca y el formato te valen.</p>` : ""}${priceRecommendation(g)}<div class="table-wrap"><table class="price-table"><thead><tr><th><span class="sr-only">Juntar</span></th><th>Proveedor</th><th class="num">Precio ${PRICE_UNIT}</th><th><span class="sr-only">Acciones</span></th></tr></thead><tbody>${rows}</tbody></table></div></article>`;
 }
 function priceListView() {
   const c = priceCompare || {
@@ -87,7 +123,7 @@ function priceListView() {
         `<button type="button" class="tab ${priceTab === v ? "selected" : ""}" data-action="priceTab" data-tab="${v}">${t}</button>`,
     )
     .join("");
-  return `<div class="price">${head}<div class="notice">${icon("shield")}<div><strong>${c.totals.rows} filas de ${c.totals.suppliers} proveedores · ${c.totals.sources.map((x) => "«" + esc(x) + "»").join(", ")}</strong><span>El precio es ${PRICE_UNIT}, como lo escribe la lista (no dice cuál). Aquí solo se ordenan esos precios: la lista no dice nada de marcas, formatos ni calidad. Ningún precio de tus productos cambia hasta que tú lo confirmas.</span></div></div><section class="panel price-panel"><div class="toolbar"><div class="tabs">${tabs}</div><label class="search">${icon("search")}<input id="price-search" placeholder="Buscar ingrediente o proveedor…" aria-label="Buscar ingrediente o proveedor" value="${esc(priceQuery)}"></label></div><div class="price-bar"><span id="price-count">${pricePicked.size} marcadas</span>${btn("Es el mismo ingrediente: juntar las marcadas", "priceJoin", "secondary")}<small>Solo se juntan solos los nombres idénticos. Lo demás lo decides tú marcando las filas.</small>${btn("Vaciar la lista", "priceClear", "secondary")}</div><p class="fineprint" id="price-shown">${shown} de ${c.totals.groups} ingredientes a la vista. Primero los que marcaste con estrella, luego donde más diferencia hay entre proveedores y después por nombre.</p></section><div class="price-groups">${c.groups.map(priceGroupCard).join("")}</div><p class="panel empty compact" id="price-none" ${shown ? "hidden" : ""}>Ningún ingrediente con esa búsqueda.</p>${
+  return `<div class="price">${head}<div class="notice">${icon("shield")}<div><strong>${c.totals.rows} filas de ${c.totals.suppliers} proveedores · ${c.totals.sources.map((x) => "«" + esc(x) + "»").join(", ")}</strong><span>El precio es ${PRICE_UNIT}, como lo escribe la lista (no dice cuál). Aquí solo se ordenan esos precios: la lista no dice nada de marcas, formatos ni calidad. Ningún precio de tus productos cambia hasta que tú lo confirmas.</span></div></div><section class="panel price-panel"><div class="toolbar"><div class="tabs">${tabs}</div><label class="search">${icon("search")}<input id="price-search" placeholder="Buscar ingrediente o proveedor…" aria-label="Buscar ingrediente o proveedor" value="${esc(priceQuery)}"></label></div><div class="price-bar"><span id="price-count">${pricePicked.size} marcadas</span>${btn("Es el mismo ingrediente: juntar las marcadas", "priceJoin", "secondary")}<small>Solo se juntan solos los nombres idénticos. Lo demás lo decides tú marcando las filas.</small>${btn("Vaciar la lista", "priceClear", "secondary")}</div><p class="fineprint" id="price-shown">${shown} de ${c.totals.groups} ingredientes a la vista. Primero los que marcaste con estrella, luego donde más diferencia hay entre proveedores y después por nombre.</p></section>${priceSuggestionsBox(c)}<div class="price-groups">${c.groups.map(priceGroupCard).join("")}</div><p class="panel empty compact" id="price-none" ${shown ? "hidden" : ""}>Ningún ingrediente con esa búsqueda.</p>${
     c.house.length
       ? `<details class="panel price-house"><summary>Hecho en casa · ${c.house.length}</summary><p class="fineprint">No son compras: es lo que cuesta cada elaboración de la casa según tu lista. No se comparan con ningún proveedor.</p><div class="table-wrap"><table class="price-table"><thead><tr><th>Elaboración</th><th class="num">Coste ${PRICE_UNIT}</th></tr></thead><tbody>${c.house.map((r) => `<tr><td><strong>${esc(r.name)}</strong><small>página ${r.page}</small></td><td class="num"><strong>${priceText(r)}</strong>${r.issues.length ? `<small class="price-issue">${r.issues.map(esc).join(" ")}</small>` : ""}</td></tr>`).join("")}</tbody></table></div></details>`
       : ""
@@ -215,7 +251,11 @@ function priceUseModal(id) {
     .filter((p) => !made.has(p.id))
     .sort((a, b) => a.name.localeCompare(b.name, "es"));
   const names = [r.name, ...found.group.rows.map((x) => x.name)].map(priceFold);
-  const guess = choices.find((p) => names.includes(priceFold(p.name)));
+  // Primero el producto que la persona dijo que es este nombre; si no, el que se llama igual.
+  const guess =
+    (found.group.product &&
+      choices.find((p) => p.id === found.group.product)) ||
+    choices.find((p) => names.includes(priceFold(p.name)));
   const sup = state.suppliers.find(
     (s) => priceFold(s.name) === priceFold(r.supplier),
   );
@@ -263,6 +303,47 @@ function priceUseModal(id) {
   };
   pick.addEventListener("change", explain);
   explain();
+}
+
+/** Decir a qué producto del inventario corresponde un nombre de la lista (se recuerda por nombre). */
+function priceProductModal(id) {
+  const found = priceRowOf(id);
+  if (!found) return;
+  const g = found.group;
+  const choices = [...state.products].sort((a, b) =>
+    a.name.localeCompare(b.name, "es"),
+  );
+  const names = g.rows.map((x) => priceFold(x.name));
+  const current =
+    g.product ||
+    choices.find((p) => names.includes(priceFold(p.name)))?.id ||
+    "";
+  modal(
+    "¿Qué producto de tu inventario es?",
+    `«${g.name}» en tu lista de precios. Se recuerda por el nombre, así que vale aunque vuelvas a subir la lista. No cambia precios ni stock: sirve para que el carrito y «Usar este precio…» sepan de qué producto hablas.`,
+    select(
+      "Producto del inventario",
+      "product",
+      [["", "Ninguno"], ...choices.map((p) => [p.id, p.name])],
+      current,
+    ),
+    async (f) => {
+      const chosen = f.get("product");
+      if (!chosen && !g.product) return true;
+      return priceMutate(
+        chosen
+          ? {
+              type: "linkNameProduct",
+              kind: "list",
+              row: found.row.id,
+              product: chosen,
+            }
+          : { type: "unlinkNameProduct", kind: "list", row: found.row.id },
+        chosen ? "Producto recordado." : "Ya no corresponde a ningún producto.",
+      );
+    },
+    "Guardar",
+  );
 }
 
 // Botones de «Precios por proveedor». Devuelve true si la acción era suya.
@@ -327,6 +408,29 @@ async function priceListAction(name, el) {
     await priceMutate(
       { type: "unlinkPriceRow", row: el.dataset.row },
       "Vuelve a compararse por separado.",
+    );
+    return true;
+  }
+  if (name === "priceSame" || name === "priceNotSame") {
+    const rows = [el.dataset.a, el.dataset.b];
+    await priceMutate(
+      name === "priceSame"
+        ? { type: "linkPriceRows", rows }
+        : { type: "rejectPriceMatch", rows },
+      name === "priceSame"
+        ? "Juntados como el mismo ingrediente."
+        : "No se volverán a proponer como iguales.",
+    );
+    return true;
+  }
+  if (name === "priceProduct") {
+    priceProductModal(el.dataset.row);
+    return true;
+  }
+  if (name === "priceProductOff") {
+    await priceMutate(
+      { type: "unlinkNameProduct", kind: "list", row: el.dataset.row },
+      "Ya no corresponde a ningún producto.",
     );
     return true;
   }
