@@ -4183,6 +4183,28 @@ button.text-link:focus-visible {
   display: grid;
   gap: 6px;
 }
+/* Horario: añadir o quitar líneas de turno (0.61.0). */
+.cal-shift-add {
+  justify-self: start;
+  margin-top: var(--s-2);
+  min-height: 44px;
+}
+.cal-shift-remove {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.cal-shift-remove:hover,
+.cal-shift-remove:focus-visible {
+  color: var(--ink);
+  border-color: var(--ink-muted);
+}
 .cal-shift {
   display: grid;
   grid-template-columns: minmax(120px, 1fr) 96px 96px;
@@ -5184,7 +5206,9 @@ dialog.wide {
   background: var(--azafran-claro);
 }
 .cal .cal-shift {
-  grid-template-columns: minmax(100px, 1fr) minmax(120px, 1fr) 104px auto 104px;
+  grid-template-columns:
+    minmax(100px, 1fr) minmax(120px, 1fr)
+    104px auto 104px 44px;
 }
 .upload-zone.compact {
   padding: var(--s-2) var(--s-3);

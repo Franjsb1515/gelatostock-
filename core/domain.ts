@@ -763,7 +763,7 @@ export function apply(state: State, input: unknown): State {
       const { type, revision, operationId, id, ...fields } = a;
       if (id) Object.assign(item(s.suppliers, id), fields);
       else s.suppliers.push({ id: randomUUID(), ...fields });
-      note = `Proveedor guardado: ${a.name}. Sin conexión externa.`;
+      note = `Proveedor guardado: ${a.name}.`;
       break;
     }
     case "cart": {
@@ -1021,7 +1021,7 @@ export function apply(state: State, input: unknown): State {
       const o = item(s.orders, a.order);
       ensure(
         ["sent", "partial"].includes(o.status),
-        "Primero simulá el envío del pedido.",
+        "Primero envía el pedido (por WhatsApp o con «Simular envío»).",
       );
       ensure(
         new Set(a.lines.map((l) => l.product)).size === a.lines.length,
@@ -1260,7 +1260,7 @@ export function apply(state: State, input: unknown): State {
     case "business": {
       s.business = a.name;
       s.place = a.place;
-      note = `Identidad del negocio actualizada: ${a.name}${a.place ? " · " + a.place : ""}.`;
+      note = `Nombre del negocio actualizado: ${a.name}${a.place ? " · " + a.place : ""}.`;
       break;
     }
     case "setSaleValue": {

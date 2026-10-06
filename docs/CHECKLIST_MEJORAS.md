@@ -23,8 +23,9 @@ Sale de dos revisiones con medidas: reports/2026-10-06T03-00-00-000Z-limpieza-te
 - [ ] Agrupar la tabla por tipo (lácteos, azúcares, frutas…): la tabla no lo dice; habría que marcarlo a mano.
 
 ## Textos
-- [ ] Recetario y tarjeta «Recetario protegido» de Configuración: no se limpiaron en 0.56.0.
-- [ ] Guía y Ayudante explican cosas que la pantalla ya no dice (aviso de mensajes, sesión de WhatsApp, «Otro contacto»): repasar que sigan cuadrando; repetir la evaluación del chat.
+- [x] Pulido general del 2026-10-06 (reports/2026-10-06T06-00-00-000Z-pulido-de-textos.md): 56 puntos en pantalla y 16 frases de Guía y Ayudante; chat 60/60. Quedan para tu decisión: textos de «simular/demostración», datos de ejemplo en tu inventario, «Información pendiente de sincronización» (Cruceros) y los nombres que busca la prueba de escritorio («Producción a mano», «Corregir relevancia», «Registrar stock»).
+- [x] Tarjeta «Recetario protegido» de Configuración («Estado: desbloqueado» → «Ahora mismo: abierto», sin «cifra el disco») y aviso falso «Ninguna receta coincide» del Recetario (2026-10-06).
+- [x] Guía y Ayudante cuadran con las pantallas (WhatsApp «Por qué no ha entrado un mensaje», «Simular envío», «texto pegado en el Ayudante», «Exportar a hoja de cálculo»); evaluación del chat repetida: 60/60 (2026-10-06).
 - [ ] [tú] Antes de entregar: «Simular mensaje», «Mensaje de demostración», «Envío simulado» siguen por tu decisión del 2026-09-20.
 - [ ] Estilos sin uso tras la limpieza (.tip-card, .tracking-example): quitarlos.
 - [ ] Actividad: 1264 palabras, casi todo datos; estudiar resumirla por día.

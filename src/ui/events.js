@@ -368,5 +368,5 @@ request("/api/state")
   })
   .catch((e) => {
     $("#app").innerHTML =
-      `<div class="empty"><h1>No se pudo abrir el inventario</h1><p>${esc(e.message)}</p><p>Cerrá y volvé a abrir la aplicación. No se han reemplazado tus datos.</p></div>`;
+      `<div class="empty"><h1>No se pudo abrir el inventario</h1><p>${esc(e.message)}</p><p>Cierra y vuelve a abrir la aplicación. No se han reemplazado tus datos.</p></div>`;
   });

@@ -54,7 +54,7 @@ Precios por proveedor (en Compras). Sube el PDF con tu lista: una fila por ingre
 - Enviar pendientes por WhatsApp: con un clic ves la lista completa de pedidos pendientes, marcas los que quieres, revisas cada texto y la app los envía uno a uno con unos segundos de pausa, mostrando el progreso. Los proveedores sin WhatsApp (por ejemplo con web de compra) muestran su texto para copiar.
 - Control de entregas: por cada pedido, lo pedido, lo recibido y lo que falta. «Registrar lo que llegó» suma solo esa entrega, en la unidad del producto. Un pedido con entregas parciales sigue en curso hasta completarse.
 - Enviar por WhatsApp: muestra el texto exacto y el destinatario; se envía una sola vez al confirmar. Enviar no cambia stock ni confirma el pedido: la respuesta del proveedor llega a Mensajes.
-- Simular envío: para practicar sin canal real.
+- Simular envío: para practicar; marca el pedido como enviado sin contactar a nadie.
 - Entrega prevista: si el proveedor responde con una fecha y su mensaje queda vinculado al pedido, se muestra aquí.
 
 ## Mensajes
@@ -63,7 +63,7 @@ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y men
 - **La conversación entera**: dentro de un mensaje, «Lo que le has escrito» enseña lo último que le mandaste por WhatsApp, incluidos los pedidos y los recordatorios, con su fecha.
 - Para que los mensajes de un chat lleguen aquí, ese chat tiene que estar autorizado **eligiendo un proveedor registrado** en la pantalla WhatsApp. Un chat de «Otro contacto» se queda solo en esa pantalla, y Mensajes te lo dice arriba.
 - «Qué hacer ahora», arriba: los mensajes que debes leer y decidir. Si está vacío, no hay nada pendiente; confirmaciones y fechas quedan anotadas solas.
-- Responder: si el mensaje llegó por WhatsApp y el canal está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido. Las respuestas rápidas se escriben con tus palabras en Configuración → Respuestas rápidas; {fecha} se sustituye por la fecha que dijo el proveedor.
+- Responder: si el mensaje llegó por WhatsApp y WhatsApp está conectado, escribes la respuesta en el propio mensaje (o eliges una rápida, que rellena el cuadro) y pulsas «Enviar por WhatsApp»; se envía una sola vez y el mensaje queda decidido. Las respuestas rápidas se escriben con tus palabras en Configuración → Respuestas rápidas; {fecha} se sustituye por la fecha que dijo el proveedor.
 - Acciones sobre el pedido: si el mensaje está vinculado a un pedido, la app propone lo obvio según la lectura: fijar la fecha de entrega que dice el proveedor, marcar el pedido como confirmado, quitar del pedido el producto que no tiene o cancelarlo si lo anula. Cuando el proveedor dice que no tiene un producto, aparece además «Comprarlo a …» por cada otro proveedor que hayas apuntado para ese producto: lo pone en el carrito de ese proveedor con su formato y su precio, y no envía nada. Una confirmación o una fecha en un mensaje vinculado marcan el pedido como confirmado automáticamente; las cantidades y el stock nunca cambian solos.
 - Precio que dice el mensaje: si el proveedor escribe un precio claro («sube a 26 €», «pasa de 18 € a 19,50 €»), el mensaje lo enseña leído por reglas y ofrece «Apuntar este precio…». Eliges el producto (la app propone uno si el nombre aparece en el texto), repasas el importe y lo confirmas: entonces queda en la ficha del producto y en el historial del proveedor, citando ese mensaje. Mientras no lo confirmes no cambia nada. Si el precio no está claro o hay varios importes, la app no lee ninguno y no propone nada.
 - Decidir y cerrar: anota qué haces hoy con ese mensaje (esperar al lunes, comprar en Makro, aceptar la sustitución). Es una nota para ti y el equipo; no cambia pedidos ni stock y la app no la aplicará sola a otros mensajes.
@@ -71,13 +71,13 @@ Bandeja de proveedores: mensajes reales de WhatsApp (de chats autorizados) y men
 - Vínculo con pedidos: si responde al pedido enviado a ese número y es el único en curso, se vincula solo; si no, «Vincular pedido».
 - Corregir lectura: si la app entendió mal, elige la lectura correcta. Si marcas «Recordar», la aplicará a mensajes iguales o casi iguales. Esto solo afecta a cómo se lee el mensaje, nunca a lo que decides hacer.
 - Segunda lectura con el Ayudante: opcional; propone una categoría, no actúa.
-- Marcar revisado, cambiar prioridad y corregir relevancia dejan constancia con motivo.
+- Marcar revisado, cambiar prioridad y «Corregir relevancia» (decir si el mensaje tiene que ver con un pedido) quedan apuntados con su motivo.
 
 ## WhatsApp
 - Conectar por QR desde el teléfono (Dispositivos vinculados). **La sesión se queda guardada**: al cerrar y volver a abrir la app se reconecta sola, sin pedir otro QR, hasta que pulses «Cerrar sesión / cambiar número». Cerrar la app no cierra la sesión.
 - Si prefieres conectarte a mano cada vez, pon «Mantener la sesión al abrir» en «no».
 - Autorizar chat: solo los números autorizados se importan y reciben envíos. Cada cuenta vinculada tiene su propia lista.
-- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y Diagnóstico del canal (qué ocurrió con cada mensaje, sin contenido).
+- Enviar mensaje de prueba, Recuperar mensajes recientes (los que llegaron con la app cerrada) y «Por qué no ha entrado un mensaje» (qué pasó con cada mensaje, sin su texto).
 - Windows avisa con una notificación cuando escribe un proveedor autorizado, y dice qué ha leído la app en ese mensaje (por ejemplo «Falta de producto»).
 - Con la app abierta, un mensaje nuevo aparece como aviso abajo a la derecha, con el proveedor y lo que dice; «Abrir el mensaje» te lleva a él. El aviso no redibuja la pantalla ni te interrumpe si estás escribiendo.
 - Los dos avisos se apagan juntos en Configuración → Aviso de mensajes nuevos. Apagados, los mensajes entran igual y los ves al abrir Mensajes.
@@ -110,7 +110,7 @@ Historial de movimientos con motivo y corrección: revertir crea una compensaci�
 
 ## Ayudante
 - Analizar un texto (factura, mensaje): propone tipo de documento y muestra el inicio del original; comprueba base + IVA = total cuando están etiquetados. Puede equivocarse: revisa.
-- Chat de dudas: responde con esta guía y con el texto del editor. No consulta tu inventario ni ejecuta acciones.
+- Chat de dudas: responde con esta guía y con el texto que pegues en el Ayudante. No consulta tu inventario ni ejecuta acciones.
 - Confirmar el tipo en la foto: guarda tu decisión en el documento.
 
 ## Guía
@@ -120,15 +120,15 @@ Esta misma guía dentro de la app, con índice por pantalla. El chat de dudas de
 El chat también sabe de cultura del gelato: pregúntale por la diferencia entre gelato y helado, la historia, el equilibrio de una receta o la tradición heladera de Mallorca. Responde con un texto propio de la casa.
 
 ## Configuración
-Copias (manuales y automática diaria), restauración, exportación CSV, archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, identidad del negocio y primeros pasos. También los textos que envía la app: plantilla del pedido, plantilla del recordatorio y respuestas rápidas.
+Copias (manuales y automática diaria), restauración, exportar a hoja de cálculo (CSV), archivo de fotos y documentos, recetario protegido, limpieza periódica, lo que la app ha aprendido, nombre del negocio y primeros pasos. También los textos que envía la app: plantilla del pedido, plantilla del recordatorio y respuestas rápidas.
 
 ## Copias y espacio
-- Exportar CSV: en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).
+- Exportar a hoja de cálculo (CSV): en la app de escritorio pregunta primero en qué carpeta guardar (cancelar usa la carpeta de datos).
 - Copia secundaria: en Configuración, «Elegir carpeta secundaria»; con «Elegir con el explorador…» se abre el diálogo del sistema (en la app de escritorio), o escribe la ruta completa de una carpeta en otro disco, un USB o una carpeta sincronizada (OneDrive, Drive). Se hace una copia al momento y cada copia siguiente se duplica allí. Resumen avisa si no hay copia de las últimas 48 horas.
 - Actividad muestra lo reciente y «Mostrar más» carga lo anterior; nada se borra por eso.
 
 ## Si algo falla
-- Un envío de WhatsApp «no confirmado»: mira el diagnóstico del canal; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.
+- Un envío de WhatsApp «no confirmado»: mira «Por qué no ha entrado un mensaje» en la pantalla WhatsApp; suele ser que el número no está autorizado para la cuenta conectada o que la sesión se cerró.
 - Un mensaje no aparece: comprueba que el número está autorizado para la cuenta activa y usa «Recuperar mensajes recientes».
 - Contraseña del recetario olvidada: pide ayuda a quien te dé soporte técnico; se puede quitar sin perder datos.
-- Datos: siempre hay copia automática diaria en data/backups; restaura desde Configuración.
+- Datos: siempre hay una copia automática de cada día en la carpeta de copias (backups) de los datos de la app; restaura desde Configuración.

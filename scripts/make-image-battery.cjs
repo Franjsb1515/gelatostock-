@@ -80,10 +80,10 @@ function body(content, r) {
 const stampSvg = `<div class="stamp">PAGADO<br>05 OCT 2026</div><svg class="sign" viewBox="0 0 320 120"><path d="M8 82 C40 10 62 118 92 54 S128 22 150 74 190 96 214 40 250 60 310 28" fill="none" stroke="#1b3fa8" stroke-width="5" stroke-linecap="round"/><path d="M30 100 L300 86" fill="none" stroke="#1b3fa8" stroke-width="3"/></svg>`;
 const objectSvg = `<svg width="900" height="700" viewBox="0 0 900 700"><defs><linearGradient id="w" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9a678"/><stop offset="1" stop-color="#8d6a43"/></linearGradient><radialGradient id="b" cx=".4" cy=".35"><stop offset="0" stop-color="#fff3f6"/><stop offset="1" stop-color="#e88aa5"/></radialGradient><radialGradient id="g" cx=".4" cy=".35"><stop offset="0" stop-color="#e7f3c8"/><stop offset="1" stop-color="#8fae4e"/></radialGradient></defs><rect width="900" height="700" fill="url(#w)"/><ellipse cx="470" cy="610" rx="170" ry="26" fill="#000" opacity=".25"/><path d="M360 330 L450 620 L540 330 Z" fill="#d9a55a" stroke="#a87530" stroke-width="6"/><circle cx="405" cy="270" r="92" fill="url(#g)"/><circle cx="505" cy="262" r="96" fill="url(#b)"/><circle cx="452" cy="170" r="84" fill="#f6ecd2"/></svg>`;
 
-function rosterHtml() {
+function rosterHtml(lines) {
   const r = cuadrante;
   const row = (list) => list.map((v) => `<td>${esc(v)}</td>`).join("");
-  return `<table class="roster"><tr><td>${esc(r.title)}</td><td></td>${row(r.weekdays)}</tr><tr><td></td><td></td>${row(r.numbers)}</tr>${r.people.map((p) => `<tr><td>${esc(p.role)}</td><td><b>${esc(p.name)}</b></td>${row(p.cells)}</tr>`).join("")}</table>`;
+  return `<table class="roster${lines ? " lines" : ""}"><tr><td>${esc(r.title)}</td><td></td>${row(r.weekdays)}</tr><tr><td></td><td></td>${row(r.numbers)}</tr>${r.people.map((p) => `<tr><td>${esc(p.role)}</td><td><b>${esc(p.name)}</b></td>${row(p.cells)}</tr>`).join("")}</table>`;
 }
 
 function html(c) {
@@ -92,7 +92,7 @@ function html(c) {
   const size = r.size || 26;
   let inner;
   if (r.layout === "object") inner = objectSvg;
-  else if (r.layout === "roster") inner = rosterHtml();
+  else if (r.layout === "roster") inner = rosterHtml(r.lines);
   else if (r.layout === "mobile") {
     const l = contents[c.content].lines;
     inner = `<div class="bar"><span>9:41</span><span>5G · 87 %</span></div><div class="who">${esc(l[0])}</div>${l
@@ -141,6 +141,7 @@ function html(c) {
     .bubble{font-size:17px;margin:0 60px 12px 16px;padding:10px 14px;background:#ececec;border-radius:14px}
     .bubble.me{margin:0 16px 12px 60px;background:#d6f5c8}
     table.roster{font:11px Arial}table.roster td{padding:5px 9px;text-align:center}
+    table.roster.lines{border-collapse:collapse}table.roster.lines td{border:1px solid #333}
   </style><div id="stage"><div id="card">${inner}</div></div>`;
 }
 
@@ -226,6 +227,26 @@ async function degrade(png, c, i) {
   if (d.moire) layers.push(moireLayer(m.width, m.height));
   let img = sharp(buf);
   if (layers.length) img = img.composite(layers);
+  // Variantes de archivo válidas (0.61.0): el mismo contenido guardado de otra forma.
+  const flat = () => img.flatten({ background: "#ffffff" });
+  if (c.post === "cmyk")
+    return flat().toColourspace("cmyk").jpeg({ quality: 85 }).toBuffer();
+  if (c.post === "progressive")
+    return flat().jpeg({ quality: 85, progressive: true }).toBuffer();
+  if (c.post === "grey")
+    return flat().grayscale().jpeg({ quality: 85 }).toBuffer();
+  if (c.post === "exif6")
+    return sharp(await flat().jpeg({ quality: 85 }).toBuffer())
+      .rotate(270)
+      .withMetadata({ orientation: 6 })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+  if (c.post === "png16") return img.toColourspace("rgb16").png().toBuffer();
+  if (c.post === "alpha") return img.ensureAlpha(0.55).png().toBuffer();
+  if (c.post === "palette")
+    return img
+      .png({ palette: true, colours: 16, progressive: true })
+      .toBuffer();
   if (c.format === "jpg" || c.format === "pdf")
     return img
       .flatten({ background: "#ffffff" })
@@ -315,6 +336,50 @@ async function rawFile(kind) {
     head.writeUInt16LE(24, 28);
     head.writeUInt32LE(data.length, 34);
     return Buffer.concat([head, data]);
+  }
+  // 0.61.0: más archivos que no se admiten o están dañados.
+  const solid = (w = 320, h = 200) =>
+    sharp({
+      create: { width: w, height: h, channels: 3, background: "#d9c7a1" },
+    });
+  if (kind === "svg")
+    return Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="200"><rect width="100%" height="100%" fill="#fff"/><text x="20" y="110" font-size="40" font-family="Arial">FACTURA 133,87</text></svg>',
+    );
+  if (kind === "tiff") return solid().tiff().toBuffer();
+  if (kind === "avif") return solid().avif({ quality: 50 }).toBuffer();
+  if (kind === "zip")
+    return Buffer.concat([
+      Buffer.from([80, 75, 3, 4, 20, 0, 0, 0, 8, 0]),
+      Buffer.alloc(3000, 3),
+    ]);
+  if (kind === "pngasjpg") return solid().png().toBuffer();
+  if (kind === "pdfaspng")
+    return Buffer.from("%PDF-1.4\n%âãÏÓ\n" + "0 0 obj\n".repeat(300), "latin1");
+  if (kind === "jpgheader")
+    return Buffer.concat([
+      Buffer.from([255, 216, 255, 224]),
+      Buffer.alloc(2000, 0),
+    ]);
+  if (kind === "tiny")
+    return sharp({
+      create: { width: 1, height: 1, channels: 3, background: "#ffffff" },
+    })
+      .png()
+      .toBuffer();
+  if (kind === "truncated") {
+    const w = 400,
+      h = 300,
+      px = Buffer.alloc(w * h * 3);
+    let seed = 5;
+    for (let p = 0; p < px.length; p++) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      px[p] = seed % 256;
+    }
+    const whole = await sharp(px, { raw: { width: w, height: h, channels: 3 } })
+      .jpeg({ quality: 90 })
+      .toBuffer();
+    return whole.subarray(0, Math.min(3000, whole.length - 100));
   }
   // Más de 5 MB: una imagen de puntos al azar, que no se deja comprimir.
   const w = 1500,

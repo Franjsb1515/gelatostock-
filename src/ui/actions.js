@@ -91,7 +91,7 @@ async function action(name, el) {
     modal(
       "Enviar " + o.number + " por WhatsApp",
       "Se envía exactamente este texto, una sola vez, al número de la ficha del proveedor.",
-      `<p><strong>Para:</strong> ${esc(preview.label)} · ${esc(preview.to)}</p><label class="field">Mensaje que se enviará<textarea class="ai-editor" readonly>${esc(preview.text)}</textarea></label>${blocked ? `<p role="alert">${esc(blocked)}</p>` : '<p class="fineprint">Enviar no cambia el stock ni da por confirmado el pedido: la respuesta del proveedor llegará a la pantalla WhatsApp.</p>'}`,
+      `<p><strong>Para:</strong> ${esc(preview.label)} · ${esc(preview.to)}</p><label class="field">Mensaje que se enviará<textarea class="ai-editor" readonly>${esc(preview.text)}</textarea></label>${blocked ? `<p role="alert">${esc(blocked)}</p>` : '<p class="fineprint">Enviar no cambia el stock ni da por confirmado el pedido: la respuesta del proveedor llegará a Mensajes.</p>'}`,
       async () => {
         if (blocked) return false;
         const data = await request("/api/whatsapp", {
@@ -652,7 +652,7 @@ async function action(name, el) {
         options,
         ready.has(chosen) ? chosen : options[0][0],
       ) +
-        `<label class="field">Mensaje<textarea name="text" rows="4" maxlength="4000" required placeholder="Escribe aquí lo que quieres decirle…"></textarea></label><p class="fineprint">Lo que escribes no se lee por reglas: la app solo lee lo que te contestan.</p>`,
+        `<label class="field">Mensaje<textarea name="text" rows="4" maxlength="4000" required placeholder="Escribe aquí lo que quieres decirle…"></textarea></label><p class="fineprint">La app no interpreta lo que escribes tú: solo lee lo que te contestan.</p>`,
       async (f) => {
         const data = await request("/api/whatsapp", {
           type: "supplierMessage",
@@ -905,7 +905,7 @@ async function action(name, el) {
           ? "Segunda lectura anotada: " +
               replyLabel[data.reading.category] +
               ". Solo es una propuesta."
-          : "La lectura automática no fue consistente; se anota como sin interpretar.",
+          : "Las dos lecturas no coinciden: se anota como «Sin interpretar».",
       );
     } catch (e) {
       toast(e.message);
@@ -1246,7 +1246,7 @@ async function action(name, el) {
           "tel",
           'placeholder="+34…" maxlength="40"',
         ) +
-        `<p class="detection-status" role="status">Pega un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">Las reglas detectan expresiones como «sin stock», «entrega» o «promoción». Son reglas fijas, sin nada conectado fuera.</p>`,
+        `<p class="detection-status" role="status">Pega un texto o un número para proponer el proveedor.</p><label class="field">Mensaje del proveedor<textarea name="text" maxlength="5000" required>Hola, solo quedan dos cajas. La entrega del resto será mañana.</textarea></label><p class="fineprint">La app reconoce expresiones como «sin stock», «entrega» o «promoción». No consulta nada fuera de este ordenador.</p>`,
       async (f) => {
         const ok = await mutate(
           { type: "message", supplier: f.get("supplier"), text: f.get("text") },
@@ -1481,7 +1481,7 @@ async function action(name, el) {
     const m = state.messages.find((m) => m.id === el.dataset.id);
     modal(
       "Corregir relevancia",
-      "La prioridad y el texto original se conservan.",
+      "Di si este mensaje tiene que ver con algún pedido. La prioridad y el texto original se conservan.",
       select(
         "Relevancia",
         "relevance",
@@ -1623,7 +1623,7 @@ async function action(name, el) {
     modal(
       "Limpiar ahora",
       `Se borrarán la actividad y las conversaciones de WhatsApp anteriores a ${retentionDays} días. Los movimientos de stock se conservan.`,
-      "<p>Existe una copia automática diaria en data/backups.</p>",
+      "<p>Hay una copia automática de cada día en la carpeta de copias (backups) de los datos de la app.</p>",
       async () => {
         const data = await request("/api/maintenance", { type: "purge" });
         state = data.state;
@@ -1692,7 +1692,7 @@ async function action(name, el) {
     const ph = state.photos.find((p) => p.id === el.dataset.id);
     modal(
       "Dónde está el archivo",
-      "Copia derivada dentro de la carpeta del proveedor; el original vive en attachments.",
+      "Esta es la copia ordenada por proveedor y fecha. El archivo original se guarda en la carpeta «attachments» de los datos de la app.",
       `<code class="path">${esc(dataDir)} / proveedores / ${esc(ph.supplier ? "proveedor-…" : "sin-proveedor")} / fotos / ${esc(ph.documentDate || ph.at.slice(0, 10))}</code><p class="fineprint">${esc(ph.name)} · ${esc(ph.mime || "")}</p>`,
       async () => true,
       "Listo",
@@ -1701,8 +1701,8 @@ async function action(name, el) {
   }
   if (name === "businessEditor") {
     modal(
-      "Identidad del negocio",
-      "Solo texto: la marca visual de la app es propia y no usa logotipos de terceros.",
+      "Nombre del negocio",
+      "El nombre y el lugar salen en la app y en los mensajes de pedido.",
       field(
         "Nombre del negocio",
         "name",
@@ -1724,7 +1724,7 @@ async function action(name, el) {
             name: f.get("name"),
             place: f.get("place") || "",
           },
-          "Identidad guardada.",
+          "Nombre del negocio guardado.",
         ),
     );
     return;
@@ -1750,8 +1750,8 @@ async function action(name, el) {
         dir = (await window.gelato.pickFolder("export")) || "";
       const r = await request("/api/export", dir ? { dir } : {});
       modal(
-        "Exportación CSV creada",
-        "Inventario y movimientos, separados por punto y coma, listos para hoja de cálculo o gestoría.",
+        "Archivos para hoja de cálculo creados",
+        "Inventario y movimientos en archivos CSV (separados por punto y coma), listos para abrir en una hoja de cálculo o enviar a la gestoría.",
         r.files.map((f) => `<code class="path">${esc(f)}</code>`).join(""),
         async () => true,
         "Listo",
@@ -2005,8 +2005,8 @@ async function action(name, el) {
   if (name === "cruiseSyncs") {
     const r = await request("/api/cruises/syncs");
     modal(
-      "Sincronizaciones con el puerto",
-      "Las últimas consultas: cuánto tardaron y qué trajeron.",
+      "Consultas al puerto",
+      "Las últimas veces que la app consultó al puerto: cuánto tardaron y qué trajeron.",
       `<div class="table-scroll"><table class="report-table"><thead><tr><th>Cuándo</th><th>Tipo</th><th>Duración</th><th>Escalas</th><th>Nuevas</th><th>Cambiadas</th><th>Retiradas</th><th>Rechazadas</th><th>Resultado</th></tr></thead><tbody>${r.syncs.map((x) => `<tr><td>${esc(cruiseStamp(x.started_at))}</td><td>${esc(x.kind)}</td><td>${num(x.duration_ms / 1000)} s</td><td>${x.fetched}</td><td>${x.created}</td><td>${x.updated}</td><td>${x.withdrawn}</td><td>${x.rejected}</td><td>${esc(x.error || "Correcta")}${x.notes ? `<small class="muted">${esc(x.notes)}</small>` : ""}</td></tr>`).join("")}</tbody></table></div>`,
       async () => true,
       "Cerrar",

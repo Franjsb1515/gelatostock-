@@ -470,6 +470,42 @@ export function parseRoster(
         c.value = { from, to };
       }
     }
+  // Una hora que solo se distingue de otra más repetida en este mismo cuadrante por un dígito de
+  // los que la lectura confunde (9/3, 9/5, 8/3, 1/7, 0/6, 0/8) deja de darse por segura y lleva las
+  // dos como opciones: la casilla conserva lo leído, pero la persona la revisa. Medido en 0.61.0:
+  // con ruido o JPEG fuerte, «19:00-00:00» se leía «13:00-00:00» con confianza alta.
+  const freq = new Map<string, number>();
+  for (const p of people)
+    for (const c of p.cells)
+      if (c.value?.from) {
+        const k = c.value.from + "-" + c.value.to;
+        freq.set(k, (freq.get(k) ?? 0) + 1);
+      }
+  const confusable = (a: string, b: string): boolean => {
+    if (a.length !== b.length) return false;
+    let diff = 0;
+    for (let i = 0; i < a.length; i++)
+      if (a[i] !== b[i]) {
+        diff++;
+        if (
+          !/^(93|39|95|59|83|38|17|71|06|60|08|80|68|86)$/.test(a[i]! + b[i]!)
+        )
+          return false;
+      }
+    return diff === 1;
+  };
+  for (const p of people)
+    for (const c of p.cells) {
+      if (!c.sure || !c.value?.from) continue;
+      const key = c.value.from + "-" + c.value.to;
+      // Si en el mismo cuadrante conviven dos horas que solo se distinguen por un dígito así,
+      // ninguna de las dos se da por segura: con ruido, la mal leída puede ser la más repetida.
+      for (const other of freq.keys())
+        if (other !== key && confusable(key, other)) {
+          c.sure = false;
+          c.options = [...new Set([...(c.options ?? []), key, other])];
+        }
+    }
   return {
     dates,
     weekdays,

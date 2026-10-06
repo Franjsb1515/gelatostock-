@@ -67,7 +67,7 @@ function count(id) {
   const p = product(id) || state.products[0];
   modal(
     "Registrar un conteo",
-    "Indica cuánto hay ahora. Reemplaza el stock contado; no suma una entrada.",
+    "Escribe cuánto hay ahora. Ese número sustituye al stock que tenía la app; no se suma.",
     select(
       "Producto",
       "product",
@@ -149,7 +149,7 @@ function photo() {
     "Foto o PDF. El texto se lee en este equipo para proponer proveedor, tipo y pedido. Las cantidades no cambian.",
     '<p class="detection-status" role="status">Al elegir el archivo se buscará su proveedor entre tus fichas.</p>' +
       photoFields() +
-      `<label class="upload-zone">${icon("photo")}<strong>Elige una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído del documento</summary><label class="field">Texto leído<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Guardar confirma el proveedor seleccionado. Puedes elegirlo manualmente si la lectura falla.</p>`,
+      `<label class="upload-zone">${icon("photo")}<strong>Elige una foto o un PDF</strong><span>JPG, PNG, WebP hasta 5 MB · PDF hasta 10 MB</span><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required></label><div id="photo-preview"></div><details><summary>Texto leído del documento</summary><label class="field">Texto leído<textarea name="ocrText" maxlength="20000" readonly></textarea></label></details><label class="field">Nota<textarea name="note" maxlength="500"></textarea></label><p class="fineprint">Al guardar queda el proveedor que esté elegido. Si la app no lo acierta, elígelo tú.</p>`,
     async (f) => {
       const file = f.get("photo");
       const pdf = file.type === "application/pdf";

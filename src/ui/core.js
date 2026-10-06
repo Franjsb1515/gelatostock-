@@ -170,8 +170,8 @@ const statusLabel = {
 const relevanceLabel = {
   relevant: "Relacionado con un pedido",
   informational: "Información general",
-  irrelevant: "No relevante",
-  review: "Relevancia por revisar",
+  irrelevant: "No afecta a tus pedidos",
+  review: "Sin pedido identificado",
 };
 const priorityLabel = {
   important: "Importante",

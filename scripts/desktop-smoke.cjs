@@ -406,7 +406,7 @@ const { appName } = require("./package-rules.cjs");
     await window.getByRole("dialog").waitFor({ state: "hidden" });
     await window
       .locator(".reply-reading strong")
-      .filter({ hasText: "No relevante" })
+      .filter({ hasText: "No afecta a tus pedidos" })
       .first()
       .waitFor();
     await window
@@ -1025,7 +1025,7 @@ const { appName } = require("./package-rules.cjs");
     );
     assert.ok(
       (await window.locator(".ai-result").innerText()).includes(
-        "Dos lecturas coinciden",
+        "Las dos lecturas coinciden",
       ),
     );
     assert.ok(
@@ -1137,7 +1137,7 @@ const { appName } = require("./package-rules.cjs");
       .fill("exclusiva de cafe");
     await w2
       .locator(".reply-reading strong")
-      .filter({ hasText: "No relevante" })
+      .filter({ hasText: "No afecta a tus pedidos" })
       .first()
       .waitFor();
     assert.equal(await w2.locator(".conversation").count(), 1);

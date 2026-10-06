@@ -66,22 +66,19 @@ function recipeBook() {
       )
       .join(
         "",
-      )}</select></label></div>${noLock}${open ? `<div class="recipe-back">${btn("← Todas las recetas", "recipeBack", "secondary")}<span>Tandas para producir: <strong>${(open.batches?.length ? open.batches : defaultBatches).map((b) => num(b) + " kg").join(" · ")}</strong></span>${btn("Cambiar tandas", "setBatchesUi", "text-link", `data-id="${esc(open.id)}"`)}${open.ingredients.length ? btn("Orden de preparación", "processEdit", "text-link", `data-id="${esc(open.id)}"`) : ""}</div>` : recipeTiles(all)}<div class="recipe-book">${
-      list
-        .map((r) => {
-          const shares = recipeShares(r);
-          return `<article class="panel recipe-sheet" data-recipe="${esc(r.id)}"><header class="recipe-sheet-head"><div><h2>${esc(r.name)}</h2><p>${pill(familyLabel[r.family || "crema"], "sage")} Rinde ${num(r.yield)} kg${r.product ? " · gelato en stock: " + esc(product(r.product).name) : ""}</p></div><label class="field recipe-scale">Calcular para<span class="stepper"><button type="button" class="step" data-step="-1" aria-label="Menos kilos">−</button><input class="quantity" type="number" min="0.1" max="1000000" step="0.5" value="${r.yield}" data-scale="${esc(r.id)}" aria-label="Kilos para escalar ${esc(r.name)}"><button type="button" class="step" data-step="1" aria-label="Más kilos">+</button></span> kg</label></header><div class="table-scroll"><table class="delivery-table recipe-table"><thead><tr><th>Ingrediente</th><th>Para ${num(r.yield)} kg</th><th>%</th><th>Para <span data-scale-label="${esc(r.id)}">${num(r.yield)}</span> kg</th></tr></thead><tbody>${shares
-            .map(
-              (s) =>
-                `<tr><td><strong>${esc(s.product.name)}</strong></td><td>${num(s.quantity)} ${esc(s.product.unit)}</td><td>${s.share === null ? "—" : num(Math.round(s.share * 10) / 10) + " %"}</td><td><strong data-scaled="${esc(r.id)}" data-base="${s.quantity}" data-unit="${esc(s.product.unit)}">${num(s.quantity)} ${esc(s.product.unit)}</strong></td></tr>`,
-            )
-            .join(
-              "",
-            )}</tbody></table></div>${valueBlock(r)}${balanceBlock(r)}${r.process?.length ? `<div class="recipe-block"><div class="message-label">PREPARACIÓN PASO A PASO</div><ol class="recipe-process">${r.process.map((x) => `<li>${x.product ? `<strong>${esc(product(x.product).name)}</strong>` : ""}${x.product && x.text ? " · " : ""}${esc(x.text)}</li>`).join("")}</ol></div>` : ""}${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
-        })
-        .join("") ||
-      `<div class="empty">${icon("cake")}<h3>${state.recipes.length ? "Ninguna receta coincide con el filtro." : "Tu recetario está vacío."}</h3><p>${state.recipes.length ? "Cambia la familia o borra la búsqueda." : "Crea la primera receta con su familia, ingredientes, elaboración y alérgenos."}</p></div>`
-    }</div>`
+      )}</select></label></div>${noLock}${open ? `<div class="recipe-back">${btn("← Todas las recetas", "recipeBack", "secondary")}<span>Tandas para producir: <strong>${(open.batches?.length ? open.batches : defaultBatches).map((b) => num(b) + " kg").join(" · ")}</strong></span>${btn("Cambiar tandas", "setBatchesUi", "text-link", `data-id="${esc(open.id)}"`)}${open.ingredients.length ? btn("Orden de preparación", "processEdit", "text-link", `data-id="${esc(open.id)}"`) : ""}</div>` : recipeTiles(all)}<div class="recipe-book">${list
+      .map((r) => {
+        const shares = recipeShares(r);
+        return `<article class="panel recipe-sheet" data-recipe="${esc(r.id)}"><header class="recipe-sheet-head"><div><h2>${esc(r.name)}</h2><p>${pill(familyLabel[r.family || "crema"], "sage")} Rinde ${num(r.yield)} kg${r.product ? " · gelato en stock: " + esc(product(r.product).name) : ""}</p></div><label class="field recipe-scale">Calcular para<span class="stepper"><button type="button" class="step" data-step="-1" aria-label="Menos kilos">−</button><input class="quantity" type="number" min="0.1" max="1000000" step="0.5" value="${r.yield}" data-scale="${esc(r.id)}" aria-label="Kilos para escalar ${esc(r.name)}"><button type="button" class="step" data-step="1" aria-label="Más kilos">+</button></span> kg</label></header><div class="table-scroll"><table class="delivery-table recipe-table"><thead><tr><th>Ingrediente</th><th>Para ${num(r.yield)} kg</th><th>%</th><th>Para <span data-scale-label="${esc(r.id)}">${num(r.yield)}</span> kg</th></tr></thead><tbody>${shares
+          .map(
+            (s) =>
+              `<tr><td><strong>${esc(s.product.name)}</strong></td><td>${num(s.quantity)} ${esc(s.product.unit)}</td><td>${s.share === null ? "—" : num(Math.round(s.share * 10) / 10) + " %"}</td><td><strong data-scaled="${esc(r.id)}" data-base="${s.quantity}" data-unit="${esc(s.product.unit)}">${num(s.quantity)} ${esc(s.product.unit)}</strong></td></tr>`,
+          )
+          .join(
+            "",
+          )}</tbody></table></div>${valueBlock(r)}${balanceBlock(r)}${r.process?.length ? `<div class="recipe-block"><div class="message-label">PREPARACIÓN PASO A PASO</div><ol class="recipe-process">${r.process.map((x) => `<li>${x.product ? `<strong>${esc(product(x.product).name)}</strong>` : ""}${x.product && x.text ? " · " : ""}${esc(x.text)}</li>`).join("")}</ol></div>` : ""}${r.steps ? `<div class="recipe-block"><div class="message-label">ELABORACIÓN</div><p class="recipe-steps">${esc(r.steps)}</p></div>` : ""}${r.allergens ? `<div class="recipe-block"><div class="message-label">ALÉRGENOS</div><p>${esc(r.allergens)}</p></div>` : ""}${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}<div class="row-actions">${btn(icon("plus") + " Producir", "produce", "primary", `data-recipe="${esc(r.id)}"`)}${btn("Editar", "recipeEditor", "secondary", `data-id="${esc(r.id)}"`)}${btn("Duplicar", "duplicateRecipe", "secondary", `data-id="${esc(r.id)}"`)}${btn("Eliminar", "deleteRecipe", "danger", `data-id="${esc(r.id)}"`)}</div></article>`;
+      })
+      .join("")}</div>`
   );
 }
 function production() {
@@ -119,7 +116,7 @@ function production() {
         : '<div class="empty compact">No hay producciones pendientes.</div>'
     }</section><section class="panel"><div class="panel-heading"><div><h2>Hoja diaria de producción</h2></div></div>${
       dates.length
-        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Consumo aprobado</th><th>Coste</th><th></th></tr></thead><tbody>${dates
+        ? `<div class="table-scroll"><table class="delivery-table"><thead><tr><th>Día</th><th>Gelato</th><th>Kilos</th><th>Ingredientes gastados</th><th>Coste</th><th></th></tr></thead><tbody>${dates
             .map((d) =>
               byDate[d]
                 .map(

@@ -1,0 +1,188 @@
+{
+  "summary": {
+    "version": "0.61.0",
+    "today": "2026-10-05",
+    "total": 12,
+    "ok": 8,
+    "invented": 0,
+    "byStyle": {
+      "printed": {
+        "total": 3,
+        "ok": 2
+      },
+      "phone": {
+        "total": 4,
+        "ok": 4
+      },
+      "hand": {
+        "total": 3,
+        "ok": 0
+      },
+      "screen": {
+        "total": 1,
+        "ok": 1
+      },
+      "blur": {
+        "total": 1,
+        "ok": 1
+      }
+    }
+  },
+  "rows": [
+    {
+      "file": "01-horario-impreso.jpg",
+      "style": "printed",
+      "ms": 2099,
+      "confidence": 72,
+      "ok": true,
+      "problems": [],
+      "invented": false,
+      "kind": "schedule",
+      "date": "2026-10-05",
+      "text": "HORARIO SEMANA DEL 5 AL 11 DE OCTUBRE 2026\n\nLunes Cerrado\n\nMartes 11:00 - 23:00 Ana 10:30-17:00 Luis 17:00-23:30\nMiércoles 11:00 -23:00 Ana 10:30-17:00 Luis 17:00-23:30\nJueves 11:00 - 23:00 Marta 10:30-17:00 - Luis 17:00-23:30\nViernes + 11:00-23:30 Ana 10:30-17:00 Marta 17:00-23:30\nSábado 10:00-23:30 Ana 09:30-16:00 — Luis 16:00-23:30\nDomingo 10:00 -23:00 Marta 09:30-16:00 Luis 16:00-23:00\n"
+    },
+    {
+      "file": "02-horario-sin-fecha.jpg",
+      "style": "phone",
+      "ms": 2572,
+      "confidence": 85,
+      "ok": true,
+      "problems": [],
+      "invented": false,
+      "kind": "schedule",
+      "date": null,
+      "text": "E a.\n\nHorario de la tienda\n\nLunes: cerrado\n\nMartes: 11:00 a 23:00\n\nMiércoles: 11:00 a 23:00\n\nJueves: 11:00 a 23:00\n\nViernes: 11:00 a 23:30\n\nSábado: 10:00 a 23:30\n\nDomingo: 10:00 a 23:00\nE —LLL\n"
+    },
+    {
+      "file": "03-horario-a-mano.jpg",
+      "style": "hand",
+      "ms": 5376,
+      "confidence": 84,
+      "ok": false,
+      "problems": [
+        "apartado note (esperado schedule)",
+        "fecha null (esperada 2026-10-12)"
+      ],
+      "invented": false,
+      "kind": "note",
+      "date": null,
+      "text": "CU\n\nTurnos semana del 12. al 18 de octubre\n\nLunes cerrado\n\nMartes 11-23 Ana 10-17 Luis 17-23\n\nMiércoles 11-23 Ana 10-17 Luis 17-23\n\nJueves 11-23 Marta 10-17 Luis 17-23\n\nViernes 11-23 Ana 1017 Marta 17-23\nE]\n"
+    },
+    {
+      "file": "04-cuadrante-turnos.jpg",
+      "style": "phone",
+      "ms": 2885,
+      "confidence": 91,
+      "ok": true,
+      "problems": [],
+      "invented": false,
+      "kind": "schedule",
+      "date": "2026-10-19",
+      "text": "E\nCuadrante de turnos - semana del 19/10/2026\nAna: lunes 10-17, martes 10-17, jueves 10-17\nLuis: martes 17-23, miércoles 17-23, viernes 17-23\nMarta: miércoles 10-17, viernes 10-17\nCU\n"
+    },
+    {
+      "file": "05-ventas-impreso.jpg",
+      "style": "printed",
+      "ms": 4103,
+      "confidence": 60,
+      "ok": false,
+      "problems": [
+        "falta Pistacho",
+        "falta Fior di latte",
+        "falta Stracciatella"
+      ],
+      "invented": false,
+      "kind": "sales",
+      "date": "2026-10-03",
+      "text": "CIERRE DEL DIA 03/10/2026\n\nPistacho ===... .—...s 275 kg\n\nEtor di Lakbbe: an «e: 18 kg\nChocolate 70% vendido 3 kg merma 0,2 kg\nStraeeiatella Ls a. 12001\n\nCate solo svazos pps eee LA\n\nTotal caja 412,50 EUR\n"
+    },
+    {
+      "file": "06-ventas-a-mano.jpg",
+      "style": "hand",
+      "ms": 3233,
+      "confidence": 75,
+      "ok": false,
+      "problems": [
+        "falta Stracciatella"
+      ],
+      "invented": false,
+      "kind": "sales",
+      "date": "2026-10-04",
+      "text": "O ——ÑÑ] y;——ÑS\nVentas 4 oct\nPistacho 2 kg\nFior di latte 1,5 kg\nStracciatella 900 9\nMango 1 kg\ne\n"
+    },
+    {
+      "file": "07-factura-impresa.jpg",
+      "style": "printed",
+      "ms": 1425,
+      "confidence": 92,
+      "ok": true,
+      "problems": [],
+      "invented": false,
+      "kind": "document",
+      "date": "2026-10-02",
+      "text": "FACTURA N* F-2026-201\n\nGelato Italia S.L.\n\nFecha: 02/10/2026\n\nBase de pasta de pistacho 2 x 45,00\nBase imponible 90,00\n\nIVA 10% 9,00\n\nTOTAL 99,00 EUR\n"
+    },
+    {
+      "file": "08-albaran-foto.jpg",
+      "style": "phone",
+      "ms": 2689,
+      "confidence": 87,
+      "ok": true,
+      "problems": [],
+      "invented": false,
+      "kind": "document",
+      "date": "2026-10-01",
+      "text": "a\n\nALBARÁN 4471\n\nFresco Mercado\n\nFecha 01-10-2026\n\nLeche entera 12 L\n\nNata para montar 6 L\n\nRecibido por:\nE\n"
+    },
+    {
+      "file": "09-nota-a-mano.jpg",
+      "style": "hand",
+      "ms": 2193,
+      "confidence": 80,
+      "ok": false,
+      "problems": [
+        "la nota no dice «técnico»"
+      ],
+      "invented": false,
+      "kind": "note",
+      "date": "2026-10-06",
+      "text": "A ————\n6 de octubre\nViene el +écuico de la vitrina a las 10.\nAvisar a Luis.\nEA\n"
+    },
+    {
+      "file": "10-nota-pantalla.jpg",
+      "style": "screen",
+      "ms": 736,
+      "confidence": 95,
+      "ok": true,
+      "problems": [],
+      "invented": false,
+      "kind": "note",
+      "date": null,
+      "text": "Recordatorio\nPedir conos y vasos para el fin de semana.\nRevisar la temperatura de la cámara.\n"
+    },
+    {
+      "file": "11-ilegible.jpg",
+      "style": "blur",
+      "ms": 676,
+      "confidence": 42,
+      "ok": true,
+      "problems": [],
+      "invented": false,
+      "kind": null,
+      "date": null,
+      "text": "_— ——]\n— 1 - *\n—l y\n"
+    },
+    {
+      "file": "12-ventas-sin-fecha.jpg",
+      "style": "phone",
+      "ms": 1416,
+      "confidence": 88,
+      "ok": true,
+      "problems": [],
+      "invented": false,
+      "kind": "sales",
+      "date": null,
+      "text": "Ventas\nPistacho 3,2 kg\nChocolate 70% 2 kg\nFior di latte 1 kg invitación 0,1 kg\nE\n"
+    }
+  ]
+}

@@ -17,12 +17,12 @@ function whatsapp() {
   return (
     header(
       "WhatsApp de proveedores",
-      "WhatsApp normal o Business · conexión experimental por QR",
+      "WhatsApp normal o Business · se conecta leyendo un código QR con el teléfono (función todavía en pruebas)",
     ) +
-    `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo se importan chats autorizados. La sesión de WhatsApp Web puede sincronizar la cuenta completa en su perfil local. Internet y app abierta necesarios. Solo se envía lo que confirmes en pantalla.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}${btn(w.autoConnect ? "Mantener la sesión al abrir: sí" : "Mantener la sesión al abrir: no", "waAutoconnect", "secondary")}</div><p class="fineprint">La app recuerda la sesión y se conecta sola al abrir, hasta que pulses «Cerrar sesión / cambiar número».</p></section>
- <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Para que los mensajes de un chat lleguen a Mensajes, autorízalo eligiendo un <strong>proveedor registrado</strong>. No se importa el historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") + (w.allowed.length ? btn("Enviar mensaje de prueba", "waSendText", "secondary") + btn("Recuperar mensajes recientes", "waRecover", "secondary") : "") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} · ${c.supplier ? "sus mensajes entran en Mensajes" : "<strong>no entra en Mensajes</strong>: es un chat sin proveedor, y sus mensajes solo se ven aquí"} ${w.account === w.activeAccount ? btn("Dejar de importar", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
- <section class="panel settings-card"><h2>Diagnóstico del canal</h2><p class="fineprint">Para revisar por qué un mensaje no se importa. No incluye el contenido de los mensajes.</p>${(w.diagnostics || []).length ? `<pre class="diag">${esc((w.diagnostics || []).join("\n"))}</pre>` : '<p class="muted">Sin eventos todavía.</p>'}</section>
- <section class="panel settings-card"><h2>Conversaciones por número propio</h2><label class="field">Cuenta del historial<select id="wa-account"><option value="">Cuenta actual / última</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos mensajes recibidos y enviados de esta cuenta.</p>${
+    `<section class="panel settings-card"><h2>${esc(names[w.status] || w.status)}</h2><p>Cuenta conectada: <strong>${esc(w.activePhone || "Ninguna")}</strong></p><p class="fineprint">Solo entran en la app los chats que autorices. WhatsApp Web, por su cuenta, puede guardar en este ordenador una copia de toda la cuenta. Hace falta internet y tener la app abierta. Solo se envía lo que confirmes en pantalla.</p>${w.error ? `<p role="alert">${esc(w.error)}</p>` : ""}${w.qr ? `<img src="${esc(w.qr)}" alt="QR para vincular WhatsApp" width="280" height="280"><p>En tu teléfono: WhatsApp → Dispositivos vinculados → Vincular un dispositivo.</p>` : ""}<div class="setting-actions">${btn("Conectar por QR", "waConnect", "primary", ["connected", "starting", "qr", "closing"].includes(w.status) ? "disabled" : "")}${btn("Cerrar sesión / cambiar número", "waDisconnect", "secondary", w.status === "closing" ? "disabled" : "")}${btn(w.autoConnect ? "Mantener la sesión al abrir: sí" : "Mantener la sesión al abrir: no", "waAutoconnect", "secondary")}</div><p class="fineprint">La app recuerda la sesión y se conecta sola al abrir, hasta que pulses «Cerrar sesión / cambiar número».</p></section>
+ <section class="panel settings-card"><h2>Chats autorizados para esta cuenta</h2><p>Para que los mensajes de un chat lleguen a Mensajes, autorízalo eligiendo un <strong>proveedor registrado</strong>. No se importa el historial anterior a la conexión.</p>${w.status === "connected" && w.account === w.activeAccount ? btn("Autorizar chat", "waAllow", "primary") + (w.allowed.length ? btn("Enviar mensaje de prueba", "waSendText", "secondary") + btn("Recuperar mensajes recientes", "waRecover", "secondary") : "") : ""}<div>${w.allowed.map((c) => `<p><strong>${esc(c.label)}</strong> · ${esc(c.phone)} · ${c.supplier ? "sus mensajes entran en Mensajes" : "<strong>no entra en Mensajes</strong>: es un chat sin proveedor, y sus mensajes solo se ven aquí"} ${w.account === w.activeAccount ? btn("Quitar la autorización", "waRevoke", "secondary", `data-phone="${esc(c.phone)}"`) : ""}</p>`).join("") || '<p class="muted">Sin chats autorizados.</p>'}</div></section>
+ <section class="panel settings-card"><h2>Por qué no ha entrado un mensaje</h2><p class="fineprint">La app apunta aquí lo que pasa con la conexión y con cada mensaje, para saber por qué uno no ha entrado. No guarda el texto de los mensajes.</p>${(w.diagnostics || []).length ? `<pre class="diag">${esc((w.diagnostics || []).join("\n"))}</pre>` : '<p class="muted">Nada que apuntar todavía.</p>'}</section>
+ <section class="panel settings-card"><h2>Mensajes de esta cuenta de WhatsApp</h2><label class="field">Cuenta<select id="wa-account"><option value="">La conectada ahora (o la última)</option>${w.accounts.map((a) => `<option value="${a.id}" ${waAccount === a.id ? "selected" : ""}>${esc(a.phone)}</option>`).join("")}</select></label><p>Últimos mensajes recibidos y enviados de esta cuenta.</p>${
    [...w.messages, ...(w.sent || []).map((m) => ({ ...m, outgoing: true }))]
      .sort((a, b) => (a.at < b.at ? 1 : -1))
      .map((m) =>
@@ -32,7 +32,7 @@ function whatsapp() {
      )
      .join("") || '<p class="muted">Sin mensajes importados de esta cuenta.</p>'
  }</section>
- <section class="panel settings-card"><h2>Historial de sesiones y cambios de número</h2>${btn("Crear copia de WhatsApp", "waBackup")}<p class="fineprint">Incluye conversaciones y adjuntos. Es independiente de la copia del inventario.</p>${w.history.map((e) => `<p>${date(e.at)} ${time(e.at)} · ${esc(e.text)}</p>`).join("") || '<p class="muted">Todavía no se vinculó ninguna cuenta.</p>'}</section>`
+ <section class="panel settings-card"><h2>Historial de sesiones y cambios de número</h2>${btn("Crear copia de WhatsApp", "waBackup")}<p class="fineprint">Incluye conversaciones y adjuntos. Es independiente de la copia del inventario.</p>${w.history.map((e) => `<p>${date(e.at)} ${time(e.at)} · ${esc(e.text)}</p>`).join("") || '<p class="muted">Todavía no se ha vinculado ninguna cuenta.</p>'}</section>`
   );
 }
 async function whatsappAction(name, el) {
@@ -41,7 +41,7 @@ async function whatsappAction(name, el) {
       const result = await request("/api/whatsapp", { type: "backup" });
       modal(
         "Copia de WhatsApp creada",
-        "Conservá la carpeta completa; las sesiones de acceso no se incluyen.",
+        "Guarda la carpeta completa. La conexión con WhatsApp no se incluye: tras restaurarla habrá que volver a leer el QR.",
         `<code class="path">${esc(result.path)}</code>`,
         async () => true,
         "Listo",
@@ -68,7 +68,9 @@ async function whatsappAction(name, el) {
           text: f.get("text"),
         });
         render();
-        toast("Mensaje enviado. Si no llega, revisa el diagnóstico del canal.");
+        toast(
+          "Mensaje enviado. Si no llega, mira «Por qué no ha entrado un mensaje» en esta pantalla.",
+        );
         return true;
       },
       "Enviar ahora",
@@ -105,7 +107,7 @@ async function whatsappAction(name, el) {
   if (name === "waAllow") {
     modal(
       "Autorizar un chat",
-      "Solo este número se importará para la cuenta conectada.",
+      "Solo entrarán los mensajes de este número, con la cuenta conectada ahora. Si no eliges proveedor, se verán solo en esta pantalla y no en Mensajes.",
       select("Proveedor registrado (opcional)", "supplier", [
         ["", "Otro contacto"],
         ...state.suppliers.filter((p) => p.whatsapp).map((p) => [p.id, p.name]),
@@ -133,7 +135,7 @@ async function whatsappAction(name, el) {
     modal(
       "Cerrar sesión y cambiar número",
       "Se conserva el historial de cada cuenta. La próxima conexión mostrará un nuevo QR.",
-      "<p>La desvinculación se registra en el historial de sesiones. Después podrás conectar el otro número.</p>",
+      "<p>Queda apuntado en el historial de esta pantalla. Después podrás conectar otro número.</p>",
       async () => {
         waState = await request("/api/whatsapp", { type: "disconnect" });
         waAccount = "";

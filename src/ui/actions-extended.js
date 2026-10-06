@@ -162,7 +162,7 @@ async function extendedAction(name, el) {
         first?.id,
       ) +
         select("Tipo de movimiento", "kind", [
-          ["entry", "Entrada de mercadería"],
+          ["entry", "Entrada de mercancía"],
           ["exit", "Salida / consumo"],
           ["waste", "Merma / pérdida"],
         ]) +
@@ -236,7 +236,7 @@ async function extendedAction(name, el) {
       async (f) =>
         mutate(
           { type: "reverse", id: m.id, reason: f.get("reason") },
-          "Corrección registrada con trazabilidad.",
+          "Corrección registrada. El movimiento original se conserva.",
         ),
       "Registrar corrección",
     );
@@ -344,7 +344,7 @@ async function extendedAction(name, el) {
       : { name: "", initials: "", category: "", delivery: "", color: "sage" };
     modal(
       s.id ? "Editar proveedor" : "Nuevo proveedor",
-      "Esta ficha es local; guardarla no conecta WhatsApp ni envía mensajes.",
+      "Guardar la ficha no envía nada al proveedor ni conecta WhatsApp.",
       field("Nombre", "name", s.name, "text", 'required maxlength="100"') +
         field(
           "NIF/CIF del proveedor",
@@ -407,7 +407,7 @@ async function extendedAction(name, el) {
             ...(s.id ? { id: s.id } : {}),
             ...Object.fromEntries(f),
           },
-          "Proveedor guardado localmente.",
+          "Proveedor guardado.",
         ),
     );
     return true;

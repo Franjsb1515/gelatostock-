@@ -1,0 +1,2368 @@
+{
+  "despues": {
+    "summary": {
+      "version": "0.61.0",
+      "phase": "despues",
+      "today": "2026-10-05",
+      "total": 87,
+      "classes": {
+        "EXACTA": 49,
+        "NO LEÍDA-Y-DICHA": 23,
+        "PARCIAL-Y-AVISADA": 15
+      },
+      "invented": 0,
+      "asIdeal": 72,
+      "byArea": {
+        "documentos": {
+          "EXACTA": 24,
+          "NO LEÍDA-Y-DICHA": 1,
+          "PARCIAL-Y-AVISADA": 1
+        },
+        "calendario": {
+          "PARCIAL-Y-AVISADA": 3,
+          "EXACTA": 11,
+          "NO LEÍDA-Y-DICHA": 2
+        },
+        "cuadrante": {
+          "PARCIAL-Y-AVISADA": 11,
+          "NO LEÍDA-Y-DICHA": 2,
+          "EXACTA": 2
+        },
+        "whatsapp": {
+          "EXACTA": 12,
+          "NO LEÍDA-Y-DICHA": 3
+        },
+        "formatos": {
+          "NO LEÍDA-Y-DICHA": 15
+        }
+      },
+      "ms": {
+        "media": 2295,
+        "p95": 9673,
+        "peor": 21350
+      },
+      "msText": {
+        "media": 893,
+        "p95": 1876,
+        "peor": 3297
+      },
+      "msRoster": {
+        "media": 7624,
+        "p95": 21350,
+        "peor": 21350
+      },
+      "msRejected": {
+        "media": 42,
+        "p95": 330,
+        "peor": 330
+      },
+      "memoryMb": {
+        "media": 27,
+        "p95": 110,
+        "peor": 116
+      },
+      "rssPeakMb": 320,
+      "extras": {
+        "exif": {
+          "leido": 1,
+          "confianza": 93
+        },
+        "roto": {
+          "rechazado": "No se ha podido abrir la imagen: parece dañada o incompleta. Prueba a hacer la foto otra vez.",
+          "ms": 446
+        },
+        "dosALaVez": {
+          "resultados": [
+            "leída",
+            "leída"
+          ],
+          "ms": 1292
+        }
+      }
+    },
+    "rows": [
+      {
+        "id": "D01",
+        "area": "documentos",
+        "tipo": "Letra con remates (serif)",
+        "file": "D01.png",
+        "ms": 635,
+        "memoryMb": 110,
+        "rssMb": 174,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 93,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10% 12,17€\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D02",
+        "area": "documentos",
+        "tipo": "Letra de palo (sans)",
+        "file": "D02.jpg",
+        "ms": 584,
+        "memoryMb": 88,
+        "rssMb": 193,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "truth": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 93,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "ALBARÁN N? 2231\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12L\n\nYogur natural 6 kg\n\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "D03",
+        "area": "documentos",
+        "tipo": "Monoespaciada",
+        "file": "D03.png",
+        "ms": 654,
+        "memoryMb": 29,
+        "rssMb": 193,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\n\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D04",
+        "area": "documentos",
+        "tipo": "Condensada",
+        "file": "D04.jpg",
+        "ms": 536,
+        "memoryMb": 9,
+        "rssMb": 179,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "truth": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 90,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "ALBARÁN N* 2231\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35% 12 L\n\nYogur natural 6 kg\n\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "D05",
+        "area": "documentos",
+        "tipo": "Negrita y MAYÚSCULAS",
+        "file": "D05.png",
+        "ms": 764,
+        "memoryMb": 7,
+        "rssMb": 184,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGELATO ITALIA S.L. NIF B12345678\nFECHA: 05/10/2026\n\nPASTA DE PISTACHO 2 KG 48,50 €\nAVELLANA PIAMONTESA 3 KG 61,20 €\nAZÚCAR DE CAÑA 5 KG 12,00 €\n\nBASE IMPONIBLE 121,70 €\n\nIVA 10 % 12,17 €\n\nTOTAL A PAGAR 133,87 €\n"
+      },
+      {
+        "id": "D06",
+        "area": "documentos",
+        "tipo": "Letra pequeña (9 px)",
+        "file": "D06.png",
+        "ms": 590,
+        "memoryMb": 2,
+        "rssMb": 185,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 87,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D07",
+        "area": "documentos",
+        "tipo": "Ticket térmico estrecho y largo, letra de recibo, miles con punto",
+        "file": "D07.jpg",
+        "ms": 904,
+        "memoryMb": 21,
+        "rssMb": 202,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.9,
+        "proposed": {
+          "proveedor": "s4",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s4",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 88,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "EcoPack\nNIF B87654321\nFACTURA SIMPLIFICADA\n05/10/2026 10:42\n\nTarrinas 500 ml x 500 62,50\nCucharillas x 1000 18,90\nservilletas x 2000 24,00\nConos x 800 1.250,00\nBolsas papel x 300 21,60\nVasos 120 ml x 600 45,00\nTapas x 600 19,80\nPajitas x 500 9,90\nTOTAL 1451/70 €\n\nGracias por su compra\n"
+      },
+      {
+        "id": "D08",
+        "area": "documentos",
+        "tipo": "Dos fuentes mezcladas y tabla con líneas",
+        "file": "D08.png",
+        "ms": 940,
+        "memoryMb": 46,
+        "rssMb": 224,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 85,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L.\n\nNIF B12345678\n\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa — 3 kg 61,20€\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70€\nIVA 10% 12,17€\nTotal a pagar 133,87 €\n\n"
+      },
+      {
+        "id": "D09",
+        "area": "documentos",
+        "tipo": "Dos columnas y tabla sin líneas",
+        "file": "D09.png",
+        "ms": 1001,
+        "memoryMb": 15,
+        "rssMb": 199,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.9,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 88,
+        "said": [
+          "Nombre o alias encontrado en el texto (con una letra que la lectura confunde, como «l» e «I»)."
+        ],
+        "text": "FACTURA\nGelato ltalia S.L. NIF B12345678 Cliente: Heladería de prueba\nFecha: 05/10/2026 Calle Mayor 1\n07001 Palma\n\nPasta de pistacho 2 kg 48,50 €\n\nAvellana piamontesa 3 kg 61,20 €\n\nAzúcar de caña 5 kg 12,00 €\n\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D10",
+        "area": "documentos",
+        "tipo": "Otro idioma: italiano",
+        "file": "D10.jpg",
+        "ms": 857,
+        "memoryMb": 12,
+        "rssMb": 198,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": null
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": null
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FATTURAN. 118\n\nGelato Italia\n\nData: 5 ottobre 2026\n\nPasta di pistacchio 2 kg 48,50 €\nNocciola Piemonte 3 kg 61,20 €\nZucchero di canna 5 kg 12,00 €\nTotale da pagare 121,70 €\n"
+      },
+      {
+        "id": "D11",
+        "area": "documentos",
+        "tipo": "Otro idioma: catalán",
+        "file": "D11.jpg",
+        "ms": 816,
+        "memoryMb": 15,
+        "rssMb": 199,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.88,
+        "proposed": {
+          "proveedor": "s2",
+          "tipo": null
+        },
+        "truth": {
+          "proveedor": "s2",
+          "tipo": null
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 87,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "ALBARÁ Núm. 2231\nFresco Mercado\n\nData: 5 d'octubre de 2026\nLlet sencera 40 L\n\nNata 35% 12 L\n\nlogurt natural 6 kg\nMaduixes 4 kg\n\nRebut conforme\n"
+      },
+      {
+        "id": "D12",
+        "area": "documentos",
+        "tipo": "Girada 90°",
+        "file": "D12.jpg",
+        "ms": 1803,
+        "memoryMb": 16,
+        "rssMb": 194,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "truth": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 93,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "ALBARÁN N? 2231\n\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12L\n\nYogur natural 6 kg\n\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "D13",
+        "area": "documentos",
+        "tipo": "Girada 180° (del revés)",
+        "file": "D13.jpg",
+        "ms": 3297,
+        "memoryMb": 38,
+        "rssMb": 208,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 92,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D14",
+        "area": "documentos",
+        "tipo": "Texto claro sobre fondo oscuro",
+        "file": "D14.png",
+        "ms": 1453,
+        "memoryMb": 3,
+        "rssMb": 203,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 93,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\n\nBase imponible 121,70 €\n\nIVA 10% 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D15",
+        "area": "documentos",
+        "tipo": "Perspectiva (foto de lado, trapecio)",
+        "file": "D15.jpg",
+        "ms": 826,
+        "memoryMb": 14,
+        "rssMb": 202,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.9,
+        "proposed": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "truth": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 90,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "ALBARÁN N? 2234\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12 L\n\nYogur natural 6 kg\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "D16",
+        "area": "documentos",
+        "tipo": "Desenfoque fuerte (ilegible)",
+        "file": "D16.jpg",
+        "ms": 1073,
+        "memoryMb": 21,
+        "rssMb": 193,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": "proveedor s3 (es null) · tipo factura (es null)",
+        "ratio": 0,
+        "proposed": {
+          "proveedor": null,
+          "tipo": null
+        },
+        "truth": {
+          "proveedor": null,
+          "tipo": null
+        },
+        "problems": [],
+        "class": "NO LEÍDA-Y-DICHA",
+        "confidence": 21,
+        "said": [
+          "La foto no se ha leído bien (o nada). Puedes guardarla igual y elegir el proveedor a mano. Si la repites: con más luz, más cerca y de frente.",
+          "No se encontró ningún proveedor tuyo en el texto. Elígelo a mano o añade sus datos en Proveedores."
+        ],
+        "text": "LE\n_-—.\nE\n\nC.— m0 *“\n— ——— o U—;0];\n—  — * “y +\ne.\n\n. “a\n\n— —\n"
+      },
+      {
+        "id": "D17",
+        "area": "documentos",
+        "tipo": "Sello y firma encima del texto",
+        "file": "D17.png",
+        "ms": 1437,
+        "memoryMb": 21,
+        "rssMb": 198,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.9,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 82,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\n\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 46; TA\n\nAvellana piamontesa 3 ke a La\n\nAzúcar de caña 5 kg 12,00\n\nBase imponible 121,70 €\n\nIVA 10% 12,17 €\n\nTotal a pagar 133,87 € AA\n"
+      },
+      {
+        "id": "D18",
+        "area": "documentos",
+        "tipo": "Dos documentos en la misma foto",
+        "file": "D18.jpg",
+        "ms": 1094,
+        "memoryMb": 5,
+        "rssMb": 201,
+        "ideal": "PARCIAL-Y-AVISADA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": null,
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": null,
+          "tipo": "cualquiera"
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 92,
+        "said": [
+          "Hay varios proveedores posibles. Elige el emisor del documento."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678 ALBARÁN N? 2231\nFecha: 05/10/2026 Fresco Mercado\n\nPasta de pistacho 2 kg 48,50 € Fecha: 05-10-26\n\nAvellana piamontesa 3 kg 61,20 € Leche entera 40 L\n\nAzúcar de caña 5 kg 12,00 € Nata 35 % 12\n\nBase imponible 121,70 € Yogur natural 6 kg\n\nIVA 10 % 12,17 € Fresas de temporada 4 kg\nTotal a pagar 133,87 € Recibí conforme\n"
+      },
+      {
+        "id": "D19",
+        "area": "documentos",
+        "tipo": "Resolución muy alta (4000 px de ancho)",
+        "file": "D19.jpg",
+        "ms": 1876,
+        "memoryMb": 49,
+        "rssMb": 238,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.9,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 90,
+        "said": [
+          "Nombre o alias encontrado en el texto (con una letra que la lectura confunde, como «l» e «I»)."
+        ],
+        "text": "FACTURA\n\nGelato ltalia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "C01",
+        "area": "calendario",
+        "tipo": "A mano, letra suelta, papel pautado, girada 2°",
+        "file": "C01.jpg",
+        "ms": 1496,
+        "memoryMb": 0,
+        "rssMb": 231,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "schedule",
+          "fecha": null
+        },
+        "truth": {
+          "apartado": "schedule",
+          "fecha": "2026-10-12"
+        },
+        "problems": [
+          "fecha null (esperada 2026-10-12)",
+          "día 2 abre: null (esperado 11:00)",
+          "día 2 cierra: null (esperado 23:00)",
+          "día 2: sin leer el turno Ana 10:00 17:00",
+          "día 2: sin leer el turno Luis 17:00 23:00",
+          "día 4 abre: null (esperado 11:00)",
+          "día 4 cierra: null (esperado 23:00)",
+          "día 4: sin leer el turno Ana 10:00 17:00",
+          "día 4: sin leer el turno Marta 17:00 23:00"
+        ],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 86,
+        "said": [
+          "Se leen 3 días de horario o turnos: va al horario de la semana, para revisarlo antes de guardar.",
+          "La foto no dice la fecha: elige tú el día.",
+          "Hay 3 líneas con números dudosos: no se usan. Míralas en la foto y escríbelas tú."
+        ],
+        "skipped": [
+          "«“Turnos semana del 42. al 18 de octubre»: los números no se leen igual dos veces seguidas. Escríbelos tú.",
+          "«Miércoles 14-23 Ana 10-17 Luis 17-23»: los números no se leen igual dos veces seguidas. Escríbelos tú.",
+          "«Viernes 14-23 Ana 10-17 Marta 17-23»: los números no se leen igual dos veces seguidas. Escríbelos tú."
+        ],
+        "text": "“Turnos semana del 42. al 18 de octubre\nLunes cerrado\n\nMartes 11-23 Ana 10-17 Luis 17-23\nMiércoles 14-23 Ana 10-17 Luis 17-23\nJueves 11-23 Marta 10-17 Luis 17-23\nViernes 14-23 Ana 10-17 Marta 17-23\n"
+      },
+      {
+        "id": "C02",
+        "area": "calendario",
+        "tipo": "A mano, letra caligráfica enlazada",
+        "file": "C02.jpg",
+        "ms": 847,
+        "memoryMb": 113,
+        "rssMb": 206,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.8,
+        "proposed": {
+          "apartado": "note",
+          "fecha": "2026-10-06"
+        },
+        "truth": {
+          "apartado": "note",
+          "fecha": "2026-10-06"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 82,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "Fecha leída en la foto: «6 de octubre».",
+          "La foto no dice el año: se propone 2026. Compruébalo."
+        ],
+        "skipped": [],
+        "text": "6 de octubre\nViene el técnico de la vitrina a las 10.\nAvuzar a Luis.\n"
+      },
+      {
+        "id": "C03",
+        "area": "calendario",
+        "tipo": "Letra grande (64 px), fecha «5 de octubre»",
+        "file": "C03.png",
+        "ms": 852,
+        "memoryMb": 7,
+        "rssMb": 202,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Se reconocen 3 gelatos con cantidades: va a las ventas del día, para revisarlas antes de guardar.",
+          "Fecha leída en la foto: «5 de octubre».",
+          "La foto no dice el año: se propone 2026. Compruébalo."
+        ],
+        "skipped": [],
+        "text": "Ventas del 5 de octubre\nPistacho 3,2 kg\n\nChocolate 70% 2 kg\n\nFior di latte 1 kg invitación 0,1 kg\n"
+      },
+      {
+        "id": "C04",
+        "area": "calendario",
+        "tipo": "Ruido y JPEG muy comprimido, fecha 05-10-26",
+        "file": "C04.jpg",
+        "ms": 749,
+        "memoryMb": 19,
+        "rssMb": 206,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 95,
+        "said": [
+          "Se reconocen 3 gelatos con cantidades: va a las ventas del día, para revisarlas antes de guardar.",
+          "Fecha leída en la foto: «05-10-26»."
+        ],
+        "skipped": [],
+        "text": "Ventas 05-10-26\n\nPistacho 3,2 kg\n\nChocolate 70% 2 kg\n\nFior di latte 1 kg invitación 0,1 kg\n"
+      },
+      {
+        "id": "C05",
+        "area": "calendario",
+        "tipo": "Abreviaturas (Lun., Mar.) y horas «11h»",
+        "file": "C05.png",
+        "ms": 882,
+        "memoryMb": 33,
+        "rssMb": 203,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Se leen 7 días de horario o turnos: va al horario de la semana, para revisarlo antes de guardar.",
+          "Fecha leída en la foto: «5 al 11 de octubre 2026»: semana del lunes 2026-10-05."
+        ],
+        "skipped": [],
+        "text": "Horario del 5 al 11 de octubre 2026\nLun. cerrado\n\nMar. 11h a 23h\n\nMié. 11h a 23h\n\nJue. 11ha 23h\n\nVie. 11h a 23:30h\n\nSáb. 10h a 23:30h\n\nDom. 10h a 23h\n"
+      },
+      {
+        "id": "C06",
+        "area": "calendario",
+        "tipo": "Lista con viñetas, tildes y ñ, línea muy larga",
+        "file": "C06.png",
+        "ms": 638,
+        "memoryMb": 3,
+        "rssMb": 204,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "note",
+          "fecha": null
+        },
+        "truth": {
+          "apartado": "note",
+          "fecha": null
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 95,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "La foto no dice la fecha: elige tú el día."
+        ],
+        "skipped": [],
+        "text": "Recordatorio\n* Pedir conos y vasos para el fin de semana\n* Añadir piña y limón a la carta de mañana\n* Revisar la temperatura de la cámara y avisar al técnico si sube de ocho grados bajo cero durante la tarde del sábado\n"
+      },
+      {
+        "id": "C07",
+        "area": "calendario",
+        "tipo": "Captura de pantalla de móvil con barra de estado",
+        "file": "C07.webp",
+        "ms": 641,
+        "memoryMb": 25,
+        "rssMb": 210,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "note",
+          "fecha": null
+        },
+        "truth": {
+          "apartado": "note",
+          "fecha": null
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 87,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "La foto no dice la fecha: elige tú el día."
+        ],
+        "skipped": [],
+        "text": "9:41 56:87 %\nMarta\nMañana llego a las 10:30, abro yo.\nVale, gracias. Yo cierro a las 23:00.\nAcuérdate de pedir conos.\n"
+      },
+      {
+        "id": "C08",
+        "area": "calendario",
+        "tipo": "Foto de una pantalla (moaré)",
+        "file": "C08.jpg",
+        "ms": 1392,
+        "memoryMb": 12,
+        "rssMb": 214,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Se reconocen 3 gelatos con cantidades: va a las ventas del día, para revisarlas antes de guardar.",
+          "Fecha leída en la foto: «5/10/2026»."
+        ],
+        "skipped": [],
+        "text": "Ventas 5/10/2026\n\nPistacho 3,2 kg\nChocolate 70% 2 kg\nFior di latte 1 kg invitación 0,1 kg\n"
+      },
+      {
+        "id": "C09",
+        "area": "calendario",
+        "tipo": "Girada 5°",
+        "file": "C09.jpg",
+        "ms": 949,
+        "memoryMb": 6,
+        "rssMb": 215,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "schedule",
+          "fecha": null
+        },
+        "truth": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "problems": [
+          "fecha null (esperada 2026-10-05)"
+        ],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 89,
+        "said": [
+          "Se leen 7 días de horario o turnos: va al horario de la semana, para revisarlo antes de guardar.",
+          "La foto no dice la fecha: elige tú el día.",
+          "Hay una línea con números dudosos: no se usa. Mírala en la foto y escríbela tú."
+        ],
+        "skipped": [
+          "«HORARIO SEMANA DEL 5 AL 11 DE OCTUBRE 2026»: los números no se leen igual dos veces seguidas. Escríbelos tú."
+        ],
+        "text": "HORARIO SEMANA DEL 5 AL 11 DE OCTUBRE 2026\nLunes: Cerrado\nMartes: 11:00 a 23:00\nMiércoles: 11:00 a 23:00\nJueves: 11:00 a 23:00\nViernes: 11:00 a 23:30\nSábado: 10:00 a 23:30\nDomingo: 10:00 a 23:00\n"
+      },
+      {
+        "id": "C10",
+        "area": "calendario",
+        "tipo": "Bajo contraste (gris sobre gris)",
+        "file": "C10.jpg",
+        "ms": 657,
+        "memoryMb": 9,
+        "rssMb": 218,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 95,
+        "said": [
+          "Se reconocen 3 gelatos con cantidades: va a las ventas del día, para revisarlas antes de guardar.",
+          "Fecha leída en la foto: «5/10/2026»."
+        ],
+        "skipped": [],
+        "text": "Ventas 5/10/2026\n\nPistacho 3,2 kg\n\nChocolate 70% 2 kg\n\nFior di latte 1 kg invitación 0,1 kg\n"
+      },
+      {
+        "id": "C11",
+        "area": "calendario",
+        "tipo": "Papel de color arrugado con sombra diagonal",
+        "file": "C11.jpg",
+        "ms": 1595,
+        "memoryMb": 0,
+        "rssMb": 215,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 92,
+        "said": [
+          "Se leen 7 días de horario o turnos: va al horario de la semana, para revisarlo antes de guardar.",
+          "Fecha leída en la foto: «5 al 11 de octubre 2026»: semana del lunes 2026-10-05."
+        ],
+        "skipped": [],
+        "text": "—\n\nHORARIO SEMANA DEL 5 AL 11 DE OCTUBRE 2026\n| Lunes: cerrado\n\nMartes: 11:00 a 23:00\n\nMiércoles: 11:00 a 23:00\n\nJueves: 11:00 a 23:00\n\nViernes: 11:00 a 23:30\n\nSábado: 10:00 a 23:30\n\nDomingo: 10:00 a 23:00\n"
+      },
+      {
+        "id": "C12",
+        "area": "calendario",
+        "tipo": "Recorte que corta el borde del texto",
+        "file": "C12.jpg",
+        "ms": 723,
+        "memoryMb": 6,
+        "rssMb": 207,
+        "ideal": "PARCIAL-Y-AVISADA",
+        "rules": "bien",
+        "ratio": 0.43,
+        "proposed": {
+          "apartado": "note",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "sales",
+          "fecha": "2026-10-05"
+        },
+        "problems": [
+          "apartado note (esperado sales)"
+        ],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 92,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "Fecha leída en la foto: «5/10/2026»."
+        ],
+        "skipped": [],
+        "text": "entas 5/10/2026\n\nistacho 3,2 kg\n\nhocolate 70% 2 kg\n\n¡or di latte 1 kg invitación 0,1 kg\n"
+      },
+      {
+        "id": "C13",
+        "area": "calendario",
+        "tipo": "Sin texto: foto de un objeto",
+        "file": "C13.png",
+        "ms": 984,
+        "memoryMb": 17,
+        "rssMb": 218,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "ratio": null,
+        "proposed": {
+          "apartado": null,
+          "fecha": null
+        },
+        "truth": {
+          "apartado": null,
+          "fecha": null
+        },
+        "problems": [],
+        "class": "NO LEÍDA-Y-DICHA",
+        "confidence": 24,
+        "said": [
+          "No se pudo leer texto útil en la foto. Se guarda en su día y puedes escribir tú lo que dice."
+        ],
+        "skipped": [],
+        "text": "EE\nE\nPe\no\nue\n"
+      },
+      {
+        "id": "C14",
+        "area": "calendario",
+        "tipo": "Muy poco texto: una palabra",
+        "file": "C14.png",
+        "ms": 591,
+        "memoryMb": 1,
+        "rssMb": 219,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": null,
+          "fecha": null
+        },
+        "truth": {
+          "apartado": null,
+          "fecha": null
+        },
+        "problems": [],
+        "class": "NO LEÍDA-Y-DICHA",
+        "confidence": 96,
+        "said": [
+          "No se pudo leer texto útil en la foto. Se guarda en su día y puedes escribir tú lo que dice."
+        ],
+        "skipped": [],
+        "text": "Cerrado\n"
+      },
+      {
+        "id": "C15",
+        "area": "calendario",
+        "tipo": "Resolución baja (600 px de ancho)",
+        "file": "C15.jpg",
+        "ms": 1392,
+        "memoryMb": 6,
+        "rssMb": 218,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 95,
+        "said": [
+          "Se leen 7 días de horario o turnos: va al horario de la semana, para revisarlo antes de guardar.",
+          "Fecha leída en la foto: «5 al 11 de octubre 2026»: semana del lunes 2026-10-05."
+        ],
+        "skipped": [],
+        "text": "HORARIO SEMANA DEL 5 AL 11 DE OCTUBRE 2026\nLunes: cerrado\n\nMartes: 11:00 a 23:00\n\nMiércoles: 11:00 a 23:00\n\nJueves: 11:00 a 23:00\n\nViernes: 11:00 a 23:30\n\nSábado: 10:00 a 23:30\n\nDomingo: 10:00 a 23:00\n"
+      },
+      {
+        "id": "C16",
+        "area": "calendario",
+        "tipo": "Versalitas",
+        "file": "C16.png",
+        "ms": 1935,
+        "memoryMb": 23,
+        "rssMb": 214,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "truth": {
+          "apartado": "schedule",
+          "fecha": "2026-10-05"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 88,
+        "said": [
+          "Se leen 7 días de horario o turnos: va al horario de la semana, para revisarlo antes de guardar.",
+          "Fecha leída en la foto: «5 al 11 de octubre 2026»: semana del lunes 2026-10-05."
+        ],
+        "skipped": [],
+        "text": "HORARIO SEMANA DEL 5 AL 11 DE OCTUBRE 2026\nLUNES: CERRADO\n\nMARTES: 11:00 A 23:00\n\nMIÉRCOLES: 11:00 A 23:00\n\nJUEVES: 11:00 A 23:00\n\nVIERNES: 11:00 A 23:30\n\nSÁBADO: 10:00 A 23:30\n\nDOMINGO: 10:00 A 23:00\n"
+      },
+      {
+        "id": "R01",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: captura nítida (PNG)",
+        "file": "R01.png",
+        "ms": 16508,
+        "memoryMb": 65,
+        "rssMb": 228,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "cuadrante": {
+            "sureOk": 45,
+            "unsureOk": 0,
+            "unsureBad": 11,
+            "sureBad": 0
+          },
+          "fechas": "bien",
+          "vistoComoTabla": true
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": null,
+        "said": [
+          "Es un cuadrante: 4 personas y 14 días, leídos casilla por casilla. Revísalo antes de guardar.",
+          "11 de 56 casillas están marcadas para revisar (lectura dudosa).",
+          "Del 2026-11-02 al 2026-11-15. El cuadrante no dice el año: 2026, porque es el año en que esos días caen en esos días de la semana.",
+          "No se usan: Eros (sin turnos), una fila sin nombre legible (Servicio)."
+        ],
+        "text": ""
+      },
+      {
+        "id": "R02",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: JPG comprimido y reducido al 70 %",
+        "file": "R02.jpg",
+        "ms": 6999,
+        "memoryMb": 61,
+        "rssMb": 233,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "apartado": "note",
+          "fecha": null,
+          "vistoComoTabla": false
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 61,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "La foto no dice la fecha: elige tú el día.",
+          "Hay 3 líneas con números dudosos: no se usan. Míralas en la foto y escríbelas tú."
+        ],
+        "text": "LumES — | MARTES | MERCOLES | JUEVES | WERNES | SABADO | DOMNGO | LUNES | MARTES | mERCOLES | JUEVES | VIERNES | SABADO | DoMNGO\nNOVIEMBRE 2 E “ 5 . 7 . E ” \" 7 \" “ \"\ncmieenos O . | > C 00 0 Ej E 0 E E o e]\nE LUCIA] re EA ES CE —\ncooaoation PABLO — | meno] meno COME ME 0 COIE OC =>\nsemoo SARA —— es | cons — co. —\nservicio. IVAN mann meno | ENTE | IED CE ZO INID APERTURA |\nA |\n\n"
+      },
+      {
+        "id": "R03",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: foto de móvil girada 2°",
+        "file": "R03.jpg",
+        "ms": 4266,
+        "memoryMb": 37,
+        "rssMb": 240,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "apartado": "note",
+          "fecha": null,
+          "vistoComoTabla": false
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 92,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "La foto no dice la fecha: elige tú el día.",
+          "Hay 3 líneas con números dudosos: no se usan. Míralas en la foto y escríbelas tú."
+        ],
+        "text": "NOVIEMBRE (11)\n\nn 12\nCRUCEROS\n\n000 00\n\nLo)\nLIBRE PRODUCCION PRODUCCION PRODUCCION\nPARTIDO LOGISTICA\n\nPARTIDO\nAPERTURA APERTURA\n11:00 A 16:00 APERTURA\n\n"
+      },
+      {
+        "id": "R04",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: modo oscuro (colores invertidos)",
+        "file": "R04.png",
+        "ms": 8085,
+        "memoryMb": 46,
+        "rssMb": 244,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "cuadrante": {
+            "sureOk": 42,
+            "unsureOk": 0,
+            "unsureBad": 0,
+            "sureBad": 0
+          },
+          "fechas": "bien",
+          "vistoComoTabla": true
+        },
+        "problems": [
+          "falta SARA"
+        ],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": null,
+        "said": [
+          "Es un cuadrante: 3 personas y 14 días, leídos casilla por casilla. Revísalo antes de guardar.",
+          "Todas las casillas se leyeron con seguridad.",
+          "Del 2026-11-02 al 2026-11-15. El cuadrante no dice el año: 2026, porque es el año en que esos días caen en esos días de la semana.",
+          "No se usan: una fila sin nombre legible (Cru), una fila sin nombre legible (Servicio)."
+        ],
+        "text": ""
+      },
+      {
+        "id": "R05",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: tabla sin líneas",
+        "file": "R05.png",
+        "ms": 3687,
+        "memoryMb": 89,
+        "rssMb": 247,
+        "ideal": "PARCIAL-Y-AVISADA",
+        "rules": null,
+        "proposed": {
+          "apartado": "note",
+          "fecha": null,
+          "vistoComoTabla": false
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 93,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "La foto no dice la fecha: elige tú el día.",
+          "Hay 6 líneas con números dudosos: no se usan. Míralas en la foto y escríbelas tú."
+        ],
+        "text": "NOVIEMBRE\n(1)\n\nOBRADOR\n\nCOORDINACION\nSERVICIO\n\nSERVICIO\n\nSERVICIO\n\nPRODUCCION\n\nPARTIDO\nCIERRE\n\n11:00A 16:00\n\nLIBRE\n\nPARTIDO\nCIERRE\n\nLIBRE\n\nMIERCOLES\n\nJUEVES\n\n5\n\nPRODUCCION\n\nAPERTURA\nLIBRE\n\n19:00 A 00:00\n\nVIERNES\n\n6\n\nPRODUCCION\n\nPARTIDO\nAPERTURA\n\n19:00A 00:00\n\nSABADO\n\n7\n\nMISE EN\nPLACE\n\nLOGISTICA\nAPERTURA\n\nAPERTURA\n\nDOMINGO\n\n8\n\nPRODUCCION\n\nLIBRE\nCIERRE\n\nLIBRE\n\nLUNES\n\n9\n\nPRODUCCION\n\nPARTIDO\nCIERRE\n\n11:00A 16:00\n\nMARTES\n\n10\n\nLIBRE\n\nAPERTURA\nLIBRE\n\nMIERCOLES\n\nE\n\nPRODUCCION\n\nPARTIDO\nAPERTURA\n\nLIBRE\n\nJUEVES\n\n12\n\nPRODUCCION\n\nLIBRE\nCIERRE\n\n11:00A 16:00\n\nVIERNES\n\nSABADO\n\n14\n\nMISE EN\nPLACE\n\nLOGISTICA\nAPERTURA\n\nAPERTURA\n\nDOMINGO\n\n15\n\nPRODUCCION\n\nPARTIDO\nCIERRE\n\nLIBRE\n"
+      },
+      {
+        "id": "W01",
+        "area": "whatsapp",
+        "tipo": "Adjunto JPG recomprimido (1000 px, calidad 30)",
+        "file": "W01.jpg",
+        "ms": 1041,
+        "memoryMb": 80,
+        "rssMb": 238,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "W02",
+        "area": "whatsapp",
+        "tipo": "Adjunto en cursiva con desenfoque leve",
+        "file": "W02.png",
+        "ms": 847,
+        "memoryMb": 0,
+        "rssMb": 239,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": "albaran"
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "ALBARÁN N? 2231\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12 L\n\nYogur natural 6 kg\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "W03",
+        "area": "whatsapp",
+        "tipo": "Adjunto WebP en inglés",
+        "file": "W03.webp",
+        "ms": 900,
+        "memoryMb": 3,
+        "rssMb": 241,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": null
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": null
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "INVOICE 0457\n\nOrigen Coffee\n\nDate: 5 October 2026\n\nEspresso beans 4 kg 96.00 EUR\nDecaf beans 1 kg 26.00 EUR\nTotal due 122.00 EUR\n"
+      },
+      {
+        "id": "W04",
+        "area": "whatsapp",
+        "tipo": "PDF escaneado (una foto dentro, sin texto)",
+        "file": "W04.pdf",
+        "ms": 136,
+        "memoryMb": 0,
+        "rssMb": 213,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": "tipo factura (es null)",
+        "ratio": 0,
+        "proposed": {
+          "archivado": true,
+          "tipo": null
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": null
+        },
+        "problems": [],
+        "class": "NO LEÍDA-Y-DICHA",
+        "said": [
+          "adjunto de +34 600 000 000 sin texto legible",
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": ""
+      },
+      {
+        "id": "F01",
+        "area": "formatos",
+        "tipo": "HEIC (foto de iPhone)",
+        "file": "F01.heic",
+        "ms": 2,
+        "memoryMb": 0,
+        "rssMb": 137,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "Usa una imagen JPG, PNG o WebP de hasta 5 MB."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F02",
+        "area": "formatos",
+        "tipo": "GIF",
+        "file": "F02.gif",
+        "ms": 1,
+        "memoryMb": 0,
+        "rssMb": 137,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "Usa una imagen JPG, PNG o WebP de hasta 5 MB."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F03",
+        "area": "formatos",
+        "tipo": "BMP",
+        "file": "F03.bmp",
+        "ms": 1,
+        "memoryMb": 0,
+        "rssMb": 137,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "Usa una imagen JPG, PNG o WebP de hasta 5 MB."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F04",
+        "area": "formatos",
+        "tipo": "Un .txt renombrado a .jpg",
+        "file": "F04.jpg",
+        "ms": 1,
+        "memoryMb": 0,
+        "rssMb": 137,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "El contenido no corresponde a una imagen válida."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F05",
+        "area": "formatos",
+        "tipo": "Archivo vacío",
+        "file": "F05.jpg",
+        "ms": 1,
+        "memoryMb": 0,
+        "rssMb": 137,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "Usa una imagen JPG, PNG o WebP de hasta 5 MB."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F06",
+        "area": "formatos",
+        "tipo": "Imagen de más de 5 MB",
+        "file": "F06.png",
+        "ms": 22,
+        "memoryMb": 26,
+        "rssMb": 137,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "La imagen supera 5 MB."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "R06",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: desenfoque leve",
+        "file": "R06.png",
+        "ms": 3791,
+        "memoryMb": 112,
+        "rssMb": 276,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "apartado": "note",
+          "fecha": null,
+          "vistoComoTabla": false
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 46,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "La foto no dice la fecha: elige tú el día.",
+          "Hay 3 líneas con números dudosos: no se usan. Míralas en la foto y escríbelas tú."
+        ],
+        "text": "LUNES MARTES MIERCOLES JUEVES VIERNES SABADO DOMINGO LUNES MARTES MIERCOLES JUEVES VIERNES SABADO DOMINGO\nNOVIEMBRE (11) 1 id ——A A ——AH 4 ———+ li ———d———— ll — ——4———\n2 3 4 : . 7 . , 10 ” 1 1 1 1\nmemo | | e | || e | | jo | lo | |\nOBRADOR PRODUCCION ue um rrODUCCION MIEENFLACE | PRODUCCION | PRODUCCION use mRODUCCIÓN | PRODUCCION use MBE ENLACE\nCOORDINACIÓN mnDO pe u- arentuna | manmoo— | —1o0smea | - | manco aPERTURA manco ue a LomTCA manco\nseucio—_ | — SARA | eEx=> e—=> MT um aveRTua | verme | MELO avena | METIO NT avenTuna | MENTE\nsemnco_—_| AN | wea ue montos GUELEED APERTURA | - | manos | GEIEED monas | GEI | wenu |\nSERVICIO | |\n"
+      },
+      {
+        "id": "R07",
+        "area": "cuadrante",
+        "tipo": "Cuadrante grande reducido al 50 % y JPG de calidad 35",
+        "file": "R07.jpg",
+        "ms": 2163,
+        "memoryMb": 5,
+        "rssMb": 276,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "apartado": "note",
+          "fecha": null,
+          "vistoComoTabla": false
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 71,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "La foto no dice la fecha: elige tú el día.",
+          "Hay 4 líneas con números dudosos: no se usan. Míralas en la foto y escríbelas tú."
+        ],
+        "text": "LUNES MARTES MIERCOLES JUEVES VIERNES SABADO DOMINGO LUNES MARTES MIERCOLES JUEVES VIERNES SABADO DOMINGO\nNOVIEMBRE (11)\n2 3 4 5 e 7 D , 10 E 1” 1. 1\" 15\nCRUCEROS o 00 000 o 00 000 o 00 000 o 00 000 o 00\n\nPRODUCCIÓN” | meeeNPLACE | —PRoDuccion” | —ropuecion mroDuecion” | “ProDuecion nsEENPLACE | —pRoDUECION\nraRTDO 10GImCA raRTDO APERTURA. | — PARTIDO = raRTDO LocincA— | —memo\n\nMENO | exa. : DENT\n\nm1DOA 1000 100 A 1000 APERTURA | 100 00 APERTURA ss\n\n"
+      },
+      {
+        "id": "R08",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: ruido fuerte",
+        "file": "R08.jpg",
+        "ms": 17198,
+        "memoryMb": 10,
+        "rssMb": 280,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "cuadrante": {
+            "sureOk": 51,
+            "unsureOk": 1,
+            "unsureBad": 4,
+            "sureBad": 0
+          },
+          "fechas": "bien",
+          "vistoComoTabla": true
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": null,
+        "said": [
+          "Es un cuadrante: 4 personas y 14 días, leídos casilla por casilla. Revísalo antes de guardar.",
+          "5 de 56 casillas están marcadas para revisar (lectura dudosa).",
+          "Del 2026-11-02 al 2026-11-15. El cuadrante no dice el año: 2026, porque es el año en que esos días caen en esos días de la semana.",
+          "No se usan: una fila sin nombre legible (Servicio Atacado)."
+        ],
+        "text": ""
+      },
+      {
+        "id": "R09",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: girado 5°",
+        "file": "R09.jpg",
+        "ms": 862,
+        "memoryMb": 94,
+        "rssMb": 273,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "apartado": null,
+          "fecha": null,
+          "vistoComoTabla": false
+        },
+        "problems": [],
+        "class": "NO LEÍDA-Y-DICHA",
+        "confidence": 18,
+        "said": [
+          "No se pudo leer texto útil en la foto. Se guarda en su día y puedes escribir tú lo que dice."
+        ],
+        "text": "E: —— — -—\n—————— SS\n"
+      },
+      {
+        "id": "R10",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: foto de una pantalla (moaré)",
+        "file": "R10.jpg",
+        "ms": 21350,
+        "memoryMb": 4,
+        "rssMb": 277,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "cuadrante": {
+            "sureOk": 56,
+            "unsureOk": 0,
+            "unsureBad": 0,
+            "sureBad": 0
+          },
+          "fechas": "bien",
+          "vistoComoTabla": true
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": null,
+        "said": [
+          "Es un cuadrante: 4 personas y 14 días, leídos casilla por casilla. Revísalo antes de guardar.",
+          "Todas las casillas se leyeron con seguridad.",
+          "Del 2026-11-02 al 2026-11-15. El cuadrante no dice el año: 2026, porque es el año en que esos días caen en esos días de la semana.",
+          "No se usan: N On An (sin turnos)."
+        ],
+        "text": ""
+      },
+      {
+        "id": "R11",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: resolución baja (700 px de ancho)",
+        "file": "R11.png",
+        "ms": 444,
+        "memoryMb": 93,
+        "rssMb": 273,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "apartado": null,
+          "fecha": null,
+          "vistoComoTabla": false
+        },
+        "problems": [],
+        "class": "NO LEÍDA-Y-DICHA",
+        "confidence": 0,
+        "said": [
+          "No se pudo leer texto útil en la foto. Se guarda en su día y puedes escribir tú lo que dice."
+        ],
+        "text": ""
+      },
+      {
+        "id": "R12",
+        "area": "cuadrante",
+        "tipo": "Cuadrante grande en modo oscuro con desenfoque leve",
+        "file": "R12.png",
+        "ms": 8700,
+        "memoryMb": 2,
+        "rssMb": 276,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "cuadrante": {
+            "sureOk": 56,
+            "unsureOk": 0,
+            "unsureBad": 0,
+            "sureBad": 0
+          },
+          "fechas": "bien",
+          "vistoComoTabla": true
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": null,
+        "said": [
+          "Es un cuadrante: 4 personas y 14 días, leídos casilla por casilla. Revísalo antes de guardar.",
+          "Todas las casillas se leyeron con seguridad.",
+          "Del 2026-11-02 al 2026-11-15. El cuadrante no dice el año: 2026, porque es el año en que esos días caen en esos días de la semana.",
+          "No se usan: una fila sin nombre legible (Servicio)."
+        ],
+        "text": ""
+      },
+      {
+        "id": "R13",
+        "area": "cuadrante",
+        "tipo": "Cuadrante: JPG de calidad 20",
+        "file": "R13.jpg",
+        "ms": 9673,
+        "memoryMb": 105,
+        "rssMb": 290,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "cuadrante": {
+            "sureOk": 35,
+            "unsureOk": 4,
+            "unsureBad": 17,
+            "sureBad": 0
+          },
+          "fechas": "bien",
+          "vistoComoTabla": true
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": null,
+        "said": [
+          "Es un cuadrante: 4 personas y 14 días, leídos casilla por casilla. Revísalo antes de guardar.",
+          "21 de 56 casillas están marcadas para revisar (lectura dudosa).",
+          "Del 2026-11-02 al 2026-11-15. El cuadrante no dice el año: 2026, porque es el año en que esos días caen en esos días de la semana.",
+          "No se usan: una fila sin nombre legible (Servicio)."
+        ],
+        "text": ""
+      },
+      {
+        "id": "R14",
+        "area": "cuadrante",
+        "tipo": "Cuadrante dibujado con líneas, sobre papel de color",
+        "file": "R14.png",
+        "ms": 7299,
+        "memoryMb": 93,
+        "rssMb": 288,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "cuadrante": {
+            "sureOk": 49,
+            "unsureOk": 2,
+            "unsureBad": 5,
+            "sureBad": 0
+          },
+          "fechas": "bien",
+          "vistoComoTabla": true
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": null,
+        "said": [
+          "Es un cuadrante: 4 personas y 14 días, leídos casilla por casilla. Revísalo antes de guardar.",
+          "7 de 56 casillas están marcadas para revisar (lectura dudosa).",
+          "Del 2026-11-02 al 2026-11-15. El cuadrante no dice el año: 2026, porque es el año en que esos días caen en esos días de la semana.",
+          "No se usan: una fila sin nombre legible (Servicio)."
+        ],
+        "text": ""
+      },
+      {
+        "id": "R15",
+        "area": "cuadrante",
+        "tipo": "Cuadrante dibujado con líneas, foto girada 2° con ruido",
+        "file": "R15.jpg",
+        "ms": 3330,
+        "memoryMb": 116,
+        "rssMb": 320,
+        "ideal": "EXACTA",
+        "rules": null,
+        "proposed": {
+          "apartado": "note",
+          "fecha": null,
+          "vistoComoTabla": false
+        },
+        "problems": [],
+        "class": "PARCIAL-Y-AVISADA",
+        "confidence": 81,
+        "said": [
+          "No parece horario, ventas ni documento: se propone como nota del día.",
+          "La foto no dice la fecha: elige tú el día.",
+          "Hay 2 líneas con números dudosos: no se usan. Míralas en la foto y escríbelas tú."
+        ],
+        "text": "SD LUNES MARTES | MIERCOLES | — JUEVES VIERNES SABADO | DOMINGO LUNES MARTES | MIERCOLES JUEVES — | VIERNES | SABADO | DOMINGO\n2 3 4 5 6 ES 8 N 10 n 12 13 14 15\nOBRADOR — | LUCIA | PRODUCCION | LIBRE LIBRE | PRODUCCION | PRODUCCION \"LACE, | PRODUCCION | PRODUCCION LIBRE — | PRODUCCION | PRODUCCION | LIBRE Me nCE | PRODUCCION\nCOORDINACION | PABLO | — PARTIDO | PARTIDO | — LIBRE APERTURA PARTIDO — | LOGISTICA LIBRE PARTIDO — | APERTURA | — PARTIDO LIBRE PARTIDO | LOGISTICA | — PARTIDO\nSERVICIO SARA | CIERRE | CIERRE | LIBRE LIBRE APERTURA | APERTURA | — CIERRE CIERRE LIBRE | APERTURA CIERRE LIBRE — | APERTURA | — CIERRE\nSERVICIO IVAN | M:00A1600 | LIBRE uc 1900A00:00 | 19:00A00:00 | APERTURA LIBRE M00A 1600 | 100 LIBRE 10041600 | 004 | APERTURA LIBRE\nSERVICIO\n\n"
+      },
+      {
+        "id": "W05",
+        "area": "whatsapp",
+        "tipo": "Adjunto: ticket térmico con ruido",
+        "file": "W05.jpg",
+        "ms": 506,
+        "memoryMb": 21,
+        "rssMb": 297,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "EcoPack\nNIF B87654321\nFACTURA SIMPLIFICADA\n05/10/2026 10:42\n\nTarrinas 500 ml x 500 62,50\nCucharillas x 1000 18,90\nservilletas x 2000 24,00\nConos x 800 1.250,00\nBolsas papel x 300 21,60\nVasos 120 ml x 600 45,00\nTapas x 600 19,80\nPajitas x 500 9,90\nTOTAL 1.451,70 e\n\nGracias por su compra\n"
+      },
+      {
+        "id": "W06",
+        "area": "whatsapp",
+        "tipo": "Adjunto: factura girada 90°",
+        "file": "W06.png",
+        "ms": 898,
+        "memoryMb": 5,
+        "rssMb": 302,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "W07",
+        "area": "whatsapp",
+        "tipo": "Adjunto: albarán a 600 px de ancho",
+        "file": "W07.jpg",
+        "ms": 347,
+        "memoryMb": 7,
+        "rssMb": 303,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": "albaran"
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "ALBARÁN N? 2231\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35% 12L\n\nYogur natural 6 kg\n\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "W08",
+        "area": "whatsapp",
+        "tipo": "Adjunto en italiano (fattura)",
+        "file": "W08.jpg",
+        "ms": 449,
+        "memoryMb": 3,
+        "rssMb": 305,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": null
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": null
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "FATTURAN. 118\n\nGelato Italia\n\nData: 5 ottobre 2026\n\nPasta di pistacchio 2 kg 48,50 €\nNocciola Piemonte 3 kg 61,20 €\nZucchero di canna 5 kg 12,00 €\nTotale da pagare 121,70 €\n"
+      },
+      {
+        "id": "W09",
+        "area": "whatsapp",
+        "tipo": "Adjunto WebP en modo oscuro",
+        "file": "W09.webp",
+        "ms": 717,
+        "memoryMb": 10,
+        "rssMb": 306,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "W10",
+        "area": "whatsapp",
+        "tipo": "Adjunto: albarán fotografiado de lado (perspectiva)",
+        "file": "W10.jpg",
+        "ms": 611,
+        "memoryMb": 9,
+        "rssMb": 306,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.9,
+        "proposed": {
+          "archivado": true,
+          "tipo": "albaran"
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "ALBARÁN N? 2234\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12 L\n\nYogur natural 6 kg\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "W11",
+        "area": "whatsapp",
+        "tipo": "Adjunto: factura en papel de color con sombra",
+        "file": "W11.jpg",
+        "ms": 488,
+        "memoryMb": 9,
+        "rssMb": 306,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 0.2,
+        "proposed": {
+          "archivado": true,
+          "tipo": null
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "NO LEÍDA-Y-DICHA",
+        "said": [
+          "adjunto de +34 600 000 000 sin texto legible",
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "45678\ng 48,50 €\nSa 3 kg 61,20 €\nE la 9 KY 12,00€\nmponible 121,70 €\n0% 12,17€\nala pagar 133,87 €\n"
+      },
+      {
+        "id": "W12",
+        "area": "whatsapp",
+        "tipo": "Adjunto: captura de una conversación (no es un documento)",
+        "file": "W12.png",
+        "ms": 371,
+        "memoryMb": 8,
+        "rssMb": 305,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": null
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": null
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "9:41 56:87 %\nMarta\nMañana llego a las 10:30, abro yo.\nVale, gracias. Yo cierro a las 23:00.\nAcuérdate de pedir conos.\n"
+      },
+      {
+        "id": "W13",
+        "area": "whatsapp",
+        "tipo": "Adjunto ilegible (desenfoque fuerte)",
+        "file": "W13.jpg",
+        "ms": 620,
+        "memoryMb": 1,
+        "rssMb": 296,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": "tipo factura (es null)",
+        "ratio": 0,
+        "proposed": {
+          "archivado": true,
+          "tipo": null
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": null
+        },
+        "problems": [],
+        "class": "NO LEÍDA-Y-DICHA",
+        "said": [
+          "adjunto de +34 600 000 000 sin texto legible",
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "LE\n_-—.\nE\n\nC.— m0 *“\n— ——— o U—;0];\n—  — * “y +\ne.\n\n. “a\n\n— —\n"
+      },
+      {
+        "id": "W14",
+        "area": "whatsapp",
+        "tipo": "Adjunto: albarán en letra pequeña, 900 px y calidad 25",
+        "file": "W14.jpg",
+        "ms": 420,
+        "memoryMb": 8,
+        "rssMb": 300,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": "albaran"
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "ALBARÁN N” 2231\n\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12 L\n\nYogur natural 6 kg\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "W15",
+        "area": "whatsapp",
+        "tipo": "Adjunto en inglés del revés (180°)",
+        "file": "W15.jpg",
+        "ms": 1040,
+        "memoryMb": 0,
+        "rssMb": 300,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "archivado": true,
+          "tipo": null
+        },
+        "truth": {
+          "archivado": true,
+          "tipo": null
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "said": [
+          "adjunto de +34 600 000 000 archivado en Documentos"
+        ],
+        "text": "INVOICE 0457\n\nOrigen Coffee\n\nDate: 5 October 2026\n\nEspresso beans 4 kg 96.00 EUR\nDecaf beans 1 kg 26.00 EUR\nTotal due 122.00 EUR\n"
+      },
+      {
+        "id": "F07",
+        "area": "formatos",
+        "tipo": "SVG (dibujo vectorial con texto)",
+        "file": "F07.svg",
+        "ms": 1,
+        "memoryMb": 0,
+        "rssMb": 263,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "Usa una imagen JPG, PNG o WebP de hasta 5 MB."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F08",
+        "area": "formatos",
+        "tipo": "TIFF (escáner)",
+        "file": "F08.tif",
+        "ms": 1,
+        "memoryMb": 0,
+        "rssMb": 255,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "Usa una imagen JPG, PNG o WebP de hasta 5 MB."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F09",
+        "area": "formatos",
+        "tipo": "AVIF (foto de Android reciente)",
+        "file": "F09.avif",
+        "ms": 0,
+        "memoryMb": 0,
+        "rssMb": 234,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "Usa una imagen JPG, PNG o WebP de hasta 5 MB."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F10",
+        "area": "formatos",
+        "tipo": "Un ZIP renombrado a .png",
+        "file": "F10.png",
+        "ms": 0,
+        "memoryMb": 0,
+        "rssMb": 228,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "El contenido no corresponde a una imagen válida."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F11",
+        "area": "formatos",
+        "tipo": "Un PNG renombrado a .jpg (el contenido no coincide con el nombre)",
+        "file": "F11.jpg",
+        "ms": 1,
+        "memoryMb": 0,
+        "rssMb": 220,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "El contenido no corresponde a una imagen válida."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F12",
+        "area": "formatos",
+        "tipo": "JPG cortado (descarga a medias)",
+        "file": "F12.jpg",
+        "ms": 265,
+        "memoryMb": 86,
+        "rssMb": 288,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "No se ha podido abrir la imagen: parece dañada o incompleta. Prueba a hacer la foto otra vez."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F13",
+        "area": "formatos",
+        "tipo": "Un PDF renombrado a .png",
+        "file": "F13.png",
+        "ms": 1,
+        "memoryMb": 0,
+        "rssMb": 280,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "El contenido no corresponde a una imagen válida."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F14",
+        "area": "formatos",
+        "tipo": "JPG con solo la cabecera (archivo dañado)",
+        "file": "F14.jpg",
+        "ms": 9,
+        "memoryMb": 0,
+        "rssMb": 262,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "No se ha podido abrir la imagen: parece dañada o incompleta. Prueba a hacer la foto otra vez."
+        ],
+        "proposed": {
+          "rechazada": true
+        }
+      },
+      {
+        "id": "F15",
+        "area": "formatos",
+        "tipo": "Imagen de 1 × 1 píxel (vale rechazarla o aceptarla sin texto)",
+        "file": "F15.png",
+        "ms": 330,
+        "memoryMb": 89,
+        "rssMb": 288,
+        "ideal": "NO LEÍDA-Y-DICHA",
+        "rules": null,
+        "class": "NO LEÍDA-Y-DICHA",
+        "problems": [],
+        "said": [
+          "se aceptó y no se leyó nada"
+        ],
+        "proposed": {
+          "rechazada": false
+        }
+      },
+      {
+        "id": "D20",
+        "area": "documentos",
+        "tipo": "PNG de 16 bits por canal",
+        "file": "D20.png",
+        "ms": 642,
+        "memoryMb": 0,
+        "rssMb": 289,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 90,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D21",
+        "area": "documentos",
+        "tipo": "JPEG en CMYK (de imprenta)",
+        "file": "D21.jpg",
+        "ms": 477,
+        "memoryMb": 0,
+        "rssMb": 287,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "truth": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "ALBARÁN N? 2231\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12L\n\nYogur natural 6 kg\n\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "D22",
+        "area": "documentos",
+        "tipo": "JPEG progresivo",
+        "file": "D22.jpg",
+        "ms": 547,
+        "memoryMb": 0,
+        "rssMb": 286,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 92,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\n\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D23",
+        "area": "documentos",
+        "tipo": "PNG semitransparente",
+        "file": "D23.png",
+        "ms": 504,
+        "memoryMb": 0,
+        "rssMb": 285,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "truth": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 93,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "ALBARÁN N? 2231\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12L\n\nYogur natural 6 kg\n\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "D24",
+        "area": "documentos",
+        "tipo": "JPEG en escala de grises",
+        "file": "D24.jpg",
+        "ms": 623,
+        "memoryMb": 0,
+        "rssMb": 284,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      },
+      {
+        "id": "D25",
+        "area": "documentos",
+        "tipo": "PNG entrelazado de 16 colores",
+        "file": "D25.png",
+        "ms": 511,
+        "memoryMb": 14,
+        "rssMb": 281,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "truth": {
+          "proveedor": "s2",
+          "tipo": "albaran"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 94,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "ALBARÁN N? 2231\nFresco Mercado\n\nFecha: 05-10-26\n\nLeche entera 40 L\n\nNata 35 % 12L\n\nYogur natural 6 kg\n\nFresas de temporada 4 kg\nRecibí conforme\n"
+      },
+      {
+        "id": "D26",
+        "area": "documentos",
+        "tipo": "Foto de móvil guardada tumbada con marca de orientación (EXIF 6)",
+        "file": "D26.jpg",
+        "ms": 743,
+        "memoryMb": 9,
+        "rssMb": 285,
+        "ideal": "EXACTA",
+        "rules": "bien",
+        "ratio": 1,
+        "proposed": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "truth": {
+          "proveedor": "s3",
+          "tipo": "factura"
+        },
+        "problems": [],
+        "class": "EXACTA",
+        "confidence": 92,
+        "said": [
+          "Nombre o alias encontrado en el texto."
+        ],
+        "text": "FACTURA\n\nGelato Italia S.L. NIF B12345678\nFecha: 05/10/2026\n\nPasta de pistacho 2 kg 48,50 €\nAvellana piamontesa 3 kg 61,20 €\nAzúcar de caña 5 kg 12,00 €\nBase imponible 121,70 €\n\nIVA 10 % 12,17 €\n\nTotal a pagar 133,87 €\n"
+      }
+    ]
+  }
+}

@@ -371,24 +371,38 @@ class WhatsAppConnection {
           );
         }
       }
+      // Si la foto no se deja leer (o casi nada), el lector lo dice (advice) y el adjunto se
+      // archiva con ese aviso en su nota: nunca se archiva en silencio como si estuviera leído.
+      // Un PDF sin texto (escaneado) se archiva igual, diciéndolo.
+      let unread = "";
+      if (mime === "application/pdf" && !ocrText)
+        unread =
+          "No se ha podido leer el texto del adjunto: ábrelo y revísalo.";
       if (mime !== "application/pdf" && typeof this.ocr === "function") {
         try {
           const read = await this.ocr(
             "data:" + mime + ";base64," + bytes.toString("base64"),
           );
           ocrText = String(read?.text || "").slice(0, 20000) || undefined;
+          if (read?.advice || !ocrText)
+            unread =
+              "No se ha podido leer el texto del adjunto: ábrelo y revísalo.";
         } catch (e) {
+          unread =
+            "No se ha podido leer el texto del adjunto: ábrelo y revísalo.";
           this.log(
             "Lectura del adjunto no disponible: " +
               String(e?.message || e).slice(0, 80),
           );
         }
       }
+      if (unread) this.log("adjunto de " + sender + " sin texto legible");
       this.mainStore.dispatch({
         type: "photo",
         name: entry.name,
         data: "data:" + mime + ";base64," + bytes.toString("base64"),
-        note: "Adjunto de WhatsApp de " + sender,
+        note:
+          "Adjunto de WhatsApp de " + sender + (unread ? " · " + unread : ""),
         supplier,
         documentDate: entry.at.slice(0, 10),
         source: "whatsapp",

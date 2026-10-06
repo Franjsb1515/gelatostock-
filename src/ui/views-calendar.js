@@ -590,6 +590,12 @@ function calStockPanel(d) {
   );
 }
 
+/** Una línea de turno del formulario: persona, tipo, horas y «Quitar». Se añaden sin límite. */
+function calShiftRow(t, j, day) {
+  const time = (k, value, label) =>
+    `<input type="time" data-k="${k}" value="${esc(value || "")}" aria-label="${esc(label)}">`;
+  return `<div class="cal-shift" data-shift><input type="text" data-k="person" maxlength="60" value="${esc(t.person || "")}" placeholder="Persona" aria-label="Turno ${j + 1} del ${esc(day)}: persona"><input type="text" data-k="label" maxlength="40" list="cal-shift-types" value="${esc(t.label || "")}" placeholder="Turno (Apertura…)" aria-label="Turno ${j + 1} del ${esc(day)}: tipo">${time("from", t.from, `Turno ${j + 1} del ${day}: desde`)}<span aria-hidden="true">–</span>${time("to", t.to, `Turno ${j + 1} del ${day}: hasta`)}<button type="button" class="cal-shift-remove" data-action="calShiftRemove" aria-label="Quitar el turno ${j + 1} del ${esc(day)}" title="Quitar este turno">×</button></div>`;
+}
 /** Formulario del horario de una semana: apertura por día (o cerrado) y turnos. */
 function calWeekView() {
   const dates = Array.from({ length: 7 }, (_, i) => shiftDay(calWeek, i));
@@ -616,11 +622,10 @@ function calWeekView() {
         (_, j) => d.shifts[j] || { person: "", from: "", to: "" },
       );
       return `<div class="cal-week-row ${d.closed ? "is-closed" : ""}" data-week-day="${esc(date)}"><div class="cal-week-date"><strong>${esc(weekday)}</strong><span>${esc(rest.join(", "))}</span>${away.length ? `<small>De vacaciones: ${away.map(esc).join(", ")}</small>` : ""}</div><div class="cal-week-hours"><label class="check"><input type="checkbox" data-k="closed" ${d.closed ? "checked" : ""}> Cerrado</label><div class="cal-time-range"><label>Abre${time("open", d.open, "Abre el " + day)}</label><label>Cierra${time("close", d.close, "Cierra el " + day)}</label></div></div><div class="cal-shifts"><span class="cal-shifts-label">Turnos</span>${slots
-        .map(
-          (t, j) =>
-            `<div class="cal-shift" data-shift><input type="text" data-k="person" maxlength="60" value="${esc(t.person)}" placeholder="Persona" aria-label="Turno ${j + 1} del ${esc(day)}: persona"><input type="text" data-k="label" maxlength="40" list="cal-shift-types" value="${esc(t.label || "")}" placeholder="Turno (Apertura…)" aria-label="Turno ${j + 1} del ${esc(day)}: tipo">${time("from", t.from, `Turno ${j + 1} del ${day}: desde`)}<span aria-hidden="true">–</span>${time("to", t.to, `Turno ${j + 1} del ${day}: hasta`)}</div>`,
-        )
-        .join("")}</div></div>`;
+        .map((t, j) => calShiftRow(t, j, day))
+        .join(
+          "",
+        )}<button type="button" class="btn secondary cal-shift-add" data-action="calShiftAdd" data-day="${esc(day)}">+ Otra persona</button></div></div>`;
     })
     .join("");
   const vacations = state.vacations.filter(
@@ -709,6 +714,19 @@ function calReadWeek(panel) {
 
 // Botones del Calendario. Devuelve true si la acción era suya.
 async function calendarAction(name, el) {
+  // Añadir o quitar una línea de turno en el formulario, sin redibujar (no se pierde lo escrito).
+  // Nada se guarda hasta «Guardar la semana».
+  if (name === "calShiftAdd") {
+    const box = el.closest(".cal-shifts");
+    const n = box.querySelectorAll("[data-shift]").length;
+    el.insertAdjacentHTML("beforebegin", calShiftRow({}, n, el.dataset.day));
+    box.querySelectorAll('[data-shift] [data-k="person"]')[n]?.focus();
+    return true;
+  }
+  if (name === "calShiftRemove") {
+    el.closest("[data-shift]").remove();
+    return true;
+  }
   if (name === "calOpenDay") {
     // Desde el Resumen: la ficha de ese día en el Calendario.
     calGo("day", el.dataset.date);

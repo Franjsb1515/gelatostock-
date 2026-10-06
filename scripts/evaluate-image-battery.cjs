@@ -207,9 +207,21 @@ async function runCase(c, s) {
   if (c.area === "formatos") {
     try {
       const r = await recognizeLocal(data);
+      // Una imagen vacía (1 × 1) puede aceptarse sin texto: lo malo sería leer algo en ella.
+      if (c.either && !String(r.text || "").trim())
+        return {
+          class: "NO LEÍDA-Y-DICHA",
+          problems: [],
+          said: ["se aceptó y no se leyó nada"],
+          proposed: { rechazada: false },
+        };
       return {
         class: "INVENTO",
-        problems: ["se aceptó un archivo que no se admite"],
+        problems: [
+          c.either
+            ? "se leyó texto en una imagen vacía"
+            : "se aceptó un archivo que no se admite",
+        ],
         said: [],
         text: r.text,
       };
@@ -245,7 +257,8 @@ async function runCase(c, s) {
     await WhatsAppConnection.prototype.importDocument.call(
       {
         mainStore: { dispatch: (a) => saved.push(a) },
-        ocr: recognizeLocal,
+        // Lo mismo que conecta el servidor: el lector de Documentos, con su aviso.
+        ocr: (d) => readDocumentPhoto(s, d),
         pdfText: readPdfText,
         log: (m) => log.push(m),
       },
@@ -261,7 +274,10 @@ async function runCase(c, s) {
       text,
       null,
       guessDocType(text) ?? null,
-      SAYS_NO_TEXT && !!saved[0] && !text,
+      // «Dicho»: el adjunto archivado lleva en su nota que no se pudo leer.
+      SAYS_NO_TEXT &&
+        !!saved[0] &&
+        /No se ha podido leer/.test(String(saved[0].note || "")),
     );
     return {
       ...j,

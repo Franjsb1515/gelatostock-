@@ -443,7 +443,9 @@ function createApp({
   const aiLog = (line) =>
     appendLog(path.join(dataDir, "runtime", "logs", "ia.log"), line);
   const whatsapp = new WhatsAppConnection(dataDir, store);
-  whatsapp.ocr = (data) => recognizeLocal(data);
+  // El mismo lector que «Añadir un documento» (src/photo-read.cjs): si la foto no se deja leer,
+  // llega el aviso y el adjunto se archiva diciéndolo, en vez de callar.
+  whatsapp.ocr = (data) => readDocumentPhoto(store.load(), data);
   whatsapp.pdfText = (bytes) => readPdfText(bytes);
   const token = randomBytes(32).toString("hex");
   const tokenBytes = Buffer.from(token);

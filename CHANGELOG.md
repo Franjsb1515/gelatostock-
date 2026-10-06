@@ -1,5 +1,17 @@
 # Registro de parches y sesiones
 
+## 0.61.0 — 2026-10-06 · Lector a prueba con 87 imágenes, horario sin límite de personas y textos pulidos
+
+- Lector de imágenes medido con 87 tipos (antes 50): 26 documentos, 16 fotos del Calendario, 15 cuadrantes, 15 adjuntos de WhatsApp y 15 archivos no admitidos o dañados. 72 acaban en su sitio ideal y **0 inventos** (antes de los arreglos de esta versión eran 2: dos cuadrantes con ruido o JPEG fuerte daban por segura una hora con un 9 leído como 3 o 5). Todo sigue siendo sintético.
+- Cuadrantes: si en un mismo cuadrante conviven dos horas que solo se distinguen por un dígito que la lectura confunde (9/3, 9/5, 8/3, 1/7, 0/6, 0/8), ninguna se da por segura y la casilla lleva las dos como opciones para revisar. Tu cuadrante real sigue en 56 seguras bien y 0 mal y seguras.
+- Adjuntos de WhatsApp: se leen con el mismo lector que «Añadir un documento» y, si la foto no se deja leer o se lee a medias, el adjunto se archiva diciéndolo en su nota en vez de callar. Un PDF escaneado sin texto, igual.
+- Documentos: aviso de «lectura a medias» (una sombra, un pliegue o un recorte dejan líneas con muy pocas letras): se pide comprobar proveedor y tipo antes de guardar. No corrige nada.
+- Variantes de archivo comprobadas y leídas igual: PNG de 16 bits, JPEG CMYK, JPEG progresivo, PNG semitransparente, JPEG en gris, PNG entrelazado de 16 colores y foto guardada tumbada con marca de orientación. Rechazados con mensaje claro, sin colgarse: SVG, TIFF, AVIF, ZIP o PDF renombrados, PNG renombrado a .jpg, JPG cortado o con solo la cabecera; una imagen de 1 píxel se acepta sin leer nada.
+- Horario de la semana: cada día tiene «+ Otra persona» para añadir tantas líneas de turno como haga falta y una «×» para quitar una línea; nada se guarda hasta «Guardar la semana».
+- Textos de toda la app pulidos (56 puntos en pantalla, 16 frases de Guía y Ayudante), sin tocar lógica: se quitó jerga («por reglas», «relevancia», el nombre del modelo en el Ayudante, «diagnóstico del canal», voseos), un aviso falso del Recetario y etiquetas confusas de Actividad. Detalle y lo que queda por decidir en reports/2026-10-06T06-00-00-000Z-pulido-de-textos.md.
+
+Informe reports/2026-10-06T07-30-00-000Z-lector-87-imagenes-y-horario.md.
+
 ## 0.60.0 — 2026-10-06 · Los proveedores de tu lista, con lo que venden
 
 - Los 21 proveedores que nombra tu lista de precios están creados en tus datos (7 → 28), a petición tuya, por la acción de la app y con copia previa de la base en work/copias/. Solo con el nombre, tal como lo escribe la lista: teléfono, categoría y entrega los completas tú en Proveedores. Productos, stock, movimientos, precios, lista, tabla y recetas quedaron idénticos.

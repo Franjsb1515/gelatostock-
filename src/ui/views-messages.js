@@ -8,9 +8,9 @@ function replyBlock(m) {
     ? `<div class="understood-row"><span>Lectura</span><div><strong>${esc(replyLabel[i.category])}${i.needsReading && !m.reviewed ? " " + pill("Debes leer", "peach") : ""}${i.learned ? " " + pill("Aprendido de ti", "sage") : i.corrected ? " " + pill("Corregido por ti", "sage") : ""}</strong><p>${esc(i.summary)}</p>${i.deliveryDate ? `<p><strong>Entrega indicada:</strong> ${date(i.deliveryDate + "T12:00:00Z")}${i.deliveryHint ? " («" + esc(i.deliveryHint) + "»)" : ""}</p>` : i.deliveryHint ? `<p><strong>Plazo indicado:</strong> ${esc(i.deliveryHint)}</p>` : ""}${i.missing ? `<p><strong>Producto que falta:</strong> ${esc(i.missing)}</p>` : ""}</div></div>`
     : "";
   const second = ai
-    ? `<div class="understood-row"><span>Ayudante</span><div><p>${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "dos lecturas coincidentes" : ai.status === "disagreement" ? "las lecturas discrepan: revisa tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && i && ai.category !== i.category ? " · No coincide con las reglas: decide leyendo el original." : ""}</p></div></div>`
+    ? `<div class="understood-row"><span>Ayudante</span><div><p>${esc(replyLabel[ai.category])} · ${ai.status === "agreement" ? "las dos lecturas coinciden" : ai.status === "disagreement" ? "las dos lecturas no coinciden: léelo tú" : "sin lectura válida"} · ${time(ai.at)}${ai.status === "agreement" && i && ai.category !== i.category ? " · No coincide con lo que entendió la app: decide leyendo el original." : ""}</p></div></div>`
     : "";
-  return `<div class="reply-reading understood"><div class="message-label">LO QUE ENTENDIÓ LA APP · POR REGLAS</div>${reading}<div class="understood-row"><span>Prioridad</span><div><strong>${esc(priorityLabel[m.priority])}</strong>${i && m.reason.includes(i.summary) ? "" : `<p>${esc(m.reason)}</p>`}</div></div><div class="understood-row"><span>Pedido</span><div><strong>${order ? esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : esc(relevanceLabel[m.relevance])}</strong><p>${order ? "" : "Sin pedido vinculado. "}${esc(m.relevanceReason)}</p></div></div>${second}</div>`;
+  return `<div class="reply-reading understood"><div class="message-label">LO QUE ENTENDIÓ LA APP</div>${reading}<div class="understood-row"><span>Prioridad</span><div><strong>${esc(priorityLabel[m.priority])}</strong>${i && m.reason.includes(i.summary) ? "" : `<p>${esc(m.reason)}</p>`}</div></div><div class="understood-row"><span>Pedido</span><div><strong>${order ? esc(order.number) + (order.expected ? " · entrega prevista " + date(order.expected + "T12:00:00Z") : "") : esc(relevanceLabel[m.relevance])}</strong><p>${order ? "" : "Sin pedido vinculado. "}${esc(m.relevanceReason)}</p></div></div>${second}</div>`;
 }
 // Shared by the list and by «Abrir»: does the current filter show this message?
 function messageMatches(x) {
@@ -216,7 +216,7 @@ function priceActions(m) {
           .split(" ")
           .some((w) => w.length > 3 && text.includes(w)),
     );
-  return `<div class="order-actions"><div class="message-label">PRECIO QUE DICE EL MENSAJE</div><p class="muted">Leído por reglas: ${money(i.priceTo)} el paquete${i.priceFrom ? " (antes " + money(i.priceFrom) + ")" : ""}${i.priceHint ? " · en el texto: «" + esc(i.priceHint) + "»" : ""}. ${hit ? "Puede ser " + esc(hit.name) + ", pero lo eliges tú." : "El producto lo eliges tú."} Nada se apunta hasta que lo confirmes.</p><div class="message-actions">${btn(
+  return `<div class="order-actions"><div class="message-label">PRECIO QUE DICE EL MENSAJE</div><p class="muted">Según el mensaje: ${money(i.priceTo)} el paquete${i.priceFrom ? " (antes " + money(i.priceFrom) + ")" : ""}${i.priceHint ? " · en el texto: «" + esc(i.priceHint) + "»" : ""}. ${hit ? "Puede ser " + esc(hit.name) + ", pero lo eliges tú." : "El producto lo eliges tú."} Nada se apunta hasta que lo confirmes.</p><div class="message-actions">${btn(
     "Apuntar este precio…",
     "setPrice",
     "secondary",

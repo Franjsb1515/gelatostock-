@@ -1,4 +1,4 @@
-# TODO — estado real de 0.60.0
+# TODO — estado real de 0.61.0
 
 Solo lo pendiente, ordenado por área. Lo ya hecho está en CHANGELOG.md (una entrada por versión) y, resumido, al final. La especificación de origen sigue en docs/TODO.md; no es estado.
 
@@ -38,7 +38,12 @@ Marcas: **[tú]** necesita algo del usuario · **[app]** se puede hacer sin él 
 - [x] [app] «Posibles iguales» en Precios por proveedor (parejas propuestas con motivo; tú dices sí o no; nunca junta sola) y memoria de a qué producto corresponde cada nombre de la lista y de la tabla (0.59.0). Con tu lista salen 24 propuestas.
 - [x] [app] Los 21 proveedores de tu lista creados en tus datos (0.60.0, pedido por ti el 2026-10-06) y «Añadir proveedores de la lista» en Precios por proveedor; la ficha de cada proveedor enseña «Según tu lista de precios vende…».
 - [ ] [tú] Completar en Proveedores el teléfono (para WhatsApp), la categoría y la entrega de los 21 nuevos: la lista solo trae el nombre. Si alguno es el mismo que uno de tus 7 de antes con otro nombre, dímelo y lo juntamos.
-- [ ] [tú] Fotos y documentos reales para el lector: todo lo medido (44 de 50, 0 inventos) es sintético; no se puede llamar «casi perfecto» sin medirlo con lo tuyo.
+- [x] [app] Lector medido con 87 tipos de imagen, 15 por área (0.61.0): 72 en su ideal, 0 inventos; cuadrantes con ruido ya no dan por segura una hora confundible; adjuntos de WhatsApp con el lector de Documentos y aviso cuando no se leen; aviso de lectura a medias.
+- [x] [app] Horario: «+ Otra persona» y «×» en cada día (0.61.0, pedido por ti el 2026-10-06).
+- [x] [app] Textos pulidos en toda la app (0.61.0, pedido por ti el 2026-10-06): reports/2026-10-06T06-00-00-000Z-pulido-de-textos.md.
+- [ ] [decidir] Lo que el pulido de textos no cambió por ser tuyo: (1) «Simular envío» y los pedidos de demostración siguen por tu decisión del 2026-09-20; (2) los productos y proveedores de ejemplo (Pistacho siciliano, Gelato Italia, «FRAN · PRUEBA…») se ven junto a los tuyos; (3) Cruceros dice «Información pendiente de sincronización» (propuesta: «Todavía no se ha consultado al puerto»); (4) «Producción a mano» y «Corregir relevancia» se llaman así porque la prueba de escritorio los busca (propuestas: «Calcular y aprobar después», «¿Tiene que ver con un pedido?»); (5) el aviso «función todavía en pruebas» de WhatsApp.
+- [ ] [app] Cuadrantes: 12 de 15 quedan «a revisar» (ninguna casilla mal dada por segura, pero muchas a confirmar); girado 5° y 700 px de ancho no se leen. Mejora posible: enderezar la foto antes de leer la cuadrícula y ampliar las pequeñas.
+- [ ] [tú] Fotos y documentos reales para el lector: todo lo medido (87 tipos, 0 inventos) es sintético; no se puede llamar «casi perfecto» sin medirlo con lo tuyo.
 - [ ] [tú] Revisar las 24 propuestas de «Posibles iguales» (Compras → Precios por proveedor, arriba) y decir en cada ingrediente de la lista y de la tabla a qué producto tuyo corresponde («¿Qué producto de tu inventario es?» y «Ya lo tengo con otro nombre…»). Así el carrito y «Sugerir reposición» encuentran el precio de la lista aunque el nombre no coincida.
 - [ ] [tú] Decir si los precios de tu lista son por kilo, litro o unidad (dijiste que se mira después): hasta entonces el precio de la lista se enseña pero no se compara con el paquete hasta que lo apuntas.
 - [x] [app] Lector de imágenes medido con 50 tipos (0.58.0): 44 de 50 en su ideal, 0 inventos. Lo que no se lee: cuadrante ladeado o sin líneas, PDF escaneado, foto girada 5° pierde la fecha. Detalle en reports/2026-10-06T08-00-00-000Z-lector-de-imagenes.md.

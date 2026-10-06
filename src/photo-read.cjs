@@ -18,6 +18,11 @@ const letters = (t) => (t.match(/\p{L}/gu) || []).length;
 async function readDocumentPhoto(state, data) {
   const result = await recognizeLocal(data);
   const unread = letters(result.text) < 12 || result.confidence < 55;
+  // Lectura a medias (una sombra, un pliegue, un recorte): quedan líneas, pero con muy pocas
+  // letras cada una. Medido en 0.61.0: un documento bien leído trae 9 letras o más por línea;
+  // uno con media hoja en sombra, menos de 4. Se avisa; no se corrige nada.
+  const lines = result.text.split("\n").filter((l) => l.trim()).length;
+  const partial = !unread && lines >= 4 && letters(result.text) / lines < 6;
   return {
     ...result,
     detection: identifySupplier(state, { text: result.text }),
@@ -25,7 +30,11 @@ async function readDocumentPhoto(state, data) {
       ? {
           advice: `La foto no se ha leído bien (o nada). Puedes guardarla igual y elegir el proveedor a mano. ${RETAKE}`,
         }
-      : {}),
+      : partial
+        ? {
+            advice: `Puede que falte parte del texto (una sombra, un pliegue o un recorte): comprueba el proveedor y el tipo antes de guardar. ${RETAKE}`,
+          }
+        : {}),
   };
 }
 
